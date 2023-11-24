@@ -3,3 +3,8 @@
 .Items {
     font-family: 'Inter', sans-serif;
 }
+
+.Button {
+    background-image: url(../../../assets/Button.png);
+    background-repeat: no-repeat;
+}

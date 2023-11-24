@@ -1,12 +1,12 @@
 import './App.css'
-import Navbar from './Pages/LandingPage/Navbar/Navbar'
+import HeroSection from './Pages/LandingPage/HeroSection/HeroSection'
 
 function App() {
 
   return (
     <>
       <div className='App'>
-        <Navbar />
+        <HeroSection />
       </div>
     </>
   )
