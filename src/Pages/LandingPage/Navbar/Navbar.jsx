@@ -4,7 +4,7 @@ import "./Navbar.css";
 export default function Navbar() {
   const [showItems, setShowItems] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [activeItem, setActiveItem] = useState("");
+  const [activeItem, setActiveItem] = useState("home");
 
   const toggleItems = () => {
     setShowItems(!showItems);
@@ -64,7 +64,7 @@ export default function Navbar() {
         <a
           href="#"
           className={`border-b-2 border-transparent hover:text-[white] dark:hover:text-[white] hover:border-[white] max-[767px]:border-none max-[767px]:my-2 ${
-            activeItem === "home" ? "border-[white]" : ""
+            activeItem === "home" ? "border-[#D9D9D9]" : ""
           }`}
           onClick={() => handleItemClick("home")}
         >
@@ -74,7 +74,7 @@ export default function Navbar() {
         <a
           href="#"
           className={`border-b-2 border-transparent hover:text-[white] dark:hover:text-[white] hover:border-[white] max-[767px]:border-none max-[767px]:my-2 ${
-            activeItem === "about" ? "border-[white]" : ""
+            activeItem === "about" ? "border-[#D9D9D9]" : ""
           }`}
           onClick={() => handleItemClick("about")}
         >
@@ -84,7 +84,7 @@ export default function Navbar() {
         <a
           href="#"
           className={`border-b-2 border-transparent hover:text-[white] dark:hover:text-[white] hover:border-[white] max-[767px]:border-none max-[767px]:my-2 ${
-            activeItem === "gallery" ? "border-[white]" : ""
+            activeItem === "gallery" ? "border-[#D9D9D9]" : ""
           }`}
           onClick={() => handleItemClick("gallery")}
         >
@@ -94,7 +94,7 @@ export default function Navbar() {
         <a
           href="#"
           className={`border-b-2 border-transparent hover:text-[white] dark:hover:text-[white] hover:border-[white] max-[767px]:border-none max-[767px]:my-2 ${
-            activeItem === "team" ? "border-[white]" : ""
+            activeItem === "team" ? "border-[#D9D9D9]" : ""
           }`}
           onClick={() => handleItemClick("team")}
         >
@@ -104,7 +104,7 @@ export default function Navbar() {
         <a
           href="#"
           className={`border-b-2 border-transparent hover:text-[white] dark:hover:text-[white] hover:border-[white] max-[767px]:border-none max-[767px]:my-2 ${
-            activeItem === "events" ? "border-[white]" : ""
+            activeItem === "events" ? "border-[#D9D9D9]" : ""
           }`}
           onClick={() => handleItemClick("events")}
         >
@@ -114,7 +114,7 @@ export default function Navbar() {
         <a
           href="#"
           className={`border-b-2 border-transparent hover:text-[white] dark:hover:text-[white] hover:border-[white] max-[767px]:border-none max-[767px]:my-2 ${
-            activeItem === "contact" ? "border-[white]" : ""
+            activeItem === "contact" ? "border-[#D9D9D9]" : ""
           }`}
           onClick={() => handleItemClick("contact")}
         >
@@ -122,7 +122,7 @@ export default function Navbar() {
         </a>
       </div>
 
-      <div className="contact text-[#101011] w-[9em] h-[2em] bg-[white] flex justify-center items-center rounded-2xl max-[767px]:hidden">
+      <div className="contact text-[#101011] w-[9em] h-[2.5em] bg-[white] flex justify-center items-center rounded-3xl max-[767px]:hidden">
         Join FOCES
       </div>
     </div>
