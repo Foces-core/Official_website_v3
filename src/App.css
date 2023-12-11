@@ -1,6 +1,8 @@
-/* CSS for overall styling of the app. */
+*::-webkit-scrollbar {
+    display: none;
+}
 
-*{
-    margin: 0;
-    padding: 0;
+.example {
+    -ms-overflow-style: none; 
+    scrollbar-width: none;  
 }

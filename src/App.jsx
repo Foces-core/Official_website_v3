@@ -1,9 +1,16 @@
-import React from 'react'
-import   './app.css'
+import './App.css'
+import HeroSection from './Pages/LandingPage/HeroSection/HeroSection'
+import Footer from './Pages/LandingPage/Footer/Footer'
 
 function App() {
+
   return (
-    <div>App</div>
+    <>
+      <div className='App overflow-x-hidden'>
+        <HeroSection />
+        <Footer />
+      </div>
+    </>
   )
 }
 
