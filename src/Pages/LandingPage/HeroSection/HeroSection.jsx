@@ -1,0 +1,109 @@
+import './HeroSection.css';
+import React, { useState, useEffect, useRef } from 'react';
+import Navbar from '../Navbar/Navbar';
+
+
+function HeroSection() {
+  const [showNotifications, setShowNotifications] = useState(false);
+  const notificationsRef = useRef(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  const handleImageClick = (event) => {
+    setShowNotifications(!showNotifications);
+    event.stopPropagation();
+  };
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 767);
+    };
+
+    handleResize();
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+
+    window.addEventListener('click', handleClickOutside);
+
+    return () => {
+      window.removeEventListener('click', handleClickOutside);
+    };
+  }, []);
+
+  const events = [
+    {
+      id: 1,
+      date: '12 June 2024',
+      eventName: 'Event Name 1',
+      description: 'This is the space where you share the information regarding the event 1',
+    },
+    {
+      id: 2,
+      date: '13 June 2024',
+      eventName: 'Event Name 2',
+      description: 'This is the space where you share the information regarding the event 2',
+    },
+    {
+      id: 3,
+      date: '14 June 2024',
+      eventName: 'Event Name 3',
+      description: 'This is the space where you share the information regarding the event 3',
+    },
+    {
+      id: 4,
+      date: '15 June 2024',
+      eventName: 'Event Name 4',
+      description: 'This is the space where you share the information regarding the event 4',
+    },
+  ];
+
+  return (
+    <div className='HeroSection relative bg-[#101011] overflow-x-hidden h-screen'>
+      <div className="navbar">
+        <Navbar />
+      </div>
+      <div className={`hero ${showNotifications?'blur-sm': ''}`}>
+        <img src="././src/assets/ddd.svg" alt="DDD" className='h-[50%] w-[36%] relative top-[25vh] left-[10vw] z-10 max-[767px]:w-[80%] max-[767px]:top-[44vh] max-[767px]:z-0' />
+        <img src="././src/assets/foces.png" alt="FOCES" className='h-[50%] w-[38%] relative top-[30vh] left-[10vw] z-10 max-[767px]:w-[80%] max-[767px]:top-[46vh] max-[767px]:z-0' />
+        <img src="././src/assets/foces1.svg" alt="" className='h-[50%] w-[38%] relative top-[35vh] left-[10vw] max-[767px]:w-[80%] max-[767px]:top-[47vh]' />
+        <img src="././src/assets/Mac.png" alt="Apple Mac" className='relative h-[15%] w-[18%] left-[70vw] max-[767px]:w-[40%] max-[767px]:left-[40vw] max-[767px]:z-0' />
+        <img src="././src/assets/Notification.png" alt="Notif" className={`Notif h-[26vh] absolute bottom-0 right-0 cursor-pointer max-[767px]:bottom-12 max-[767px]:z-0 ${showNotifications?'hidden':''}`} onTouchStart={handleImageClick} onClick={handleImageClick} /> 
+      </div>
+      <div ref={notificationsRef} className={`notifications h-[60%] w-[28%] absolute bottom-0 max-[767px]:bottom-5 right-0 bg-[#101011] rounded-3xl border border-[#D9D9D9] overflow-scroll overflow-x-hidden max-[767px]:w-[90%] max-[767px]:z-10 
+      ${showNotifications ? 'visible' : 'translate-x-[110%]'}
+      ${isMobile ? 'h-[50vh] bottom-[7%] right-[5%]':''}`}>
+        {events.map((event) => (
+            <div key={event.id} className={`text-[#D9D9D9] flex h-fit flex-col my-10 p-9 w-[100%] pr-4 ${event.id === 1 ? 'mt-0' : ''}`}>
+              <div className="notif flex justify-between">
+                <div className=''>
+                  <img src="././src/assets/speaker.png" alt="" className='border border-[#00FF57] rounded-md' />
+                  <div key={event.id} className={`line w-[2px] h-[320%] ml-[30%] bg-[#C2C2C2] ${event.id===4 ? 'h-28' : ''}`}></div>
+                </div>
+                <div className=''>
+                  <img src="././src/assets/clock.png" alt="" />
+                  <p className='text-sm'>{event.date}</p>
+                </div>
+              </div>
+              <div className='w-[85%] absolute h-fit mt-[12%] ml-[13%] content'>
+                <h3 className='font-semibold'>{event.eventName}</h3>
+                <p className='text-sm max-[767px]:w-[95%]'>{event.description}</p>
+              </div>
+            </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default HeroSection;
