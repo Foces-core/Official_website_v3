@@ -4,7 +4,13 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily:
+      {
+        Armata:["Armata","sans-serif"],
+        Groupe:["GROUPE","sans-serif"]
+      }
+    },
   },
   plugins: [],
 }
