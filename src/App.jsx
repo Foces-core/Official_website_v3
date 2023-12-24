@@ -1,7 +1,7 @@
 
 import './App.css'
 import HeroSection from './Pages/LandingPage/HeroSection/HeroSection'
-//import Footer from './Pages/LandingPage/Footer/Footer'
+import Footer from './Pages/LandingPage/Footer/Footer'
 import AboutUs from  './components/AboutUs/AboutUs';
 import ContactUs from './components/ContactUs/ContactUs';
 import AOS from "aos";
@@ -18,11 +18,9 @@ function App() {
    
       <div className='App'>
         <HeroSection />
-       
-     
-    
       <AboutUs/>
       <ContactUs/>
+      <Footer/>
       </div>
   )
 }

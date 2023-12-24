@@ -80,14 +80,14 @@ function HeroSection() {
         <img src="././src/assets/Mac.png" alt="Apple Mac" className='relative h-[15%] w-[18%] left-[70vw] max-[767px]:w-[40%] max-[767px]:left-[40vw] max-[767px]:z-0' />
         <img src="././src/assets/Notification.png" alt="Notif" className={`Notif h-[26vh] absolute bottom-0 right-0 cursor-pointer max-[767px]:bottom-12 max-[767px]:z-0 ${showNotifications?'hidden':''}`} onTouchStart={handleImageClick} onClick={handleImageClick} /> 
       </div>
-      <div ref={notificationsRef} className={`notifications h-[60%] w-[28%] absolute bottom-0 max-[767px]:bottom-5 right-0 bg-[#101011] rounded-3xl border border-[#D9D9D9] overflow-scroll overflow-x-hidden max-[767px]:w-[90%] max-[767px]:z-10 
+      <div ref={notificationsRef} className={` notifications h-[60%] w-[28%] absolute bottom-0 max-[767px]:bottom-5 right-0 bg-opacity-45 bg-slate-900 rounded-3xl  overflow-scroll overflow-x-hidden max-[767px]:w-[90%] max-[767px]:z-10 
       ${showNotifications ? 'visible' : 'translate-x-[110%]'}
       ${isMobile ? 'h-[50vh] bottom-[7%] right-[5%]':''}`}>
         {events.map((event) => (
             <div key={event.id} className={`text-[#D9D9D9] flex h-fit flex-col my-10 p-9 w-[100%] pr-4 ${event.id === 1 ? 'mt-0' : ''}`}>
               <div className="notif flex justify-between">
                 <div className=''>
-                  <img src="././src/assets/speaker.png" alt="" className='border border-[#00FF57] rounded-md' />
+                  <img src="././src/assets/speaker.png" alt="" className='border border-[#2a5739] rounded-md' />
                   <div key={event.id} className={`line w-[2px] h-[320%] ml-[30%] bg-[#C2C2C2] ${event.id===4 ? 'h-28' : ''}`}></div>
                 </div>
                 <div className=''>
