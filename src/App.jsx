@@ -1,11 +1,18 @@
 import './App.css'
+import Events from './Pages/LandingPages/Events'
+import Featuring from './Pages/LandingPages/Featuring'
+
+
 
 function App() {
 
   return (
     <>
-      <div className='App'>
-      </div>
+      <Featuring/>
+      <Events  />
+      
+     
+      
     </>
   )
 }

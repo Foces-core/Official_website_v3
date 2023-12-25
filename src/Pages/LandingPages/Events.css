@@ -1,0 +1,124 @@
+.absolute-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.event-container {
+  background-color: white;
+  width: fit-content;
+  height: fit-content;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 1rem;
+  box-shadow: 0 0 30px rgb(0, 0, 0);
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.event-container:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 20px rgb(255, 255, 255);
+}
+
+.responsive-image1 {
+  position: absolute;
+  top: 5vh;
+  left: 60vb;
+  max-width: 40%;
+  height: 45%;
+  opacity: 0.75;
+  box-shadow: 0 0 30px rgb(34, 34, 34);
+  border-radius: 1rem;
+}
+.responsive-image1:hover {
+  opacity: 1;
+}
+
+.responsive-image2 {
+  position: absolute;
+  top: 1vh;
+  left: 118vh;
+  max-width: 40%;
+  height: 30%;
+  opacity: 0.75;
+  box-shadow: 0 0 30px rgb(34, 34, 34);
+  border-radius: 1rem;
+}
+.responsive-image2:hover {
+  opacity: 1;
+}
+
+.responsive-image3 {
+  position: absolute;
+  bottom: -10vh;
+  left: -90px;
+  width: 50%;
+  height: auto;
+  opacity: 0.75;
+  box-shadow: 0 0 30px rgb(34, 34, 34);
+  border-radius: 1rem;
+}
+.responsive-image3:hover {
+  opacity: 1;
+}
+
+.responsive-image4 {
+  position: absolute;
+  top: 267px;
+  left: 800px;
+  width: 50%;
+  max-width: 1003.99px;
+  height: 75vh;
+  opacity: 0.75;
+  box-shadow: 0 0 30px rgb(34, 34, 34);
+  border-radius: 1rem;
+}
+.responsive-image4:hover {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .responsive-image1 {
+    top: 3vh;
+    left: 1vh;
+    width: 50%;
+    height: 30%;
+    opacity: 0.65;
+  }
+}
+
+@media (max-width: 768px) {
+  .responsive-image2 {
+    top: 3vh;
+    left: 27vh;
+    height: 30%;
+    width: 50%;
+    opacity: 0.65;
+  }
+}
+
+@media (max-width: 768px) {
+  .responsive-image3 {
+    bottom: 35vh;
+    left: 1vh;
+    right: 1vh;
+    width: 95%;
+    height: 30%;
+    background-size: contain;
+    opacity: 0.65;
+  }
+}
+
+@media (max-width: 768px) {
+  .responsive-image4 {
+    top: 66vh;
+    left: 1vh;
+    right: 1vh;
+    width: 95%;
+    height: 32%;
+    background-size: contain;
+    opacity: 0.65;
+  }
+}
