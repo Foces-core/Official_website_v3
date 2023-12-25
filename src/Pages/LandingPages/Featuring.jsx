@@ -92,7 +92,7 @@ function Featuring() {
         </button>
 
        <Slider
-       className="absolute"
+       className="absolute h-[75%] w-[80%]"
         onSlideComplete={(i) => {
         // console.log('finished dragging, current slide is', i)
         setCurrentIndex(i);
@@ -107,11 +107,11 @@ function Featuring() {
         scaleOnDrag={true}
         >
           {slides.map(({ url, title }, index) => (
-          <img className='shadow-blue-600  shadow-[0_8px_30px_rgb(0,0,0,0.12)]' src={url} key={index} alt={title} />
+          <img className='shadow-blue-600  shadow-[0_8px_30px_rgb(0,0,0,0.12)] ' src={url} key={index} alt={title} />
           ))}
        
         </Slider>
-        <div className="absolute flex justify-center  gap-3 w-full top-[80%] -translate-x-[1%]">
+        <div className="absolute flex justify-center  gap-3 w-full top-[85%] -translate-x-[1%]">
             
            {slides.map(({ path, title }, index) => (
             <div key={index} className={` w-3 h-3 ease-in-out duration-500 ${index === currentIndex  ? "bg-blue-700 scale-125 rounded-3xl"  : "bg-blue-900"}`}></div>
