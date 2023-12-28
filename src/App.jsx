@@ -18,9 +18,9 @@ function App() {
    
       <div className='App'>
         <HeroSection />
-      <AboutUs/>
-      <ContactUs/>
-      <Footer/>
+        <AboutUs/>
+        <ContactUs/>
+        <Footer/>
       </div>
   )
 }
