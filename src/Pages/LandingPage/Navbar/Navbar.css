@@ -1,0 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+
+.Items {
+    font-family: 'Inter', sans-serif;
+}
+
+.Button {
+    background-image: url(../../../assets/Button.png);
+    background-repeat: no-repeat;
+}
