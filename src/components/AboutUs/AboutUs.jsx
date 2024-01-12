@@ -13,7 +13,7 @@ import Aboutus from '../../assets/about us.svg';
         </div>
 
 
-  <div className="font-Armata px-8 sm:text-justify text-sm lg:text-base" data-aos="zoom-in" data-aos-duration="1000">
+  <div className="font-Armata px-8 sm:text-justify text-base lg:text-xl" data-aos="zoom-in" data-aos-duration="1000">
     <p>
       This is an organization of CSE students of the college. The forum aims at improving the technical and industrial knowledge of the students and strives to keep them abreast with the latest software and technologies evolving in the information technology field.
       <br/><br/>
