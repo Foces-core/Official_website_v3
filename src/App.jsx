@@ -1,4 +1,3 @@
-import React from 'react'
 import './App.css'
 import Events from './Pages/LandingPages/Events'
 import Featuring from './Pages/LandingPages/Featuring'
