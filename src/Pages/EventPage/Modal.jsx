@@ -27,8 +27,8 @@ export default function Modal({ open, children, onClose , images}) {
 
   return ReactDOM.createPortal(
     <>
-      <div className='fixed top-0 left-0 right-0 bottom-0 bg-slate-950 bg-opacity-70 z-50' onClick={onClose} />
-        <div className='h-[70vh] w-[90vh] fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black rounded-xl p-16 z-50 shadow-slate-700 drop-shadow-lg shadow-2xl'>
+      <div className=' fixed top-0 left-0 right-0 bottom-0 bg-slate-950 bg-opacity-70 z-50' onClick={onClose} />
+        <div className='h-[90vh] w-[98vh] fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black rounded-xl p-16 z-50 shadow-slate-700 drop-shadow-lg shadow-2xl'>
         
        
         <Slider
@@ -46,7 +46,7 @@ export default function Modal({ open, children, onClose , images}) {
         scaleOnDrag={true}
         >
           {images.map(({ path, title }, index) => (
-        <img src={images[index]} key={index} alt={title} />
+        <img className=" w-[95vh] h-[85vh]" src={images[index]} key={index} alt={title} />
           ))}
        
         </Slider>
@@ -54,7 +54,7 @@ export default function Modal({ open, children, onClose , images}) {
         <div className="absolute flex justify-center  gap-3 w-full -translate-x-[10%]">
             
            {images.map(({ path, title }, index) => (
-            <div key={index} className={` w-8 h-2 ease-in-out duration-300 ${index === currentIndex  ? "bg-blue-700 scale-125"  : "bg-blue-900"}`}></div>
+            <div key={index} className={` w-3 h-3 rounded-full ease-in-out duration-300 ${index === currentIndex  ? "bg-blue-700 scale-125"  : "bg-blue-900"}`}></div>
 
           ))}
 
