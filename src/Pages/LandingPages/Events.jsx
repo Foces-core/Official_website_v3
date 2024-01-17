@@ -18,7 +18,7 @@ function Events() {
       
       
     return (
-    <div className='overflow-x-hidden' >
+      <div className='overflow-x-hidden' >
         <div className="h-screen w-screen bg-black overflow-hidden  relative ">
           <div className="h-full w-full relative  ">
             <img src={img1} alt="" className='responsive-image1' data-aos="slide-right"/>
