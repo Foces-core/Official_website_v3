@@ -59,6 +59,7 @@ function Events() {
               </MouseParallaxChild>
               
           </MouseParallaxContainer>
+
             <div className="absolute-center"  >
               <div className="h-fit w-fit " data-aos="zoom-in" >
                 <Link to="/Events" className="event-container" >
