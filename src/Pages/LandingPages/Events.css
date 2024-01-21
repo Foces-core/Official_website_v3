@@ -24,12 +24,12 @@
 
 .responsive-image1 {
   position: absolute;
-  top: 5vh;
-  left: 60vb;
+  top: 28px;
+  left: 55vb;
   max-width: 40%;
-  height: 45%;
+  height: auto;
   opacity: 0.75;
-  box-shadow: 0 0 30px rgb(34, 34, 34);
+
   border-radius: 1rem;
 }
 .responsive-image1:hover {
@@ -38,12 +38,12 @@
 
 .responsive-image2 {
   position: absolute;
-  top: 1vh;
-  left: 118vh;
+  top: 25px;
+  right: 280px;
   max-width: 40%;
-  height: 30%;
+  height: auto;
   opacity: 0.75;
-  box-shadow: 0 0 30px rgb(34, 34, 34);
+
   border-radius: 1rem;
 }
 .responsive-image2:hover {
@@ -52,12 +52,12 @@
 
 .responsive-image3 {
   position: absolute;
-  bottom: -10vh;
+  top: 430px;
   left: -90px;
   width: 50%;
   height: auto;
   opacity: 0.75;
-  box-shadow: 0 0 30px rgb(34, 34, 34);
+
   border-radius: 1rem;
 }
 .responsive-image3:hover {
@@ -66,13 +66,13 @@
 
 .responsive-image4 {
   position: absolute;
-  top: 267px;
+  top: 350px;
   left: 800px;
   width: 50%;
-  max-width: 1003.99px;
-  height: 75vh;
+  max-width: 1000px;
+  height: 65vh;
   opacity: 0.75;
-  box-shadow: 0 0 30px rgb(34, 34, 34);
+
   border-radius: 1rem;
 }
 .responsive-image4:hover {

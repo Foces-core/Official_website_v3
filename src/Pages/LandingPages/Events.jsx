@@ -1,6 +1,7 @@
 import React ,{useEffect}  from 'react'
 import AOS from "aos"
 import "aos/dist/aos.css";
+import { MouseParallaxContainer, MouseParallaxChild } from "react-parallax-mouse"
 import Event from '../../assets/Event.svg'
 import  "./Events.css"
 import {Link} from "react-router-dom";
@@ -18,14 +19,47 @@ function Events() {
       
       
     return (
-      <div className='overflow-x-hidden' >
-        <div className="h-screen w-screen bg-black overflow-hidden  relative ">
-          <div className="h-full w-full relative  ">
-            <img src={img1} alt="" className='responsive-image1' data-aos="slide-right"/>
-            <img src={img2} alt="" className='responsive-image2' data-aos="slide-down"/>
-            <img src={img3} alt="" className='responsive-image3' data-aos="slide-up"/>
-            <img src={img4} alt="" className='responsive-image4' data-aos="slide-left"/>
-          </div>
+    <div className='overflow-x-hidden pb-5' >
+        <div className="h-screen w-screen bg-transparent overflow-hidden  relative pb-3 ">
+          <MouseParallaxContainer 
+            className="h-full w-full relative  "
+            globalFactorX={0.03}
+            globalFactorY={0.03}
+            resetOnLeave={true}
+            inverted={false}
+          >
+              <MouseParallaxChild
+                factorX={1.}
+                factorY={1.}
+              >
+                <img src={img1} alt="" className='responsive-image1 ' data-aos="slide-right"/>
+              </MouseParallaxChild> 
+             
+
+              <MouseParallaxChild
+                factorX={1.}
+                factorY={1.}
+              >
+                <img src={img2} alt="" className='responsive-image2' data-aos="slide-down"/>
+              </MouseParallaxChild>
+              
+
+              <MouseParallaxChild
+                factorX={1.}
+                factorY={1.}
+              >
+                <img src={img3} alt="" className='responsive-image3' data-aos="slide-up"/>
+              </MouseParallaxChild>
+
+              <MouseParallaxChild
+                factorX={1.}
+                factorY={1.}
+              >
+                <img src={img4} alt="" className='responsive-image4' data-aos="slide-left"/>
+              </MouseParallaxChild>
+              
+          </MouseParallaxContainer>
+
             <div className="absolute-center"  >
               <div className="h-fit w-fit " data-aos="zoom-in" >
                 <Link to="/Events" className="event-container" >
