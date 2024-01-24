@@ -19,7 +19,7 @@ function Events() {
       
       
     return (
-    <div className='overflow-x-hidden pb-5' >
+    <div className='overflow-x-hidden pb-5' id='events' >
         <div className="h-screen w-screen bg-transparent overflow-hidden  relative pb-3 ">
           <MouseParallaxContainer 
             className="h-full w-full relative  "

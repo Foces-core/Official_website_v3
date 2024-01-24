@@ -55,7 +55,7 @@ function ContactUs() {
   };
 
   return (
-    <div className='h-screen w-full font-Armata mt-5'>
+    <div className='h-screen w-full font-Armata mt-5' id='contact'>
     <div className='flex items-center md:hidden'>
       <div className='flex items-center pl-8'>
         <div className='inline-block w-5 h-16 bg-[#080AA4] relative'></div>

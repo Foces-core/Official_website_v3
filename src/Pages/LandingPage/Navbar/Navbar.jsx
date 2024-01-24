@@ -64,7 +64,7 @@ export default function Navbar({showItems, setShowItems}) {
         </a>
 
         <a
-          href=""
+          href="#about"
           className={`border-b-2 border-transparent max-[767px]:border-none max-[767px]:my-2`}
           onClick={() => handleItemClick("about")}
         >
@@ -72,7 +72,7 @@ export default function Navbar({showItems, setShowItems}) {
         </a>
 
         <a
-          href=""
+          href="#featuring"
           className={`border-b-2 border-transparent max-[767px]:border-none max-[767px]:my-2`}
           onClick={() => handleItemClick("gallery")}
         >
@@ -80,7 +80,7 @@ export default function Navbar({showItems, setShowItems}) {
         </a>
 
         <a
-          href=""
+          href="#execom"
           className={`border-b-2 border-transparent max-[767px]:border-none max-[767px]:my-2`}
           onClick={() => handleItemClick("team")}
         >
@@ -88,7 +88,7 @@ export default function Navbar({showItems, setShowItems}) {
         </a>
 
         <a
-          href=""
+          href="#events"
           className={`border-b-2 border-transparent max-[767px]:border-none max-[767px]:my-2`}
           onClick={() => handleItemClick("events")}
         >
@@ -96,7 +96,7 @@ export default function Navbar({showItems, setShowItems}) {
         </a>
 
         <a
-          href=""
+          href="#contact"
           className={`border-b-2 border-transparent max-[767px]:border-none max-[767px]:my-2`}
           onClick={() => {
             handleItemClick("contact");
