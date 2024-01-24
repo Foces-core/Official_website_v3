@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import "./Navbar.css";
 
-export default function Navbar({showItems, setShowItems}) {
+export default function Navbar() {
   const [isMobile, setIsMobile] = useState(false);
+  const [showItems, setShowItems] = useState(false);
 
   const toggleItems = () => {
     setShowItems(!showItems);
@@ -28,7 +29,7 @@ export default function Navbar({showItems, setShowItems}) {
   }, [isMobile]);
 
   return (
-    <div className={`shadow nav bg-transparent flex min-[767px]:items-center p-10 font-bold max-[767px]:pl-4  max-[767px]:pt-8 cursor-none ${isMobile && showItems ? "": "bg-black"}`}>
+    <div className={`fixed z-10 bg-[#101011] shadow nav flex min-[767px]:items-center p-10 font-bold max-[767px]:pl-4 max-[767px]:pt-8 cursor-none max-[767px]:w-screen`}>
       {isMobile && (
         <div
           className="h-[2rem] w-[2rem] Button absolute inset-y-10 right-5 flex items-center top-[31%] cursor-none"
@@ -57,7 +58,7 @@ export default function Navbar({showItems, setShowItems}) {
         } ${isMobile && showItems ? "h-[80%]" : ""}`}
       >
         <a
-          href="#"
+          href="/"
           className={`border-b-2 border-transparent max-[767px]:hidden`}
         >
           HOME
@@ -88,7 +89,7 @@ export default function Navbar({showItems, setShowItems}) {
         </a>
 
         <a
-          href="#events"
+          href="/events"
           className={`border-b-2 border-transparent max-[767px]:border-none max-[767px]:my-2`}
           onClick={() => handleItemClick("events")}
         >
@@ -96,7 +97,7 @@ export default function Navbar({showItems, setShowItems}) {
         </a>
 
         <a
-          href="#contact"
+          href="/contact"
           className={`border-b-2 border-transparent max-[767px]:border-none max-[767px]:my-2`}
           onClick={() => {
             handleItemClick("contact");

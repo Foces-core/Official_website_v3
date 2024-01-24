@@ -3613,9 +3613,9 @@ react-parallax-mouse@^2.1.0:
   dependencies:
     react-spring "^9.7.3"
 
-react-router-dom@^6.21.1:
+react-router-dom@^6.21.3:
   version "6.21.3"
-  resolved "https://registry.npmmirror.com/react-router-dom/-/react-router-dom-6.21.3.tgz#ef3a7956a3699c7b82c21fcb3dbc63c313ed8c5d"
+  resolved "https://registry.yarnpkg.com/react-router-dom/-/react-router-dom-6.21.3.tgz#ef3a7956a3699c7b82c21fcb3dbc63c313ed8c5d"
   integrity sha512-kNzubk7n4YHSrErzjLK72j0B5i969GsuCGazRl3G6j1zqZBLjuSlYBdVdkDOgzGdPIffUOc9nmgiadTEVoq91g==
   dependencies:
     "@remix-run/router" "1.14.2"

@@ -31,22 +31,22 @@ function Footer() {
                 </div>
                 <div className='flex flex-col justify-between items-center w-[70%] gap-10'>
                     <div className="flex gap-16 text-sm text-[#D9D9D9] max-[767px]:hidden">
-                                <a href="">
+                                <a href="#">
                                     <p className='hover:scale-125 duration-300'>HOME</p>
                                 </a>
-                                <a href="">
+                                <a href="#about">
                                     <p className='hover:scale-125 duration-300'>ABOUT</p>
                                 </a>
-                                <a href="">
+                                <a href="#featuring">
                                     <p className='hover:scale-125 duration-300'>FEATURING</p>
                                 </a>
-                                <a href="">
+                                <a href="#execom">
                                     <p className='hover:scale-125 duration-300'>TEAM</p>
                                 </a>
-                                <a href="">
+                                <a href="/events">
                                     <p className='hover:scale-125 duration-300'>EVENTS</p>
                                 </a>
-                                <a href="">
+                                <a href="/contact">
                                     <p className='hover:scale-125 duration-300'>CONTACT</p>
                                 </a>
                     </div>

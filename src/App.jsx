@@ -3,13 +3,13 @@ import Events from './Pages/LandingPages/Events'
 import Featuring from './Pages/LandingPages/Featuring'
 import HeroSection from './Pages/LandingPage/HeroSection/HeroSection'
 import Footer from './Pages/LandingPage/Footer/Footer'
-import AboutUs from  './components/AboutUs/AboutUs';
-import ContactUs from './components/ContactUs/ContactUs';
+import AboutUs from  './Components/AboutUs/AboutUs';
 import Execom from './components/Execom/Execom';
-import Animation from './Components/Animation/Animation';
+import Navbar from './Pages/LandingPage/Navbar/Navbar'
 import Cursor from './Components/Cursor/Cursor';
 import AOS from "aos";
 import "aos/dist/aos.css";
+import { Routes,Route } from 'react-router-dom/dist'
 
 AOS.init({
   once: true, 
@@ -18,16 +18,16 @@ AOS.init({
 function App() {
   
   return (
-   
+    
     <div className={`App bg-[#101011] cursor-none`}>
-        <Cursor />
-        <HeroSection />
-        <AboutUs/>
-        <ContactUs/>
-        <Featuring/>
-        <Footer/>
-        <Events  />
-        <Execom/>
+      <Cursor />
+      <Navbar />
+      <HeroSection />
+      <AboutUs />
+      <Featuring/>
+      <Events  />
+      <Execom/>
+      <Footer/>
       </div>
   )
 }
