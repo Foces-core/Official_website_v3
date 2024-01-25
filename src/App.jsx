@@ -23,14 +23,14 @@ function App() {
 
   useEffect(() => {
     const loaderTimeout = setTimeout(() => {
-      setLoaderOpacity(0.5); // Change the opacity of the loader after 6000 milliseconds
+      setLoaderOpacity(0.5); 
     }, 6000);
 
     const contentTimeout = setTimeout(() => {
-      setLoading(false); // Hide the loader after 7000 milliseconds
+      setLoading(false); 
     },9000);
 
-    // Clean up timeouts
+    
     return () => {
       clearTimeout(loaderTimeout);
       clearTimeout(contentTimeout);
