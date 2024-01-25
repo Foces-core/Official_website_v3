@@ -1,4 +1,6 @@
 import './App.css'
+import { useState, useEffect } from "react";
+import Loader from './components/Loader/Loader'
 import Events from './Pages/LandingPages/Events'
 import Featuring from './Pages/LandingPages/Featuring'
 import HeroSection from './Pages/LandingPage/HeroSection/HeroSection'
@@ -16,18 +18,32 @@ AOS.init({
 });
 
 function App() {
-  
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+    }, 5000);
+  }, []);
   return (
    
     <div className={`App bg-[#101011] cursor-none`}>
-        <Cursor />
-        <HeroSection />
-        <AboutUs/>
-        <ContactUs/>
-        <Featuring/>
-        <Footer/>
-        <Events  />
-        <Execom/>
+        {
+          loading?
+          <Loader/>:
+        
+        <div>
+          <Cursor />
+          <HeroSection />
+          <AboutUs/>
+          <ContactUs/>
+          <Featuring/>
+          <Footer/>
+          <Events  />
+          <Execom/>
+
+        </div>
+}
       </div>
   )
 }
