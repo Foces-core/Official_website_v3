@@ -40,7 +40,7 @@
       border-radius: 4px; }
     .coffee div {
       height:30px;
-      width: 10px;
+      width: 8px;
       background: #fff;
       opacity: 0.6;
       -webkit-animation: coffee 2s infinite;
@@ -72,7 +72,15 @@
                 animation-delay: 2s;
               }
               
-              .coffee div:nth-child(6) {
-                -webkit-animation-delay: 2.4s;
-                animation-delay: 2.4s;
+              .transition-opacity {
+                transition: opacity 1s ease-in-out;
               }
+              
+              .opacity-0 {
+                opacity: 0;
+              }
+              
+              .opacity-100 {
+                opacity: 1;
+              }
+                   

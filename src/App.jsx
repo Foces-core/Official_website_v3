@@ -18,34 +18,45 @@ AOS.init({
 });
 
 function App() {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [loaderOpacity, setLoaderOpacity] = useState(1);
+
   useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-    }, 5000);
+    const loaderTimeout = setTimeout(() => {
+      setLoaderOpacity(0.5); // Change the opacity of the loader after 6000 milliseconds
+    }, 6000);
+
+    const contentTimeout = setTimeout(() => {
+      setLoading(false); // Hide the loader after 7000 milliseconds
+    },9000);
+
+    // Clean up timeouts
+    return () => {
+      clearTimeout(loaderTimeout);
+      clearTimeout(contentTimeout);
+    };
   }, []);
-  return (
-   
-    <div className={`App bg-[#101011] cursor-none`}>
-        {
-          loading?
-          <Loader/>:
-        
+
+return (
+  <div className={`App bg-[#101011] cursor-none`}>
+          <div className={`transition-opacity duration-1000`} style={{ opacity: loading ? loaderOpacity : 1 }}>
+
+      {loading ? <Loader /> : (
         <div>
           <Cursor />
           <HeroSection />
-          <AboutUs/>
-          <ContactUs/>
-          <Featuring/>
-          <Footer/>
-          <Events  />
-          <Execom/>
-
+          <AboutUs />
+          <ContactUs />
+          <Featuring />
+          <Footer />
+          <Events />
+          <Execom />
         </div>
-}
-      </div>
-  )
+      )}
+    </div>
+  </div>
+);
+
 }
 
 export default App;
