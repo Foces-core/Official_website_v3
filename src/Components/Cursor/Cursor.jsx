@@ -6,8 +6,8 @@ function Cursor() {
 
   useEffect(() => {
     const handleMouseMove = (e) => {
-      cursorOutlineRef.current.style.top = `${e.pageY - 10}px`;
-      cursorOutlineRef.current.style.left = `${e.pageX - 10}px`;
+      cursorOutlineRef.current.style.top = `${e.pageY}px`;
+      cursorOutlineRef.current.style.left = `${e.pageX }px`;
 
       cursorOutlineRef.current.animate({
         left: `${e.pageX}px`,

@@ -8,6 +8,7 @@ import {
   RouterProvider,
   Route,
 } from "react-router-dom"
+import ContactUs from './Components/ContactUs/ContactUs.jsx'
 
 
 const router = createBrowserRouter([
@@ -16,7 +17,10 @@ const router = createBrowserRouter([
   },
   { path:"/Events",
     element:<Eventpage/>
-  }
+  },
+  {
+    path: "/Contact",
+    element: <ContactUs/>}
 ])
 
 

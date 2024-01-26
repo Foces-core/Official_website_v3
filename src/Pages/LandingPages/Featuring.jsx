@@ -51,7 +51,7 @@ function Featuring() {
   }, []);
 
   return (
-    <div className="h-screen w-screen bg-transparent flex justify-center items-center overflow-x-hidden">
+    <div className="h-screen w-screen bg-transparent flex justify-center items-center overflow-x-hidden" id='featuring'>
       <Swiper
         modules={[Navigation, Pagination, Scrollbar, A11y]}
         slidesPerView={noSlides} 
