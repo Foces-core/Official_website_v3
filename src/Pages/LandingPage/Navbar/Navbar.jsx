@@ -4,6 +4,7 @@ import "./Navbar.css";
 export default function Navbar() {
   const [isMobile, setIsMobile] = useState(false);
   const [showItems, setShowItems] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const toggleItems = () => {
     setShowItems(!showItems);
@@ -16,11 +17,20 @@ export default function Navbar() {
     };
 
     handleResize();
+    const handleScroll = () => {
+      if (window.scrollY > 150) {
+        setIsScrolled(true);
+      } else {
+        setIsScrolled(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
 
     window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -29,7 +39,7 @@ export default function Navbar() {
   }, [isMobile]);
 
   return (
-    <div className={`fixed z-10 backdrop-blur-md shadow nav flex min-[767px]:items-center p-8 font-bold max-[767px]:pl-4 max-[767px]:pt-8 cursor-none max-[767px]:w-screen`}>
+    <div className={`fixed z-10 shadow nav flex min-[767px]:items-center p-5 font-bold max-[767px]:pl-4 max-[767px]:pt-8 cursor-none max-[767px]:w-screen ${isScrolled ? "backdrop-blur-md" :"backdrop-blur-0"}`}>
       {isMobile && (
         <div
           className="h-[2rem] w-[2rem] Button absolute inset-y-10 right-5 flex items-center top-[31%] cursor-none"
