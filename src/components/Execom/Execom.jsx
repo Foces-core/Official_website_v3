@@ -77,7 +77,7 @@ function Execom() {
 
   
   return (
-    <div className='h-screen '>
+    <div className='h-screen ' id='execom'>
       <div >
         <div className='flex items-center pl-6 lg:pl-40'>
           <div className='inline-block w-5 h-16 bg-[#080AA4] relative'></div>

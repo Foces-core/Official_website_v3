@@ -24,7 +24,7 @@ function EventcardL({Events}) {                                   //To display t
   
   
   return (
-    <div  className='z-10 h-ful w-[95%] bg-gradient-to-bl from-slate-950 from-0.001%  rounded-2xl mt-10 flex flex-wrap justify-center gap-5' data-aos="slide-left">
+    <div  className='z-10 h-ful w-[95%] bg-gradient-to-bl from-slate-950 from-0.001%  rounded-2xl mt-10 flex flex-wrap justify-center gap-5' id='events' data-aos="slide-left">
  
     <a className='w-[45%] m-5 flex flex-col gap-3' onClick={()=>setExpanding(!Expanding)} >
       

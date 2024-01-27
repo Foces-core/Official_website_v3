@@ -4,7 +4,7 @@ import Aboutus from '../../assets/about us.svg';
 
  function AboutUs() {
   return (
-    <div className='  text-white w-full mx-auto p-[1.5rem] md:p-16 lg:p-24 flex flex-col justify-center h-full lg:px-60 '>
+    <div className='  text-white w-full mx-auto p-[1.5rem] md:p-16 lg:p-24 flex flex-col justify-center h-full lg:px-60 ' id='about'>
       <div className='md:text-xl lg:text-2xl mb-4 md:mb-6 lg:mb-8'>
       <div className='flex items-center'>
     <div className='inline-block w-5 h-16 bg-[#080AA4] relative' data-aos="flip-up"></div>
