@@ -95,9 +95,9 @@ function HeroSection({ }) {
         <img src="././src/assets/foces1.svg" alt="" className={`h-[50%] w-[38%] relative top-[50vh] left-[10vw] max-[767px]:w-[80%] max-[767px]:top-[41vh] `} />
         <img src="././src/assets/Notification.png" alt="Notif" className={`Notif h-[26vh] absolute translate-y-80 right-0 cursor-pointer max-[767px]:mt-[35%] max-[767px]:z-0  ${showNotifications?'hidden':''}`} onTouchStart={handleImageClick} onClick={handleImageClick} /> 
       </div>
-      <div ref={notificationsRef} className={` notifications h-[60%] w-[28%] absolute bottom-0 max-[767px]:bottom-5 right-0 bg-opacity-45 bg-slate-900 rounded-3xl  overflow-scroll overflow-x-hidden max-[767px]:w-[90%] max-[767px]:z-10 
+      <div ref={notificationsRef} className={` notifications h-[60%] w-[28%] absolute bottom-3 max-[767px]:bottom-5 right-0 bg-opacity-45 bg-slate-900 rounded-3xl  overflow-scroll overflow-x-hidden max-[767px]:w-[90%] max-[767px]:z-10 
       ${showNotifications ? 'visible' : 'translate-x-[110%]'}
-      ${isMobile ? 'h-[50vh] bottom-[7%] right-[5%]':''}`}>
+      ${isMobile ? 'h-[50vh] bottom-[7%] right-[5%]':'right-3'}`}>
         {events.map((event) => (
             <div key={event.id} className={`text-[#D9D9D9] flex h-fit flex-col my-10 p-9 w-[100%] pr-4 ${event.id === 1 ? 'mt-0' : ''}`}>
               <div className="notif flex justify-between">
