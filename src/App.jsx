@@ -45,6 +45,7 @@ return (
       {loading ? <Loader /> : (
         <div>
           <Cursor />
+          <Navbar/>
           <HeroSection />
           <AboutUs />
           <ContactUs />
