@@ -98,11 +98,11 @@ function Execom() {
               <div key={index} className="relative cardSize bg-container card-hover">
                 <div className="absolute blueBox  rectangle  bg-[#080AA4]" />
                 <img className="absolute imgSize -ml-2 " src={d.img} alt="" />
-                <div className="absolute blackBox   bottom-0 w-full">
-                  <div className="bg-black  bg-opacity-60 w-full">
-                    <div className="text-white   text-[15px] font-bold">{d.name}</div>
-                    <div className="text-white   text-[15px] font-light">{d.review}</div>
-                  </div>
+                <div className="absolute left-0 flex flex-col items-center bottom-0 bg-black bg-opacity-60 w-full">
+                  
+                    <div className="text-white text-[15px] font-bold">{d.name}</div>
+                    <div className="text-white text-[15px] font-light">{d.review}</div>
+                  
                 </div>
               </div>
             ))}
@@ -120,11 +120,11 @@ function Execom() {
               <div key={index} className="relative cardSize bg-container card-hover">
                 <div className="absolute blueBox  rectangle   bg-[#080AA4]" />
                 <img className="absolute imgSize -ml-2  bottom-0" src={d1.img1} alt="" />
-                <div className="absolute blackBox   bottom-0 w-full">
-                  <div className="bg-black  bg-opacity-60 w-full ">
+                <div className="absolute left-0 flex flex-col items-center bottom-0 bg-black bg-opacity-60 w-full">
+                  
                     <div className="text-white  text-[15px] font-bold">{d1.name1}</div>
                     <div className="text-white text-[15px] font-light">{d1.review1}</div>
-                  </div>
+                  
                 </div>
               </div> 
             ))}
