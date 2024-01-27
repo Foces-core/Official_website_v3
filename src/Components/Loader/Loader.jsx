@@ -4,11 +4,11 @@ import logo from '../../assets/logo.svg';
 
 const Loader = () => {
   return (
-    <div className=' flex items-center justify-center  h-screen'>
+    <div className=' flex flex-col items-center justify-center  h-screen'>
         
-
-      <div className="relative ">
-        <div className="coffee">
+ 
+      <div className="relative">
+        <div className="coffee ">
           <div></div>
           <div></div>
           <div></div>
@@ -19,7 +19,14 @@ const Loader = () => {
           <img className='w-full h-full' src={logo} alt="We're here" />
         </div>
       </div>
+     
+ 
+        <span className='text-white p-5' >
+            1st Rule Of Programming: If it Works, Don't Touch It.
+        </span>
     </div>
+
+    
   );
 };
 

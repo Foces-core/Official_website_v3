@@ -24,11 +24,11 @@ function App() {
   useEffect(() => {
     const loaderTimeout = setTimeout(() => {
       setLoaderOpacity(0.5); 
-    }, 6000);
+    }, 4000);
 
     const contentTimeout = setTimeout(() => {
       setLoading(false); 
-    },9000);
+    },5000);
 
     
     return () => {
