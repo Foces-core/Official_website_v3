@@ -5,6 +5,7 @@ import Events from './Pages/LandingPages/Events'
 import Featuring from './Pages/LandingPages/Featuring'
 import HeroSection from './Pages/LandingPage/HeroSection/HeroSection'
 import Footer from './Pages/LandingPage/Footer/Footer'
+import ContactUs from './components/ContactUs/ContactUs';
 import AboutUs from  './Components/AboutUs/AboutUs';
 import Execom from './components/Execom/Execom';
 import Navbar from './Pages/LandingPage/Navbar/Navbar'
