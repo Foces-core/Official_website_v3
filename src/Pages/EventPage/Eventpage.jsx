@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import EventcardL from './EventcardL.jsx';
 import EventcardR from './EventcardR.jsx';
 import EventCardMobile from './EventCardMobile.jsx';
-
 import img1 from "../../assets/img1.png";
 import img2 from "../../assets/img2.png";
 import img3 from "../../assets/img3.png";
@@ -74,11 +73,11 @@ function Eventpage() {
 
   if (windowWidth > 1000) {
     return (
-      <div>
-      <Navbar />
-        <div className="h-[100%] relative w-full bg-black overflow-hidden  flex flex-col justify-center items-center gap-7 p-10 overflow-x-hidden">
+      <div className=" overflow-x-hidden">
+      <Navbar className="absolute top-0 pt-[10%] "/>
+        <div className="h-[100%]  w-full bg-black overflow-hidden  flex flex-col justify-center items-center gap-7 p-10 overflow-x-hidden  pt-28 float-left clear-left">
           {sortedEventsList.map((event, index) => (
-            index%2===0 ?(<EventcardL key={index} Events={event} />):(<EventcardR key={index} Events={event} />)
+            index%2===0 ?(<EventcardL key={index} Events={event} />):(<EventcardR key={index} Events={event}  className="" />)
           ))}
         
         </div>

@@ -29,5 +29,3 @@ function Cursor() {
     </div>
   )
 }
-
-export default Cursor

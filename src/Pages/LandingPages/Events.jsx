@@ -20,8 +20,8 @@ function Events() {
       
       
     return (
-      <div className='overflow-x-hidden pb-5' id='events' >
-        <div className="h-screen w-screen bg-transparent overflow-hidden  relative pb-3 ">
+      <div className='overflow-x-hidden h-fit  pb-5  bg-[#101011]' id='events ' >
+        <div className="h-screen w-screen bg-transparent overflow-hidden  relative pb-3 bg-">
           <MouseParallaxContainer 
             className="h-full w-full relative  "
             globalFactorX={0.03}
@@ -64,7 +64,7 @@ function Events() {
             <div className="absolute-center"  >
               <div className="h-fit w-fit " data-aos="zoom-in" >
                 <Link to="/Events" className="event-container" >
-                  <img src={Event} alt='Events' className="h-20 w-60  mx-5 my-3 animate-pulse"  />
+                  <img src={Event} alt='Events' className="h-20 w-60  mx-5 my-3 animate-pulse p-4"  />
                 </Link>
               </div>
             </div>

@@ -19,9 +19,9 @@ import Jerry from '../../assets/Jerry3.svg';
 import Megha from '../../assets/Megha3.svg';
 import Hari from '../../assets/Hari1.svg';
 import George from '../../assets/George2.svg';
-import MeetTheTeam from '../../assets/MeetTheTeam.svg';
-import SubExecom from '../../assets/SubExecom.svg';
-import MainExecom from '../../assets/MainExecom.svg';
+import MeetTheTeam from '../../assets/meet the team black.svg';
+import SubExecom from '../../assets/SUB EXECOM B.svg';
+import MainExecom from '../../assets/MAIN EXECOM B.svg';
 
 
 function Execom() {
@@ -77,10 +77,10 @@ function Execom() {
 
   
   return (
-    <div className='h-screen ' id='execom'>
+    <div className='h-full pb-10  bg-[#F5F5F5]' id='execom'>
       <div >
-        <div className='flex items-center pl-6 lg:pl-40'>
-          <div className='inline-block w-5 h-16 bg-[#080AA4] relative'></div>
+        <div className='flex items-center pl-6 lg:pl-40 pt-6'>
+          <div className='inline-block w-5 h-16 bg-[#4f4f54] relative'></div>
           <div className="absolute w-46 h-6 pl-2.5">
             <img src={MeetTheTeam} alt="" style={{ width: 250}} />
           </div>
@@ -96,7 +96,7 @@ function Execom() {
           <Slider ref={slider1} {...settings}>
             {cardData.map((d, index) => (
               <div key={index} className="relative cardSize bg-container card-hover">
-                <div className="absolute blueBox  rectangle  bg-[#080AA4]" />
+                <div className="absolute blueBox  rectangle  bg-[#4f4f54]" />
                 <img className="absolute imgSize -ml-2 " src={d.img} alt="" />
                 <div className="absolute blackBox   bottom-0 w-full">
                   <div className="bg-black  bg-opacity-60 w-full">
@@ -118,7 +118,7 @@ function Execom() {
           <Slider ref={slider2} {...settings}>
             {cardData1.map((d1, index) => (
               <div key={index} className="relative cardSize bg-container card-hover">
-                <div className="absolute blueBox  rectangle   bg-[#080AA4]" />
+                <div className="absolute blueBox  rectangle   bg-[#4f4f54]" />
                 <img className="absolute imgSize -ml-2  bottom-0" src={d1.img1} alt="" />
                 <div className="absolute blackBox   bottom-0 w-full">
                   <div className="bg-black  bg-opacity-60 w-full ">
