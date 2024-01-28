@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import EventcardL from './EventcardL.jsx';
 import EventcardR from './EventcardR.jsx';
 import EventCardMobile from './EventCardMobile.jsx';
-
 import img1 from "../../assets/img1.png";
 import img2 from "../../assets/img2.png";
 import img3 from "../../assets/img3.png";

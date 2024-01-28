@@ -1,12 +1,30 @@
 import './HeroSection.css';
 import  { useState, useEffect, useRef } from 'react';
-import Navbar from '../Navbar/Navbar';
+import WAVES from 'vanta/dist/vanta.waves.min';
 
 
-function HeroSection() {
+function HeroSection({ }) {
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationsRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [vantaEffect, setVantaEffect] = useState(null)
+    const myRef = useRef(null)
+    useEffect(() => {
+      if (!vantaEffect) {
+        setVantaEffect(WAVES({
+          el: myRef.current,
+          mouseControls: true,
+          touchControls: true,
+          gyroControls: false,
+          scale: 1.00,
+          scaleMobile: 1.00,
+          color: 0x000000,
+        }))
+      }
+      return () => {
+        if (vantaEffect) vantaEffect.destroy()
+      }
+    }, [vantaEffect])
 
   const handleImageClick = (event) => {
     setShowNotifications(!showNotifications);
@@ -69,20 +87,17 @@ function HeroSection() {
   ];
 
   return (
-    <div className='HeroSection relative bg-[#101011] overflow-x-hidden h-screen'>
-      <div className="navbar">
-        <Navbar />
+    <div className='HeroSection relative bg-transparent overflow-x-hidden h-screen cursor-none' ref={myRef}>
+      
+      <div className={`hero ${showNotifications ? 'blur-sm' : ''}`}>
+        <img src="././src/assets/ddd.svg" alt="DDD" className={`h-[50%] w-[36%] relative top-[40vh] left-[10vw] max-[767px]:w-[80%] max-[767px]:top-[38vh] `} />
+        <img src="././src/assets/foces.png" alt="FOCES" className={`h-[50%] w-[38%] relative top-[45vh] left-[10vw] max-[767px]:w-[80%] max-[767px]:top-[40vh] `} />
+        <img src="././src/assets/foces1.svg" alt="" className={`h-[50%] w-[38%] relative top-[50vh] left-[10vw] max-[767px]:w-[80%] max-[767px]:top-[41vh] `} />
+        <img src="././src/assets/Notification.png" alt="Notif" className={`Notif h-[26vh] absolute translate-y-80 right-0 cursor-pointer max-[767px]:mt-[35%] max-[767px]:z-0  ${showNotifications?'hidden':''}`} onTouchStart={handleImageClick} onClick={handleImageClick} /> 
       </div>
-      <div className={`hero ${showNotifications?'blur-sm': ''}`}>
-        <img src="././src/assets/ddd.svg" alt="DDD" className='h-[50%] w-[36%] relative top-[25vh] left-[10vw] z-10 max-[767px]:w-[80%] max-[767px]:top-[44vh] max-[767px]:z-0' />
-        <img src="././src/assets/foces.png" alt="FOCES" className='h-[50%] w-[38%] relative top-[30vh] left-[10vw] z-10 max-[767px]:w-[80%] max-[767px]:top-[46vh] max-[767px]:z-0' />
-        <img src="././src/assets/foces1.svg" alt="" className='h-[50%] w-[38%] relative top-[35vh] left-[10vw] max-[767px]:w-[80%] max-[767px]:top-[47vh]' />
-        <img src="././src/assets/Mac.png" alt="Apple Mac" className='relative h-[15%] w-[18%] left-[70vw] max-[767px]:w-[40%] max-[767px]:left-[40vw] max-[767px]:z-0' />
-        <img src="././src/assets/Notification.png" alt="Notif" className={`Notif h-[26vh] absolute bottom-0 right-0 cursor-pointer max-[767px]:bottom-12 max-[767px]:z-0 ${showNotifications?'hidden':''}`} onTouchStart={handleImageClick} onClick={handleImageClick} /> 
-      </div>
-      <div ref={notificationsRef} className={` notifications h-[60%] w-[28%] absolute bottom-0 max-[767px]:bottom-5 right-0 bg-opacity-45 bg-slate-900 rounded-3xl  overflow-scroll overflow-x-hidden max-[767px]:w-[90%] max-[767px]:z-10 
+      <div ref={notificationsRef} className={` notifications h-[60%] w-[28%] absolute bottom-3 max-[767px]:bottom-5 right-0 bg-opacity-45 bg-slate-900 rounded-3xl  overflow-scroll overflow-x-hidden max-[767px]:w-[90%] max-[767px]:z-10 
       ${showNotifications ? 'visible' : 'translate-x-[110%]'}
-      ${isMobile ? 'h-[50vh] bottom-[7%] right-[5%]':''}`}>
+      ${isMobile ? 'h-[50vh] bottom-[7%] right-[5%]':'right-3'}`}>
         {events.map((event) => (
             <div key={event.id} className={`text-[#D9D9D9] flex h-fit flex-col my-10 p-9 w-[100%] pr-4 ${event.id === 1 ? 'mt-0' : ''}`}>
               <div className="notif flex justify-between">
