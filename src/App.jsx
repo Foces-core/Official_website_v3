@@ -1,4 +1,6 @@
 import './App.css'
+import {useState, useEffect} from "react"
+import Loader from './Components/Loader/Loader'
 import Events from './Pages/LandingPages/Events'
 import Featuring from './Pages/LandingPages/Featuring'
 import HeroSection from './Pages/LandingPage/HeroSection/HeroSection'
@@ -17,10 +19,31 @@ AOS.init({
 });
 
 function App() {
-  
-  return (
+  const [loading, setLoading] = useState(true);
+  const [loaderOpacity, setLoaderOpacity] = useState(1);
+
+  useEffect(() => {
+    const loaderTimeout = setTimeout(() => {
+      setLoaderOpacity(0.5); 
+    }, 4000);
+
+    const contentTimeout = setTimeout(() => {
+      setLoading(false); 
+    },5000);
+
     
-    <div className={`App bg-[#101011] cursor-none`}>
+    return () => {
+      clearTimeout(loaderTimeout);
+      clearTimeout(contentTimeout);
+    };
+  }, []);
+
+return (
+  <div className={`App bg-[#101011] cursor-none`}>
+          <div className={`transition-opacity duration-1000`} style={{ opacity: loading ? loaderOpacity : 1 }}>
+
+      {loading ? <Loader /> : (
+    <div>
       <ToTopButton/>
       <Cursor />
       <Navbar />
@@ -30,8 +53,12 @@ function App() {
       <Events  />
       <Execom/>
       <Footer/>
-      </div>
-  )
+        </div>
+      )}
+    </div>
+  </div>
+);
+
 }
 
 export default App;
