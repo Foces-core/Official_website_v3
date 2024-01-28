@@ -1,13 +1,13 @@
 import React from 'react';
 import '../../index.css'
-import Aboutus from '../../assets/about us.svg';
+import Aboutus from '../../assets/about us b.svg';
 
  function AboutUs() {
   return (
-    <div className='  text-white w-full mx-auto p-[1.5rem] md:p-16 lg:p-24 flex flex-col justify-center h-full lg:px-60 '>
+    <div className=' bg-[#F5F5F5] text-black w-full h-screen mx-auto p-[1.5rem] md:p-16 lg:p-24 flex flex-col justify-center  lg:px-60 ' id='about'>
       <div className='md:text-xl lg:text-2xl mb-4 md:mb-6 lg:mb-8'>
       <div className='flex items-center'>
-    <div className='inline-block w-5 h-16 bg-[#080AA4] relative' data-aos="flip-up"></div>
+    <div className='inline-block w-5 h-16 bg-[#4f4f54] relative' data-aos="flip-up"></div>
     <img className='absolute w-44 h-[25px] pl-2.5' data-aos="flip-up" data-aos-duration="750" src={Aboutus}alt="" />
   </div>
         </div>

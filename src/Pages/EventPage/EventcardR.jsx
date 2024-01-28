@@ -22,7 +22,7 @@ function EventcardR({Events}) {                                               //
 
 
 return (
-  <div  className='z-10 h-ful w-[95%] bg-gradient-to-bl from-slate-950 from-0.001%  rounded-2xl mt-10 flex flex-wrap justify-center gap-5' data-aos="slide-right">
+  <div  className='  h-ful w-[95%] bg-gradient-to-bl from-slate-950 from-0.001%  rounded-2xl mt-10 flex flex-wrap justify-center gap-5' data-aos="slide-right">
 
   <div className='w-[45%]  m-5 items-start text-white'>
     <h1 className='text-7xl  text-left mt-3 mb-3 mr-3'>{Events.name}</h1>
@@ -39,7 +39,7 @@ return (
         </a>
       </div>
   </div>
-  <a className='w-[45%] m-5 flex flex-col gap-3' onClick={()=>setExpanding(!Expanding)} >
+  <a className='w-[45%] m-5 flex flex-col gap-3 ' onClick={()=>setExpanding(!Expanding)} >
     
     
   <div className='bg-slate-700 w-[90%] h-24  rounded-[30px] ' 

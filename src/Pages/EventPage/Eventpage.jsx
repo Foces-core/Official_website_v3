@@ -6,6 +6,8 @@ import EventCardMobile from './EventCardMobile.jsx';
 import img1 from "../../assets/img1.png";
 import img2 from "../../assets/img2.png";
 import img3 from "../../assets/img3.png";
+import Navbar from '../LandingPage/Navbar/Navbar.jsx';
+import Footer from '../LandingPage/Footer/Footer.jsx';
 
 function Eventpage() {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -72,21 +74,28 @@ function Eventpage() {
 
   if (windowWidth > 1000) {
     return (
-      <div className="h-[100%] relative w-full bg-black overflow-hidden  flex flex-col justify-center items-center gap-7 p-10 overflow-x-hidden">
-        {sortedEventsList.map((event, index) => (
-          index%2===0 ?(<EventcardL key={index} Events={event} />):(<EventcardR key={index} Events={event} />) 
-        ))}
+      <div className=" overflow-x-hidden">
+      <Navbar className="absolute top-0 pt-[10%] "/>
+        <div className="h-[100%]  w-full bg-black overflow-hidden  flex flex-col justify-center items-center gap-7 p-10 overflow-x-hidden  pt-28 float-left clear-left">
+          {sortedEventsList.map((event, index) => (
+            index%2===0 ?(<EventcardL key={index} Events={event} />):(<EventcardR key={index} Events={event}  className="" />)
+          ))}
         
+        </div>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="flex justify-center items-center flex-col  bg-black ">
-      {sortedEventsList.map((event, index) => (
-          <EventCardMobile  key={index} Events={event} /> 
-        ))}
-      
+    <div>
+      <Navbar />
+      <div className="flex justify-center items-center flex-col  bg-black ">
+        {sortedEventsList.map((event, index) => (
+            <EventCardMobile  key={index} Events={event} />
+          ))}
+      </div>
+      <Footer />
     </div>
   );
 }

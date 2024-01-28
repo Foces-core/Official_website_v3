@@ -29,8 +29,8 @@ export default function Modal({ open,  onClose }) {
 
   return ReactDOM.createPortal(
     <>
-      <div className=' fixed top-0 left-0 right-0 bottom-0 bg-slate-950 bg-opacity-70 z-50' onClick={onClose} />
-        <div className='sm:h-[95vh] sm:w-[98vh] w-[55vh] h-[70vh] fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black rounded-xl p-16 z-50 shadow-slate-700 drop-shadow-lg shadow-2xl'>
+      <div className=' fixed top-0 left-0 right-0 bottom-0 bg-slate-950 bg-opacity-70 z-50 overflow-x-hidden ' onClick={onClose} />
+        <div className=' w-[70vh] h-[70vh] min-[700px]:w-[80vh] min-[700px]:h-[80vh] items-center flex justify-center fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black rounded-xl p-16 z-50 shadow-slate-700 drop-shadow-lg shadow-2xl'>
         
        
         
@@ -50,16 +50,16 @@ export default function Modal({ open,  onClose }) {
           clickable: true,
         }}
         style={{
-          "--swiper-navigation-color": "blue",
+          "--swiper-navigation-color": "white",
           "--swiper-navigation-size": "30px",
-          "--swiper-pagination-color": "blue",
+          "--swiper-pagination-color": "white",
           "--swiper-pagination-bullet-inactive-opacity":".3",
-          "--swiper-pagination-bullet-inactive-color":"blue"
+          "--swiper-pagination-bullet-inactive-color":"white"
         }}
-        className="mySwiper h-full w-full bg-black px-10 "
+        className="mySwiper h-[110%] w-[120%] bg-black px-10 items-center flex justify-center"
       >
         {slides.map(({ url, title,link }, index) => (
-          <SwiperSlide key={index} className=' h-full w-full rounded-full flex justify-center '>
+          <SwiperSlide key={index} className='  rounded-full flex justify-center '>
             <a href={link}>
               <img className='  h-full w-full rounded-xl    ease-in-out duration-200  ' src={url} alt={title}   />
             </a>
