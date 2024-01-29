@@ -4,10 +4,13 @@
   font-family: "Inter", sans-serif;
 }
 
-.Button {
-  background-image: url(../../../assets/Button.png);
-  background-repeat: no-repeat;
+@media (min-width: 768px) {
+  .Button {
+    background-image: url(../../../assets/Button.png);
+    background-repeat: no-repeat;
+  }
 }
+
 
 .nav a {
   padding: 0.5em 0.8em;

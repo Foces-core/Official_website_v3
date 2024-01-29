@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import "./Navbar.css";
+import toggle from "../../../assets/Button.png"
+import { Link } from "react-router-dom";
 
 const navItems = [
   { id: 'home', name: 'HOME' },
@@ -75,11 +77,17 @@ export default function Navbar() {
       window.location.href = "/events";
       return;
     }
-    event.preventDefault();
+    else if(id === "contact") {
+      window.location.href = "/contact";
+      return;
+    }
     setCurrentItem(id.toUpperCase());
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
+    }
+    if (isMobile) {
+      setShowItems(false);
     }
   };
   useEffect(() => {
@@ -87,12 +95,14 @@ export default function Navbar() {
   }, [isMobile]);
 
   return (
-    <div className={`fixed z-10 shadow nav flex min-[767px]:items-center p-5 font-bold max-[767px]:pl-4 max-[767px]:pt-8 cursor-none max-[767px]:w-screen ${window.scrollY > 150 ? "bg-[#101011]" : ""} ${isScrolled ? "backdrop-blur-md" :"backdrop-blur-0"} `}>
+    <div className={`fixed z-10 shadow nav flex min-[767px]:items-center p-5 font-bold max-[767px]:pl-4 max-[767px]:pt-8 cursor-none max-[767px]:h-[12vh] max-[767px]:w-screen ${window.scrollY > 150 ? "bg-[#101011]" : ""} ${isScrolled ? "backdrop-blur-md" :"backdrop-blur-0"} `}>
       {isMobile && (
         <div
-          className="h-[2rem] w-[2rem] Button absolute inset-y-10 right-5 flex items-center top-[31%] cursor-none"
+          className="h-[full] w-[2rem] Button absolute inset-y-10 right-5 flex items-center justify-center top-[31%] cursor-none"
           onClick={toggleItems}
-        ></div>
+        >
+          <img src={toggle} alt="" />
+        </div>
       )}
 
       {!isMobile && (
@@ -111,21 +121,23 @@ export default function Navbar() {
       )}
 
       <div
-        className={`container z-10 Items flex justify-center space-x-9 max-[767px]:bg-[#101011] max-[767px]:flex-col max-[767px]:w-screen max-[767px]:-ml-4 max-[767px]:items-center max-[767px]:space-x-0 max-[767px]:absolute max-[767px]:h-[70vh] max-[767px]:mt-10 max-[767px]:gap-7 max-[767px]:pb-10 ${
+        className={`container z-10 Items flex justify-center space-x-9 max-[767px]:bg-[#101011] max-[767px]:h-[60vh] max-[767px]:flex-col max-[767px]:w-screen max-[767px]:-ml-4 max-[767px]:items-center max-[767px]:space-x-0 max-[767px]:absolute max-[767px]:mt-10 max-[767px]:gap-7 max-[767px]:pb-10 ${
           showItems ? "" : "hidden"
           } 
            ${isMobile && showItems ? "h-[80%]" : ""}
-          
           `}
       >
        {navItems.map(item => (
-          <a
-           key={item.id}
-           onClick={(event) => handleItemClick(item.id, event)}
-            className={`border-b-2 border-transparent max-[767px]:hidden ${currentItem === item.id ? 'current' : ''}`}
-          >
-            {item.name}
-          </a>
+          <Link
+          to={{
+            pathname: '/',
+            state: { id: item.id }
+          }}
+          onClick={(event) => handleItemClick(item.id, event)}
+          className={`border-b-2 border-transparent z-10 ${currentItem === item.id ? 'current' : ''} `}
+        >
+          {item.name}
+        </Link>
         ))}
       </div>
 
