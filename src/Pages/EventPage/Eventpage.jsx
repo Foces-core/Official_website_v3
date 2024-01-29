@@ -7,6 +7,7 @@ import img2 from "../../assets/img2.png";
 import img3 from "../../assets/img3.png";
 import Navbar from '../LandingPage/Navbar/Navbar.jsx';
 import Footer from '../LandingPage/Footer/Footer.jsx';
+import BackToHome from '../../Components/BackToHome.jsx';
 
 function Eventpage() {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -73,14 +74,14 @@ function Eventpage() {
 
   if (windowWidth > 1000) {
     return (
-      <div className=" overflow-x-hidden">
-      <Navbar className="absolute top-0 pt-[10%] "/>
-        <div className="h-[100%]  w-full bg-black overflow-hidden  flex flex-col justify-center items-center gap-7 p-10 overflow-x-hidden  pt-28 float-left clear-left">
+      <div className=" overflow-x-hidden flex flex-col">
+        <div className="h-[100%]  w-full bg-black overflow-hidden flex flex-col justify-center items-center gap-7 p-10 overflow-x-hidden  pt-28 float-left clear-left">
           {sortedEventsList.map((event, index) => (
             index%2===0 ?(<EventcardL key={index} Events={event} />):(<EventcardR key={index} Events={event}  className="" />)
           ))}
         
         </div>
+        <BackToHome />
         <Footer />
       </div>
     );
@@ -94,6 +95,7 @@ function Eventpage() {
             <EventCardMobile  key={index} Events={event} />
           ))}
       </div>
+      <BackToHome />
       <Footer />
     </div>
   );

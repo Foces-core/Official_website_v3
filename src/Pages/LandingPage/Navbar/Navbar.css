@@ -63,7 +63,6 @@
 
 .nav a {
     padding: .5em .8em;
-    color: rgba(255,255,255,.5);
     position: relative;
     text-decoration: none;
     font-size: 18px;
@@ -112,3 +111,7 @@
     color: #fff;
     scale: 1.1;
   }
+a.current {
+  color: #fff;
+  scale: 1.1;
+}

@@ -53,7 +53,7 @@ function Featuring() {
   }, []);
 
   return (
-    <div className="bg-[#101011] h-screen w-screen  flex  flex-col pt-32  overflow-x-hidden pb-20 ">
+    <div className="bg-[#101011] h-screen w-screen  flex  flex-col pt-32  overflow-x-hidden pb-20 " id='featuring'>
       <div className='flex  items-center h-20 pb-9 '>
     <div className='flex items-center justify-center w-full'>
    
