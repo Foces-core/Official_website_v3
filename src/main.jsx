@@ -1,31 +1,19 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.jsx'
-import Eventpage from './Pages/EventPage/Eventpage'
-import './index.css'
-import { 
-  createBrowserRouter,
-  RouterProvider,
-  Route,
-} from "react-router-dom"
-import ContactUs from './Components/ContactUs/ContactUs.jsx'
+import React from 'react';
+import ReactDOM from 'react-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import App from './App.jsx';
+import Eventpage from './Pages/EventPage/Eventpage';
+import ContactUs from './Components/ContactUs/ContactUs.jsx';
+import About from './Components/AboutUs/AboutUs.jsx';
+import './index.css';
 
-
-const router = createBrowserRouter([
-  { path:"/",
-    element:<App/>
-  },
-  { path:"/Events",
-    element:<Eventpage/>
-  },
-  {
-    path: "/Contact",
-    element: <ContactUs/>}
-])
-
-
-const root= ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <RouterProvider router={router}/>
+ReactDOM.render(
+  <Router>
+    <Routes>
+      <Route path="/" element={<App />} />
+      <Route path="/events" element={<Eventpage />} />
+      <Route path="/contact" element={<ContactUs />} />
+    </Routes>
+  </Router>,
+  document.getElementById('root')
 );
-

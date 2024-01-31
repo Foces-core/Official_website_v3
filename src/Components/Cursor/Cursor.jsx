@@ -24,7 +24,7 @@ function Cursor() {
   }, []);
 
   return (
-    <div>
+    <div className='overflow-hidden z-10'>
       <div className='cursor-outline max-[767px]:hidden h-1 w-1 bg-[#fff] shadow-[0_0_300px_110px_rgba(255,255,255,0.4)] absolute z-10 pointer-events-none rounded-[50%] left-0 top-0' data-cursor-outline ref={cursorOutlineRef}></div>
     </div>
   )

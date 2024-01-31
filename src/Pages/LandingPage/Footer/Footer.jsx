@@ -25,31 +25,11 @@ function Footer() {
     
 
   return (
-            <div className='h-[30vh] bg-[#101011] relative z-0 flex w-screen items-center gap-10 p-10 max-[767px]:flex-col mt-28'>
-                <div className='w-[15%] max-[767px]:w-[70%]'>
+            <div className='h-[10vh] bg-[#101011] relative z-0 flex w-screen items-center gap-10 p-5 max-[767px]:flex-col mt-20 max-[767px]:mt-5'>
+                <div className='w-[15%] max-[767px]:w-[50%]'>
                     <img src="././src/assets/FOCES.png" alt="" />
                 </div>
                 <div className='flex flex-col justify-between items-center w-[70%] gap-10'>
-                    <div className="flex gap-16 text-sm text-[#D9D9D9] max-[767px]:hidden">
-                                <a href="#">
-                                    <p className='hover:scale-125 duration-300'>HOME</p>
-                                </a>
-                                <a href="#about">
-                                    <p className='hover:scale-125 duration-300'>ABOUT</p>
-                                </a>
-                                <a href="#featuring">
-                                    <p className='hover:scale-125 duration-300'>FEATURING</p>
-                                </a>
-                                <a href="#execom">
-                                    <p className='hover:scale-125 duration-300'>TEAM</p>
-                                </a>
-                                <a href="/events">
-                                    <p className='hover:scale-125 duration-300'>EVENTS</p>
-                                </a>
-                                <a href="/contact">
-                                    <p className='hover:scale-125 duration-300'>CONTACT</p>
-                                </a>
-                    </div>
                     <div className="social flex gap-16 max-[767px]:w-screen max-[767px]:justify-center">
                                 <a href="">
                                     <FaSquareFacebook className='h-5 w-5 text-[#D9D9D9] hover:scale-125 duration-300'/>

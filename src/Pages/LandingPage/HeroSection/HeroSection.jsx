@@ -1,6 +1,7 @@
 import './HeroSection.css';
 import  { useState, useEffect, useRef } from 'react';
 import WAVES from 'vanta/dist/vanta.waves.min';
+import Cursor from '../../../Components/Cursor/Cursor';
 
 
 function HeroSection({ }) {
@@ -87,9 +88,9 @@ function HeroSection({ }) {
   ];
 
   return (
-    <div className='HeroSection relative bg-transparent overflow-x-hidden h-screen cursor-none' ref={myRef}>
-      
+    <div className='HeroSection relative bg-transparent overflow-hidden h-screen cursor-none' id='home' ref={myRef}>
       <div className={`hero ${showNotifications ? 'blur-sm' : ''}`}>
+      <Cursor />
         <img src="././src/assets/ddd.svg" alt="DDD" className={`h-[50%] w-[36%] relative top-[40vh] left-[10vw] max-[767px]:w-[80%] max-[767px]:top-[38vh] `} />
         <img src="././src/assets/foces.png" alt="FOCES" className={`h-[50%] w-[38%] relative top-[45vh] left-[10vw] max-[767px]:w-[80%] max-[767px]:top-[40vh] `} />
         <img src="././src/assets/foces1.svg" alt="" className={`h-[50%] w-[38%] relative top-[50vh] left-[10vw] max-[767px]:w-[80%] max-[767px]:top-[41vh] `} />

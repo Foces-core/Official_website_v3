@@ -12,6 +12,7 @@ import Contactus from '../../assets/Contact us.svg'
 import Title from '../../assets/title.svg';
 import Navbar from '../../Pages/LandingPage/Navbar/Navbar';
 import Footer from '../../Pages/LandingPage/Footer/Footer';
+import BackToHome from '../BackToHome';
 
 
 
@@ -57,7 +58,7 @@ function ContactUs() {
   };
 
   return (
-    <div className='h-screen w-full font-Armata mt-5'>
+    <div className='h-screen w-full font-Armata mt-5 bg-black' id='contact'>
       <Navbar />
     <div className='flex items-center md:hidden'>
       <div className='flex items-center pl-8'>
