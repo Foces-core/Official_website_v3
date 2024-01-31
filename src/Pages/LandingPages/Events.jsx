@@ -9,7 +9,6 @@ import img1 from "../../assets/img1.png"
 import img2 from "../../assets/img2.png"
 import img3 from "../../assets/img3.png"
 import img4 from "../../assets/img4.png"
-import Navbar from '../LandingPage/Navbar/Navbar';
 
 function Events() {
   
@@ -20,7 +19,7 @@ function Events() {
       
       
     return (
-      <div className='overflow-x-hidden h-fit  pb-5  bg-[#101011]' id='events ' >
+      <div className='overflow-x-hidden h-fit  pb-5  bg-[#101011]' id='events' >
         <div className="h-screen w-screen bg-transparent overflow-hidden  relative pb-3 bg-">
           <MouseParallaxContainer 
             className="h-full w-full relative  "
