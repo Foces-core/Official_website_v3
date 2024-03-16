@@ -5,6 +5,7 @@ import toggleB from "../../../assets/ButtonB.svg"
 import { Link } from "react-router-dom";
 import LogoWhite from '../../../assets/FOCES White.svg'
 import LogoGrey from '../../../assets/FOCES Black.svg'
+import { HashLink } from "react-router-hash-link";
 
 const navItems = [
   { id: 'home', name: 'HOME' },
@@ -131,16 +132,13 @@ export default function Navbar() {
           `}
       >
        {navItems.map(item => (
-          <Link
-          to={{
-            pathname: '/',
-            state: { id: item.id }
-          }}
-          onClick={(event) => handleItemClick(item.id, event)}
+          <HashLink
+          to={`/#${item.id}`}
+          // onClick={(event) => handleItemClick(item.id, event)}
           className={`border-b-2 border-transparent z-10 ${(currentItem === 'home' || currentItem === 'featuring' || currentItem === 'events') ? "text-[#ffffff80]" : "text-[#000000b3]"} `}
         >
           {item.name}
-        </Link>
+        </HashLink>
         ))}
       </div>
       
