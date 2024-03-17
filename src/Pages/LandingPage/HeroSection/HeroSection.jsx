@@ -2,6 +2,10 @@ import './HeroSection.css';
 import  { useState, useEffect, useRef } from 'react';
 import WAVES from 'vanta/dist/vanta.waves.min';
 import Cursor from '../../../Components/Cursor/Cursor';
+import ddd from '../../../assets/ddd.svg';
+import focespng from '../../../assets/foces.png';
+import foces1 from '../../../assets/foces1.svg';
+import Notification from '../../../assets/Notification.png';
 
 
 function HeroSection({ }) {
@@ -91,10 +95,10 @@ function HeroSection({ }) {
     <div className='HeroSection relative bg-transparent overflow-hidden h-screen cursor-none' id='home' ref={myRef}>
       <div className={`hero ${showNotifications ? 'blur-sm' : ''}`}>
       <Cursor />
-        <img src="././src/assets/ddd.svg" alt="DDD" className={`h-[50%] w-[36%] relative top-[40vh] left-[10vw] max-[767px]:w-[80%] max-[767px]:top-[38vh] `} />
-        <img src="././src/assets/foces.png" alt="FOCES" className={`h-[50%] w-[38%] relative top-[45vh] left-[10vw] max-[767px]:w-[80%] max-[767px]:top-[40vh] `} />
-        <img src="././src/assets/foces1.svg" alt="" className={`h-[50%] w-[38%] relative top-[50vh] left-[10vw] max-[767px]:w-[80%] max-[767px]:top-[41vh] `} />
-        <img src="././src/assets/Notification.png" alt="Notif" className={`Notif h-[26vh] absolute translate-y-80 right-0 cursor-pointer max-[767px]:mt-[35%] max-[767px]:z-0  ${showNotifications?'hidden':''}`} onTouchStart={handleImageClick} onClick={handleImageClick} /> 
+        <img src={ddd} alt="DDD" className={`h-[50%] w-[36%] relative top-[40vh] left-[10vw] max-[767px]:w-[80%] max-[767px]:top-[38vh] `} />
+        <img src={focespng} alt="FOCES" className={`h-[50%] w-[38%] relative top-[45vh] left-[10vw] max-[767px]:w-[80%] max-[767px]:top-[40vh] `} />
+        <img src={foces1} alt="" className={`h-[50%] w-[38%] relative top-[50vh] left-[10vw] max-[767px]:w-[80%] max-[767px]:top-[41vh] `} />
+        <img src={Notification} alt="Notif" className={`Notif h-[26vh] absolute translate-y-80 right-0 cursor-pointer max-[767px]:mt-[35%] max-[767px]:z-0  ${showNotifications?'hidden':''}`} onTouchStart={handleImageClick} onClick={handleImageClick} /> 
       </div>
       <div ref={notificationsRef} className={` notifications h-[60%] w-[28%] absolute bottom-3 max-[767px]:bottom-5 right-0 bg-opacity-45 bg-slate-900 rounded-3xl  overflow-scroll overflow-x-hidden max-[767px]:w-[90%] max-[767px]:z-10 
       ${showNotifications ? 'visible' : 'translate-x-[110%]'}
