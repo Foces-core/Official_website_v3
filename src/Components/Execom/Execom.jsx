@@ -21,7 +21,7 @@ import Hari from '../../assets/Hari1.svg';
 import George from '../../assets/George2.svg';
 import MeetTheTeam from '../../assets/meet the team black.svg';
 import SubExecom from '../../assets/SUB EXECOM B.svg';
-import MainExecom from '../../assets/MAIN EXECOM B.svg';
+import MainExecom from '../../assets/MAIN EXECOM b.svg';
 
 
 function Execom() {
