@@ -6,6 +6,8 @@ import ddd from '../../../assets/ddd.svg';
 import focespng from '../../../assets/foces.png';
 import foces1 from '../../../assets/foces1.svg';
 import Notification from '../../../assets/Notification.png';
+import clock from '../../../assets/clock.png';
+import speaker from '../../../assets/speaker.png';
 
 
 function HeroSection({ }) {
@@ -107,11 +109,11 @@ function HeroSection({ }) {
             <div key={event.id} className={`text-[#D9D9D9] flex h-fit flex-col my-10 p-9 w-[100%] pr-4 ${event.id === 1 ? 'mt-0' : ''}`}>
               <div className="notif flex justify-between">
                 <div className=''>
-                  <img src="././src/assets/speaker.png" alt="" className='border border-[#2a5739] rounded-md' />
+                  <img src={speaker} alt="" className='border border-[#2a5739] rounded-md' />
                   <div key={event.id} className={`line w-[2px] h-[320%] ml-[30%] bg-[#C2C2C2] ${event.id===4 ? 'h-28' : ''}`}></div>
                 </div>
                 <div className=''>
-                  <img src="././src/assets/clock.png" alt="" />
+                  <img src={clock} alt="" />
                   <p className='text-sm'>{event.date}</p>
                 </div>
               </div>
