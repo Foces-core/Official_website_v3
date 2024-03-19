@@ -11,8 +11,8 @@ const navItems = [
   { id: "home", name: "HOME" },
   { id: "about", name: "ABOUT" },
   { id: "featuring", name: "FEATURING" },
-  { id: "execom", name: "MEET THE TEAM" },
   { id: "events", name: "EVENTS" },
+  { id: "execom", name: "MEET THE TEAM" },
   { id: "contact", name: "CONTACT" },
 ];
 
@@ -101,12 +101,15 @@ export default function Navbar() {
       className={`fixed z-10 shadow ${
         currentItem === "home" ||
         currentItem === "featuring" ||
-        currentItem === "events"
+        currentItem === "events" ||
+        currentItem === "contact"
           ? "nav-w"
           : "nav-b"
       } flex min-[767px]:items-center p-5 font-bold max-[767px]:pl-4 max-[767px]:pt-8 cursor-none max-[767px]:h-[12vh] max-[767px]:w-screen ${
-        isScrolled ? "backdrop-blur-md" : "backdrop-blur-0"
-      } `}
+        isScrolled && currentItem != "contact"
+          ? "backdrop-blur-md"
+          : "backdrop-blur-0"
+      } ${currentItem === "contact" ? "backdrop-blur-md" : "backdrop-blur-0"} `}
     >
       {isMobile && (
         <div
@@ -117,7 +120,8 @@ export default function Navbar() {
             src={
               currentItem === "home" ||
               currentItem === "featuring" ||
-              currentItem === "events"
+              currentItem === "events" ||
+              currentItem === "contact"
                 ? toggleW
                 : toggleB
             }
@@ -131,7 +135,8 @@ export default function Navbar() {
           src={
             currentItem === "home" ||
             currentItem === "featuring" ||
-            currentItem === "events"
+            currentItem === "events" ||
+            currentItem === "contact"
               ? LogoWhite
               : LogoGrey
           }
@@ -144,7 +149,8 @@ export default function Navbar() {
           src={
             currentItem === "home" ||
             currentItem === "featuring" ||
-            currentItem === "events"
+            currentItem === "events" ||
+            currentItem === "contact"
               ? LogoWhite
               : LogoGrey
           }
@@ -157,7 +163,8 @@ export default function Navbar() {
         className={`container z-10 Items flex justify-center space-x-9 min-[767px]:bg-transparent ${
           currentItem === "home" ||
           currentItem === "featuring" ||
-          currentItem === "events"
+          currentItem === "events" ||
+          currentItem === "contact"
             ? "bg-[#101011]"
             : "bg-[#F5F5F5]"
         }  max-[767px]:h-[60vh] max-[767px]:flex-col max-[767px]:w-screen max-[767px]:-ml-4 max-[767px]:items-center max-[767px]:space-x-0 max-[767px]:absolute max-[767px]:mt-10 max-[767px]:gap-7 max-[767px]:pb-10 ${
@@ -173,7 +180,8 @@ export default function Navbar() {
             className={`border-b-2 border-transparent z-10 ${
               currentItem === "home" ||
               currentItem === "featuring" ||
-              currentItem === "events"
+              currentItem === "events" ||
+              currentItem === "contact"
                 ? "text-[#ffffff80]"
                 : "text-[#000000b3]"
             } `}
@@ -187,7 +195,8 @@ export default function Navbar() {
         className={`contact cursor-pointer w-[9em] h-[2.5em]  ${
           currentItem === "home" ||
           currentItem === "featuring" ||
-          currentItem === "events"
+          currentItem === "events" ||
+          currentItem === "contact"
             ? "bg-[#F5F5F5] text-[#101011] hover:bg-[#101011] hover:text-[#F5F5F5] hover:border hover:border-[#F5F5F5]"
             : "bg-black text-[#F5F5F5] hover:bg-[#F5F5F5] hover:text-black hover:border hover:border-black"
         } flex justify-center items-center rounded-3xl duration-700 max-[767px]:h-[4vh] max-[767px]:ml-28 max-[767px]:w-[6.5em] max-[380px]:ml-[25%] max-[320px]:ml-[15%] ${
