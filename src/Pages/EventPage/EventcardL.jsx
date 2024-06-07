@@ -9,6 +9,8 @@ import img2 from "../../assets/img2.png"
 import img3 from "../../assets/img3.png"
 import Modal from './Modal';
 
+import BlockContent from "@sanity/block-content-to-react";
+
 
 function EventcardL({Events}) {                                   //To display the card with the image starting from Left
 
@@ -65,14 +67,19 @@ function EventcardL({Events}) {                                   //To display t
     <div className='w-[45%]  m-5 items-end text-white'>
       <h1 className='text-7xl  text-right mt-3 mb-3 mr-3'>{Events.name}</h1>
       <h3 className='text-xl text-right mt-14 mr-5'>
-        {Events.content}
+        
+        <BlockContent 
+                  blocks={Events.content}
+                  projectId='n7hx0w67'
+                  dataset="production"
+                  />
         <br />
         {Events.date}
         </h3>
 
         <div className=' h-1/4 flex justify-end items-end transition-all ease-in-out duration-300  '>
           <a className="bg-black  hover:bg-blue-700 border-[2px] border-blue-700 hover:border-white hover:scale-105 
-            p-2 rounded-xl text-white transition-all ease-in-out duration-500" href="">
+            p-2 rounded-xl text-white transition-all ease-in-out duration-500" href={Events.tickets}>
             Register Now
           </a>
         </div>

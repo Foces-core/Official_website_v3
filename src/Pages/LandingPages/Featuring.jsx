@@ -10,20 +10,42 @@ import 'swiper/css/pagination';
 import FI1 from "../../assets/FI1.svg";
 import featuring from '../../assets/featuring.svg';
 
+import client from '../../../foces-webv23/sanityClient.js'
+
 
 function Featuring() {
   const slides = [
-    { url: FI1, title: "beach" ,link:"https://www.instagram.com/p/CzL8OmkPMKY/?igsh=bzBwcXJvajE3Y3Rh" },
-    { url: FI1, title: "boat"  ,link:"https://www.instagram.com/p/CzL8OmkPMKY/?igsh=bzBwcXJvajE3Y3Rh" },
-    { url: FI1, title: "boat"  ,link:"https://www.instagram.com/p/CzL8OmkPMKY/?igsh=bzBwcXJvajE3Y3Rh" },
-    { url: FI1, title: "boat"  ,link:"https://www.instagram.com/p/CzL8OmkPMKY/?igsh=bzBwcXJvajE3Y3Rh" },
-    { url: FI1, title: "boat"  ,link:"https://www.instagram.com/p/CzL8OmkPMKY/?igsh=bzBwcXJvajE3Y3Rh" },
-    { url: FI1, title: "italy" ,link:"https://www.instagram.com/p/CzL8OmkPMKY/?igsh=bzBwcXJvajE3Y3Rh" },
+    { url: FI1,link:"https://www.instagram.com/p/CzL8OmkPMKY/?igsh=bzBwcXJvajE3Y3Rh" },
+    { url: FI1, link:"https://www.instagram.com/p/CzL8OmkPMKY/?igsh=bzBwcXJvajE3Y3Rh" },
+    { url: FI1, link:"https://www.instagram.com/p/CzL8OmkPMKY/?igsh=bzBwcXJvajE3Y3Rh" },
+    { url: FI1, link:"https://www.instagram.com/p/CzL8OmkPMKY/?igsh=bzBwcXJvajE3Y3Rh" },
+    { url: FI1, link:"https://www.instagram.com/p/CzL8OmkPMKY/?igsh=bzBwcXJvajE3Y3Rh" },
+    { url: FI1,link:"https://www.instagram.com/p/CzL8OmkPMKY/?igsh=bzBwcXJvajE3Y3Rh" },
   ];
 
   useEffect(() => {
     AOS.init({ duration: 1000, once: true }); // AOS initialization
   }, []);
+
+
+  const[feature,setFeature] = useState([]);
+useEffect(() => {
+  client.fetch(
+    `*[_type == "featuring"]{
+      image{
+        asset ->{
+          _id,
+          url
+        },
+        alt
+      },
+      tickets,
+    }`
+  ).then((data) => { // Log fetched data
+    setFeature(data);
+
+  }).catch(console.error);
+}, []);
 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [noSlides, setNoSlides] = useState(1);
@@ -83,13 +105,13 @@ function Featuring() {
         }}
         className="mySwiper bg-transparent px-10 pb-10 h-fit"
       >
-        {slides.map(({ url, title,link }, index) => (
-          <SwiperSlide key={index} className='px-5 pb-7 pt-7 bg-transparent rounded-full'>
-            <a href={link}>
-              <img className=' hover:shadow-white hover:shadow-[0_0px_20px_rgb(0,0,0,0.12)] h-full w-full rounded-xl hover:scale-110   ease-in-out duration-200  ' src={url} alt={title}  data-aos="flip-righ" />
-            </a>
-          </SwiperSlide>
-        ))}
+         {feature.map(({ image, tickets }, index) => (
+            <SwiperSlide key={index} className='px-5 pb-7 pt-7 bg-transparent rounded-full'>
+              <a href={tickets}>
+                <img className='hover:shadow-white hover:shadow-[0_0px_20px_rgb(0,0,0,0.12)] h-full w-full rounded-xl hover:scale-110 ease-in-out duration-200' src={image.asset.url} alt={image.alt} data-aos="flip-right" />
+              </a>
+            </SwiperSlide>
+          ))}
       </Swiper>
       </div>
     </div>

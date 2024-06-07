@@ -12,6 +12,9 @@
   "dependencies": {
     "@coreui/react": "^4.11.0",
     "@heroicons/react": "^2.0.18",
+    "@sanity/block-content-to-hyperscript": "^3.0.0",
+    "@sanity/block-content-to-react": "^3.0.0",
+    "@sanity/code-input": "^4.1.4",
     "aos": "^2.3.4",
     "emailjs-com": "^3.2.0",
     "framer-motion": "^10.16.15",

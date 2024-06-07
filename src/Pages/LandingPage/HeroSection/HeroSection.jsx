@@ -9,8 +9,27 @@ import Notification from '../../../assets/Notification.png';
 import clock from '../../../assets/clock.png';
 import speaker from '../../../assets/speaker.png';
 
+import client from '../../../../foces-webv23/sanityClient.js'
+import BlockContent from "@sanity/block-content-to-react";
+
+
 
 function HeroSection({ }) {
+const[notfy,setNotfy] = useState([]);
+useEffect(() => {
+  client.fetch(
+    `*[_type == "notification"]{
+      Event_name,
+      id,
+      date,
+      short_details,
+    }`
+  ).then((data) => { // Log fetched data
+    setNotfy(data);
+
+  }).catch(console.error);
+}, []);
+
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationsRef = useRef(null);
   const [isMobile, setIsMobile] = useState(false);
@@ -105,7 +124,7 @@ function HeroSection({ }) {
       <div ref={notificationsRef} className={` notifications h-[60%] w-[28%] absolute bottom-3 max-[767px]:bottom-5 right-0 bg-opacity-45 bg-slate-900 rounded-3xl  overflow-scroll overflow-x-hidden max-[767px]:w-[90%] max-[767px]:z-10 
       ${showNotifications ? 'visible' : 'translate-x-[110%]'}
       ${isMobile ? 'h-[50vh] bottom-[7%] right-[5%]':'right-3'}`}>
-        {events.map((event) => (
+        {notfy.map((event) => (
             <div key={event.id} className={`text-[#D9D9D9] flex h-fit flex-col my-10 p-9 w-[100%] pr-4 ${event.id === 1 ? 'mt-0' : ''}`}>
               <div className="notif flex justify-between">
                 <div className=''>
@@ -113,13 +132,21 @@ function HeroSection({ }) {
                   <div key={event.id} className={`line w-[2px] h-[320%] ml-[30%] bg-[#C2C2C2] ${event.id===4 ? 'h-28' : ''}`}></div>
                 </div>
                 <div className=''>
+                  
                   <img src={clock} alt="" />
                   <p className='text-sm'>{event.date}</p>
                 </div>
               </div>
               <div className='w-[85%] absolute h-fit mt-[12%] ml-[13%] content'>
-                <h3 className='font-semibold'>{event.eventName}</h3>
-                <p className='text-sm max-[767px]:w-[95%]'>{event.description}</p>
+                <h3 className='font-semibold'>{event.Event_name}</h3>
+                <p className='text-sm max-[767px]:w-[95%]'>
+                  <BlockContent 
+                  blocks={event.short_details} 
+                  projectId='n7hx0w67'
+                  dataset="production"
+                  />
+                  
+                </p>
               </div>
             </div>
         ))}
