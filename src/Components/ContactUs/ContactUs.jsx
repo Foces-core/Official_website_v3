@@ -69,7 +69,7 @@ function ContactUs() {
       <div className="font-Armata ">
         <div className="flex items-center md:hidden">
           <div className="flex items-center pl-8">
-            <div className="inline-block w-5 h-16 bg-[#080AA4] relative"></div>
+            <div className="inline-block w-5 h-16 bg-[#4f4f54] relative"></div>
             <img
               className="absolute w-52 h-[25px] pl-2.5"
               data-aos="flip-up"
@@ -86,7 +86,7 @@ function ContactUs() {
                 <div className="items-center hidden md:block mt-4">
                   <div className="flex items-center">
                     <div
-                      className="inline-block w-5 h-16 bg-[#080AA4] relative"
+                      className="inline-block w-5 h-16 bg-[#4f4f54] relative"
                       data-aos="flip-up"
                       data-aos-duration="750"
                     ></div>
