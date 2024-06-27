@@ -1,10 +1,11 @@
 import React from 'react';
 import '../../index.css'
-import Aboutus from '../../assets/about us b.svg';
+import Aboutus from '../../assets/about us.svg';
 
  function AboutUs() {
   return (
-    <div className=' bg-[#F5F5F5] text-black w-full h-screen mx-auto p-[1.5rem] md:p-16 lg:p-24 flex flex-col justify-center  lg:px-60 ' id='about'>
+    <div className=' text-white w-full h-screen mx-auto p-[1.5rem] md:p-16 lg:p-24 flex flex-col justify-center  lg:px-60 ' id='about'>
+      <div className='card'>
       <div className='md:text-xl lg:text-2xl mb-4 md:mb-6 lg:mb-8'>
       <div className='flex items-center'>
     <div className='inline-block w-5 h-16 bg-[#4f4f54] relative' data-aos="flip-up"></div>
@@ -20,6 +21,8 @@ import Aboutus from '../../assets/about us b.svg';
           
       It welcomes the freshers into the world of computer engineering by conducting essential orientation classes. It organizes talks by eminent personalities in the industry on evolving technologies in computing, workshops on the latest developing platforms, languages, and software packages in the IT industry and helps coordinate and implement software projects for the students in the Computer Science & Engineering Department.
     </p>
+  </div>
+
   </div>
 </div>
 

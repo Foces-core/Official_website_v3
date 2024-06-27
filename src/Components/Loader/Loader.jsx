@@ -6,8 +6,8 @@ const Loader = () => {
   const isSmallScreen = window.innerWidth < 500;
 
   const textContent = isSmallScreen
-    ? '1st Rule Of Programming: \n If it Works, Don\'t Touch It.'
-    : '1st Rule Of Programming: If it Works, Don\'t Touch It.';
+    ? '1st Rule Of Programming: \n If A Code Works, Don\'t Touch It.'
+    : '1st Rule Of Programming: If A Code Works, Don\'t Touch It.';
 
   return (
     <div className=' flex flex-col items-center justify-center  h-screen'>
