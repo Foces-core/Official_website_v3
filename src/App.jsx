@@ -35,7 +35,7 @@ function App() {
   useEffect(() => {
     const loaderTimeout = setTimeout(() => {
       setLoaderOpacity(0.5);
-    }, 4000);
+    }, 5000);
 
     const contentTimeout = setTimeout(() => {
       setLoading(false);
