@@ -6,7 +6,7 @@ const Loader = () => {
   const isSmallScreen = window.innerWidth < 500;
 
   const textContent = isSmallScreen
-    ? '1st Rule Of Programming: \n If A Code Works, Don\'t Touch It.'
+    ? '\u00A0 \u00A0 1st Rule Of Programming: \nIf A Code Works, Don\'t Touch It.'
     : '1st Rule Of Programming: If A Code Works, Don\'t Touch It.';
 
   return (
@@ -22,7 +22,7 @@ const Loader = () => {
           <div></div>
         </div>
         <div className='absolute top-0 left-0 right-0 bottom-0 p-2'>
-          <img className='w-full h-full' src={logo} alt="We're here" />
+          <img className='w-full h-full' src={logo} alt="FOCES" />
         </div>
       </div>
      

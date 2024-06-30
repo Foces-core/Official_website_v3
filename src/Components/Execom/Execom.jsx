@@ -5,12 +5,12 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Jerry from '../../assets/JerrySanjuJoanes.jpg';
 import Nandkishor from '../../assets/NandkishorR.png';
-import Betsa from '../../assets/betsa.png';
+import Betsa from '../../assets/BetsaSam.jpg';
 import Vimal from '../../assets/vimal.png';
 import Nandana from '../../assets/nandana.jpg';
 import AadithyaSai from '../../assets/aadithyasai.png';
-import Akash from '../../assets/akash1.jpg'
-import Anupriya from '../../assets/anupriya.png';
+import Akash from '../../assets/akash.jpg'
+import Anupriya from '../../assets/AnupriyaNew.jpg';
 import Megha from '../../assets/megha.png';
 import George from '../../assets/george.png';
 import Aparna from '../../assets/aparna.png';
@@ -19,7 +19,7 @@ import MeetTheTeam from '../../assets/MeetTheTeam.svg';
 
 function Execom() {
   var settings = {
-    dots: true,
+    dots: false,
     infinite: true,
     speed: 1500,
     slidesToShow: 4,
@@ -68,7 +68,7 @@ function Execom() {
 
   
   return (
-    <div className='h-full pb-20' >
+    <div className='h-full pb-20' id='execom' >
      
         <div className='flex items-center h-36 pl-6 lg:pl-40 pt-6 pb-12'>
           <div className='w-5 h-16 bg-[#4f4f54] relative'></div>
@@ -82,9 +82,9 @@ function Execom() {
           <Slider ref={slider1} {...settings}>
             {cardData.map((d, index) => (
               <div key={index} className="  relative card-hover">
-                <div className='container1'>
+                <div className='container-execom'>
                 <img className="object-cover w-full  h-full border-box grayscale hover:filter-none  " src={d.img} alt="" style={{ width: d.width, height: d.height, bottom: d.bottom }} />
-                <div className="absolute  bottom-0 rounded-r-md w-full  bg-black bg-opacity-60 black-box">
+                <div className="absolute  bottom-0 rounded-r-md w-full  bg-black bg-opacity-60 ">
                   <div className="text-white text-[15px] pl-3 pb-1 text-left italic">
                     <div className="font-semibold">{d.name}</div>
                     <div className="font-light">{d.review}</div>
@@ -148,7 +148,7 @@ const cardData = [
     name: 'Nandana Suresh',
     img:Nandana,
     review: 'FOSS Coordinator',
-   height :'300px',
+   
    
    
    
