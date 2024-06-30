@@ -102,7 +102,8 @@ export default function Navbar() {
         currentItem === "home" ||
         currentItem === "featuring" ||
         currentItem === "events" ||
-        currentItem === "contact"
+        currentItem === "contact"||
+        currentItem === "about"
           ? "nav-w"
           : "nav-b"
       } flex min-[767px]:items-center p-5 font-bold max-[767px]:pl-4 max-[767px]:pt-8 cursor-none max-[767px]:h-[12vh] max-[767px]:w-screen ${
@@ -121,7 +122,8 @@ export default function Navbar() {
               currentItem === "home" ||
               currentItem === "featuring" ||
               currentItem === "events" ||
-              currentItem === "contact"
+              currentItem === "contact"||
+              currentItem === "about"
                 ? toggleW
                 : toggleB
             }
@@ -136,7 +138,8 @@ export default function Navbar() {
             currentItem === "home" ||
             currentItem === "featuring" ||
             currentItem === "events" ||
-            currentItem === "contact"
+            currentItem === "contact"||
+            currentItem === "about"
               ? LogoWhite
               : LogoGrey
           }
@@ -150,7 +153,8 @@ export default function Navbar() {
             currentItem === "home" ||
             currentItem === "featuring" ||
             currentItem === "events" ||
-            currentItem === "contact"
+            currentItem === "contact"||
+            currentItem === "about"
               ? LogoWhite
               : LogoGrey
           }
@@ -164,7 +168,8 @@ export default function Navbar() {
           currentItem === "home" ||
           currentItem === "featuring" ||
           currentItem === "events" ||
-          currentItem === "contact"
+          currentItem === "contact"||
+          currentItem === "about"
             ? "bg-[#101011]"
             : "bg-[#F5F5F5]"
         }  max-[767px]:h-[60vh] max-[767px]:flex-col max-[767px]:w-screen max-[767px]:-ml-4 max-[767px]:items-center max-[767px]:space-x-0 max-[767px]:absolute max-[767px]:mt-10 max-[767px]:gap-7 max-[767px]:pb-10 ${
@@ -181,7 +186,8 @@ export default function Navbar() {
               currentItem === "home" ||
               currentItem === "featuring" ||
               currentItem === "events" ||
-              currentItem === "contact"
+              currentItem === "contact"||
+              currentItem === "about"
                 ? "text-[#ffffff80]"
                 : "text-[#000000b3]"
             } `}
@@ -196,7 +202,8 @@ export default function Navbar() {
           currentItem === "home" ||
           currentItem === "featuring" ||
           currentItem === "events" ||
-          currentItem === "contact"
+          currentItem === "contact"||
+          currentItem === "about"
             ? "bg-[#F5F5F5] text-[#101011] hover:bg-[#101011] hover:text-[#F5F5F5] hover:border hover:border-[#F5F5F5]"
             : "bg-black text-[#F5F5F5] hover:bg-[#F5F5F5] hover:text-black hover:border hover:border-black"
         } flex justify-center items-center rounded-3xl duration-700 max-[767px]:h-[4vh] max-[767px]:ml-28 max-[767px]:w-[6.5em] max-[380px]:ml-[25%] max-[320px]:ml-[15%] ${

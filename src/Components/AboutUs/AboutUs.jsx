@@ -35,7 +35,7 @@ import '../AboutUs/AboutUs.css'
         <div id="top-about"  className='font-about  text-shadow-white '>SUCCESS</div>
         <div id="bottom-about"  className='font-about  text-shadow-white '>OPPORTUNITY</div>
         
-        <div class="shadow-about"></div>
+        <div className="shadow-about"></div>
     </div>
 </div>    
  </div>
