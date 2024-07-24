@@ -18,12 +18,10 @@ import '../AboutUs/AboutUs.css'
   <div className=" sm:text-[14px]   md:text-[17px]   text-center " data-aos="zoom-in" data-aos-duration="1000">
   
       <p className='font-about' >
-      This is an organization of CSE students of the college. The forum aims at improving the technical and industrial knowledge of the students and strives to keep them abreast with the latest software and technologies evolving in the information technology field.
-      
-          <br /><br />
-         
-      It welcomes the freshers into the world of computer engineering by conducting essential orientation classes. It organizes talks by eminent personalities in the industry on evolving technologies in computing, workshops on the latest developing platforms, languages, and software packages in the IT industry and helps coordinate and implement software projects for the students in the Computer Science & Engineering Department.
-    </p>
+      The Forum of Computer Engineering Students (FOCES) at the College of Engineering Chengannur aims to uplift the skills of the student community.
+ Guided by the visionary ethos of "DARE, DEVELOP, and DOMINATE," the forum offers opportunities for students to help each other achieve excellence and reach the pinnacle of success.
+ Through various workshops, hackathons, and seminars, FOCES provides a platform for students to enhance their technical skills and knowledge. The forum encourages collaboration and innovation, fostering a spirit of teamwork and creativity.
+ </p>
   </div>
 
   <div id="mainDiv-about">
