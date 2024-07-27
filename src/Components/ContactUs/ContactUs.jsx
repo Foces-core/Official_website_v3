@@ -12,6 +12,9 @@ import Contactus from "../../assets/Contact us.svg";
 import Title from "../../assets/title.svg";
 import Navbar from "../../Pages/LandingPage/Navbar/Navbar";
 import Footer from "../../Pages/LandingPage/Footer/Footer";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import '../ContactUs/notification.css'
 import BackToHome from "../BackToHome";
 
 function ContactUs() {
@@ -24,8 +27,15 @@ function ContactUs() {
 
   const sendEmail = (e) => {
     e.preventDefault();
-    console.log("Form submitted!");
-    console.log("Form data:", formData);
+  
+    toast.info("Sending...", { 
+      autoClose: 2000, 
+      className: 'toast-custom ',
+      style:
+      {
+        borderRadius:'10px',
+      } 
+    });
 
     emailjs
       .sendForm(
@@ -37,9 +47,35 @@ function ContactUs() {
       .then((res) => {
         console.log(res);
         setFormData({ name: "", email: "", subject: "", message: "" });
+        e.target.reset();
+        toast.dismiss(); 
+        toast.success("Sent successfully!",
+          {
+            autoClose: 2000, 
+            className: 'toast-custom ',
+            style:
+            {
+              borderRadius:'10px',
+            }
+          }
+        ); 
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.log(err);
+        toast.dismiss();
+        toast.error("Failed to send message.",
+          {
+            autoClose: 2000, 
+            className: 'toast-custom ',
+            style:
+            {
+              borderRadius:'10px',
+            }
+          }
+        ); 
+      });
   };
+  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -184,8 +220,6 @@ function ContactUs() {
                   <div>
                     <label
                       htmlFor="name"
-                      id="name"
-                      name="name"
                       className="text-sm text-white"
                     >
                       Name
@@ -203,9 +237,7 @@ function ContactUs() {
                   </div>
                   <div>
                     <label
-                      htmlFor="user_email"
-                      id="user_email"
-                      name="user_email"
+                      htmlFor="email"
                       className="text=-sm text-white"
                     >
                       Email
@@ -214,20 +246,16 @@ function ContactUs() {
                   <div>
                     <input
                       type="email"
-                      name="user_email"
-                      value={formData.user_email}
+                      name="email"
+                      value={formData.email}
                       onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
-                      className="w-full rounded-lg px-4 py-2 mt-2"
-                    />
+                      className="w-full rounded-lg px-4 py-2 mt-2"/>
                   </div>
                   <div>
                     <label
                       htmlFor="subject"
-                      id="subject"
-                      name="subject"
-                      className="text-sm text-white"
-                    >
+                      className="text-sm text-white">
                       Subject
                     </label>
                   </div>
@@ -238,16 +266,12 @@ function ContactUs() {
                       value={formData.subject}
                       onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
-                      className="w-full rounded-lg px-4 py-2 mt-2"
-                    />
+                      className="w-full rounded-lg px-4 py-2 mt-2"/>
                   </div>
                   <div>
                     <label
                       htmlFor="message"
-                      id="message"
-                      name="message"
-                      className="text-sm text-white"
-                    >
+                      className="text-sm text-white">
                       Tell us more about your idea here !!
                     </label>
                   </div>
@@ -259,14 +283,14 @@ function ContactUs() {
                       value={formData.message}
                       onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
-                      className="w-full rounded-lg px-4 py-2 mt-2"
-                    />
-                    <button
-                      type="submit"
-                      className="text-black bg-white absolute bottom-2 right-2"
-                    >
-                      <IoSend />
-                    </button>
+                      className="w-full rounded-lg px-4 py-2 mt-2"/>
+                     <div className="flex justify-end mt-4">
+                      <button
+                        type="submit"
+                        className="flex items-center text-black bg-white px-4 py-2 rounded-md hover:bg-gray-100 ">Send
+                        <IoSend className="ml-2" />
+                      </button>
+                    </div>
                   </div>
                   <div></div>
                 </form>
@@ -275,7 +299,8 @@ function ContactUs() {
           </div>
         </div>
         <Footer />
-      </div>
+      </div>   
+      <ToastContainer/> 
     </div>
   );
 }
