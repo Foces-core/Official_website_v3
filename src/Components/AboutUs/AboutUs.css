@@ -18,6 +18,7 @@
     word-spacing: 4px;
     line-height: 2;
     opacity: 0.8; 
+    font-size:16px;
 }
   #mainDiv-about {
     width: 200px; 
@@ -120,6 +121,7 @@
     .font-about
     {
         word-spacing: 1px;
+        font-size:10px ;
        
     }
 }
