@@ -116,13 +116,13 @@ function ContactUs() {
 
   return (
     <div
-      className={`contact-container  flex flex-col min-h-screen ${
+      className={`contact-container bg-[#101011] flex flex-col min-h-screen ${
         window.screen.width < 768 ? "space-y-32" : "space-y-12"
       }`}
       id="contact"
     >
       <Navbar />
-      <div className="flex-grow">
+      
 
       <div className="font-Armata ">
         <div className="flex items-center md:hidden">
@@ -320,7 +320,7 @@ function ContactUs() {
             </div>
           </div>
         </div>
-        </div>
+       
         <Footer />
       </div>   
       <ToastContainer/> 

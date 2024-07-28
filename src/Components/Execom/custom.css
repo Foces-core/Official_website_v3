@@ -4,8 +4,6 @@
 }
 .container-execom {
  
-  border-radius:30px;
-  position: relative;
   height: 280px; 
   width: 100%;
   overflow: hidden; 
@@ -15,11 +13,6 @@
   box-sizing: border-box;
   
 }
-.container-execom img
-{
-  border-radius: 30px;
-}
-
 .slick-slide {
   transition: transform 0.5s ease-in-out; 
 }
@@ -34,6 +27,7 @@
   .border-box{
     border:3px solid #424242;
     box-sizing: border-box;
+    border-radius:30px;
 
   }
  @media (min-width : 340px) and (max-width: 400px) {
