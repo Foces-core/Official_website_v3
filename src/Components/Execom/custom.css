@@ -6,7 +6,7 @@
  
   border-radius:30px;
   position: relative;
-  height: 250px; 
+  height: 280px; 
   width: 100%;
   overflow: hidden; 
   display: flex;
@@ -45,10 +45,27 @@
       height:40vh;
 }
 } 
- /* @media (min-width : 431px) and (max-width: 550px) {
-    
+ @media (min-width : 1450px) {   
   .container-execom
   {  
-      height:40vh;        
+   height:300px;
 }
-}  */
+}  
+ @media (min-width : 1500px) {   
+  .container-execom
+  {  
+   height:320px;
+}
+}  
+ @media (min-width : 1600px) {   
+  .container-execom
+  {  
+   height:335px;
+}
+}  
+ @media (min-width : 1700px) {   
+  .container-execom
+  {  
+   height:350px;
+}
+}  

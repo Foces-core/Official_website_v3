@@ -20,7 +20,7 @@ import MeetTheTeam from '../../assets/MeetTheTeam.svg';
 function Execom() {
   var settings = {
     dots: false,
-    infinite: true,
+    infinite: false,
     speed:500,
     slidesToShow: 4,
     slidesToScroll: 1,
