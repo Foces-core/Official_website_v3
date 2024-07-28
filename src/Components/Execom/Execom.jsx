@@ -24,7 +24,7 @@ function Execom() {
     speed:500,
     slidesToShow: 4,
     slidesToScroll: 1,
-    autoplay: false,
+    autoplay: true,
     autoplaySpeed: 1500,
     beforeChange: (current, next) => handleBeforeChange(current, next),
     initialSlide: 0,
