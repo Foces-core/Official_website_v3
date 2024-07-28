@@ -109,7 +109,7 @@ function Execom() {
             {cardData.map((d, index) => (
               <div key={index} className="relative card-hover">
                 <div className='container-execom'>
-                <img className="object-cover w-full h-full  border-box grayscale hover:filter-none  " src={d.img} alt="" style={{ width: d.width, height: d.height, bottom: d.bottom }} />
+                <img className="object-cover  w-full h-full  border-box grayscale hover:filter-none  " src={d.img} alt="" style={{ width: d.width, height: d.height, bottom: d.bottom }} />
                 <div className="absolute  bottom-0 rounded-r-md  w-full bg-black bg-opacity-60 ">
                   <div className="text-white text-[15px] pl-4 pb-1 pt-2  text-left italic">
                     <div className="font-semibold">{d.name}</div>
