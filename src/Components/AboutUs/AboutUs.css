@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Edu+AU+VIC+WA+NT+Hand:wght@400..700&display=swap');
 
 .container-about
 {   padding:40px 20px;
@@ -10,28 +11,32 @@
 }
 .font-about
 {
-    font-family:  cursive;
-    font-style: italic;
-
+    font-family: "Edu AU VIC WA NT Hand", cursive;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+    word-spacing: 4px;
+    line-height: 2;
+    opacity: 0.8; 
 }
   #mainDiv-about {
-    width: 200px; /* Reduced size */
-    height: 200px; /* Reduced size */
+    width: 200px; 
+    height: 200px; 
     margin: 70px auto;
     perspective: 800px;
 }
 
 #boxDiv-about {
-    width: 200px; /* Reduced size */
-    height: 200px; /* Reduced size */
+    width: 200px; 
+    height: 200px; 
     transform-style: preserve-3d; 
     animation: rotate 15s linear infinite;
 }
 
 #boxDiv-about div {
     position: absolute;
-    width: 200px; /* Reduced size */
-    height: 200px; /* Reduced size */
+    width: 200px; 
+    height: 200px; 
     opacity: 0.9;
     color: white;
     display: flex;
@@ -40,60 +45,60 @@
 }
 
 #front-about {
-    transform: translateZ(100px); /* Half of the new size */
+    transform: translateZ(100px); 
     background: #101010;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: 250px; /* Adjust background size */
+    background-size: 250px; 
     border: 0.0.25px solid rgb(75, 75, 75); 
 }
 
 #back-about {
-    transform: rotateY(180deg) translateZ(100px); /* Half of the new size */
+    transform: rotateY(180deg) translateZ(100px);
     background: #101010;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: 250px; /* Adjust background size */
+    background-size: 250px; 
     border: 0.025px solid rgb(75, 75, 75); 
 }
 
 #left-about {
-    transform: rotateY(-90deg) translateX(-100px); /* Half of the new size */
+    transform: rotateY(-90deg) translateX(-100px); 
     transform-origin: left;
     background: #101010;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: 250px; /* Adjust background size */
+    background-size: 250px; 
     border:0.025px solid rgb(75, 75, 75); 
 }
 
 #right-about {
-    transform: rotateY(90deg) translateX(100px); /* Half of the new size */
+    transform: rotateY(90deg) translateX(100px); 
     transform-origin: right;
     background: #101010;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: 250px; /* Adjust background size */
+    background-size: 250px;
     border: 0.025px solid rgb(75, 75, 75);
 }
 
 #top-about {
-    transform: rotateX(-90deg) translateY(-100px); /* Half of the new size */
+    transform: rotateX(-90deg) translateY(-100px); 
     transform-origin: top;
     background: #101010;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: 250px; /* Adjust background size */
+    background-size: 250px; 
     border: 0.025px groove rgb(75, 75, 75); 
 }
 
 #bottom-about {
-    transform: rotateX(90deg) translateY(100px); /* Half of the new size */
+    transform: rotateX(90deg) translateY(100px); 
     transform-origin: bottom;
     background: #101010;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: 250px; /* Adjust background size */
+    background-size: 250px;
     border: 0.025px solid rgb(75, 75, 75); 
 }
 

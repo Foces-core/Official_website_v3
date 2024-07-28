@@ -14,6 +14,8 @@ ReactDOM.render(
       <Route path="/events" element={<Eventpage />} />
       <Route path="/contact" element={<ContactUs />} />
     </Routes>
+  
   </Router>,
+
   document.getElementById('root')
 );
