@@ -3,7 +3,7 @@
     margin: 0 10px;
 }
 .container-execom {
- 
+  border-radius:30px;
   height: 280px; 
   width: 100%;
   overflow: hidden; 
