@@ -26,12 +26,12 @@ import '../AboutUs/AboutUs.css'
 
   <div id="mainDiv-about">
     <div id="boxDiv-about" >
-        <div id="front-about"  className='font-about text-shadow-white '>VISIONARY</div>
-        <div id="back-about"  className='font-about text-shadow-white '>EMPOWERMENT</div>
-        <div id="left-about"  className='font-about text-shadow-white '>ZEAL</div>
-        <div id="right-about"   className='font-about text-shadow-white '>EVOLUTION</div>
-        <div id="top-about"  className='font-about  text-shadow-white '>SUCCESS</div>
-        <div id="bottom-about"  className='font-about  text-shadow-white '>OPPORTUNITY</div>
+        <div id="front-about"  className='font-about text-shadow-white '>DARE</div>
+        <div id="back-about"  className='font-about text-shadow-white '>DEVELOP</div>
+        <div id="left-about"  className='font-about text-shadow-white '>DOMINATE</div>
+        <div id="right-about"   className='font-about text-shadow-white '>FOCES</div>
+        <div id="top-about"  className='font-about  text-shadow-white '>ICFOSS</div>
+        <div id="bottom-about"  className='font-about  text-shadow-white '>CEC</div>
         
         <div className="shadow-about"></div>
     </div>

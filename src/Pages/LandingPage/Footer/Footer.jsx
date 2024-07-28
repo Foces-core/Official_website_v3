@@ -28,16 +28,16 @@ function Footer() {
       </div>
       <div className="flex flex-col justify-between items-center w-[70%] gap-10">
         <div className="social flex gap-16 max-[767px]:w-screen max-[767px]:justify-center">
-          <a href="">
+          <a href="https://www.facebook.com/focescec?mibextid=JRoKGi" target="_blank">
             <FaSquareFacebook className="h-5 w-5 text-[#D9D9D9] hover:scale-125 duration-300" />
           </a>
-          <a href="">
+          <a href="https://www.instagram.com/foces_cec?igsh=b2E3bjNpbGgzdG03" target="_blank">
             <FaInstagram className="h-5 w-5 text-[#D9D9D9] hover:scale-125 duration-300" />
           </a>
-          <a href="">
+          <a href="https://x.com/foces_cec?t=e__UXOl9tQFznh7JG8kqzQ&s=08" target="_blank">
             <FaXTwitter className="h-5 w-5 text-[#D9D9D9] hover:scale-125 duration-300" />
           </a>
-          <a href="https://www.linkedin.com/in/foces-cec-423176229/">
+          <a href="https://www.linkedin.com/in/foces-cec-423176229/" target="_blank">
             <FaLinkedin className="h-5 w-5 text-[#D9D9D9] hover:scale-125 duration-300" />
           </a>
         </div>
