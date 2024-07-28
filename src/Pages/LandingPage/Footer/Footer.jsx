@@ -22,7 +22,7 @@ function Footer() {
   }, []);
 
   return (
-    <div className="h-[10vh] bg-[#101011] relative z-0 flex w-screen items-center gap-10 p-5 max-[767px]:flex-col mt-20 max-[767px]:pt-3">
+    <div className="h-[10vh] bg-[#101011] relative z-0 flex w-screen items-center gap-10 p-5 max-[767px]:flex-col pt-10 max-[767px]:pt-3">
       <div className="w-[15%] max-[767px]:w-[50%]">
         <img src="././src/assets/FOCES.png" alt="" />
       </div>

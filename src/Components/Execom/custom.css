@@ -12,7 +12,12 @@
   display: flex;
   justify-content: center;
   align-items: center; 
-
+  box-sizing: border-box;
+  
+}
+.container-execom img
+{
+  border-radius: 30px;
 }
 
 .slick-slide {
@@ -27,7 +32,8 @@
   }
 
   .border-box{
-    border:2px solid #424242;
+    border:3px solid #424242;
+    box-sizing: border-box;
 
   }
  @media (min-width : 340px) and (max-width: 400px) {
