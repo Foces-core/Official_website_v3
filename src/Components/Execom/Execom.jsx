@@ -94,7 +94,7 @@ function Execom() {
 
   
   return (
-    <div className='h-full pb-20' id='execom' >
+    <div className='min-h-full flex flex-col pt-10 pb-20' id='execom' >
      
         <div className='flex items-center h-36 pl-6 lg:pl-40 pt-6 pb-12'>
           <div className='w-5 h-16 bg-[#4f4f54] relative'></div>
