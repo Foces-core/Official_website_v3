@@ -116,7 +116,7 @@ function ContactUs() {
 
   return (
     <div
-      className={`contact-container bg-black flex flex-col min-h-screen ${
+      className={`contact-container  flex flex-col min-h-screen ${
         window.screen.width < 768 ? "space-y-32" : "space-y-12"
       }`}
       id="contact"
