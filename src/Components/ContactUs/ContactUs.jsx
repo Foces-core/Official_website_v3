@@ -25,8 +25,28 @@ function ContactUs() {
     message: "",
   });
 
+  const validateForm = () => {
+    const { name, email, subject, message } = formData;
+    if (!name || !email || !subject || !message) {
+      return false;
+    }
+    return true;
+  };
+
   const sendEmail = (e) => {
     e.preventDefault();
+
+
+    if (!validateForm()) {
+      toast.error("Please fill in all fields.", {
+        autoClose: 2000,
+        className: 'toast-custom',
+        style: {
+          borderRadius: '10px',
+        }
+      });
+      return;
+    }
   
     toast.info("Sending...", { 
       autoClose: 2000, 
@@ -96,12 +116,14 @@ function ContactUs() {
 
   return (
     <div
-      className={`contact-container bg-black flex flex-col h-screen  ${
+      className={`contact-container bg-black flex flex-col min-h-screen ${
         window.screen.width < 768 ? "space-y-32" : "space-y-12"
       }`}
       id="contact"
     >
       <Navbar />
+      <div className="flex-grow">
+
       <div className="font-Armata ">
         <div className="flex items-center md:hidden">
           <div className="flex items-center pl-8">
@@ -298,10 +320,12 @@ function ContactUs() {
             </div>
           </div>
         </div>
+        </div>
         <Footer />
       </div>   
       <ToastContainer/> 
     </div>
+    
   );
 }
 
