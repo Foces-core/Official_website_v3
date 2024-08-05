@@ -25,14 +25,14 @@ function EventCardMobile({ Events }) {
 
   return (
     <div
-      className='h-fit w-fit bg-gradient-to-bl from-slate-950 rounded-xl mt-10 mb-10 flex flex-col overflow-hidden'
+      className='h-fit w-fit bg-gradient-to-bl from-slate-950 rounded-xl mt-10 mb-10 flex flex-col overflow-hidden  p-3'
       data-aos='fade-up'
     >
       <div
         animate={{ height: !ExpandingCard ? 'auto' : 580 }}
         transition={spring}
         layout
-        className='bg-gradient-to-br from-slate-950 h-fit w-[350px] rounded-lg shadow-2xl shadow-slate-700'
+        className='bg-gradient-to-br from-slate-950 h-fit w-[350px] rounded-lg shadow-2xl shadow-slate-700 '
         style={{
           transition: 'box-shadow 0.7s ease',
         }}
@@ -59,8 +59,8 @@ function EventCardMobile({ Events }) {
               {console.log(Expanding)}
             </Modal>
 
-            <div className='w-[95%] items-end text-white'>
-              <h1 className='text-7xl text-right mb-1 ml-3'>{Events.name}</h1>
+            <div className='w-[95%] items-end text-white pr-2'>
+              <h1 className='text-6xl text-right mb-1 ml-3 '>{Events.name}</h1>
               <p className='text-base text-left mt-1 ml-5'>
                 <BlockContent
                   blocks={Events.content}

@@ -75,7 +75,7 @@ useEffect(() => {
   }, []);
 
   return (
-    <div className="bg-[#101011] h-screen w-screen  flex  flex-col pt-32  overflow-x-hidden pb-20 " id='featuring'>
+    <div className="bg-[#101011] h-fit w-screen  flex  flex-col pt-32  overflow-x-hidden pb-20 " id='featuring'>
       <div className='flex  items-center h-20 pb-9 '>
     <div className='flex items-center justify-center w-full'>
    
@@ -108,7 +108,7 @@ useEffect(() => {
          {feature.map(({ image, tickets }, index) => (
             <SwiperSlide key={index} className='px-5 pb-7 pt-7 bg-transparent rounded-full'>
               <a href={tickets}>
-                <img className='hover:shadow-white hover:shadow-[0_0px_20px_rgb(0,0,0,0.12)] h-full w-full rounded-xl hover:scale-110 ease-in-out duration-200' src={image.asset.url} alt={image.alt} data-aos="flip-right" />
+                <img className='hover:shadow-white hover:shadow-[0_0px_20px_rgb(0,0,0,0.12)] h-full w-full rounded-xl hover:scale-105  duration-100' src={image.asset.url} alt={image.alt} data-aos="flip-right" />
               </a>
             </SwiperSlide>
           ))}

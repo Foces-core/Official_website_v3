@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import "./Navbar.css";
+import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import { HashLink } from "react-router-hash-link";
+import { AiOutlineClose } from "react-icons/ai"; // Importing the close icon from react-icons
 import toggleW from "../../../assets/ButtonW.svg";
 import toggleB from "../../../assets/ButtonB.svg";
-import { Link } from "react-router-dom";
 import LogoWhite from "../../../assets/FOCES White.svg";
 import LogoGrey from "../../../assets/FOCES Black.svg";
-import { HashLink } from "react-router-hash-link";
+import "./Navbar.css";
 
 const navItems = [
   { id: "home", name: "HOME" },
@@ -21,6 +22,7 @@ export default function Navbar() {
   const [showItems, setShowItems] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [currentItem, setCurrentItem] = useState(navItems[0].id);
+  const navigate = useNavigate(); // Initialize useNavigate
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -45,11 +47,10 @@ export default function Navbar() {
         if (element) observer.unobserve(element);
       });
     };
-  }, [navItems, setCurrentItem]);
+  }, []);
 
   const toggleItems = () => {
     setShowItems(!showItems);
-    event.stopPropagation();
   };
 
   useEffect(() => {
@@ -66,7 +67,6 @@ export default function Navbar() {
       }
     };
     window.addEventListener("scroll", handleScroll);
-
     window.addEventListener("resize", handleResize);
 
     return () => {
@@ -75,9 +75,9 @@ export default function Navbar() {
     };
   }, []);
 
-  const handleItemClick = (id, event) => {
+  const handleItemClick = (id) => {
     if (id === "events") {
-      window.location.href = "/events";
+      window.location.href ="/Events"; // Use navigate to go to /events
       return;
     } else if (id === "contact") {
       window.location.href = "/contact";
@@ -92,6 +92,7 @@ export default function Navbar() {
       setShowItems(false);
     }
   };
+
   useEffect(() => {
     setShowItems(!isMobile);
   }, [isMobile]);
@@ -99,50 +100,39 @@ export default function Navbar() {
   return (
     <div
       className={`fixed z-10 shadow ${
-        currentItem === "home" ||
-        currentItem === "featuring" ||
-        currentItem === "events" ||
-        currentItem === "contact"||
-        currentItem === "execom"||
-        currentItem === "about"
+        ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
           ? "nav-w"
           : "nav-b"
       } flex min-[767px]:items-center px-5 pt-4 pb-2 font-semibold max-[767px]:pl-4 max-[767px]:pt-8 cursor-none max-[767px]:h-[12vh] max-[767px]:w-screen ${
-        isScrolled && currentItem != "contact"
+        isScrolled && currentItem !== "contact"
           ? "backdrop-blur-md"
           : "backdrop-blur-0"
-      } ${currentItem === "contact" ? "backdrop-blur-md" : "backdrop-blur-0"} `}
+      } ${currentItem === "contact" ? "backdrop-blur-md" : "backdrop-blur-0"}`}
     >
       {isMobile && (
         <div
           className="h-[full] w-[2rem] Button absolute inset-y-10 right-5 flex items-center justify-center top-[31%] cursor-none"
           onClick={toggleItems}
         >
-          <img
-            src={
-              currentItem === "home" ||
-              currentItem === "featuring" ||
-              currentItem === "events" ||
-              currentItem === "contact"||
-              currentItem === "execom"||
-              currentItem === "about"
-                ? toggleW
-                : toggleB
-            }
-            alt=""
-          />
+          {showItems ? (
+            <AiOutlineClose size={24} color={["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem) ? "#fff" : "#000"} />
+          ) : (
+            <img
+              src={
+                ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
+                  ? toggleW
+                  : toggleB
+              }
+              alt=""
+            />
+          )}
         </div>
       )}
 
       {!isMobile && (
         <img
           src={
-            currentItem === "home" ||
-            currentItem === "featuring" ||
-            currentItem === "events" ||
-            currentItem === "contact"||
-            currentItem === "execom"||
-            currentItem === "about"
+            ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
               ? LogoWhite
               : LogoGrey
           }
@@ -153,12 +143,7 @@ export default function Navbar() {
       {isMobile && (
         <img
           src={
-            currentItem === "home" ||
-            currentItem === "featuring" ||
-            currentItem === "events" ||
-            currentItem === "contact"||
-            currentItem === "execom"||
-            currentItem === "about"
+            ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
               ? LogoWhite
               : LogoGrey
           }
@@ -168,13 +153,8 @@ export default function Navbar() {
       )}
 
       <div
-        className={`container z-10 Items flex justify-center space-x-9 min-[767px]:bg-transparent ${
-          currentItem === "home" ||
-          currentItem === "featuring" ||
-          currentItem === "events" ||
-          currentItem === "contact"||
-          currentItem === "execom"||
-          currentItem === "about"
+        className={`container z-10 Items flex justify-center space-x-9 min-[767px]:bg-transparent pt-10  ${
+          ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
             ? "bg-[#101011]"
             : "bg-[#F5F5F5]"
         }  max-[767px]:h-[60vh] max-[767px]:flex-col max-[767px]:w-screen max-[767px]:-ml-4 max-[767px]:items-center max-[767px]:space-x-0 max-[767px]:absolute max-[767px]:mt-10 max-[767px]:gap-7 max-[767px]:pb-10 ${
@@ -186,17 +166,13 @@ export default function Navbar() {
         {navItems.map((item) => (
           <HashLink
             to={item.id !== "contact" ? `/#${item.id}` : "/contact"}
-            // onClick={(event) => handleItemClick(item.id, event)}
-            className={`border-b-2 border-transparent z-10 ${
-              currentItem === "home" ||
-              currentItem === "featuring" ||
-              currentItem === "events" ||
-              currentItem === "contact"||
-              currentItem === "execom"||
-              currentItem === "about"
+            key={item.id} // Add a key prop
+            className={`border-b-2 border-transparent z-10  ${
+              ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
                 ? "text-[#ffffff80]"
                 : "text-[#000000b3]"
             } `}
+            onClick={() => handleItemClick(item.id)} // Add onClick to handle navigation
           >
             {item.name}
           </HashLink>
@@ -205,12 +181,7 @@ export default function Navbar() {
 
       <div
         className={`contact cursor-pointer w-[9em] h-[2.5em]  ${
-          currentItem === "home" ||
-          currentItem === "featuring" ||
-          currentItem === "events" ||
-          currentItem === "contact"||
-          currentItem === "execom"||
-          currentItem === "about"
+          ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
             ? "bg-[#F5F5F5] text-[#101011] hover:bg-[#101011] hover:text-[#F5F5F5] hover:border hover:border-[#F5F5F5]"
             : "bg-black text-[#F5F5F5] hover:bg-[#F5F5F5] hover:text-black hover:border hover:border-black"
         } flex justify-center items-center rounded-3xl duration-700 max-[767px]:h-[4vh] max-[767px]:ml-28 max-[767px]:w-[6.5em] max-[380px]:ml-[25%] max-[320px]:ml-[15%] ${

@@ -6,11 +6,29 @@ import Navbar from '../LandingPage/Navbar/Navbar.jsx';
 import Footer from '../LandingPage/Footer/Footer.jsx';
 import BackToHome from '../../Components/BackToHome.jsx';
 import client from '../../../foces-webv23/sanityClient.js';
+import Loader from '../../Components/Loader/Loader.jsx'; 
 
 function Eventpage() {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [eventsList, setEventsList] = useState([]);
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [loaderOpacity, setLoaderOpacity] = useState(1);
+
+  useEffect(() => {
+    const loaderTimeout = setTimeout(() => {
+      setLoaderOpacity(0.5);
+    }, 3000);
+
+    const contentTimeout = setTimeout(() => {
+      setLoading(false);
+    }, 3000);
+
+    return () => {
+      clearTimeout(loaderTimeout);
+      clearTimeout(contentTimeout);
+    };
+  }, []);
 
   useEffect(() => {
     client.fetch(
@@ -56,9 +74,11 @@ function Eventpage() {
 
       const sortedEvents = formattedEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
       setEventsList(sortedEvents);
+      setLoading(false); // Set loading to false when data is fetched
     }).catch((err) => {
       console.error("Error fetching data from Sanity:", err);
       setError("Failed to fetch event data. Please try again later.");
+      setLoading(false); // Set loading to false on error
     });
   }, []);
 
@@ -73,6 +93,10 @@ function Eventpage() {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
+
+  if (loading) {
+    return <Loader style={{ opacity: loaderOpacity }} />;
+  }
 
   if (error) {
     return <div className="text-center text-red-500">{error}</div>;
