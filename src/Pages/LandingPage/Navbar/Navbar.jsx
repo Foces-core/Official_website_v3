@@ -103,6 +103,7 @@ export default function Navbar() {
         currentItem === "featuring" ||
         currentItem === "events" ||
         currentItem === "contact"||
+        currentItem === "execom"||
         currentItem === "about"
           ? "nav-w"
           : "nav-b"
@@ -123,6 +124,7 @@ export default function Navbar() {
               currentItem === "featuring" ||
               currentItem === "events" ||
               currentItem === "contact"||
+              currentItem === "execom"||
               currentItem === "about"
                 ? toggleW
                 : toggleB
@@ -139,6 +141,7 @@ export default function Navbar() {
             currentItem === "featuring" ||
             currentItem === "events" ||
             currentItem === "contact"||
+            currentItem === "execom"||
             currentItem === "about"
               ? LogoWhite
               : LogoGrey
@@ -154,6 +157,7 @@ export default function Navbar() {
             currentItem === "featuring" ||
             currentItem === "events" ||
             currentItem === "contact"||
+            currentItem === "execom"||
             currentItem === "about"
               ? LogoWhite
               : LogoGrey
@@ -169,6 +173,7 @@ export default function Navbar() {
           currentItem === "featuring" ||
           currentItem === "events" ||
           currentItem === "contact"||
+          currentItem === "execom"||
           currentItem === "about"
             ? "bg-[#101011]"
             : "bg-[#F5F5F5]"
@@ -187,6 +192,7 @@ export default function Navbar() {
               currentItem === "featuring" ||
               currentItem === "events" ||
               currentItem === "contact"||
+              currentItem === "execom"||
               currentItem === "about"
                 ? "text-[#ffffff80]"
                 : "text-[#000000b3]"
@@ -203,6 +209,7 @@ export default function Navbar() {
           currentItem === "featuring" ||
           currentItem === "events" ||
           currentItem === "contact"||
+          currentItem === "execom"||
           currentItem === "about"
             ? "bg-[#F5F5F5] text-[#101011] hover:bg-[#101011] hover:text-[#F5F5F5] hover:border hover:border-[#F5F5F5]"
             : "bg-black text-[#F5F5F5] hover:bg-[#F5F5F5] hover:text-black hover:border hover:border-black"

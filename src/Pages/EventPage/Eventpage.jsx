@@ -2,117 +2,65 @@ import React, { useState, useEffect } from 'react';
 import EventcardL from './EventcardL.jsx';
 import EventcardR from './EventcardR.jsx';
 import EventCardMobile from './EventCardMobile.jsx';
-import img1 from "../../assets/img1.png";
-import img2 from "../../assets/img2.png";
-import img3 from "../../assets/img3.png";
 import Navbar from '../LandingPage/Navbar/Navbar.jsx';
 import Footer from '../LandingPage/Footer/Footer.jsx';
 import BackToHome from '../../Components/BackToHome.jsx';
-
-
-import client from '../../../foces-webv23/sanityClient.js'
-
+import client from '../../../foces-webv23/sanityClient.js';
 
 function Eventpage() {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [eventsList, setEventsList] = useState([]);
+  const [error, setError] = useState(null);
 
-  const[events,setEvents] = useState([]);
-const[EventsList,setEventslist]=useState([]);
-useEffect(() => {
-  client.fetch(
-    `*[_type == "event"]{
-      Event_name,
-      date,
-      image1{
-        asset ->{
-          _id,
-          url
+  useEffect(() => {
+    client.fetch(
+      `*[_type == "event"]{
+        Event_name,
+        date,
+        image1{
+          asset ->{
+            _id,
+            url
+          },
+          alt
         },
-        alt
-      },
-      image2{
-        asset ->{
-          _id,
-          url
+        image2{
+          asset ->{
+            _id,
+            url
+          },
+          alt
         },
-        alt
-      },
-      image3{
-        asset ->{
-          _id,
-          url
+        image3{
+          asset ->{
+            _id,
+            url
+          },
+          alt
         },
-        alt
-      },
-      content,
-      tickets,
-    }`
-  ).then((data) => {
-    const formattedEvents = data.map(event => ({
-      name: event.Event_name,
-      images: [
-        event.image1?.asset.url,
-        event.image2?.asset.url,
-        event.image3?.asset.url
-      ],
-      date: event.date,
-      content: event.content,
-      tickets:event.tickets
-    }));
-    setEventslist(formattedEvents);
-  })
-  .catch(console.error);
-}, []);
+        content,
+        tickets,
+      }`
+    ).then((data) => {
+      const formattedEvents = data.map(event => ({
+        name: event.Event_name,
+        images: [
+          event.image1?.asset.url,
+          event.image2?.asset.url,
+          event.image3?.asset.url
+        ],
+        date: event.date,
+        content: event.content,
+        tickets: event.tickets
+      }));
 
-
-
-  
-
-  
-  //  const  EventsList = [
-  //     {
-  //       name: "Event 1",
-  //       images: [
-  //         img1,
-  //         img2,
-  //         img3
-  //       ],
-  //       date: "2023-01-01",
-  //       content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin vel justo vel risus scelerisque dapibus."
-  //     },
-  //     {
-  //       name: "Event 2",
-  //       images: [
-  //         img1,
-  //         img2,
-  //         img3
-  //       ],
-  //       date: "2022-02-15",
-  //       content: "Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas."
-  //     },
-  //     {
-  //       name: "Event 3",
-  //       images: [
-  //         img1,
-  //         img2,
-  //         img3
-  //       ],
-  //       date: "2023-05-20",
-  //       content: "Fusce consequat felis eget justo tincidunt, in luctus arcu tincidunt. Nulla facilisi."
-  //     }
-  //   ]
-  
-
-
-    const sortedEventsList = [...EventsList].sort((a, b) => {
-      const dateA = new Date(a.date);
-      const dateB = new Date(b.date);
-      return dateB - dateA;
+      const sortedEvents = formattedEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
+      setEventsList(sortedEvents);
+    }).catch((err) => {
+      console.error("Error fetching data from Sanity:", err);
+      setError("Failed to fetch event data. Please try again later.");
     });
-    
-  
-
-
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -126,16 +74,20 @@ useEffect(() => {
     };
   }, []);
 
+  if (error) {
+    return <div className="text-center text-red-500">{error}</div>;
+  }
+
   if (windowWidth > 1000) {
     return (
-      <div className=" overflow-x-hidden flex flex-col">
+      <div className="overflow-x-hidden flex flex-col">
         <Navbar />
-        
-        <div className="h-[100%]  w-full bg-black overflow-hidden flex flex-col justify-center items-center gap-7 p-10 overflow-x-hidden  pt-28 float-left clear-left">
-          {sortedEventsList.map((event, index) => (
-            index%2===0 ?(<EventcardL key={index} Events={event} />):(<EventcardR key={index} Events={event}  className="" />)
+        <div className="h-[100%] w-full bg-black overflow-hidden flex flex-col justify-center items-center gap-7 p-10 pt-28">
+          {eventsList.map((event, index) => (
+            index % 2 === 0
+              ? <EventcardL key={index} Events={event} />
+              : <EventcardR key={index} Events={event} />
           ))}
-        
         </div>
         {/* <BackToHome /> */}
         <Footer />
@@ -146,10 +98,10 @@ useEffect(() => {
   return (
     <div>
       <Navbar />
-      <div className="flex justify-center items-center flex-col  bg-black ">
-        {sortedEventsList.map((event, index) => (
-            <EventCardMobile  key={index} Events={event} />
-          ))}
+      <div className="flex justify-center items-center flex-col bg-black">
+        {eventsList.map((event, index) => (
+          <EventCardMobile key={index} Events={event} />
+        ))}
       </div>
       {/* <BackToHome /> */}
       <Footer />

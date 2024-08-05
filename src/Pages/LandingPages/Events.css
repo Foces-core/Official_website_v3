@@ -26,9 +26,9 @@
   position: absolute;
   top: 28px;
   left: 40vh;
-  max-width: 40%;
+  max-width: 17%;
   height: auto;
-  opacity: 0.9;
+  opacity: 0.5;
   padding-right: 0;
   border-radius: 1rem;
 }
@@ -40,7 +40,7 @@
   position: absolute;
   top: 25px;
   right: 20vh;
-  max-width: 40%;
+  max-width: 30%;
   height: auto;
   opacity: 0.75;
 
