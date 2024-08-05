@@ -35,11 +35,11 @@ function App() {
   useEffect(() => {
     const loaderTimeout = setTimeout(() => {
       setLoaderOpacity(0.5);
-    }, 5000);
+    }, 3000);
 
     const contentTimeout = setTimeout(() => {
       setLoading(false);
-    }, 5000);
+    }, 3000);
 
     return () => {
       clearTimeout(loaderTimeout);

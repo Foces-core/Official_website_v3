@@ -2,14 +2,19 @@
 {
     margin: 0 10px;
 }
-
 .container-execom {
-  box-shadow: 0px 1px 0px 0px rgba(125, 124, 124, 0.22), 1px 0px 0px 0px rgba(125, 124, 124,0.22), 1px 2px 0px 0px rgba(125, 124, 124,0.22), 2px 1px 0px 0px rgba(125, 124, 124,0.22), 2px 3px 0px 0px rgba(125, 124, 124,0.22), 3px 2px 0px 0px rgba(125, 124, 124,0.22), 3px 4px 0px 0px rgba(125, 124, 124,0.22), 4px 3px 0px 0px rgba(125, 124, 124,0.22), 4px 5px 0px 0px rgba(125, 124, 124,0.22), 5px 4px 0px 0px rgba(125, 124, 124,0.22), 5px 6px 0px 0px rgba(125, 124, 124,0.22), 6px 5px 0px 0px rgba(125, 124, 124,0.22), 6px 7px 0px 0px rgba(125, 124, 124,0.22), 7px 6px 0px 0px rgba(125, 124, 124,0.22), 7px 8px 0px 0px rgba(125, 124, 124,0.22), 8px 7px 0px 0px rgba(125, 124, 124,0.22);
-  border-radius:10px;
-  position: relative;
-  height: 300px; /*  box height */
+  border-radius:30px;
+  height: 280px; 
+  width: 100%;
   overflow: hidden; 
-
+  display: flex;
+  justify-content: center;
+  align-items: center; 
+  box-sizing: border-box;
+  
+}
+.slick-slide {
+  transition: transform 0.5s ease-in-out; 
 }
   .card-hover {
     transition: transform 0.3s ease-in-out;
@@ -20,25 +25,47 @@
   }
 
   .border-box{
-    border:2px solid #833ab4;
-    border-width: 5px;
-    border-radius:10px;
-    border:double 6px transparent;
-    background-image: linear-gradient(white, white),linear-gradient(200deg, #5f5c5c, #000000);
-    background-origin: border-box;
-    background-clip: content-box, border-box;
+    border:3px solid #424242;
+    box-sizing: border-box;
+    border-radius:30px;
 
   }
-  
-/*linear-gradient(white, white),linear-gradient(90deg, #25252a, #9ea3ae);
-rgb(99, 92, 92), rgba(255, 255, 255, 0.519)*/
-@media (min-width: 360px) and (max-width: 460px) {
+ @media (min-width : 340px) and (max-width: 400px) {
     
   .container-execom
-  {
-      
-      height:375px;
-  
+  {  
+      height:310px;    
 }
 
+} 
+ @media (min-width : 400px) and (max-width: 550px) {
+    
+  .container-execom
+  {  
+      height:40vh;
 }
+} 
+ @media (min-width : 1450px) {   
+  .container-execom
+  {  
+   height:300px;
+}
+}  
+ @media (min-width : 1500px) {   
+  .container-execom
+  {  
+   height:320px;
+}
+}  
+ @media (min-width : 1600px) {   
+  .container-execom
+  {  
+   height:335px;
+}
+}  
+ @media (min-width : 1700px) {   
+  .container-execom
+  {  
+   height:350px;
+}
+}  

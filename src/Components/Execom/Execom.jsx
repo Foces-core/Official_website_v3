@@ -5,12 +5,12 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Jerry from '../../assets/JerrySanjuJoanes.jpg';
 import Nandkishor from '../../assets/NandkishorR.png';
-import Betsa from '../../assets/BetsaSam.jpg';
+import Betsa from '../../assets/betsaS.png';
 import Vimal from '../../assets/vimal.png';
-import Nandana from '../../assets/nandana.jpg';
+import Nandana from '../../assets/nandanas.jpg';
 import AadithyaSai from '../../assets/aadithyasai.png';
 import Akash from '../../assets/akash.jpg'
-import Anupriya from '../../assets/AnupriyaNew.jpg';
+import Anupriya from '../../assets/AnupriyaN.jpg';
 import Megha from '../../assets/megha.png';
 import George from '../../assets/george.png';
 import Aparna from '../../assets/aparna.png';
@@ -21,16 +21,34 @@ function Execom() {
   var settings = {
     dots: false,
     infinite: true,
-    speed: 1500,
+    speed:500,
     slidesToShow: 4,
     slidesToScroll: 1,
     autoplay: true,
-    autoplaySpeed: 1000,
+    autoplaySpeed: 1500,
     beforeChange: (current, next) => handleBeforeChange(current, next),
     initialSlide: 0,
     swipeToSlide: true,
-
+    
     responsive: [
+      {
+        breakpoint: 1600,
+        settings: {
+          slidesToShow: 4,
+          slidesToScroll: 1,
+          infinite: true,
+          dots: false
+        }
+      },
+      {
+        breakpoint: 1400,
+        settings: {
+          slidesToShow: 4,
+          slidesToScroll: 1,
+          infinite: true,
+          dots: true
+        }
+      },
       {
         breakpoint: 1024,
         settings: {
@@ -40,21 +58,29 @@ function Execom() {
           dots: true
         }
       },
-      
+      {
+        breakpoint: 800,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 1,
+          infinite: true,
+          dots: true
+        }
+      },
       {
         breakpoint: 650,
         settings: {
           slidesToShow: 2,
-          slidesToScroll:1 ,
-          initialSlide: 2
+          slidesToScroll: 1,
+          initialSlide: 1
         }
       },
       {
         breakpoint: 550,
-    settings: {
-      slidesToShow:1 ,
-      slidesToScroll: 1,
-      initialSlide: 2
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+          initialSlide: 1
         }
       }
     ]
@@ -68,7 +94,7 @@ function Execom() {
 
   
   return (
-    <div className='h-full pb-20 bg-[#101011]' id='execom' >
+    <div className='min-h-full flex flex-col pt-10 pb-20' id='execom' >
      
         <div className='flex items-center h-36 pl-6 lg:pl-40 pt-6 pb-12'>
           <div className='w-5 h-16 bg-[#4f4f54] relative'></div>
@@ -81,11 +107,11 @@ function Execom() {
           
           <Slider ref={slider1} {...settings}>
             {cardData.map((d, index) => (
-              <div key={index} className="  relative card-hover">
-                <div className='container-execom'>
-                <img className="object-cover w-full  h-full border-box grayscale hover:filter-none  " src={d.img} alt="" style={{ width: d.width, height: d.height, bottom: d.bottom }} />
-                <div className="absolute  bottom-0 rounded-r-md w-full  bg-black bg-opacity-60 ">
-                  <div className="text-white text-[15px] pl-3 pb-1 text-left italic">
+              <div key={index} className="relative card-hover">
+                <div className='container-execom '>
+                <img className="object-cover w-full h-full  border-box grayscale hover:filter-none  " src={d.img} alt="" style={{ width: d.width, height: d.height, bottom: d.bottom }} />
+                <div className="absolute rounded-bl-[30px] rounded-br-[30px] bottom-0 w-full bg-black bg-opacity-60 ">
+                  <div className="text-white text-[15px] pl-4 pb-1 pt-2  text-left italic">
                     <div className="font-semibold">{d.name}</div>
                     <div className="font-light">{d.review}</div>
                   </div>
