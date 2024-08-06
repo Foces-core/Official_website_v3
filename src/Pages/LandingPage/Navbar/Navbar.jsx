@@ -153,7 +153,7 @@ export default function Navbar() {
       )}
 
       <div
-        className={`container z-10 Items flex justify-center space-x-9 min-[767px]:bg-transparent pt-10  ${
+        className={`container z-10 Items flex justify-center space-x-9 min-[767px]:bg-transparent pt-2  ${
           ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
             ? "bg-[#101011]"
             : "bg-[#F5F5F5]"

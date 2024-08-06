@@ -107,9 +107,9 @@ function Execom() {
           
           <Slider ref={slider1} {...settings}>
             {cardData.map((d, index) => (
-              <div key={index} className="relative card-hover">
+              <div key={index} className="relative">
                 <div className='container-execom '>
-                <img className="object-cover w-full h-full  border-box grayscale hover:filter-none  " src={d.img} alt="" style={{ width: d.width, height: d.height, bottom: d.bottom }} />
+                <img className="object-cover w-full h-full  border-box grayscale hover:filter-none  card-hover " src={d.img} alt="" style={{ width: d.width, height: d.height, bottom: d.bottom }} />
                 <div className="absolute rounded-bl-[30px] rounded-br-[30px] bottom-0 w-full bg-black bg-opacity-60 ">
                   <div className="text-white text-[15px] pl-4 pb-1 pt-2  text-left italic">
                     <div className="font-semibold">{d.name}</div>
