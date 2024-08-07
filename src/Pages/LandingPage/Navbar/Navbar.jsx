@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
+import { Link, useNavigate } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
-import { AiOutlineClose } from "react-icons/ai"; // Importing the close icon from react-icons
+import { AiOutlineClose } from "react-icons/ai";
 import toggleW from "../../../assets/ButtonW.svg";
 import toggleB from "../../../assets/ButtonB.svg";
 import LogoWhite from "../../../assets/FOCES White.svg";
@@ -22,7 +22,7 @@ export default function Navbar() {
   const [showItems, setShowItems] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [currentItem, setCurrentItem] = useState(navItems[0].id);
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate();
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -77,7 +77,7 @@ export default function Navbar() {
 
   const handleItemClick = (id) => {
     if (id === "events") {
-      window.location.href ="/Events"; // Use navigate to go to /events
+      window.location.href = "/Events";
       return;
     } else if (id === "contact") {
       window.location.href = "/contact";
@@ -96,6 +96,10 @@ export default function Navbar() {
   useEffect(() => {
     setShowItems(!isMobile);
   }, [isMobile]);
+
+  const handleJoinFocesClick = () => {
+    window.location.href = "https://www.instagram.com/foces_cec/";
+  };
 
   return (
     <div
@@ -166,13 +170,13 @@ export default function Navbar() {
         {navItems.map((item) => (
           <HashLink
             to={item.id !== "contact" ? `/#${item.id}` : "/contact"}
-            key={item.id} // Add a key prop
+            key={item.id}
             className={`border-b-2 border-transparent z-10  ${
               ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
                 ? "text-[#ffffff80]"
                 : "text-[#000000b3]"
             } `}
-            onClick={() => handleItemClick(item.id)} // Add onClick to handle navigation
+            onClick={() => handleItemClick(item.id)}
           >
             {item.name}
           </HashLink>
@@ -187,6 +191,7 @@ export default function Navbar() {
         } flex justify-center items-center rounded-3xl duration-700 max-[767px]:h-[4vh] max-[767px]:ml-28 max-[767px]:w-[6.5em] max-[380px]:ml-[25%] max-[320px]:ml-[15%] ${
           showItems && isMobile ? "hidden" : ""
         }`}
+        onClick={handleJoinFocesClick}
       >
         Join FOCES
       </div>
