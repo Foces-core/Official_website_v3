@@ -1,0 +1,15 @@
+/* customToastStyles.css */
+
+.toast-custom {
+    background-color: #333; 
+    color: #fff;
+    top: 30px;
+  } 
+   @media (max-width:480px) {
+    .toast-custom {
+   border-radius: 40px;
+      left: 140px; 
+     width: 60vw;
+    }
+  } 
+ 

@@ -1,0 +1,83 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter&display=swap");
+
+.Items {
+  font-family: "Inter", sans-serif;
+}
+
+.nav-w a, .nav-b a {
+    padding: .5em .8em;
+    position: relative;
+    text-decoration: none;
+    font-size: 18px;
+  }
+
+.nav-w *, .nav-b * {
+    box-sizing: border-box;
+    transition: all .35s ease;
+  }
+
+.nav-w a::before,
+.nav-w a::after,
+.nav-b a::before,
+.nav-b a::after{
+  content: '';
+  height: 14px;
+  width: 14px;
+  position: absolute;
+  transition: all .35s ease;
+  opacity: 0;
+}
+
+.nav-w a::before {
+    content: '';
+    right: 0;
+    top: 0;
+    border-top: 4px solid #fff;
+    border-right: 4px solid #fff;
+    transform: translate(-100%, 50%);
+  }
+
+  .nav-b a::before {
+    content: '';
+    right: 0;
+    top: 0;
+    border-top: 4px solid #000;
+    border-right: 4px solid #000;
+    transform: translate(-100%, 50%);
+  }
+  
+  .nav-w a:after {
+    content: '';
+    left: 0;
+    bottom: 0;
+    border-bottom: 4px solid #fff;
+    border-left: 4px solid #fff;
+    transform: translate(100%, -100%)
+  }
+
+  .nav-b a:after {
+    content: '';
+    left: 0;
+    bottom: 0;
+    border-bottom: 4px solid #000;
+    border-left: 4px solid #000;
+    transform: translate(100%, -100%)
+  }
+  
+  .nav-w a:hover:before,
+  .nav-w a:hover:after,
+  .nav-b a:hover:before,
+  .nav-b a:hover:after {
+    transform: translate(0,0);
+    opacity: 1;
+  }
+  
+  .nav-w a:hover {
+    color: #fff;
+    scale: 1.1;
+  }
+
+  .nav-b a:hover {
+    color: #000;
+    scale: 1.1;
+  }
