@@ -1,0 +1,71 @@
+.slick-slide > div
+{
+    margin: 0 10px;
+}
+.container-execom {
+  border-radius:30px;
+  height: 280px; 
+  width: 100%;
+  overflow: hidden; 
+  display: flex;
+  justify-content: center;
+  align-items: center; 
+  box-sizing: border-box;
+  
+}
+.slick-slide {
+  transition: transform 0.5s ease-in-out; 
+}
+  .card-hover {
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  .card-hover:hover {
+    transform: scale(1.1);
+  }
+
+  .border-box{
+    border:3px solid #424242;
+    box-sizing: border-box;
+    border-radius:30px;
+
+  }
+ @media (min-width : 340px) and (max-width: 400px) {
+    
+  .container-execom
+  {  
+      height:310px;    
+}
+
+} 
+ @media (min-width : 400px) and (max-width: 550px) {
+    
+  .container-execom
+  {  
+      height:40vh;
+}
+} 
+ @media (min-width : 1450px) {   
+  .container-execom
+  {  
+   height:300px;
+}
+}  
+ @media (min-width : 1500px) {   
+  .container-execom
+  {  
+   height:320px;
+}
+}  
+ @media (min-width : 1600px) {   
+  .container-execom
+  {  
+   height:335px;
+}
+}  
+ @media (min-width : 1700px) {   
+  .container-execom
+  {  
+   height:350px;
+}
+}  
