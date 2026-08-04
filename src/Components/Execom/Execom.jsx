@@ -25,7 +25,7 @@ function Execom() {
     slidesToShow: 4,
     slidesToScroll: 1,
     autoplay: true,
-    autoplaySpeed: 1500,
+    autoplaySpeed: 3500,
     initialSlide: 0,
     swipeToSlide: true,
     
