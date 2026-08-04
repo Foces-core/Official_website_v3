@@ -12,7 +12,7 @@ function ToTopButton() {
     };
 
     // Add event listener when the component mounts
-    window.addEventListener('scroll', handleScrollButtonVisible);
+    window.addEventListener('scroll', handleScrollButtonVisible, { passive: true });
 
     // Remove event listener when the component unmounts
     return () => {

@@ -66,8 +66,8 @@ export default function Navbar() {
         setIsScrolled(false);
       }
     };
-    window.addEventListener("scroll", handleScroll);
-    window.addEventListener("resize", handleResize);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleResize, { passive: true });
 
     return () => {
       window.removeEventListener("resize", handleResize);
@@ -108,10 +108,10 @@ export default function Navbar() {
           ? "nav-w"
           : "nav-b"
       } flex min-[767px]:items-center px-5 pt-4 pb-2 font-semibold max-[767px]:pl-4 max-[767px]:pt-8 cursor-none max-[767px]:h-[12vh] max-[767px]:w-screen ${
-        isScrolled && currentItem !== "contact"
-          ? "backdrop-blur-md"
-          : "backdrop-blur-0"
-      } ${currentItem === "contact" ? "backdrop-blur-md" : "backdrop-blur-0"}`}
+        isScrolled || currentItem === "contact"
+          ? "bg-[#101011e6] border-b border-[#ffffff1a]"
+          : "bg-transparent"
+      }`}
     >
       {isMobile && (
         <div

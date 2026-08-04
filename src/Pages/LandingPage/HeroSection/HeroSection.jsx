@@ -40,8 +40,8 @@ function HeroSection() {
         mouseControls: true,
         touchControls: true,
         gyroControls: false,
-        scale: 1.00,
-        scaleMobile: 1.00,
+        scale: 0.75,
+        scaleMobile: 0.50,
         color: 0x000000,
       });
     }
@@ -62,7 +62,7 @@ function HeroSection() {
 
     handleResize();
 
-    window.addEventListener("resize", handleResize);
+    window.addEventListener("resize", handleResize, { passive: true });
 
     return () => {
       window.removeEventListener("resize", handleResize);

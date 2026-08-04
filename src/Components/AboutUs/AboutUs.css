@@ -3,11 +3,9 @@
 .container-about
 {   padding:40px 20px;
     border-radius: 20px;
-    background-color: rgba(225, 225, 225, 0.075);
-    backdrop-filter: blur(25px);
-    border:2px solid rgba(255,255,255,0.2);
-    box-shadow: -15px 15px 17px  rgba(130, 130, 130, 0.25);
-   
+    background-color: rgba(20, 20, 22, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 .font-about
 {
@@ -136,7 +134,7 @@
 #boxDiv-about {
     width: 150px; /* Reduced width */
     height: 150px; /* Reduced height */
-
+    animation: none; /* Disable 3D rotation on mobile to save GPU resources */
 }
 
 #boxDiv-about div {
