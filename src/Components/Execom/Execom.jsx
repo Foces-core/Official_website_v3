@@ -1,6 +1,6 @@
 import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Pagination, Navigation, EffectCube } from 'swiper/modules';
+import { Autoplay, Pagination, Navigation, EffectCube, Keyboard } from 'swiper/modules';
 
 import 'swiper/css';
 import 'swiper/css/effect-cube';
@@ -114,13 +114,14 @@ function Execom() {
         <div ref={deskWrapRef} className="hidden sm:block">
           <Swiper
             onSwiper={(swiper) => { deskSwiperRef.current = swiper; }}
-            modules={[Autoplay, Pagination, Navigation]}
+            modules={[Autoplay, Pagination, Navigation, Keyboard]}
             spaceBetween={20}
             slidesPerView={1}
             loop={true}
             autoplay={lowPower ? false : { delay: 3500, disableOnInteraction: false }}
             pagination={{ clickable: true }}
             navigation={true}
+            keyboard={{ enabled: true, onlyInViewport: true }}
             breakpoints={{
               640: { slidesPerView: 2, spaceBetween: 20 },
               1024: { slidesPerView: 3, spaceBetween: 24 },

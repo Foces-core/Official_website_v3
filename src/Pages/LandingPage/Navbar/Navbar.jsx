@@ -131,6 +131,35 @@ export default function Navbar() {
     }
   };
 
+  // Quicklink: once the page is idle, preload real route documents in the
+  // viewport (e.g. /events, /contact) so navigation feels instant. Hash-only
+  // anchors (#about, #execom…) stay same-page, so they're skipped.
+  useEffect(() => {
+    if (slowNetwork) return;
+    let cancelled = false;
+    const idle = (cb) =>
+      typeof window.requestIdleCallback === 'function'
+        ? window.requestIdleCallback(cb, { timeout: 2500 })
+        : setTimeout(cb, 1500);
+    idle(() => {
+      if (cancelled) return;
+      import('quicklink')
+        .then(({ default: quicklink }) =>
+          quicklink.listen({
+            priority: true,
+            ignores: [
+              (uri) => uri.pathname === '/', // landing page is already loaded
+              (uri) => uri.hash !== '', // same-page section links
+            ],
+          })
+        )
+        .catch(() => {});
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [slowNetwork]);
+
   return (
     <div
       className={`fixed z-10 shadow ${
