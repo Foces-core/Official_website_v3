@@ -6,85 +6,76 @@ import BlockContent from '@sanity/block-content-to-react';
 import Modal from './Modal';
 
 function EventCardMobile({ Events }) {
-  const [ExpandingCard, setExpandingCard] = useState(true);
   const [Expanding, setExpanding] = useState(false);
   const [isEventClosed, setIsEventClosed] = useState(false);
 
   useEffect(() => {
     AOS.init({ duration: 1000, once: true });
 
-    // Parse the event date
     const eventDate = new Date(Events.date);
     const currentDate = new Date();
 
-    // Compare the event date with the current date
     if (eventDate < currentDate) {
       setIsEventClosed(true);
     }
   }, [Events.date]);
 
+  const images = Events.images || [];
+  const primaryImage = images[0];
+
   return (
     <div
-      className='h-fit w-fit bg-gradient-to-bl from-slate-950 rounded-xl mt-10 mb-10 flex flex-col overflow-hidden  p-3'
+      className='w-[92%] max-w-sm bg-slate-900/80 border border-slate-800 rounded-2xl my-6 p-5 flex flex-col gap-4 shadow-xl'
       data-aos='fade-up'
     >
       <div
-        animate={{ height: !ExpandingCard ? 'auto' : 580 }}
-        transition={spring}
-        layout
-        className='bg-gradient-to-br from-slate-950 h-fit w-[350px] rounded-lg shadow-2xl shadow-slate-700 '
-        style={{
-          transition: 'box-shadow 0.7s ease',
-        }}
+        className='relative w-full h-52 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 shadow-md cursor-pointer group'
+        onClick={() => setExpanding(true)}
       >
-        {console.log(Events)}
-        <div className='flex flex-col h-full'>
-          <div className='w-full h-full flex flex-col'>
+        {primaryImage && (
+          <img
+            src={primaryImage}
+            alt={Events.name}
+            className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
+          />
+        )}
+        <div className='absolute bottom-2 right-2 bg-blue-600/90 text-white text-xs font-semibold px-2.5 py-1 rounded-full backdrop-blur-sm'>
+          {images.length} Photos
+        </div>
+      </div>
+
+      <Modal images={images} open={Expanding} onClose={() => setExpanding(false)} />
+
+      <div className='text-white space-y-3'>
+        <h3 className='text-2xl font-bold tracking-tight text-white'>
+          {Events.name}
+        </h3>
+        <div className='text-gray-300 text-sm leading-relaxed'>
+          <BlockContent
+            blocks={Events.content}
+            projectId='n7hx0w67'
+            dataset='production'
+          />
+        </div>
+        <div className='text-blue-400 font-medium text-xs'>
+          📅 {Events.date}
+        </div>
+
+        <div className='pt-2 flex justify-start items-center'>
+          {isEventClosed || Events.ticket === 'closed' ? (
+            <span className='px-3 py-1.5 bg-red-950/60 border border-red-800 text-red-400 font-semibold text-xs rounded-lg'>
+              Closed
+            </span>
+          ) : (
             <a
-              className='w-[100%] h-[100%] mt-12 ml-5 flex flex-col gap-3'
-              onClick={() => setExpanding(!Expanding)}
+              className='bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-xl font-medium text-white text-sm shadow-md'
+              href={Events.tickets}
+              target='_blank'
+              rel='noreferrer'
             >
-              {Events.images.map((image, index) => (
-                <div
-                  key={index}
-                  className='bg-slate-700 w-[90%] h-24 rounded-[30px] bg-cover'
-                  style={{ backgroundImage: `url(${image})` }}
-                  role='img'
-                  aria-label={`Event image ${index + 1}`}
-                ></div>
-              ))}
+              Register Now
             </a>
-
-            <Modal images={Events.images} open={Expanding} onClose={() => setExpanding(false)}>
-              {console.log(Expanding)}
-            </Modal>
-
-            <div className='w-[95%] items-end text-white pr-2'>
-              <h1 className='text-6xl text-right mb-1 ml-3 '>{Events.name}</h1>
-              <p className='text-base text-left mt-1 ml-5'>
-                <BlockContent
-                  blocks={Events.content}
-                  projectId='n7hx0w67'
-                  dataset='production'
-                />
-                <br />
-                {Events.date}
-              </p>
-
-              <div className='h-[15%] mb-3 flex justify-end items-end transition-all ease-in-out duration-300'>
-                {isEventClosed || Events.ticket === 'closed' ? (
-                  <span className='text-red-500 font-bold'>Closed</span>
-                ) : (
-                  <a
-                    className='bg-black hover:bg-blue-700 border-[2px] border-blue-700 hover:border-white p-2 rounded-xl text-white transition-all ease-in-out duration-300'
-                    href={Events.tickets}
-                  >
-                    Register Now
-                  </a>
-                )}
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </div>
