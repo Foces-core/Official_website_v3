@@ -5,9 +5,11 @@ import 'aos/dist/aos.css';
 import BlockContent from '@sanity/block-content-to-react';
 import Modal from './Modal';
 import { sanityImg } from '../../utils/sanityImage.js';
+import useDeviceProfile from '../../hooks/useLowPower.js';
 import 'reactjs-popup/dist/index.css';
 
 function EventcardR({ Events, priority }) {
+  const { slowNetwork } = useDeviceProfile();
   const [Expanding, setExpanding] = useState(false);
   const [isEventClosed, setIsEventClosed] = useState(false);
 
@@ -38,7 +40,7 @@ function EventcardR({ Events, priority }) {
         >
           {primaryImage && (
             <img
-              src={sanityImg(primaryImage, 1000)}
+              src={sanityImg(primaryImage, slowNetwork ? 640 : 1000)}
               alt={Events.name}
               loading={priority ? 'eager' : 'lazy'}
               decoding="async"
@@ -57,7 +59,7 @@ function EventcardR({ Events, priority }) {
             {images.slice(1, 4).map((img, idx) => (
               <img
                 key={idx}
-                src={sanityImg(img, 240)}
+                src={sanityImg(img, slowNetwork ? 160 : 240)}
                 alt=""
                 loading="lazy"
                 decoding="async"
