@@ -207,12 +207,9 @@ function ContactUs() {
                   href="https://www.instagram.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-white"
+                  className="bg-white text-black p-1 rounded-md"
                 >
-                  <FaInstagram
-                    style={{ height: "25", width: "25" }}
-                    className="mx-0.5"
-                  />
+                  <FaInstagram className="mx-2" />
                 </a>
                 <div className="border-r-2 border-white h-6"></div>
                 <a
