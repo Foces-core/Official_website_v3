@@ -101,6 +101,15 @@ export default function Navbar() {
     window.location.href = "https://www.instagram.com/foces_cec/";
   };
 
+  // Foresight.js / Quicklink intelligent route chunk prefetching
+  const handlePrefetch = (id) => {
+    if (id === 'events') {
+      import('../../EventPage/Eventpage.jsx').catch(() => {});
+    } else if (id === 'contact') {
+      import('../../../Components/ContactUs/ContactUs.jsx').catch(() => {});
+    }
+  };
+
   return (
     <div
       className={`fixed z-10 shadow ${
@@ -176,6 +185,9 @@ export default function Navbar() {
                 ? "text-[#ffffff80]"
                 : "text-[#000000b3]"
             } `}
+            onMouseEnter={() => handlePrefetch(item.id)}
+            onTouchStart={() => handlePrefetch(item.id)}
+            onFocus={() => handlePrefetch(item.id)}
             onClick={() => handleItemClick(item.id)}
           >
             {item.name}
