@@ -21,6 +21,7 @@ import Abhirami from '../../assets/abhirami_p.jpg';
 import Devadarsana from '../../assets/WhatsApp Image 2026-08-04 at 12.07.46 PM.jpeg';
 
 import MeetTheTeam from '../../assets/MeetTheTeam.svg';
+import useLowPower from '../../hooks/useLowPower.js';
 
 const cardData = [
   { name: 'Aleetta Mariya Sebastian', img: Aleetta, review: 'Chairperson' },
@@ -37,6 +38,8 @@ const cardData = [
 ];
 
 function Execom() {
+  const lowPower = useLowPower();
+
   return (
     <section className='min-h-full flex flex-col pt-10 pb-20 overflow-hidden' id='execom'>
       {/* Section Header */}
@@ -55,7 +58,7 @@ function Execom() {
             spaceBetween={20}
             slidesPerView={1}
             loop={true}
-            autoplay={{ delay: 3500, disableOnInteraction: false }}
+            autoplay={lowPower ? false : { delay: 3500, disableOnInteraction: false }}
             pagination={{ clickable: true }}
             navigation={true}
             breakpoints={{
@@ -73,6 +76,7 @@ function Execom() {
                     src={d.img}
                     alt={d.name}
                     loading="lazy"
+                    decoding="async"
                   />
                   <div className="absolute rounded-b-3xl bottom-0 w-full bg-gradient-to-t from-black via-black/85 to-transparent p-4 text-left">
                     <div className="text-white text-base font-semibold italic">{d.name}</div>
@@ -96,7 +100,7 @@ function Execom() {
               shadowScale: 0.94,
             }}
             loop={false}
-            autoplay={{ delay: 3000, disableOnInteraction: false }}
+            autoplay={lowPower ? false : { delay: 3000, disableOnInteraction: false }}
             pagination={{ clickable: true }}
             modules={[EffectCube, Pagination, Autoplay]}
             onReachEnd={(swiper) => swiper.slideTo(0)}
@@ -111,6 +115,7 @@ function Execom() {
                     src={d.img}
                     alt={d.name}
                     loading="eager"
+                    decoding="async"
                   />
                   <div className="absolute rounded-b-3xl bottom-0 w-full bg-gradient-to-t from-black via-black/90 to-transparent p-4 text-left">
                     <div className="text-white text-base font-semibold italic">{d.name}</div>

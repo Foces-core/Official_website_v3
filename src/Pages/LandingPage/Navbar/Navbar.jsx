@@ -220,7 +220,7 @@ export default function Navbar() {
           ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
             ? "bg-[#F5F5F5] text-[#101011] hover:bg-[#101011] hover:text-[#F5F5F5] hover:border hover:border-[#F5F5F5]"
             : "bg-black text-[#F5F5F5] hover:bg-[#F5F5F5] hover:text-black hover:border hover:border-black"
-        } flex justify-center items-center rounded-3xl duration-700 max-[767px]:h-[4vh] max-[767px]:ml-28 max-[767px]:w-[6.5em] max-[767px]:text-[clamp(0.6rem,3.4vw,0.75rem)] max-[380px]:ml-[25%] max-[320px]:ml-[15%] ${
+        } flex justify-center items-center rounded-3xl duration-700 whitespace-nowrap select-none max-[767px]:ml-auto max-[767px]:mr-12 max-[767px]:w-auto max-[767px]:h-auto max-[767px]:px-4 max-[767px]:py-1.5 max-[767px]:text-[0.7rem] max-[767px]:font-medium max-[767px]:tracking-wide ${
           showItems && isMobile ? "hidden" : ""
         }`}
         onClick={handleJoinFocesClick}
