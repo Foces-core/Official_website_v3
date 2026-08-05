@@ -95,7 +95,7 @@ function Execom() {
               shadowOffset: 20,
               shadowScale: 0.94,
             }}
-            loop={true}
+            loop={false}
             autoplay={{ delay: 3000, disableOnInteraction: false }}
             pagination={{ clickable: true }}
             modules={[EffectCube, Pagination, Autoplay]}

@@ -36,4 +36,8 @@
   .container-execom {
     height: 390px;
   }
+  .execom-cube-swiper {
+    touch-action: pan-y;
+    perspective: 1200px;
+  }
 }  
