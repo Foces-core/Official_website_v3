@@ -1,75 +1,112 @@
-import React ,{useEffect}  from 'react'
-import AOS from "aos"
+import React, { useEffect } from 'react';
+import AOS from "aos";
 import "aos/dist/aos.css";
-import { MouseParallaxContainer, MouseParallaxChild } from "react-parallax-mouse"
-import Event from '../../assets/Event.svg'
-import  "./Events.css"
-import {Link} from "react-router-dom";
-import img1 from "../../assets/agentic_coding.jpg";
-import img2 from "../../assets/coding_arena.jpg";
-import img3 from "../../assets/the_prompt_paradox_2_0_insta.jpg";
-import img4 from "../../assets/coding_arena_4_0_insta.jpg";
+import { Link } from "react-router-dom";
+import EventTitle from '../../assets/Event.svg';
+import agenticCodingPhoto from '../../assets/agentic_coding.jpg';
+import codingArenaPoster from '../../assets/coding_arena_4_0_insta.jpg';
+import promptParadoxPoster from '../../assets/the_prompt_paradox_2_0_insta.jpg';
+
+const featuredEvents = [
+  {
+    id: 1,
+    title: "Agentic Coding Workshop",
+    tag: "Hands-on Workshop",
+    date: "9th July 2026",
+    image: agenticCodingPhoto,
+    desc: "Empowering developers to build autonomous AI agents using cutting-edge LLMs and agent frameworks."
+  },
+  {
+    id: 2,
+    title: "Coding Arena 4.0",
+    tag: "Flagship Hackathon",
+    date: "27th July - 5th Aug",
+    image: codingArenaPoster,
+    desc: "The ultimate competitive programming and rapid prototyping battlefield at MCA Lab."
+  },
+  {
+    id: 3,
+    title: "The Prompt Paradox 2.0",
+    tag: "AI & Prompt Engineering",
+    date: "21st June 2026",
+    image: promptParadoxPoster,
+    desc: "Test your prompt engineering mastery, solve complex AI puzzles, and break through the digital maze."
+  }
+];
 
 function Events() {
-  
-    useEffect(() => {
-       AOS.init({ duration: 1000 , once: true });
-      }, [])
+  useEffect(() => {
+    AOS.init({ duration: 1000, once: true });
+  }, []);
 
-      
-      
-    return (
-      <div className='overflow-x-hidden h-fit  pb-5  bg-[#101011]' id='events' >
-        <div className="h-screen w-screen bg-transparent overflow-hidden  relative pb-3 bg-">
-          <MouseParallaxContainer 
-            className="h-full w-full relative  "
-            globalFactorX={0.03}
-            globalFactorY={0.03}
-            resetOnLeave={true}
-            inverted={false}
-          >
-              <MouseParallaxChild
-                factorX={1.}
-                factorY={1.}
-              >
-                <img src={img1} alt="" className='responsive-image1 ' data-aos="slide-right"/>
-              </MouseParallaxChild> 
-             
+  return (
+    <section className="bg-[#0b0b0c] text-white py-20 px-4 md:px-12 relative overflow-hidden" id="events">
+      {/* Background Decorative Neon Glows */}
+      <div className="absolute top-1/4 -left-32 w-96 h-96 bg-cyan-600/15 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute bottom-10 -right-32 w-96 h-96 bg-purple-600/15 blur-[120px] rounded-full pointer-events-none" />
 
-              <MouseParallaxChild
-                factorX={1.}
-                factorY={1.}
-              >
-                <img src={img2} alt="" className='responsive-image2' data-aos="slide-down"/>
-              </MouseParallaxChild>
-              
+      <div className="max-w-7xl mx-auto flex flex-col items-center">
+        {/* Section Header */}
+        <div className="flex flex-col items-center text-center mb-14" data-aos="fade-down">
+          <img src={EventTitle} alt="Events" className="h-16 md:h-20 w-auto mb-4 filter drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]" />
+          <p className="text-gray-400 text-sm md:text-base max-w-xl font-light tracking-wide">
+            Participate in our flagship hackathons, technical workshops, and competitive coding arenas.
+          </p>
+        </div>
 
-              <MouseParallaxChild
-                factorX={1.}
-                factorY={1.}
-              >
-                <img src={img3} alt="" className='responsive-image3' data-aos="slide-up"/>
-              </MouseParallaxChild>
+        {/* Featured Events Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full mb-12">
+          {featuredEvents.map((evt, idx) => (
+            <div
+              key={evt.id}
+              data-aos="fade-up"
+              data-aos-delay={idx * 150}
+              className="group relative rounded-2xl overflow-hidden bg-[#141416] border border-white/10 hover:border-white/30 transition-all duration-500 shadow-xl hover:shadow-2xl hover:shadow-cyan-500/10 flex flex-col justify-between"
+            >
+              {/* Image Banner */}
+              <div className="relative h-64 w-full overflow-hidden">
+                <img
+                  src={evt.image}
+                  alt={evt.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#141416] via-transparent to-transparent opacity-90" />
+                <span className="absolute top-4 left-4 bg-black/60 backdrop-blur-md text-cyan-400 text-xs font-semibold px-3 py-1 rounded-full border border-cyan-500/30">
+                  {evt.tag}
+                </span>
+              </div>
 
-              <MouseParallaxChild
-                factorX={1.}
-                factorY={1.}
-              >
-                <img src={img4} alt="" className='responsive-image4' data-aos="slide-left"/>
-              </MouseParallaxChild>
-              
-          </MouseParallaxContainer>
-
-            <div className="absolute-center"  >
-              <div className="h-fit w-fit " data-aos="zoom-in" >
-                <Link to="/Events" className="event-container" >
-                  <img src={Event} alt='Events' className="h-20 w-60  mx-5 my-3 animate-pulse p-4"  />
-                </Link>
+              {/* Card Content */}
+              <div className="p-6 flex flex-col flex-grow justify-between">
+                <div>
+                  <div className="text-xs text-gray-400 font-medium mb-1">{evt.date}</div>
+                  <h3 className="text-xl font-bold text-white group-hover:text-cyan-300 transition-colors mb-2">
+                    {evt.title}
+                  </h3>
+                  <p className="text-gray-400 text-sm line-clamp-3 leading-relaxed mb-4">
+                    {evt.desc}
+                  </p>
+                </div>
               </div>
             </div>
-       </div>
-    </div>
-  )
+          ))}
+        </div>
+
+        {/* Call to Action Button */}
+        <div data-aos="zoom-in" className="mt-4">
+          <Link
+            to="/Events"
+            className="inline-flex items-center space-x-3 bg-white text-black font-bold text-base px-8 py-3.5 rounded-xl shadow-lg hover:bg-cyan-400 hover:text-black transition-all duration-300 transform hover:scale-105"
+          >
+            <span>Explore All Events</span>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
 }
 
-export default Events
+export default Events;
