@@ -98,6 +98,8 @@ function Events() {
         <div data-aos="fade-up" data-aos-duration="300" className="mt-2">
           <Link
             to="/Events"
+            onMouseEnter={() => import('../EventPage/Eventpage.jsx').catch(() => {})}
+            onTouchStart={() => import('../EventPage/Eventpage.jsx').catch(() => {})}
             className="inline-flex items-center space-x-3 bg-white text-black font-bold text-base px-8 py-3.5 rounded-xl shadow-lg hover:bg-cyan-400 hover:text-black transition-all duration-300 transform hover:scale-105"
           >
             <span>Explore All Events</span>
