@@ -1,6 +1,6 @@
 import './HeroSection.css';
 import { useState, useEffect, useRef } from 'react';
-import 'vanta/vendor/three.r134.min';
+import * as THREE from 'three';
 import WAVES from 'vanta/dist/vanta.waves.min';
 import Cursor from '../../../Components/Cursor/Cursor';
 import ddd from '../../../assets/ddd.svg';
@@ -8,7 +8,7 @@ import focespng from '../../../assets/foces.png';
 import foces1 from '../../../assets/foces1.svg';
 import client from '../../../sanityClient.js';
 
-if (typeof window !== 'undefined' && !window.THREE) {
+if (typeof window !== 'undefined') {
   window.THREE = THREE;
 }
 
