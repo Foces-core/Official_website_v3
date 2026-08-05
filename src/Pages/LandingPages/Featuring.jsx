@@ -16,9 +16,9 @@ import agenticCodingPoster from '../../assets/agentic_coding_instagram.jpg';
 import client from '../../sanityClient.js';
 
 const fallbackFeatures = [
-  { image: { asset: { url: codingArenaPoster }, alt: "Coding Arena 4.0" }, tickets: "#" },
-  { image: { asset: { url: promptParadoxPoster }, alt: "The Prompt Paradox 2.0" }, tickets: "#" },
-  { image: { asset: { url: agenticCodingPoster }, alt: "Agentic Coding" }, tickets: "#" },
+  { image: { asset: { url: codingArenaPoster }, alt: "Coding Arena 4.0" } },
+  { image: { asset: { url: promptParadoxPoster }, alt: "The Prompt Paradox 2.0" } },
+  { image: { asset: { url: agenticCodingPoster }, alt: "Agentic Coding" } },
 ];
 
 
@@ -114,13 +114,31 @@ useEffect(() => {
         }}
         className="mySwiper bg-transparent px-10 pb-10 h-fit"
       >
-         {(feature.length > 0 ? feature : fallbackFeatures).map(({ image, tickets }, index) => (
-            <SwiperSlide key={index} className='px-5 pb-7 pt-7 bg-transparent rounded-full'>
-              <a href={tickets}>
-                <img className='hover:shadow-white hover:shadow-[0_0px_20px_rgb(0,0,0,0.12)] h-full w-full rounded-xl hover:scale-105  duration-100' src={image?.asset?.url} alt={image?.alt || ''} data-aos="flip-right" />
-              </a>
-            </SwiperSlide>
-          ))}
+         {(feature.length > 0 ? feature : fallbackFeatures).map(({ image, tickets }, index) => {
+            const hasValidLink = tickets && tickets !== '#' && tickets.startsWith('http');
+            const imgElement = (
+              <img
+                className='hover:shadow-white hover:shadow-[0_0px_20px_rgba(255,255,255,0.2)] h-full w-full rounded-2xl object-cover hover:scale-105 transition-all duration-300 shadow-xl'
+                src={image?.asset?.url}
+                alt={image?.alt || 'Featured Event'}
+                data-aos="flip-right"
+              />
+            );
+
+            return (
+              <SwiperSlide key={index} className='px-3 pb-8 pt-4 bg-transparent'>
+                {hasValidLink ? (
+                  <a href={tickets} target='_blank' rel='noreferrer'>
+                    {imgElement}
+                  </a>
+                ) : (
+                  <div className='cursor-default'>
+                    {imgElement}
+                  </div>
+                )}
+              </SwiperSlide>
+            );
+          })}
       </Swiper>
       </div>
     </div>
