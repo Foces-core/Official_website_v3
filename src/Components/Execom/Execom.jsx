@@ -4,15 +4,12 @@ import Slider from "react-slick";
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
 
-import Gopakumar from '../../assets/gopakumar.jpg';
 import Aleetta from '../../assets/aleeta.jpg';
 import Lisha from '../../assets/lisha1.jpg';
 import Steve from '../../assets/steve.jpg';
-import AnnaRachel from '../../assets/anna_rachel.jpg';
 import Amanul from '../../assets/amanul.jpg';
 import Abel from '../../assets/abel.jpg';
 import Saniya from '../../assets/saniya.jpg';
-import Sebin from '../../assets/sebin.jpg';
 import Anjitha from '../../assets/anjitha.jpg';
 import Abhirami from '../../assets/abhirami_p.jpg';
 import Devadarsana from '../../assets/devadarasan.jpg';
@@ -121,11 +118,6 @@ function Execom() {
 
 const cardData = [
   {
-    name: 'Gopakumar G',
-    img: Gopakumar,
-    review: 'Advisor',
-  },
-  {
     name: 'Aleetta Mariya Sebastian',
     img: Aleetta,
     review: 'Chairperson',
@@ -141,11 +133,6 @@ const cardData = [
     review: 'Secretary',
   },
   {
-    name: 'Anna Rachel Mathew',
-    img: AnnaRachel,
-    review: 'Joint Secretary',
-  },
-  {
     name: 'Amanul Farhan K S',
     img: Amanul,
     review: 'Treasurer',
@@ -159,11 +146,6 @@ const cardData = [
     name: 'Saniya K Shibu',
     img: Saniya,
     review: 'Program Outreach Coordinator',
-  },
-  {
-    name: 'Sebin Mathew',
-    img: Sebin,
-    review: 'Project Coordinator',
   },
   {
     name: 'Anjitha Aravind',
