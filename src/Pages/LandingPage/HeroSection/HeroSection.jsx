@@ -1,16 +1,10 @@
 import './HeroSection.css';
 import { useState, useEffect, useRef } from 'react';
-import * as THREE from 'three';
-import WAVES from 'vanta/dist/vanta.waves.min';
 import Cursor from '../../../Components/Cursor/Cursor';
 import ddd from '../../../assets/ddd.svg';
 import focespng from '../../../assets/foces.png';
 import foces1 from '../../../assets/foces1.svg';
 import client from '../../../sanityClient.js';
-
-if (typeof window !== 'undefined') {
-  window.THREE = THREE;
-}
 
 function HeroSection() {
   const [notfy, setNotfy] = useState([]);
@@ -39,22 +33,35 @@ function HeroSection() {
 
   useEffect(() => {
     let vantaEffect = null;
-    if (myRef.current) {
+    let cancelled = false;
+
+    // Lazy-load three + vanta AFTER window.THREE is set.
+    // (vanta captures window.THREE at module-evaluation time, so a static
+    // import would capture it before main.jsx/HeroSection can assign it.)
+    (async () => {
       try {
+        const THREE = await import('three');
+        if (typeof window !== 'undefined') {
+          window.THREE = THREE;
+        }
+        const { default: WAVES } = await import('vanta/dist/vanta.waves.min');
+        if (cancelled || !myRef.current) return;
         vantaEffect = WAVES({
           el: myRef.current,
           mouseControls: true,
           touchControls: true,
           gyroControls: false,
           scale: 0.75,
-          scaleMobile: 0.50,
+          scaleMobile: 0.5,
           color: 0x000000,
         });
       } catch (err) {
         console.warn('Vanta Waves init warning:', err);
       }
-    }
+    })();
+
     return () => {
+      cancelled = true;
       if (vantaEffect && typeof vantaEffect.destroy === 'function') {
         vantaEffect.destroy();
       }

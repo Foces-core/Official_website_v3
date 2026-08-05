@@ -30,7 +30,7 @@ const cardData = [
   { name: 'Amanul Farhan K S', img: Amanul, review: 'Treasurer' },
   { name: 'Abel S Mathew', img: Abel, review: 'Research & Development Lead' },
   { name: 'Saniya K Shibu', img: Saniya, review: 'Program Outreach Coordinator' },
-  { name: 'Sebin Mathew', img: Sebin, review: 'Project Coordinator', imgPos: 'object-center' },
+  { name: 'Sebin Mathew', img: Sebin, review: 'Project Coordinator', imgPos: 'object-[20%_45%]' },
   { name: 'Anjitha Aravind', img: Anjitha, review: 'Operations Lead' },
   { name: 'Abhirami P', img: Abhirami, review: 'Design Lead' },
   { name: 'Devadarsana R', img: Devadarsana, review: 'Public Relations Lead' }
@@ -99,6 +99,8 @@ function Execom() {
             autoplay={{ delay: 3000, disableOnInteraction: false }}
             pagination={{ clickable: true }}
             modules={[EffectCube, Pagination, Autoplay]}
+            onReachEnd={(swiper) => swiper.slideTo(0)}
+            onReachBeginning={(swiper) => swiper.slideTo(swiper.slides.length - 1)}
             className="execom-cube-swiper pb-10"
           >
             {cardData.map((d, index) => (

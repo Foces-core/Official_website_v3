@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Edu+AU+VIC+WA+NT+Hand:wght@400..700&display=swap');
+/* Space Grotesk is loaded via <link> in index.html (faster than CSS @import) */
 
 .container-about
 {   padding:40px 20px;
@@ -9,14 +9,14 @@
 }
 .font-about
 {
-    font-family: "Edu AU VIC WA NT Hand", cursive;
+    font-family: "Space Grotesk", sans-serif;
     font-optical-sizing: auto;
     font-weight: 400;
     font-style: normal;
     word-spacing: 4px;
-    line-height: 2;
-    opacity: 0.8; 
-    font-size:16px;
+    line-height: 1.9;
+    opacity: 0.85; 
+    font-size: clamp(1.05rem, 1.7vw, 1.4rem);
 }
   #mainDiv-about {
     width: 200px; 
@@ -119,8 +119,7 @@
     .font-about
     {
         word-spacing: 1px;
-        font-size:10px ;
-       
+        font-size: clamp(0.95rem, 4.6vw, 1.1rem);
     }
 }
 @media (max-width:500px)

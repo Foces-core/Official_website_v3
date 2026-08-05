@@ -14,6 +14,10 @@
     }
   ],
   "rewrites": [
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/events", "destination": "/index.html" },
+    { "source": "/Events", "destination": "/index.html" },
+    { "source": "/contact", "destination": "/index.html" },
+    { "source": "/Contact", "destination": "/index.html" },
+    { "source": "/sanity/(.*)", "destination": "https://n7hx0w67.apicdn.sanity.io/$1" }
   ]
 }
