@@ -27,7 +27,7 @@ function Footer() {
           </a>
         </div>
         <p className="text-center text-[#D9D9D9] text-xs md:text-sm">
-          Copyright ©2026 All rights reserved | Made with{" "}
+          Copyright ©{new Date().getFullYear()} All rights reserved | Made with{" "}
           <FaHeart className="inline-block text-[#080AA4] h-3.5 w-3.5 mx-0.5" /> by FOCES
         </p>
       </div>

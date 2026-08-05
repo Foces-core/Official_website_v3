@@ -62,7 +62,7 @@ function EventCardMobile({ Events }) {
         </div>
 
         <div className='pt-2 flex justify-start items-center'>
-          {isEventClosed || Events.ticket === 'closed' ? (
+          {isEventClosed || Events.tickets === 'closed' ? (
             <span className='px-3 py-1.5 bg-red-950/60 border border-red-800 text-red-400 font-semibold text-xs rounded-lg'>
               Closed
             </span>

@@ -85,7 +85,7 @@ function EventcardL({ Events }) {
         </div>
 
         <div className='pt-2 flex justify-start items-center'>
-          {isEventClosed || Events.ticket === 'closed' ? (
+          {isEventClosed || Events.tickets === 'closed' ? (
             <span className='inline-block px-4 py-2 bg-red-950/60 border border-red-800 text-red-400 font-semibold text-sm rounded-xl'>
               Registration Closed
             </span>

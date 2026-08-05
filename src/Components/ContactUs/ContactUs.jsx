@@ -136,7 +136,7 @@ function ContactUs() {
           </div>
         </div>
         <div className="text-white w-full flex justify-center items-center">
-          <div className="flex flex-col-reverse md:flex-row md:space-x-6 md:space-y-0 space-y-6 w-full p-8 rounded-xl justify-center items-center md:items-baseline">
+          <div className="flex flex-col-reverse md:flex-row md:space-x-6 md:space-y-0 space-y-6 w-full p-4 md:p-8 rounded-xl justify-center items-center md:items-baseline">
             <div className="flex flex-col space-y-4 justify-center items-baseline">
               <div className="md:text-xl lg:text-2xl mb-4 md:mb-6 lg:mb-8">
                 <div className="items-center hidden md:block mt-4">
@@ -156,7 +156,7 @@ function ContactUs() {
                   </div>
                 </div>
               </div>
-              <div className="flex text-2xl   md:text-lg flex-col space-y-4 m-4 sm:ml-[0px]">
+              <div className="flex text-lg flex-col space-y-4 m-4 sm:ml-[0px]">
                 <div className="mb-4 flex  ">
                   <img
                     className="pt-2 w-44 h-[25px] "
@@ -186,37 +186,37 @@ function ContactUs() {
               <div className="flex space-x-3  sm:space-x-2 text-lg space-y-16 items-center">
                 <div></div>
                 <a
-                  href="https://www.facebook.com"
+                  href="https://www.facebook.com/focescec?mibextid=JRoKGi"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-white text-black p-1 rounded-md"
+                  className="bg-white text-black p-1 rounded-md hover:opacity-80 transition-opacity"
                 >
                   <FaFacebookF className="mx-2" />
                 </a>
                 <div className="border-r-2 border-white h-6"></div>
                 <a
-                  href="https://www.twitter.com"
+                  href="https://x.com/foces_cec?t=e__UXOl9tQFznh7JG8kqzQ&s=08"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-white text-black p-1 rounded-md"
+                  className="bg-white text-black p-1 rounded-md hover:opacity-80 transition-opacity"
                 >
                   <FaXTwitter className="mx-2" />
                 </a>
                 <div className="border-r-2 border-white h-6"></div>
                 <a
-                  href="https://www.instagram.com"
+                  href="https://www.instagram.com/foces_cec?igsh=b2E3bjNpbGgzdG03"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-white text-black p-1 rounded-md"
+                  className="bg-white text-black p-1 rounded-md hover:opacity-80 transition-opacity"
                 >
                   <FaInstagram className="mx-2" />
                 </a>
                 <div className="border-r-2 border-white h-6"></div>
                 <a
-                  href="https://www.linkedin.com"
+                  href="https://www.linkedin.com/in/foces-cec-423176229/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="bg-white text-black p-1 rounded-md"
+                  className="bg-white text-black p-1 rounded-md hover:opacity-80 transition-opacity"
                 >
                   <FaLinkedinIn className="mx-2" />
                 </a>
@@ -255,7 +255,7 @@ function ContactUs() {
                   <div>
                     <label
                       htmlFor="email"
-                      className="text=-sm text-white"
+                      className="text-sm text-white"
                     >
                       Email
                     </label>

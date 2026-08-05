@@ -18,7 +18,7 @@ import Saniya from '../../assets/saniya.jpg';
 import Sebin from '../../assets/sebin.jpg';
 import Anjitha from '../../assets/anjitha.jpg';
 import Abhirami from '../../assets/abhirami_p.jpg';
-import Devadarsana from '../../assets/devadarasan.jpg';
+import Devadarsana from '../../assets/WhatsApp Image 2026-08-04 at 12.07.46 PM.jpeg';
 
 import MeetTheTeam from '../../assets/MeetTheTeam.svg';
 
@@ -30,7 +30,7 @@ const cardData = [
   { name: 'Amanul Farhan K S', img: Amanul, review: 'Treasurer' },
   { name: 'Abel S Mathew', img: Abel, review: 'Research & Development Lead' },
   { name: 'Saniya K Shibu', img: Saniya, review: 'Program Outreach Coordinator' },
-  { name: 'Sebin Mathew', img: Sebin, review: 'Project Coordinator' },
+  { name: 'Sebin Mathew', img: Sebin, review: 'Project Coordinator', imgPos: 'object-center' },
   { name: 'Anjitha Aravind', img: Anjitha, review: 'Operations Lead' },
   { name: 'Abhirami P', img: Abhirami, review: 'Design Lead' },
   { name: 'Devadarsana R', img: Devadarsana, review: 'Public Relations Lead' }
@@ -69,7 +69,7 @@ function Execom() {
               <SwiperSlide key={index}>
                 <div className='container-execom bg-[#161618] border-box relative rounded-3xl overflow-hidden group'>
                   <img
-                    className="object-cover object-top w-full h-full card-hover grayscale group-hover:filter-none transition-all duration-300"
+                    className={`object-cover ${d.imgPos || 'object-top'} w-full h-full card-hover grayscale group-hover:filter-none transition-all duration-300`}
                     src={d.img}
                     alt={d.name}
                     loading="lazy"
@@ -105,7 +105,7 @@ function Execom() {
               <SwiperSlide key={index}>
                 <div className='container-execom bg-[#161618] border-box relative rounded-3xl overflow-hidden shadow-2xl'>
                   <img
-                    className="object-cover object-top w-full h-full"
+                    className={`object-cover ${d.imgPos || 'object-top'} w-full h-full`}
                     src={d.img}
                     alt={d.name}
                     loading="eager"

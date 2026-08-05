@@ -20,10 +20,11 @@ export default function Modal({ images, open, onClose }) {
         onClick={(e) => e.stopPropagation()}
       >
         <button
-          className='absolute top-4 right-4 text-white text-2xl'
+          className='absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white text-xl transition-colors duration-200'
           onClick={onClose}
+          aria-label='Close gallery'
         >
-         
+          ✕
         </button>
         <Swiper
           modules={[Navigation, Pagination, Scrollbar, A11y]}

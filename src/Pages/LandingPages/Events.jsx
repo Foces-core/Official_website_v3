@@ -19,7 +19,7 @@ const featuredEvents = [
   {
     id: 2,
     title: "Coding Arena 4.0",
-    tag: "Flagship Hackathon",
+    tag: "Bootcamp",
     date: "27th July - 5th Aug",
     image: codingArenaPoster,
     desc: "The ultimate competitive programming and rapid prototyping battlefield at MCA Lab."

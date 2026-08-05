@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { FreeMode, Pagination,Navigation,  Scrollbar, A11y } from 'swiper/modules';
+import { FreeMode, Pagination, Scrollbar, A11y } from 'swiper/modules';
 import 'swiper/css'; 
 import 'swiper/css/free-mode'; 
-import 'swiper/css/navigation'; 
 import 'swiper/css/pagination';
 import FI1 from "../../assets/FI1.svg";
 import featuring from '../../assets/featuring.svg';
@@ -86,7 +85,7 @@ useEffect(() => {
   }, []);
 
   return (
-    <div className="bg-[#101011] h-fit w-screen  flex  flex-col pt-32  overflow-x-hidden pb-20 " id='featuring'>
+    <div className="bg-[#101011] h-fit w-full  flex  flex-col pt-32  overflow-x-hidden pb-20 " id='featuring'>
       <div className='flex  items-center h-20 pb-9 '>
     <div className='flex items-center justify-center w-full'>
    
@@ -95,20 +94,15 @@ useEffect(() => {
   </div>
       <div className=' flex pt-10 justify-center items-center overflow-hidden '>
       <Swiper
-        modules={[Navigation, Pagination, Scrollbar, A11y]}
+        modules={[Pagination, Scrollbar, A11y]}
         slidesPerView={noSlides} 
         spaceBetween={50}
         freeMode={false}
-        navigation={{
-          clickable: true,
-        }}
         scrollbar={{ draggable: true }}
         pagination={{
           clickable: true,
         }}
         style={{
-          "--swiper-navigation-color": "white",
-          "--swiper-navigation-size": "20px",
           "--swiper-pagination-color": "white",
           "--swiper-pagination-bullet-inactive-opacity":".5",
           "--swiper-pagination-bullet-inactive-color":"white",
