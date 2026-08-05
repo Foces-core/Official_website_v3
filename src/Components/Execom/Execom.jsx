@@ -19,95 +19,74 @@ import Devadarsana from '../../assets/devadarasan.jpg';
 import MeetTheTeam from '../../assets/MeetTheTeam.svg';
 
 function Execom() {
-  var settings = {
-    dots: false,
+  const settings = {
+    dots: true,
     infinite: true,
-    speed:500,
+    speed: 400,
     slidesToShow: 4,
     slidesToScroll: 1,
     autoplay: true,
-    autoplaySpeed: 3500,
-    initialSlide: 0,
+    autoplaySpeed: 3000,
+    pauseOnHover: true,
     swipeToSlide: true,
-    
+    swipe: true,
+    touchMove: true,
+    touchThreshold: 10,
+    draggable: true,
     responsive: [
       {
-        breakpoint: 1600,
-        settings: {
-          slidesToShow: 4,
-          slidesToScroll: 1,
-          infinite: true,
-          dots: false
-        }
-      },
-      {
-        breakpoint: 1400,
-        settings: {
-          slidesToShow: 4,
-          slidesToScroll: 1,
-          infinite: true,
-          dots: true
-        }
-      },
-      {
-        breakpoint: 1024,
+        breakpoint: 1280,
         settings: {
           slidesToShow: 3,
           slidesToScroll: 1,
-          infinite: true,
           dots: true
         }
       },
       {
-        breakpoint: 800,
+        breakpoint: 900,
         settings: {
           slidesToShow: 2,
           slidesToScroll: 1,
-          infinite: true,
           dots: true
         }
       },
       {
-        breakpoint: 650,
-        settings: {
-          slidesToShow: 2,
-          slidesToScroll: 1,
-          initialSlide: 1
-        }
-      },
-      {
-        breakpoint: 550,
+        breakpoint: 640,
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
-          initialSlide: 1
+          dots: true,
+          arrows: true
         }
       }
     ]
   };
-  
+
   const slider1 = useRef(null);
 
   return (
-    <div className='min-h-full flex flex-col pt-10 pb-20' id='execom' >
+    <div className='min-h-full flex flex-col pt-10 pb-20 overflow-hidden' id='execom'>
       <div className='flex items-center h-36 pl-6 lg:pl-40 pt-6 pb-12'>
         <div className='w-5 h-16 bg-[#4f4f54] relative'></div>
         <div className="absolute w-46 h-6 pl-2.5">
-          <img src={MeetTheTeam} alt="" style={{ width: 250}} />
+          <img src={MeetTheTeam} alt="Meet The Team" style={{ width: 250 }} />
         </div>
       </div>
     
-      <div className=' m-auto w-3/4 '>
+      <div className='m-auto w-[92%] sm:w-5/6 md:w-3/4 px-2'>
         <Slider ref={slider1} {...settings}>
           {cardData.map((d, index) => (
-            <div key={index} className="relative">
-              <div className='container-execom '>
-                <img className="object-cover w-full h-full border-box grayscale hover:filter-none card-hover " src={d.img} alt={d.name} style={{ width: d.width, height: d.height, bottom: d.bottom }} />
-                <div className="absolute rounded-bl-[30px] rounded-br-[30px] bottom-0 w-full bg-black bg-opacity-60 ">
-                  <div className="text-white text-[15px] pl-4 pb-1 pt-2 text-left italic">
-                    <div className="font-semibold">{d.name}</div>
-                    <div className="font-light">{d.review}</div>
-                  </div>
+            <div key={index} className="relative px-1">
+              <div className='container-execom bg-[#161618] border-box'>
+                <img
+                  className="object-cover object-top w-full h-full card-hover grayscale hover:filter-none"
+                  src={d.img}
+                  alt={d.name}
+                  loading="lazy"
+                />
+                <div className="absolute rounded-b-[22px] bottom-0 w-full bg-gradient-to-t from-black via-black/80 to-transparent p-4 text-left">
+                  <div className="text-white text-base font-semibold italic">{d.name}</div>
+                  <div className="text-gray-300 text-xs font-light">{d.review}</div>
                 </div>
               </div>
             </div>
