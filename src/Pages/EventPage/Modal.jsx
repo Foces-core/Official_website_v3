@@ -1,7 +1,7 @@
-import React from 'react';
 import ReactDOM from 'react-dom';
+import PropTypes from 'prop-types';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { FreeMode, Pagination, Navigation, Scrollbar, A11y } from 'swiper/modules';
+import { Pagination, Navigation, Scrollbar, A11y } from 'swiper/modules';
 import { sanityImg } from '../../utils/sanityImage.js';
 
 
@@ -31,7 +31,6 @@ export default function Modal({ images, open, onClose }) {
           modules={[Navigation, Pagination, Scrollbar, A11y]}
           slidesPerView={1}
           spaceBetween={50}
-          freeMode={false}
           navigation={{
             clickable: true,
           }}
@@ -63,3 +62,9 @@ export default function Modal({ images, open, onClose }) {
     document.getElementById('portal')
   );
 }
+
+Modal.propTypes = {
+  images: PropTypes.arrayOf(PropTypes.string).isRequired,
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+};

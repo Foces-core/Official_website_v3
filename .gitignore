@@ -25,3 +25,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local scratch / session notes
+.freebuff/
+towrok.txt

@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Scrollbar, A11y } from 'swiper/modules';
 import 'swiper/css'; 
-import 'swiper/css/free-mode'; 
 import 'swiper/css/pagination';
-import FI1 from "../../assets/FI1.svg";
 import featuring from '../../assets/featuring.svg';
 import codingArenaPoster from '../../assets/coding_arena_4_0_insta.jpg';
 import promptParadoxPoster from '../../assets/the_prompt_paradox_2_0_insta.jpg';
@@ -23,15 +21,6 @@ const fallbackFeatures = [
 
 
 function Featuring() {
-  const slides = [
-    { url: FI1,link:"https://www.instagram.com/p/CzL8OmkPMKY/?igsh=bzBwcXJvajE3Y3Rh" },
-    { url: FI1, link:"https://www.instagram.com/p/CzL8OmkPMKY/?igsh=bzBwcXJvajE3Y3Rh" },
-    { url: FI1, link:"https://www.instagram.com/p/CzL8OmkPMKY/?igsh=bzBwcXJvajE3Y3Rh" },
-    { url: FI1, link:"https://www.instagram.com/p/CzL8OmkPMKY/?igsh=bzBwcXJvajE3Y3Rh" },
-    { url: FI1, link:"https://www.instagram.com/p/CzL8OmkPMKY/?igsh=bzBwcXJvajE3Y3Rh" },
-    { url: FI1,link:"https://www.instagram.com/p/CzL8OmkPMKY/?igsh=bzBwcXJvajE3Y3Rh" },
-  ];
-
   useEffect(() => {
     AOS.init({ duration: 1000, once: true }); // AOS initialization
   }, []);
@@ -58,7 +47,6 @@ useEffect(() => {
   });
 }, []);
 
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [noSlides, setNoSlides] = useState(1);
 
   useEffect(() => {
@@ -72,8 +60,6 @@ useEffect(() => {
       } else {
         setNoSlides(3);
       }
-
-      setWindowWidth(width);
     };
 
     handleResize(); // Initial setup
@@ -98,7 +84,6 @@ useEffect(() => {
         modules={[Pagination, Scrollbar, A11y]}
         slidesPerView={noSlides} 
         spaceBetween={50}
-        freeMode={false}
         scrollbar={{ draggable: true }}
         pagination={{
           clickable: true,

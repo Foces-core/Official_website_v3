@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import '../../index.css'
 import Aboutus from '../../assets/about us.svg';
 import '../AboutUs/AboutUs.css'
@@ -54,7 +54,7 @@ function AboutUs() {
   
       <p className='font-about' >
       The Forum of Computer Engineering Students (FOCES) at the College of Engineering Chengannur aims to uplift the skills of the student community.
- Guided by the visionary ethos of "DARE, DEVELOP, and DOMINATE," the forum offers opportunities for students to help each other achieve excellence and reach the pinnacle of success.
+ Guided by the visionary ethos of &quot;DARE, DEVELOP, and DOMINATE,&quot; the forum offers opportunities for students to help each other achieve excellence and reach the pinnacle of success.
  Through various workshops, hackathons, and seminars, FOCES provides a platform for students to enhance their technical skills and knowledge. The forum encourages collaboration and innovation, fostering a spirit of teamwork and creativity.
  </p>
   </div>
