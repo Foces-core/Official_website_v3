@@ -10,12 +10,12 @@ export default function Modal({ images, open, onClose }) {
   return ReactDOM.createPortal(
     <>
       <div
-        className='fixed top-0 left-0 right-0 bottom-0 bg-slate-950 bg-opacity-70 z-50 overflow-x-hidden'
+        className='fixed top-0 left-0 right-0 bottom-0 bg-black/70 z-50 overflow-x-hidden'
         onClick={onClose}
         aria-hidden={!open}
       />
       <div
-        className='w-full h-[50%] min-[700px]:w-[90vh] min-[700px]:h-[80vh] flex items-center justify-center fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black rounded-xl p-1 z-50 shadow-slate-700 drop-shadow-lg shadow-2xl'
+        className='w-full h-[50%] min-[700px]:w-[90vh] min-[700px]:h-[80vh] flex items-center justify-center fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black rounded-xl p-1 z-50 shadow-black/50 drop-shadow-lg shadow-2xl'
         aria-hidden={!open}
         onClick={(e) => e.stopPropagation()}
       >

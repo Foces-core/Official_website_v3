@@ -5,7 +5,7 @@ import 'aos/dist/aos.css';
 import BlockContent from '@sanity/block-content-to-react';
 import Modal from './Modal';
 
-function EventCardMobile({ Events }) {
+function EventCardMobile({ Events, priority }) {
   const [Expanding, setExpanding] = useState(false);
   const [isEventClosed, setIsEventClosed] = useState(false);
 
@@ -25,21 +25,23 @@ function EventCardMobile({ Events }) {
 
   return (
     <div
-      className='w-[92%] max-w-sm bg-slate-900/80 border border-slate-800 rounded-2xl my-6 p-5 flex flex-col gap-4 shadow-xl'
+      className='w-[92%] max-w-sm bg-[#161618]/90 border border-white/10 rounded-2xl my-6 p-5 flex flex-col gap-4 shadow-xl'
       data-aos='fade-up'
     >
       <div
-        className='relative w-full h-52 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 shadow-md cursor-pointer group'
+        className='relative w-full h-52 rounded-xl overflow-hidden bg-[#0b0b0c] border border-white/10 shadow-md cursor-pointer group'
         onClick={() => setExpanding(true)}
       >
         {primaryImage && (
           <img
             src={primaryImage}
             alt={Events.name}
+            loading={priority ? 'eager' : 'lazy'}
+            decoding="async"
             className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
           />
         )}
-        <div className='absolute bottom-2 right-2 bg-blue-600/90 text-white text-xs font-semibold px-2.5 py-1 rounded-full backdrop-blur-sm'>
+        <div className='absolute bottom-2 right-2 bg-cyan-600/90 text-white text-xs font-semibold px-2.5 py-1 rounded-full backdrop-blur-sm'>
           {images.length} Photos
         </div>
       </div>
@@ -57,7 +59,7 @@ function EventCardMobile({ Events }) {
             dataset='production'
           />
         </div>
-        <div className='text-blue-400 font-medium text-xs'>
+        <div className='text-cyan-400 font-medium text-xs'>
           📅 {Events.date}
         </div>
 
@@ -68,7 +70,7 @@ function EventCardMobile({ Events }) {
             </span>
           ) : (
             <a
-              className='bg-blue-600 hover:bg-blue-500 px-5 py-2 rounded-xl font-medium text-white text-sm shadow-md'
+              className='bg-cyan-600 hover:bg-cyan-500 px-5 py-2 rounded-xl font-medium text-white text-sm shadow-md'
               href={Events.tickets}
               target='_blank'
               rel='noreferrer'

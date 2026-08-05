@@ -40,4 +40,14 @@
     touch-action: pan-y;
     perspective: 1200px;
   }
-}  
+}
+
+/* GPU-friendly compositing for the 3D cube (smoother swipes on low-end devices) */
+.execom-cube-swiper .swiper-slide {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.execom-cube-swiper .swiper-wrapper {
+  will-change: transform;
+}

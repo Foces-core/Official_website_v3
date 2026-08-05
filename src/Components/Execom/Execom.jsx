@@ -31,14 +31,22 @@ const cardData = [
   { name: 'Amanul Farhan K S', img: Amanul, review: 'Treasurer' },
   { name: 'Abel S Mathew', img: Abel, review: 'Research & Development Lead' },
   { name: 'Saniya K Shibu', img: Saniya, review: 'Program Outreach Coordinator' },
-  { name: 'Sebin Mathew', img: Sebin, review: 'Project Coordinator', imgPos: 'object-[20%_45%]' },
+  { name: 'Sebin Mathew', img: Sebin, review: 'Project Coordinator', imgPos: 'object-[calc(20%_-_25px)_calc(45%_-_10px)]' },
   { name: 'Anjitha Aravind', img: Anjitha, review: 'Operations Lead' },
   { name: 'Abhirami P', img: Abhirami, review: 'Design Lead' },
   { name: 'Devadarsana R', img: Devadarsana, review: 'Public Relations Lead' }
 ];
 
+// The cube rotates 90° per face, so Swiper's loop mode can't be used.
+// Render 3 invisible copies: indices 0 and 32 share the same cube orientation
+// (32 × 90° = 2880° ≡ 0°), so a 0ms jump between them wraps seamlessly.
+const cubeSlides = [...cardData, ...cardData, ...cardData];
+
 function Execom() {
   const lowPower = useLowPower();
+  const [activeCube, setActiveCube] = React.useState(0);
+  const cubeRef = React.useRef(null);
+  const lastWrap = React.useRef(0);
 
   return (
     <section className='min-h-full flex flex-col pt-10 pb-20 overflow-hidden' id='execom'>
@@ -88,26 +96,40 @@ function Execom() {
           </Swiper>
         </div>
 
-        {/* Mobile 3D Cube Swiper (Touch & Swipe Enabled) */}
+        {/* Mobile 3D Cube Swiper — seamless infinite wrap (swipe any direction, forever) */}
         <div className="block sm:hidden max-w-[320px] mx-auto py-4">
           <Swiper
+            onSwiper={(swiper) => { cubeRef.current = swiper; }}
             effect={'cube'}
             grabCursor={true}
             cubeEffect={{
-              shadow: true,
-              slideShadows: true,
+              shadow: !lowPower,
+              slideShadows: !lowPower,
               shadowOffset: 20,
               shadowScale: 0.94,
             }}
             loop={false}
-            autoplay={lowPower ? false : { delay: 3000, disableOnInteraction: false }}
-            pagination={{ clickable: true }}
+            initialSlide={cardData.length}
+            autoplay={lowPower ? false : { delay: 3000, disableOnInteraction: false, stopOnLastSlide: true }}
             modules={[EffectCube, Pagination, Autoplay]}
-            onReachEnd={(swiper) => swiper.slideTo(0)}
-            onReachBeginning={(swiper) => swiper.slideTo(swiper.slides.length - 1)}
-            className="execom-cube-swiper pb-10"
+            onSlideChange={(swiper) => setActiveCube(swiper.activeIndex % cardData.length)}
+            onTransitionEnd={(swiper) => {
+              // Seamless infinite wrap: at either edge, jump 0ms to the copy that
+              // shares the same cube orientation — invisible to the eye.
+              const now = Date.now();
+              if (now - lastWrap.current < 120) return;
+              if (swiper.activeIndex >= cardData.length * 3 - 1) {
+                lastWrap.current = now;
+                swiper.slideTo(0, 0);
+                if (!lowPower) swiper.autoplay.start();
+              } else if (swiper.activeIndex <= 0) {
+                lastWrap.current = now;
+                swiper.slideTo(cardData.length * 3 - 1, 0);
+              }
+            }}
+            className="execom-cube-swiper"
           >
-            {cardData.map((d, index) => (
+            {cubeSlides.map((d, index) => (
               <SwiperSlide key={index}>
                 <div className='container-execom bg-[#161618] border-box relative rounded-3xl overflow-hidden shadow-2xl'>
                   <img
@@ -125,6 +147,24 @@ function Execom() {
               </SwiperSlide>
             ))}
           </Swiper>
+
+          {/* Custom 11-dot indicator (the cube itself has 3 hidden copies) */}
+          <div className="flex justify-center gap-2 mt-2 pb-1">
+            {cardData.map((d, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`Go to ${d.name}`}
+                onClick={() => {
+                  const sw = cubeRef.current;
+                  if (!sw) return;
+                  const copy = Math.floor(sw.activeIndex / cardData.length);
+                  sw.slideTo(copy * cardData.length + i, 350);
+                }}
+                className={`h-2 rounded-full transition-all duration-300 ${activeCube === i ? 'w-6 bg-[#007aff]' : 'w-2 bg-[#4f4f54]'}`}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>

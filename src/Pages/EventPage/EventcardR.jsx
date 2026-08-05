@@ -5,7 +5,7 @@ import BlockContent from '@sanity/block-content-to-react';
 import Modal from './Modal';
 import 'reactjs-popup/dist/index.css';
 
-function EventcardR({ Events }) {
+function EventcardR({ Events, priority }) {
   const [Expanding, setExpanding] = useState(false);
   const [isEventClosed, setIsEventClosed] = useState(false);
 
@@ -25,24 +25,26 @@ function EventcardR({ Events }) {
 
   return (
     <div
-      className='w-[95%] max-w-6xl bg-slate-900/60 backdrop-blur-md border border-slate-800 rounded-3xl mt-10 p-6 md:p-8 flex flex-col md:flex-row-reverse items-center gap-8 shadow-2xl hover:border-slate-700 transition-all duration-300'
+      className='w-[95%] max-w-6xl bg-[#161618]/80 backdrop-blur-md border border-white/10 rounded-3xl mt-10 p-6 md:p-8 flex flex-col md:flex-row-reverse items-center gap-8 shadow-2xl hover:border-white/30 transition-all duration-300'
       data-aos='fade-up'
     >
       {/* Poster / Image Section */}
       <div className='w-full md:w-1/2 flex flex-col gap-3'>
         <div
-          className='relative w-full h-64 md:h-80 rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-xl cursor-pointer group'
+          className='relative w-full h-64 md:h-80 rounded-2xl overflow-hidden bg-[#0b0b0c] border border-white/10 shadow-xl cursor-pointer group'
           onClick={() => setExpanding(true)}
         >
           {primaryImage && (
             <img
               src={primaryImage}
               alt={Events.name}
+              loading={priority ? 'eager' : 'lazy'}
+              decoding="async"
               className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
             />
           )}
           <div className='absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4'>
-            <span className='text-white text-sm font-medium bg-blue-600/80 px-3 py-1.5 rounded-full backdrop-blur-sm'>
+            <span className='text-white text-sm font-medium bg-cyan-600/80 px-3 py-1.5 rounded-full backdrop-blur-sm'>
               🔍 Click to View Gallery ({images.length} Photos)
             </span>
           </div>
@@ -55,7 +57,9 @@ function EventcardR({ Events }) {
                 key={idx}
                 src={img}
                 alt=""
-                className='w-20 h-16 object-cover rounded-xl border border-slate-800 cursor-pointer hover:opacity-80 transition-opacity'
+                loading="lazy"
+                decoding="async"
+                className='w-20 h-16 object-cover rounded-xl border border-white/10 cursor-pointer hover:opacity-80 transition-opacity'
                 onClick={() => setExpanding(true)}
               />
             ))}
@@ -77,8 +81,7 @@ function EventcardR({ Events }) {
               projectId='n7hx0w67'
               dataset='production'
             />
-          </div>
-          <div className='text-blue-400 font-semibold text-sm'>
+          </div>            <div className='text-cyan-400 font-semibold text-sm'>
             📅 Date: {Events.date}
           </div>
         </div>
@@ -90,7 +93,7 @@ function EventcardR({ Events }) {
             </span>
           ) : (
             <a
-              className='inline-block bg-blue-600 hover:bg-blue-500 px-6 py-2.5 rounded-xl font-medium text-white shadow-lg hover:shadow-blue-500/20 hover:scale-105 transition-all duration-300'
+              className='inline-block bg-cyan-600 hover:bg-cyan-500 px-6 py-2.5 rounded-xl font-medium text-white shadow-lg hover:shadow-cyan-500/20 hover:scale-105 transition-all duration-300'
               href={Events.tickets}
               target='_blank'
               rel='noreferrer'

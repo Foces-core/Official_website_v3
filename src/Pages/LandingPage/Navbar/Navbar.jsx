@@ -200,7 +200,7 @@ export default function Navbar() {
           <HashLink
             to={item.id !== "contact" ? `/#${item.id}` : "/contact"}
             key={item.id}
-            className={`border-b-2 border-transparent z-10  ${
+            className={`border-b-2 border-transparent z-10 tracking-wider ${
               ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
                 ? "text-[#ffffff80]"
                 : "text-[#000000b3]"
@@ -218,9 +218,9 @@ export default function Navbar() {
       <div
         className={`contact cursor-pointer w-[8em] h-[2.3em] text-[clamp(0.7rem,0.9vw,0.85rem)] ${
           ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
-            ? "bg-[#F5F5F5] text-[#101011] hover:bg-[#101011] hover:text-[#F5F5F5] hover:border hover:border-[#F5F5F5]"
-            : "bg-black text-[#F5F5F5] hover:bg-[#F5F5F5] hover:text-black hover:border hover:border-black"
-        } flex justify-center items-center rounded-3xl duration-700 whitespace-nowrap select-none max-[767px]:ml-auto max-[767px]:mr-12 max-[767px]:w-auto max-[767px]:h-auto max-[767px]:px-4 max-[767px]:py-1.5 max-[767px]:text-[0.7rem] max-[767px]:font-medium max-[767px]:tracking-wide ${
+            ? "bg-[#F5F5F5] text-[#101011] hover:bg-cyan-400 hover:text-black"
+            : "bg-black text-[#F5F5F5] hover:bg-cyan-400 hover:text-black"
+        } flex justify-center items-center rounded-3xl transition-colors duration-300 whitespace-nowrap select-none max-[767px]:ml-auto max-[767px]:mr-12 max-[767px]:w-auto max-[767px]:h-auto max-[767px]:px-4 max-[767px]:py-1.5 max-[767px]:text-[0.7rem] max-[767px]:font-medium max-[767px]:tracking-wide ${
           showItems && isMobile ? "hidden" : ""
         }`}
         onClick={handleJoinFocesClick}
