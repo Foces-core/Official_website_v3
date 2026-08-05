@@ -117,6 +117,8 @@ useEffect(() => {
                 className='hover:shadow-white hover:shadow-[0_0px_20px_rgba(255,255,255,0.2)] h-full w-full rounded-2xl object-cover hover:scale-105 transition-all duration-300 shadow-xl'
                 src={image?.asset?.url}
                 alt={image?.alt || 'Featured Event'}
+                loading="lazy"
+                decoding="async"
                 data-aos="flip-right"
               />
             );
