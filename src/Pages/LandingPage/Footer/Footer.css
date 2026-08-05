@@ -1,8 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Armata&display=swap');
-
-.Logo p{
-    font-family: 'Armata', sans-serif;
-}
+/* Fonts: Space Grotesk + Inter are loaded globally via index.html */
 
 @media (max-width: 767px) {
     .map_overlay {

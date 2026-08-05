@@ -7,8 +7,8 @@ export default {
     extend: {
       fontFamily:
       {
-        Armata:["Armata","sans-serif"],
-        Groupe:["GROUPE","sans-serif"]
+        // Space Grotesk is loaded globally via <link> in index.html
+        Grotesk: ["Space Grotesk", "sans-serif"]
       }
     },
   },

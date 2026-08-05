@@ -27,7 +27,7 @@ const Loader = () => {
       </div>
      
  
-      <span className={`text-white p-5 font-Armata ${isSmallScreen ? 'break-lines' : ''}`}>
+      <span className={`text-white p-5 font-Grotesk ${isSmallScreen ? 'break-lines' : ''}`}>
   {textContent}
 </span>
 
