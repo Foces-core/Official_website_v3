@@ -7,7 +7,6 @@ import Footer from "./Pages/LandingPage/Footer/Footer";
 import AboutUs from "./Components/AboutUs/AboutUs";
 import Execom from "./Components/Execom/Execom";
 import Navbar from "./Pages/LandingPage/Navbar/Navbar";
-import ToTopButton from "./Components/ToTopButton";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { useLocation } from "react-router-dom";
@@ -30,7 +29,6 @@ function App() {
 
   return (
     <div className="App bg-[#101011]">
-      <ToTopButton />
       <Navbar />
       <HeroSection />
       <AboutUs />
