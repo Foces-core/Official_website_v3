@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
 import { AiOutlineClose } from "react-icons/ai";
 import toggleW from "../../../assets/ButtonW.svg";
@@ -75,12 +75,15 @@ export default function Navbar() {
     };
   }, []);
 
-  const handleItemClick = (id) => {
-    if (id === "events") {
-      navigate('/events');
-      return;
-    } else if (id === "contact") {
-      navigate('/contact');
+  const handleItemClick = (id, e) => {
+    if (id === "events" || id === "contact") {
+      // Stop the HashLink's own navigation (it points to /#events on the home
+      // page) so the real route navigation below isn't overridden.
+      e.preventDefault();
+      if (isMobile) {
+        setShowItems(false);
+      }
+      navigate(id === "events" ? '/events' : '/contact');
       return;
     }
     setCurrentItem(id.toUpperCase());
@@ -93,12 +96,27 @@ export default function Navbar() {
     }
   };
 
+  const handleLogoClick = () => {
+    if (isMobile) {
+      setShowItems(false);
+    }
+    if (window.location.pathname !== '/') {
+      navigate('/');
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   useEffect(() => {
     setShowItems(!isMobile);
   }, [isMobile]);
 
   const handleJoinFocesClick = () => {
-    window.location.href = "https://www.instagram.com/foces_cec/";
+    if (isMobile) {
+      setShowItems(false);
+    }
+    // Open in a new tab so the current page isn't hijacked
+    window.open("https://www.instagram.com/foces_cec/", "_blank", "noopener,noreferrer");
   };
 
   // Foresight.js / Quicklink intelligent route chunk prefetching
@@ -150,7 +168,8 @@ export default function Navbar() {
               : LogoGrey
           }
           alt="FOCES"
-          className="h-[5%] w-[10%] max-[767px]:h-[3vh] max-[767px]:w-[15vw]"
+          className="h-[5%] w-[10%] max-[767px]:h-[3vh] max-[767px]:w-[15vw] cursor-pointer"
+          onClick={handleLogoClick}
         />
       )}
       {isMobile && (
@@ -161,7 +180,8 @@ export default function Navbar() {
               : LogoGrey
           }
           alt="FOCES"
-          className="h-[5%] w-[10%] mt-1 max-[767px]:h-[3vh] max-[767px]:w-[24vw] min-[767px]:hidden"
+          className="h-[5%] w-[10%] mt-1 max-[767px]:h-[3vh] max-[767px]:w-[24vw] min-[767px]:hidden cursor-pointer"
+          onClick={handleLogoClick}
         />
       )}
 
@@ -188,7 +208,7 @@ export default function Navbar() {
             onMouseEnter={() => handlePrefetch(item.id)}
             onTouchStart={() => handlePrefetch(item.id)}
             onFocus={() => handlePrefetch(item.id)}
-            onClick={() => handleItemClick(item.id)}
+            onClick={(e) => handleItemClick(item.id, e)}
           >
             {item.name}
           </HashLink>

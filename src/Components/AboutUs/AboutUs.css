@@ -134,7 +134,9 @@
 #boxDiv-about {
     width: 150px; /* Reduced width */
     height: 150px; /* Reduced height */
-    animation: none; /* Disable 3D rotation on mobile to save GPU resources */
+    animation: none; /* Disable 3D rotation on mobile; rotation is controlled by drag */
+    touch-action: pan-y; /* Let vertical page scroll through, capture horizontal drags for rotation */
+    cursor: grab;
 }
 
 #boxDiv-about div {

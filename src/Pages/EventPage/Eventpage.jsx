@@ -79,7 +79,7 @@ function Eventpage() {
           event.image1?.asset.url,
           event.image2?.asset.url,
           event.image3?.asset.url
-        ],
+        ].filter(Boolean),
         date: event.date,
         content: event.content,
         tickets: event.tickets
