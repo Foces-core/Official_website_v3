@@ -7,20 +7,6 @@ import { FaHeart } from "react-icons/fa6";
 import "./Footer.css";
 
 function Footer() {
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (mapRef.current && !mapRef.current.contains(event.target)) {
-        setShowMap(false);
-      }
-    };
-
-    window.addEventListener("click", handleClickOutside);
-
-    return () => {
-      window.removeEventListener("click", handleClickOutside);
-    };
-  }, []);
-
   return (
     <div className="h-[10vh] bg-[#101011] relative z-0 flex w-screen items-center gap-10 p-5 max-[767px]:flex-col mt-20 max-[767px]:mt-5">
       <div className="w-[15%] max-[767px]:w-[50%]">
