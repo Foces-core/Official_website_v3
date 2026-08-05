@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { FreeMode, Pagination, Scrollbar, A11y } from 'swiper/modules';
+import { Pagination, Scrollbar, A11y } from 'swiper/modules';
 import 'swiper/css'; 
 import 'swiper/css/free-mode'; 
 import 'swiper/css/pagination';
