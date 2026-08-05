@@ -17,4 +17,17 @@ export default defineConfig({
   optimizeDeps: {
     include: ['@sanity/client'],
   },
+  build: {
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'swiper-vendor': ['swiper'],
+          'icons-vendor': ['react-icons'],
+          'sanity-vendor': ['@sanity/client'],
+        },
+      },
+    },
+  },
 });
