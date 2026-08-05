@@ -21,7 +21,7 @@ import Abhirami from '../../assets/abhirami_p.jpg';
 import Devadarsana from '../../assets/WhatsApp Image 2026-08-04 at 12.07.46 PM.jpeg';
 
 import MeetTheTeam from '../../assets/MeetTheTeam.svg';
-import useLowPower from '../../hooks/useLowPower.js';
+import useDeviceProfile from '../../hooks/useLowPower.js';
 
 const cardData = [
   { name: 'Aleetta Mariya Sebastian', img: Aleetta, review: 'Chairperson' },
@@ -43,7 +43,8 @@ const cardData = [
 const cubeSlides = [...cardData, ...cardData, ...cardData];
 
 function Execom() {
-  const lowPower = useLowPower();
+  const { lowPower, lowCPU, reducedMotion, slowNetwork } = useDeviceProfile();
+  const flatCube = lowCPU || reducedMotion;
   const [activeCube, setActiveCube] = React.useState(0);
   const cubeRef = React.useRef(null);
   const cubeWrapRef = React.useRef(null);
@@ -151,9 +152,9 @@ function Execom() {
         <div ref={cubeWrapRef} className="block sm:hidden max-w-[320px] mx-auto py-4">
           <Swiper
             onSwiper={(swiper) => { cubeRef.current = swiper; }}
-            effect={lowPower ? 'slide' : 'cube'}
+            effect={flatCube ? 'slide' : 'cube'}
             grabCursor={true}
-            speed={lowPower ? 0 : 400}
+            speed={flatCube ? 250 : 400}
             cubeEffect={cubeEffectConfig}
             loop={false}
             initialSlide={cardData.length}
@@ -183,7 +184,7 @@ function Execom() {
                     className={`object-cover ${d.imgPos || 'object-top'} w-full h-full`}
                     src={d.img}
                     alt={d.name}
-                    loading="eager"
+                    loading={slowNetwork ? 'lazy' : 'eager'}
                     decoding="async"
                   />
                   <div className="absolute rounded-b-3xl bottom-0 w-full bg-gradient-to-t from-black via-black/90 to-transparent p-4 text-left">

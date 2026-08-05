@@ -12,6 +12,7 @@ import agenticCodingPoster from '../../assets/agentic_coding_instagram.jpg';
 
 import client from '../../sanityClient.js';
 import { sanityImg } from '../../utils/sanityImage.js';
+import useDeviceProfile from '../../hooks/useLowPower.js';
 
 const fallbackFeatures = [
   { image: { asset: { url: codingArenaPoster }, alt: "Coding Arena 4.0" } },
@@ -21,6 +22,8 @@ const fallbackFeatures = [
 
 
 function Featuring() {
+  const { slowNetwork } = useDeviceProfile();
+
   useEffect(() => {
     AOS.init({ duration: 1000, once: true }); // AOS initialization
   }, []);
@@ -101,7 +104,7 @@ useEffect(() => {
             const imgElement = (
               <img
                 className='hover:shadow-white hover:shadow-[0_0px_20px_rgba(255,255,255,0.2)] h-full w-full rounded-2xl object-cover hover:scale-105 transition-all duration-300 shadow-xl'
-                src={sanityImg(image?.asset?.url, 1000)}
+                src={sanityImg(image?.asset?.url, slowNetwork ? 640 : 1000)}
                 alt={image?.alt || 'Featured Event'}
                 loading="lazy"
                 decoding="async"

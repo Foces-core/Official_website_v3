@@ -6,6 +6,7 @@ import toggleW from "../../../assets/ButtonW.svg";
 import toggleB from "../../../assets/ButtonB.svg";
 import LogoWhite from "../../../assets/FOCES White.svg";
 import LogoGrey from "../../../assets/FOCES Black.svg";
+import useDeviceProfile from "../../../hooks/useLowPower.js";
 import "./Navbar.css";
 
 const navItems = [
@@ -18,6 +19,7 @@ const navItems = [
 ];
 
 export default function Navbar() {
+  const { slowNetwork } = useDeviceProfile();
   const [isMobile, setIsMobile] = useState(false);
   const [showItems, setShowItems] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -121,6 +123,7 @@ export default function Navbar() {
 
   // Foresight.js / Quicklink intelligent route chunk prefetching
   const handlePrefetch = (id) => {
+    if (slowNetwork) return; // don't waste slow bandwidth on speculative fetches
     if (id === 'events') {
       import('../../EventPage/Eventpage.jsx').catch(() => {});
     } else if (id === 'contact') {

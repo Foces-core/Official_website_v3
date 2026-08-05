@@ -2,11 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import '../../index.css'
 import Aboutus from '../../assets/about us.svg';
 import '../AboutUs/AboutUs.css'
-import useLowPower from '../../hooks/useLowPower.js';
+import useDeviceProfile from '../../hooks/useLowPower.js';
 
 
 function AboutUs() {
-  const lowPower = useLowPower();
+  const { lowCPU, reducedMotion } = useDeviceProfile();
   const [rotationY, setRotationY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -23,20 +23,20 @@ function AboutUs() {
   }, []);
 
   const handleTouchStart = (e) => {
-    if (!isMobile || lowPower) return;
+    if (!isMobile) return;
     startX.current = e.touches[0].clientX;
     startRot.current = rotationY;
     setIsDragging(true);
   };
 
   const handleTouchMove = (e) => {
-    if (!isMobile || !isDragging || lowPower) return;
+    if (!isMobile || !isDragging) return;
     const deltaX = e.touches[0].clientX - startX.current;
     setRotationY(startRot.current + deltaX * 0.4);
   };
 
   const handleTouchEnd = () => {
-    if (!isMobile || lowPower) return;
+    if (!isMobile) return;
     setIsDragging(false);
     // Snap to the nearest cube face (every 90 degrees) for a clean finish
     setRotationY((prev) => Math.round(prev / 90) * 90);
@@ -63,7 +63,17 @@ function AboutUs() {
 
   <div id="mainDiv-about">
     <div id="boxDiv-about"
-      style={isMobile && !lowPower ? { transform: `rotateY(${rotationY}deg)`, transition: isDragging ? 'none' : 'transform 0.3s ease' } : lowPower ? { animation: 'none' } : undefined}
+      style={
+        isMobile
+          // Drag works on every device; only the ease-out snap costs frames,
+          // so drop it when CPU is tight / user wants reduced motion.
+          ? {
+              transform: `rotateY(${rotationY}deg)`,
+              transition: isDragging || lowCPU || reducedMotion ? 'none' : 'transform 0.3s ease',
+            }
+          // Desktop auto-rotate (CSS animation) is the expensive part — freeze it.
+          : lowCPU || reducedMotion ? { animation: 'none' } : undefined
+      }
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}

@@ -7,13 +7,13 @@ import foces1 from '../../../assets/foces1.svg';
 import Notification from '../../../assets/Notification.png';
 import clock from '../../../assets/clock.png';
 import speaker from '../../../assets/speaker.png';
-import useLowPower from '../../../hooks/useLowPower.js';
+import useDeviceProfile from '../../../hooks/useLowPower.js';
 import client from '../../../sanityClient.js';
 import BlockContent from '@sanity/block-content-to-react';
 
 function HeroSection() {
   const myRef = useRef(null);
-  const lowPower = useLowPower();
+  const { lowPower } = useDeviceProfile();
   const [notfy, setNotfy] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationsRef = useRef(null);
