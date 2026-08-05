@@ -48,29 +48,54 @@ function Execom() {
   const cubeRef = React.useRef(null);
   const cubeWrapRef = React.useRef(null);
   const cubeVisibleRef = React.useRef(true);
+  const deskSwiperRef = React.useRef(null);
+  const deskWrapRef = React.useRef(null);
   const lastWrap = React.useRef(0);
 
   // Shadow planes + face gradients are the cube's #1 GPU cost — and on a
   // near-black site they read as a black smear, not a shadow. Keep them off.
   const cubeEffectConfig = { shadow: false, slideShadows: false };
 
-  // Only run the cube's rotation while it's actually on screen.
-  // At 20x CPU throttle (or on low-end phones), a cube spinning
-  // in the background is pure wasted frames.
+  // Only run autoplay while a carousel is actually on screen — at 20x CPU
+  // throttle (or on low-end phones), a slider spinning in the background is
+  // pure wasted frames. Applies to the mobile cube AND the desktop swiper.
   React.useEffect(() => {
-    const el = cubeWrapRef.current;
-    if (!el || typeof IntersectionObserver === 'undefined') return;
-    const io = new IntersectionObserver(([entry]) => {
-      cubeVisibleRef.current = entry.isIntersecting;
-      if (!cubeRef.current) return;
-      if (entry.isIntersecting) {
-        if (!lowPower) cubeRef.current.autoplay.start();
-      } else {
-        cubeRef.current.autoplay.stop();
-      }
-    }, { threshold: 0.1 });
-    io.observe(el);
-    return () => io.disconnect();
+    if (typeof IntersectionObserver === 'undefined') return;
+
+    // Mobile cube
+    const cubeEl = cubeWrapRef.current;
+    const ioCube = cubeEl
+      ? new IntersectionObserver(([entry]) => {
+          cubeVisibleRef.current = entry.isIntersecting;
+          if (!cubeRef.current) return;
+          if (entry.isIntersecting) {
+            if (!lowPower) cubeRef.current.autoplay.start();
+          } else {
+            cubeRef.current.autoplay.stop();
+          }
+        }, { threshold: 0.1 })
+      : null;
+    if (ioCube) ioCube.observe(cubeEl);
+
+    // Desktop / tablet multi-card swiper (hidden on mobile via CSS, so this
+    // also stops it from spinning invisibly on phones)
+    const deskEl = deskWrapRef.current;
+    const ioDesk = deskEl
+      ? new IntersectionObserver(([entry]) => {
+          if (!deskSwiperRef.current) return;
+          if (entry.isIntersecting) {
+            if (!lowPower) deskSwiperRef.current.autoplay.start();
+          } else {
+            deskSwiperRef.current.autoplay.stop();
+          }
+        }, { threshold: 0.1 })
+      : null;
+    if (ioDesk) ioDesk.observe(deskEl);
+
+    return () => {
+      if (ioCube) ioCube.disconnect();
+      if (ioDesk) ioDesk.disconnect();
+    };
   }, [lowPower]);
 
   return (
@@ -85,8 +110,9 @@ function Execom() {
     
       <div className='m-auto w-[90%] sm:w-5/6 md:w-4/5 px-2 relative'>
         {/* Desktop / Tablet Swiper (Multi-card) */}
-        <div className="hidden sm:block">
+        <div ref={deskWrapRef} className="hidden sm:block">
           <Swiper
+            onSwiper={(swiper) => { deskSwiperRef.current = swiper; }}
             modules={[Autoplay, Pagination, Navigation]}
             spaceBetween={20}
             slidesPerView={1}
