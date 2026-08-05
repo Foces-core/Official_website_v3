@@ -3,26 +3,19 @@ import '../Execom/custom.css'
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
-import Jerry from '../../assets/JerrySanjuJoanes.jpg';
-import Nandkishor from '../../assets/NandkishorR.png';
-import Betsa from '../../assets/betsaS.png';
-import Vimal from '../../assets/vimal.png';
-import Nandana from '../../assets/nandanas.jpg';
-import AadithyaSai from '../../assets/aadithyasai.png';
-import Akash from '../../assets/akash.jpg'
-import Anupriya from '../../assets/AnupriyaN.jpg';
-import Megha from '../../assets/megha.png';
-import George from '../../assets/george.png';
-import Aparna from '../../assets/aparna.png';
-import Devadarasan from '../../assets/devadarasan.jpg';
-import Abel from '../../assets/abel.jpg';
-import Abhirami from '../../assets/abhirami_p.jpg';
-import Aleeta from '../../assets/aleeta.jpg';
-import Amanul from '../../assets/amanul.jpg';
-import Anjitha from '../../assets/anjitha.jpg';
+
+import Gopakumar from '../../assets/gopakumar.jpg';
+import Aleetta from '../../assets/aleeta.jpg';
 import Lisha from '../../assets/lisha1.jpg';
-import Saniya from '../../assets/saniya.jpg';
 import Steve from '../../assets/steve.jpg';
+import AnnaRachel from '../../assets/anna_rachel.jpg';
+import Amanul from '../../assets/amanul.jpg';
+import Abel from '../../assets/abel.jpg';
+import Saniya from '../../assets/saniya.jpg';
+import Sebin from '../../assets/sebin.jpg';
+import Anjitha from '../../assets/anjitha.jpg';
+import Abhirami from '../../assets/abhirami_p.jpg';
+import Devadarsana from '../../assets/devadarasan.jpg';
 
 import MeetTheTeam from '../../assets/MeetTheTeam.svg';
 
@@ -96,170 +89,97 @@ function Execom() {
   
   const slider1 = useRef(null);
 
-
-  
   return (
     <div className='min-h-full flex flex-col pt-10 pb-20' id='execom' >
-     
-        <div className='flex items-center h-36 pl-6 lg:pl-40 pt-6 pb-12'>
-          <div className='w-5 h-16 bg-[#4f4f54] relative'></div>
-          <div className="absolute w-46 h-6 pl-2.5">
-            <img src={MeetTheTeam} alt="" style={{ width: 250}} />
-          </div>
+      <div className='flex items-center h-36 pl-6 lg:pl-40 pt-6 pb-12'>
+        <div className='w-5 h-16 bg-[#4f4f54] relative'></div>
+        <div className="absolute w-46 h-6 pl-2.5">
+          <img src={MeetTheTeam} alt="" style={{ width: 250}} />
         </div>
-      
+      </div>
+    
       <div className=' m-auto w-3/4 '>
-          
-          <Slider ref={slider1} {...settings}>
-            {cardData.map((d, index) => (
-              <div key={index} className="relative">
-                <div className='container-execom '>
-                <img className="object-cover w-full h-full  border-box grayscale hover:filter-none  card-hover " src={d.img} alt="" style={{ width: d.width, height: d.height, bottom: d.bottom }} />
+        <Slider ref={slider1} {...settings}>
+          {cardData.map((d, index) => (
+            <div key={index} className="relative">
+              <div className='container-execom '>
+                <img className="object-cover w-full h-full border-box grayscale hover:filter-none card-hover " src={d.img} alt={d.name} style={{ width: d.width, height: d.height, bottom: d.bottom }} />
                 <div className="absolute rounded-bl-[30px] rounded-br-[30px] bottom-0 w-full bg-black bg-opacity-60 ">
-                  <div className="text-white text-[15px] pl-4 pb-1 pt-2  text-left italic">
+                  <div className="text-white text-[15px] pl-4 pb-1 pt-2 text-left italic">
                     <div className="font-semibold">{d.name}</div>
                     <div className="font-light">{d.review}</div>
                   </div>
                 </div>
-                </div>
-
               </div>
-            ))}
-          </Slider>
-      
+            </div>
+          ))}
+        </Slider>
       </div>
-      </div>
-    
+    </div>
   );
 }
 
 const cardData = [
   {
-    name: 'Nandkishor R',
-    img:Nandkishor ,
-    review: 'Chairman',
-    
+    name: 'Gopakumar G',
+    img: Gopakumar,
+    review: 'Advisor',
   },
   {
-    name: 'Jerry Sanju Joanes',
-    img: Jerry,
-    review: 'Vice Chairman',
-    
+    name: 'Aleetta Mariya Sebastian',
+    img: Aleetta,
+    review: 'Chairperson',
   },
   {
-    name: 'M Vimal Krishna Rao',
-    img: Vimal ,
+    name: 'Lisha Jins',
+    img: Lisha,
+    review: 'Vice Chairperson',
+  },
+  {
+    name: 'Steve Jose',
+    img: Steve,
     review: 'Secretary',
-    
-
-   
   },
   {
-    name: 'Betsa Sam',
-    img: Betsa,
+    name: 'Anna Rachel Mathew',
+    img: AnnaRachel,
     review: 'Joint Secretary',
-    
-    
   },
   {
-    name: 'Akash M Nandan',
-    img: Akash,
+    name: 'Amanul Farhan K S',
+    img: Amanul,
     review: 'Treasurer',
-    
-    
   },
   {
-    name: 'Aadithya Sai G Menon',
-    img: AadithyaSai,
-    review: 'R&D Lead',
-    
-    
-  },
-  {
-    name: 'Nandana Suresh',
-    img:Nandana,
-    review: 'FOSS Coordinator',
-   
-   
-   
-   
-  },
-  {
-    name: 'George C Thomas ',
-    img:George,
-    review: 'Project Coordinator',
-    // height:'300px',
-    
-    
-  },
-  {
-    name: 'Anupriya A Pillai',
-    img: Anupriya,
-    review: 'Design Lead',
-    
-  },
-  {
-    name: 'Aparna S',
-    img:Aparna,
-    review: 'Public Relations Lead',
-    width:'600px',
-    // height:'500px'
-    
-  },
-  {
-    name: 'Megha Daniel',
-    img:Megha,
-    review: 'Operations Lead',
-   
-   
-  },
-  {
-    name: 'Devadarasan',
-    img: Devadarasan,
-    review: 'Execom Member',
-  },
-  {
-    name: 'Abel',
+    name: 'Abel S Mathew',
     img: Abel,
-    review: 'Execom Member',
+    review: 'Research & Development Lead',
+  },
+  {
+    name: 'Saniya K Shibu',
+    img: Saniya,
+    review: 'Program Outreach Coordinator',
+  },
+  {
+    name: 'Sebin Mathew',
+    img: Sebin,
+    review: 'Project Coordinator',
+  },
+  {
+    name: 'Anjitha Aravind',
+    img: Anjitha,
+    review: 'Operations Lead',
   },
   {
     name: 'Abhirami P',
     img: Abhirami,
-    review: 'Execom Member',
+    review: 'Design Lead',
   },
   {
-    name: 'Aleeta',
-    img: Aleeta,
-    review: 'Execom Member',
-  },
-  {
-    name: 'Amanul',
-    img: Amanul,
-    review: 'Execom Member',
-  },
-  {
-    name: 'Anjitha',
-    img: Anjitha,
-    review: 'Execom Member',
-  },
-  {
-    name: 'Lisha',
-    img: Lisha,
-    review: 'Execom Member',
-  },
-  {
-    name: 'Saniya',
-    img: Saniya,
-    review: 'Execom Member',
-  },
-  {
-    name: 'Steve',
-    img: Steve,
-    review: 'Execom Member',
+    name: 'Devadarsana R',
+    img: Devadarsana,
+    review: 'Public Relations Lead',
   }
-  
-]
+];
 
-
-export default Execom
+export default Execom;
