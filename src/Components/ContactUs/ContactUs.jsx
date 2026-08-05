@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { FaFacebookF } from "react-icons/fa6";
 import { FaInstagram } from "react-icons/fa6";
 import { FaXTwitter } from "react-icons/fa6";
@@ -15,7 +15,6 @@ import Footer from "../../Pages/LandingPage/Footer/Footer";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../ContactUs/notification.css'
-import BackToHome from "../BackToHome";
 
 function ContactUs() {
   const [formData, setFormData] = useState({

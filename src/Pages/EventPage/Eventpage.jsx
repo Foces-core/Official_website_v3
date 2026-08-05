@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import EventcardL from './EventcardL.jsx';
 import EventcardR from './EventcardR.jsx';
 import EventCardMobile from './EventCardMobile.jsx';
 import Navbar from '../LandingPage/Navbar/Navbar.jsx';
 import Footer from '../LandingPage/Footer/Footer.jsx';
-import BackToHome from '../../Components/BackToHome.jsx';
 import client from '../../sanityClient.js';
 import Loader from '../../Components/Loader/Loader.jsx'; 
 import EventTitle from '../../assets/Event.svg';
@@ -41,7 +40,6 @@ const fallbackEvents = [
 function Eventpage() {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [eventsList, setEventsList] = useState([]);
-  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -112,10 +110,6 @@ function Eventpage() {
     return <Loader />;
   }
 
-  if (error) {
-    return <div className="text-center text-red-500">{error}</div>;
-  }
-
   if (windowWidth > 1000) {
     return (
       <div className="overflow-x-hidden flex flex-col">
@@ -132,7 +126,6 @@ function Eventpage() {
               : <EventcardR key={index} Events={event} priority={index === 0} />
           ))}
         </div>
-        {/* <BackToHome /> */}
         <Footer />
       </div>
     );
@@ -151,7 +144,6 @@ function Eventpage() {
           <EventCardMobile key={index} Events={event} priority={index === 0} />
         ))}
       </div>
-      {/* <BackToHome /> */}
       <Footer />
     </div>
   );

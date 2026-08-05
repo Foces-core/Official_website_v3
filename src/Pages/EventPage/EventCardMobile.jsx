@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { motion, spring } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import BlockContent from '@sanity/block-content-to-react';
@@ -84,5 +84,20 @@ function EventCardMobile({ Events, priority }) {
     </div>
   );
 }
+
+EventCardMobile.propTypes = {
+  Events: PropTypes.shape({
+    name: PropTypes.string,
+    date: PropTypes.string,
+    tickets: PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf(['closed'])]),
+    images: PropTypes.arrayOf(PropTypes.string),
+    content: PropTypes.array,
+  }).isRequired,
+  priority: PropTypes.bool,
+};
+
+EventCardMobile.defaultProps = {
+  priority: false,
+};
 
 export default EventCardMobile;

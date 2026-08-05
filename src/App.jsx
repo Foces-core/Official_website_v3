@@ -1,5 +1,5 @@
 import "./App.css";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import Events from "./Pages/LandingPages/Events";
 import Featuring from "./Pages/LandingPages/Featuring";
 import HeroSection from "./Pages/LandingPage/HeroSection/HeroSection";

@@ -1,4 +1,3 @@
-import React from "react";
 import { FaSquareFacebook, FaInstagram, FaXTwitter, FaLinkedin, FaHeart } from "react-icons/fa6";
 import FocesLogo from "../../../assets/FOCES White.svg";
 import CollegeLogo from "../../../assets/clogo.png";

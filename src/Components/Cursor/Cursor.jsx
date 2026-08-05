@@ -1,4 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
+
+// Matches Tailwind max-[767px]:hidden — no rAF on touch layouts where glow is CSS-hidden.
+const DESKTOP_MQ = '(min-width: 768px)';
+const IDLE_EPS = 0.1;
 
 function Cursor() {
   const cursorOutlineRef = useRef(null);
@@ -6,12 +10,26 @@ function Cursor() {
   const rafId = useRef(null);
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
-      posRef.current.targetX = e.pageX;
-      posRef.current.targetY = e.pageY;
+    const mq = window.matchMedia(DESKTOP_MQ);
+    if (!mq.matches) return;
+
+    let running = false;
+
+    const stopLoop = () => {
+      if (rafId.current != null) {
+        cancelAnimationFrame(rafId.current);
+        rafId.current = null;
+      }
+      running = false;
     };
 
     const updateCursor = () => {
+      if (document.hidden) {
+        running = false;
+        rafId.current = null;
+        return;
+      }
+
       const { x, y, targetX, targetY } = posRef.current;
       const ease = 0.15;
       const nextX = x + (targetX - x) * ease;
@@ -23,23 +41,61 @@ function Cursor() {
         cursorOutlineRef.current.style.transform = `translate3d(${nextX}px, ${nextY}px, 0)`;
       }
 
+      const dx = targetX - nextX;
+      const dy = targetY - nextY;
+      if (dx * dx + dy * dy < IDLE_EPS * IDLE_EPS) {
+        // Snap + idle: no rAF until next mousemove
+        posRef.current.x = targetX;
+        posRef.current.y = targetY;
+        if (cursorOutlineRef.current) {
+          cursorOutlineRef.current.style.transform = `translate3d(${targetX}px, ${targetY}px, 0)`;
+        }
+        running = false;
+        rafId.current = null;
+        return;
+      }
+
       rafId.current = requestAnimationFrame(updateCursor);
     };
 
-    window.addEventListener("mousemove", handleMouseMove, { passive: true });
-    rafId.current = requestAnimationFrame(updateCursor);
+    const startLoop = () => {
+      if (running || document.hidden || !mq.matches) return;
+      running = true;
+      rafId.current = requestAnimationFrame(updateCursor);
+    };
+
+    const handleMouseMove = (e) => {
+      posRef.current.targetX = e.pageX;
+      posRef.current.targetY = e.pageY;
+      startLoop();
+    };
+
+    const handleVisibility = () => {
+      if (document.hidden) stopLoop();
+      // Resume only on next mousemove — avoids burning frames on hidden tabs
+    };
+
+    const handleMq = () => {
+      if (!mq.matches) stopLoop();
+    };
+
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
+    document.addEventListener('visibilitychange', handleVisibility);
+    mq.addEventListener('change', handleMq);
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      if (rafId.current) cancelAnimationFrame(rafId.current);
+      window.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('visibilitychange', handleVisibility);
+      mq.removeEventListener('change', handleMq);
+      stopLoop();
     };
   }, []);
 
   return (
     <div className='overflow-hidden z-10'>
-      <div 
-        className='cursor-outline max-[767px]:hidden h-[1px] w-[1px] bg-[#fff] shadow-[0_0_201px_80px_rgba(255,255,255,0.4)] fixed z-10 pointer-events-none rounded-[50%] left-0 top-0 will-change-transform' 
-        data-cursor-outline 
+      <div
+        className='cursor-outline max-[767px]:hidden h-[1px] w-[1px] bg-[#fff] shadow-[0_0_201px_80px_rgba(255,255,255,0.4)] fixed z-10 pointer-events-none rounded-[50%] left-0 top-0 will-change-transform'
+        data-cursor-outline
         ref={cursorOutlineRef}
       />
     </div>
