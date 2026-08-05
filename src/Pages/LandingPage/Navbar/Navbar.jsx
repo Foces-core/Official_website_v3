@@ -168,7 +168,7 @@ export default function Navbar() {
               : LogoGrey
           }
           alt="FOCES"
-          className="h-[5%] w-[10%] max-[767px]:h-[3vh] max-[767px]:w-[15vw] cursor-pointer"
+          className="h-auto w-[clamp(88px,8vw,140px)] cursor-pointer"
           onClick={handleLogoClick}
         />
       )}
@@ -180,7 +180,7 @@ export default function Navbar() {
               : LogoGrey
           }
           alt="FOCES"
-          className="h-[5%] w-[10%] mt-1 max-[767px]:h-[3vh] max-[767px]:w-[24vw] min-[767px]:hidden cursor-pointer"
+          className="h-auto w-[clamp(56px,19vw,84px)] mt-1 min-[767px]:hidden cursor-pointer"
           onClick={handleLogoClick}
         />
       )}
@@ -216,11 +216,11 @@ export default function Navbar() {
       </div>
 
       <div
-        className={`contact cursor-pointer w-[9em] h-[2.5em]  ${
+        className={`contact cursor-pointer w-[8em] h-[2.3em] text-[clamp(0.7rem,0.9vw,0.85rem)] ${
           ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
             ? "bg-[#F5F5F5] text-[#101011] hover:bg-[#101011] hover:text-[#F5F5F5] hover:border hover:border-[#F5F5F5]"
             : "bg-black text-[#F5F5F5] hover:bg-[#F5F5F5] hover:text-black hover:border hover:border-black"
-        } flex justify-center items-center rounded-3xl duration-700 max-[767px]:h-[4vh] max-[767px]:ml-28 max-[767px]:w-[6.5em] max-[380px]:ml-[25%] max-[320px]:ml-[15%] ${
+        } flex justify-center items-center rounded-3xl duration-700 max-[767px]:h-[4vh] max-[767px]:ml-28 max-[767px]:w-[6.5em] max-[767px]:text-[clamp(0.6rem,3.4vw,0.75rem)] max-[380px]:ml-[25%] max-[320px]:ml-[15%] ${
           showItems && isMobile ? "hidden" : ""
         }`}
         onClick={handleJoinFocesClick}
