@@ -14,6 +14,7 @@ import Anupriya from '../../assets/AnupriyaN.jpg';
 import Megha from '../../assets/megha.png';
 import George from '../../assets/george.png';
 import Aparna from '../../assets/aparna.png';
+import Devadarasan from '../../assets/devadarasan.jpg';
 
 import MeetTheTeam from '../../assets/MeetTheTeam.svg';
 
@@ -203,6 +204,11 @@ const cardData = [
     review: 'Operations Lead',
    
    
+  },
+  {
+    name: 'Devadarasan',
+    img: Devadarasan,
+    review: 'Execom Member',
   }
   
 ]
