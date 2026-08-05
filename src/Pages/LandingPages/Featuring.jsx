@@ -53,7 +53,9 @@ useEffect(() => {
   ).then((data) => { // Log fetched data
     setFeature(data);
 
-  }).catch(console.error);
+  }).catch(() => {
+    // Fall back to local fallbackFeatures array seamlessly
+  });
 }, []);
 
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);

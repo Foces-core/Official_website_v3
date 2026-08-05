@@ -1,15 +1,16 @@
 import './HeroSection.css';
 import { useState, useEffect, useRef } from 'react';
+import 'vanta/vendor/three.r134.min';
 import WAVES from 'vanta/dist/vanta.waves.min';
 import Cursor from '../../../Components/Cursor/Cursor';
 import ddd from '../../../assets/ddd.svg';
 import focespng from '../../../assets/foces.png';
 import foces1 from '../../../assets/foces1.svg';
-import Notification from '../../../assets/Notification.png';
-import clock from '../../../assets/clock.png';
-import speaker from '../../../assets/speaker.png';
 import client from '../../../sanityClient.js';
-import BlockContent from "@sanity/block-content-to-react";
+
+if (typeof window !== 'undefined' && !window.THREE) {
+  window.THREE = THREE;
+}
 
 function HeroSection() {
   const [notfy, setNotfy] = useState([]);
@@ -27,26 +28,36 @@ function HeroSection() {
         short_details,
       }`
     ).then((data) => {
-      const sortedData = data.sort((a, b) => new Date(b.date) - new Date(a.date));
-      setNotfy(sortedData);
-    }).catch(console.error);
+      if (Array.isArray(data)) {
+        const sortedData = data.sort((a, b) => new Date(b.date) - new Date(a.date));
+        setNotfy(sortedData);
+      }
+    }).catch(() => {
+      // Fallback silently if Sanity project is unconfigured/CORS restricted
+    });
   }, []);
 
   useEffect(() => {
     let vantaEffect = null;
     if (myRef.current) {
-      vantaEffect = WAVES({
-        el: myRef.current,
-        mouseControls: true,
-        touchControls: true,
-        gyroControls: false,
-        scale: 0.75,
-        scaleMobile: 0.50,
-        color: 0x000000,
-      });
+      try {
+        vantaEffect = WAVES({
+          el: myRef.current,
+          mouseControls: true,
+          touchControls: true,
+          gyroControls: false,
+          scale: 0.75,
+          scaleMobile: 0.50,
+          color: 0x000000,
+        });
+      } catch (err) {
+        console.warn('Vanta Waves init warning:', err);
+      }
     }
     return () => {
-      if (vantaEffect) vantaEffect.destroy();
+      if (vantaEffect && typeof vantaEffect.destroy === 'function') {
+        vantaEffect.destroy();
+      }
     };
   }, []);
 
