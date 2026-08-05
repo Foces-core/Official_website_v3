@@ -37,6 +37,13 @@ const fallbackEvents = [
   }
 ];
 
+// If a Sanity event comes back without usable images (missing/renamed image
+// fields, or a broken asset URL), show the matching local poster so the card
+// never renders with a blank image area.
+const fallbackImagesByName = Object.fromEntries(
+  fallbackEvents.map((e) => [e.name, e.images])
+);
+
 function Eventpage() {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   const [eventsList, setEventsList] = useState([]);
@@ -82,6 +89,9 @@ function Eventpage() {
         date: event.date,
         content: event.content,
         tickets: event.tickets
+      })).map((event) => ({
+        ...event,
+        images: event.images.length > 0 ? event.images : (fallbackImagesByName[event.name] || []),
       }));
 
       const sortedEvents = formattedEvents.sort((a, b) => new Date(b.date) - new Date(a.date));

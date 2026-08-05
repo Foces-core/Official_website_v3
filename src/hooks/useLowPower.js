@@ -33,10 +33,14 @@ function detectProfile() {
       if (typeof conn.downlink === 'number' && conn.downlink > 0 && conn.downlink < 1.2) slowNetwork = true;
     }
 
-    // CPU-side constraint: low-RAM device (Chromium only exposes this)
-    if (typeof navigator.deviceMemory === 'number' && navigator.deviceMemory > 0 && navigator.deviceMemory <= 4) {
-      lowCPU = true;
-    }
+    // CPU-side constraint. Require BOTH low memory AND few cores — many
+    // high-end phones report only 4GB to Chrome but still have 8+ cores, so
+    // memory alone false-positives them into low-end mode.
+    const cores = navigator.hardwareConcurrency;
+    const lowRam =
+      typeof navigator.deviceMemory === 'number' && navigator.deviceMemory > 0 && navigator.deviceMemory <= 4;
+    const fewCores = typeof cores !== 'number' || cores <= 4;
+    if (lowRam && fewCores) lowCPU = true;
   } catch {
     // ignore — default to not-constrained
   }

@@ -46,8 +46,13 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,jpg,jpeg,webp,avif,woff2}'],
         // Keep the precache lean: skip the 734KB three.js chunk (only the
-        // desktop hero WebGL needs it, and only on good connections).
-        globIgnores: ['**/three.module-*.js'],
+        // desktop hero WebGL needs it, and only on good connections) and the
+        // non-latin font subsets (the latin site never downloads them).
+        globIgnores: [
+          '**/three.module-*.js',
+          '**/inter-{latin-ext,cyrillic,cyrillic-ext,greek,greek-ext,vietnamese}-*.woff2',
+          '**/space-grotesk-{latin-ext,vietnamese}-*.woff2',
+        ],
         navigateFallback: '/index.html',
         cleanupOutdatedCaches: true,
       },

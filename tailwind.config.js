@@ -7,8 +7,8 @@ export default {
     extend: {
       fontFamily:
       {
-        // Space Grotesk is loaded globally via <link> in index.html
-        Grotesk: ["Space Grotesk", "sans-serif"]
+        // Space Grotesk is self-hosted via @fontsource-variable
+        Grotesk: ["Space Grotesk Variable", "sans-serif"]
       }
     },
   },

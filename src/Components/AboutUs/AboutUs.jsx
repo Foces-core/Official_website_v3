@@ -12,15 +12,79 @@ function AboutUs() {
   const [isMobile, setIsMobile] = useState(false);
   const startX = useRef(0);
   const startRot = useRef(0);
+  // Desktop cube is driven imperatively (no React re-render per frame):
+  const boxRef = useRef(null);
+  const rotRef = useRef(0); // live rotation in degrees
+  const rafRef = useRef(null);
+  const manualUntilRef = useRef(0); // pauses auto-rotate while user navigates
+  const transTimerRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 500);
+      const mobile = window.innerWidth <= 500;
+      if (mobile) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+        setRotationY(rotRef.current % 360);
+      }
+      setIsMobile(mobile);
     };
     handleResize();
     window.addEventListener('resize', handleResize, { passive: true });
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
+  // Desktop auto-rotate. Cheap: writes transform straight to the DOM at 60fps,
+  // skipping React entirely. Frozen on low-CPU machines (CSS animation was too
+  // — but here the keyboard controls still work while it's static).
+  useEffect(() => {
+    if (isMobile || lowCPU) return;
+    rotRef.current = rotationY % 360;
+
+    const step = () => {
+      if (Date.now() >= manualUntilRef.current) {
+        rotRef.current = (rotRef.current + 0.4) % 360; // ~24°/s ≈ 15s/lap
+        if (boxRef.current) boxRef.current.style.transform = `rotateY(${rotRef.current}deg)`;
+      }
+      rafRef.current = requestAnimationFrame(step);
+    };
+    rafRef.current = requestAnimationFrame(step);
+    return () => {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    };
+  }, [isMobile, lowCPU, rotationY]);
+
+  // Arrow keys step the desktop cube face-by-face (90°). Only active while the
+  // cube is on screen so the page still scrolls normally elsewhere.
+  useEffect(() => {
+    if (isMobile) return;
+
+    const onKey = (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      const el = boxRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      if (rect.bottom < 0 || rect.top > window.innerHeight) return;
+
+      e.preventDefault();
+      const delta = e.key === 'ArrowRight' ? 90 : -90;
+      rotRef.current = Math.round(rotRef.current / 90) * 90 + delta;
+      manualUntilRef.current = Date.now() + 3000; // let the user read the face
+      el.style.transition = 'transform 0.5s ease';
+      el.style.transform = `rotateY(${rotRef.current}deg)`;
+      clearTimeout(transTimerRef.current);
+      transTimerRef.current = setTimeout(() => {
+        if (el) el.style.transition = 'none';
+      }, 600);
+    };
+
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      clearTimeout(transTimerRef.current);
+    };
+  }, [isMobile]);
 
   const handleTouchStart = (e) => {
     if (!isMobile) return;
@@ -63,6 +127,7 @@ function AboutUs() {
 
   <div id="mainDiv-about">
     <div id="boxDiv-about"
+      ref={boxRef}
       style={
         isMobile
           // Drag works on every device; only the ease-out snap costs frames,
@@ -71,13 +136,16 @@ function AboutUs() {
               transform: `rotateY(${rotationY}deg)`,
               transition: isDragging || lowCPU || reducedMotion ? 'none' : 'transform 0.3s ease',
             }
-          // Desktop auto-rotate (CSS animation) is the expensive part — freeze it.
-          : lowCPU || reducedMotion ? { animation: 'none' } : undefined
+          // Desktop: the JS loop drives the transform directly, so the CSS
+          // animation must be off to avoid fighting it.
+          : { animation: 'none' }
       }
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
       onTouchCancel={handleTouchEnd}
+      role="group"
+      aria-label="FOCES values cube, use left and right arrow keys to rotate"
     >
         <div id="front-about"  className='font-about text-shadow-white '>DARE</div>
         <div id="back-about"  className='font-about text-shadow-white '>DEVELOP</div>

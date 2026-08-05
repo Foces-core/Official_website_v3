@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import App from './App.jsx';
 import Loader from './Components/Loader/Loader.jsx';
+import '@fontsource-variable/inter';
+import '@fontsource-variable/space-grotesk';
 import './index.css';
 
 const Eventpage = lazy(() => import('./Pages/EventPage/Eventpage'));
