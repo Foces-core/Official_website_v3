@@ -5,10 +5,10 @@ import { MouseParallaxContainer, MouseParallaxChild } from "react-parallax-mouse
 import Event from '../../assets/Event.svg'
 import  "./Events.css"
 import {Link} from "react-router-dom";
-import img1 from "../../assets/eventpic1.jpg";
-import img2 from "../../assets/eventspic4.jpg"
-import img3 from "../../assets/eventspic3.jpg";
-import img4 from "../../assets/eventspic2.jpg"
+import img1 from "../../assets/agentic_coding.jpg";
+import img2 from "../../assets/coding_arena.jpg";
+import img3 from "../../assets/the_prompt_paradox_2_0_insta.jpg";
+import img4 from "../../assets/coding_arena_4_0_insta.jpg";
 
 function Events() {
   
