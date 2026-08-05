@@ -151,9 +151,9 @@ function Execom() {
         <div ref={cubeWrapRef} className="block sm:hidden max-w-[320px] mx-auto py-4">
           <Swiper
             onSwiper={(swiper) => { cubeRef.current = swiper; }}
-            effect={'cube'}
+            effect={lowPower ? 'slide' : 'cube'}
             grabCursor={true}
-            speed={400}
+            speed={lowPower ? 0 : 400}
             cubeEffect={cubeEffectConfig}
             loop={false}
             initialSlide={cardData.length}

@@ -134,7 +134,7 @@ export default function Navbar() {
         ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
           ? "nav-w"
           : "nav-b"
-      } flex min-[767px]:items-center px-5 pt-4 pb-2 font-semibold max-[767px]:pl-4 max-[767px]:pt-8 cursor-none max-[767px]:h-[12vh] max-[767px]:w-screen ${
+      } flex items-center px-5 pt-4 pb-2 font-semibold max-[767px]:pl-4 max-[767px]:py-4 cursor-none max-[767px]:h-[12vh] max-[767px]:w-screen ${
         isScrolled || currentItem === "contact"
           ? "bg-[#101011e6] border-b border-[#ffffff1a]"
           : "bg-transparent"
@@ -142,7 +142,7 @@ export default function Navbar() {
     >
       {isMobile && (
         <div
-          className="h-[full] w-[2rem] Button absolute inset-y-10 right-5 flex items-center justify-center top-[31%] cursor-none"
+          className="h-full w-[2rem] Button absolute right-5 top-1/2 -translate-y-1/2 flex items-center justify-center cursor-none"
           onClick={toggleItems}
         >
           {showItems ? (
@@ -180,7 +180,7 @@ export default function Navbar() {
               : LogoGrey
           }
           alt="FOCES"
-          className="h-auto w-[clamp(56px,19vw,84px)] mt-1 min-[767px]:hidden cursor-pointer"
+          className="h-auto w-[clamp(56px,19vw,84px)] min-[767px]:hidden cursor-pointer"
           onClick={handleLogoClick}
         />
       )}
