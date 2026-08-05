@@ -31,7 +31,7 @@ const cardData = [
   { name: 'Amanul Farhan K S', img: Amanul, review: 'Treasurer' },
   { name: 'Abel S Mathew', img: Abel, review: 'Research & Development Lead' },
   { name: 'Saniya K Shibu', img: Saniya, review: 'Program Outreach Coordinator' },
-  { name: 'Sebin Mathew', img: Sebin, review: 'Project Coordinator', imgPos: 'object-[calc(20%_-_25px)_calc(45%_-_10px)]' },
+  { name: 'Sebin Mathew', img: Sebin, review: 'Project Coordinator' },
   { name: 'Anjitha Aravind', img: Anjitha, review: 'Operations Lead' },
   { name: 'Abhirami P', img: Abhirami, review: 'Design Lead' },
   { name: 'Devadarsana R', img: Devadarsana, review: 'Public Relations Lead' }
@@ -46,7 +46,32 @@ function Execom() {
   const lowPower = useLowPower();
   const [activeCube, setActiveCube] = React.useState(0);
   const cubeRef = React.useRef(null);
+  const cubeWrapRef = React.useRef(null);
+  const cubeVisibleRef = React.useRef(true);
   const lastWrap = React.useRef(0);
+
+  // Shadow planes + face gradients are the cube's #1 GPU cost — and on a
+  // near-black site they read as a black smear, not a shadow. Keep them off.
+  const cubeEffectConfig = { shadow: false, slideShadows: false };
+
+  // Only run the cube's rotation while it's actually on screen.
+  // At 20x CPU throttle (or on low-end phones), a cube spinning
+  // in the background is pure wasted frames.
+  React.useEffect(() => {
+    const el = cubeWrapRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const io = new IntersectionObserver(([entry]) => {
+      cubeVisibleRef.current = entry.isIntersecting;
+      if (!cubeRef.current) return;
+      if (entry.isIntersecting) {
+        if (!lowPower) cubeRef.current.autoplay.start();
+      } else {
+        cubeRef.current.autoplay.stop();
+      }
+    }, { threshold: 0.1 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [lowPower]);
 
   return (
     <section className='min-h-full flex flex-col pt-10 pb-20 overflow-hidden' id='execom'>
@@ -97,17 +122,13 @@ function Execom() {
         </div>
 
         {/* Mobile 3D Cube Swiper — seamless infinite wrap (swipe any direction, forever) */}
-        <div className="block sm:hidden max-w-[320px] mx-auto py-4">
+        <div ref={cubeWrapRef} className="block sm:hidden max-w-[320px] mx-auto py-4">
           <Swiper
             onSwiper={(swiper) => { cubeRef.current = swiper; }}
             effect={'cube'}
             grabCursor={true}
-            cubeEffect={{
-              shadow: !lowPower,
-              slideShadows: !lowPower,
-              shadowOffset: 20,
-              shadowScale: 0.94,
-            }}
+            speed={400}
+            cubeEffect={cubeEffectConfig}
             loop={false}
             initialSlide={cardData.length}
             autoplay={lowPower ? false : { delay: 3000, disableOnInteraction: false, stopOnLastSlide: true }}
@@ -121,7 +142,7 @@ function Execom() {
               if (swiper.activeIndex >= cardData.length * 3 - 1) {
                 lastWrap.current = now;
                 swiper.slideTo(0, 0);
-                if (!lowPower) swiper.autoplay.start();
+                if (!lowPower && cubeVisibleRef.current) swiper.autoplay.start();
               } else if (swiper.activeIndex <= 0) {
                 lastWrap.current = now;
                 swiper.slideTo(cardData.length * 3 - 1, 0);
@@ -131,7 +152,7 @@ function Execom() {
           >
             {cubeSlides.map((d, index) => (
               <SwiperSlide key={index}>
-                <div className='container-execom bg-[#161618] border-box relative rounded-3xl overflow-hidden shadow-2xl'>
+                <div className='container-execom bg-[#161618] border-box relative rounded-3xl overflow-hidden'>
                   <img
                     className={`object-cover ${d.imgPos || 'object-top'} w-full h-full`}
                     src={d.img}
