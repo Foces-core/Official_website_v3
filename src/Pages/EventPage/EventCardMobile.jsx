@@ -4,6 +4,7 @@ import AOS from 'aos';
 import 'aos/dist/aos.css';
 import BlockContent from '@sanity/block-content-to-react';
 import Modal from './Modal';
+import { sanityImg } from '../../utils/sanityImage.js';
 
 function EventCardMobile({ Events, priority }) {
   const [Expanding, setExpanding] = useState(false);
@@ -34,7 +35,7 @@ function EventCardMobile({ Events, priority }) {
       >
         {primaryImage && (
           <img
-            src={primaryImage}
+            src={sanityImg(primaryImage, 1000)}
             alt={Events.name}
             loading={priority ? 'eager' : 'lazy'}
             decoding="async"
