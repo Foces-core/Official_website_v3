@@ -23,7 +23,6 @@ export default defineConfig({
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'three-vendor': ['three'],
           'swiper-vendor': ['swiper'],
           'icons-vendor': ['react-icons'],
           'sanity-vendor': ['@sanity/client'],
