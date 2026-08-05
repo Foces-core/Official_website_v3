@@ -19,6 +19,7 @@
     "@sanity/block-content-to-react": "^3.0.0",
     "@sanity/client": "^6.20.1",
     "@sanity/code-input": "^4.1.4",
+    "@vercel/speed-insights": "^2.0.0",
     "aos": "^2.3.4",
     "emailjs-com": "^3.2.0",
     "framer-motion": "^10.16.15",

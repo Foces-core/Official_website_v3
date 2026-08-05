@@ -6,6 +6,7 @@ if (typeof window !== 'undefined') {
 import React, { lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import App from './App.jsx';
 import Loader from './Components/Loader/Loader.jsx';
 import './index.css';
@@ -26,6 +27,7 @@ root.render(
           <Route path="/contact" element={<ContactUs />} />
         </Routes>
       </Suspense>
+      <SpeedInsights />
     </Router>
   </React.StrictMode>
 );
