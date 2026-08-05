@@ -2,9 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import '../../index.css'
 import Aboutus from '../../assets/about us.svg';
 import '../AboutUs/AboutUs.css'
+import useLowPower from '../../hooks/useLowPower.js';
 
 
 function AboutUs() {
+  const lowPower = useLowPower();
   const [rotationY, setRotationY] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -21,20 +23,20 @@ function AboutUs() {
   }, []);
 
   const handleTouchStart = (e) => {
-    if (!isMobile) return;
+    if (!isMobile || lowPower) return;
     startX.current = e.touches[0].clientX;
     startRot.current = rotationY;
     setIsDragging(true);
   };
 
   const handleTouchMove = (e) => {
-    if (!isMobile || !isDragging) return;
+    if (!isMobile || !isDragging || lowPower) return;
     const deltaX = e.touches[0].clientX - startX.current;
     setRotationY(startRot.current + deltaX * 0.4);
   };
 
   const handleTouchEnd = () => {
-    if (!isMobile) return;
+    if (!isMobile || lowPower) return;
     setIsDragging(false);
     // Snap to the nearest cube face (every 90 degrees) for a clean finish
     setRotationY((prev) => Math.round(prev / 90) * 90);
@@ -61,7 +63,7 @@ function AboutUs() {
 
   <div id="mainDiv-about">
     <div id="boxDiv-about"
-      style={isMobile ? { transform: `rotateY(${rotationY}deg)`, transition: isDragging ? 'none' : 'transform 0.3s ease' } : undefined}
+      style={isMobile && !lowPower ? { transform: `rotateY(${rotationY}deg)`, transition: isDragging ? 'none' : 'transform 0.3s ease' } : lowPower ? { animation: 'none' } : undefined}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}

@@ -134,7 +134,7 @@ function Eventpage() {
   return (
     <div className="bg-[#0b0b0c] min-h-screen">
       <Navbar />
-      <div className="flex justify-center items-center flex-col bg-[#0b0b0c] pt-24">
+      <div className="flex justify-center items-center flex-col bg-[#0b0b0c] pt-24 max-[767px]:pt-[15vh]">
         <img
           src={EventTitle}
           alt="Events"
