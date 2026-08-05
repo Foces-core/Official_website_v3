@@ -86,7 +86,7 @@ export default function Navbar() {
       navigate(id === "events" ? '/events' : '/contact');
       return;
     }
-    setCurrentItem(id.toUpperCase());
+    setCurrentItem(id);
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
