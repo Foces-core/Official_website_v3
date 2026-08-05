@@ -15,6 +15,14 @@ import Megha from '../../assets/megha.png';
 import George from '../../assets/george.png';
 import Aparna from '../../assets/aparna.png';
 import Devadarasan from '../../assets/devadarasan.jpg';
+import Abel from '../../assets/abel.jpg';
+import Abhirami from '../../assets/abhirami_p.jpg';
+import Aleeta from '../../assets/aleeta.jpg';
+import Amanul from '../../assets/amanul.jpg';
+import Anjitha from '../../assets/anjitha.jpg';
+import Lisha from '../../assets/lisha1.jpg';
+import Saniya from '../../assets/saniya.jpg';
+import Steve from '../../assets/steve.jpg';
 
 import MeetTheTeam from '../../assets/MeetTheTeam.svg';
 
@@ -208,6 +216,46 @@ const cardData = [
   {
     name: 'Devadarasan',
     img: Devadarasan,
+    review: 'Execom Member',
+  },
+  {
+    name: 'Abel',
+    img: Abel,
+    review: 'Execom Member',
+  },
+  {
+    name: 'Abhirami P',
+    img: Abhirami,
+    review: 'Execom Member',
+  },
+  {
+    name: 'Aleeta',
+    img: Aleeta,
+    review: 'Execom Member',
+  },
+  {
+    name: 'Amanul',
+    img: Amanul,
+    review: 'Execom Member',
+  },
+  {
+    name: 'Anjitha',
+    img: Anjitha,
+    review: 'Execom Member',
+  },
+  {
+    name: 'Lisha',
+    img: Lisha,
+    review: 'Execom Member',
+  },
+  {
+    name: 'Saniya',
+    img: Saniya,
+    review: 'Execom Member',
+  },
+  {
+    name: 'Steve',
+    img: Steve,
     review: 'Execom Member',
   }
   

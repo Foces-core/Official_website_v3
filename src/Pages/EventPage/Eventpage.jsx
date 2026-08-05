@@ -7,6 +7,35 @@ import Footer from '../LandingPage/Footer/Footer.jsx';
 import BackToHome from '../../Components/BackToHome.jsx';
 import client from '../../sanityClient.js';
 import Loader from '../../Components/Loader/Loader.jsx'; 
+import codingArenaPoster from '../../assets/coding_arena_4_0_insta.jpg';
+import codingArenaPhoto from '../../assets/coding_arena.jpg';
+import promptParadoxPoster from '../../assets/the_prompt_paradox_2_0_insta.jpg';
+import agenticCodingPoster from '../../assets/agentic_coding_instagram.jpg';
+import agenticCodingPhoto from '../../assets/agentic_coding.jpg';
+
+const fallbackEvents = [
+  {
+    name: 'Agentic Coding Workshop',
+    images: [agenticCodingPoster, agenticCodingPhoto],
+    date: '2026-08-01',
+    content: 'Hands-on workshop on building autonomous AI agents using LLMs, tool calling, and modern web frameworks.',
+    tickets: '#'
+  },
+  {
+    name: 'Coding Arena 4.0',
+    images: [codingArenaPoster, codingArenaPhoto],
+    date: '2026-07-15',
+    content: 'The flagship competitive programming challenge testing algorithm design, speed, and problem-solving skills.',
+    tickets: '#'
+  },
+  {
+    name: 'The Prompt Paradox 2.0',
+    images: [promptParadoxPoster],
+    date: '2026-06-20',
+    content: 'An interactive prompt engineering competition exploring creative AI generation, constraints, and optimization.',
+    tickets: '#'
+  }
+];
 
 function Eventpage() {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -57,11 +86,11 @@ function Eventpage() {
       }));
 
       const sortedEvents = formattedEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
-      setEventsList(sortedEvents);
+      setEventsList(sortedEvents.length > 0 ? sortedEvents : fallbackEvents);
       setLoading(false); // Set loading to false when data is fetched
     }).catch((err) => {
       console.error("Error fetching data from Sanity:", err);
-      setError("Failed to fetch event data. Please try again later.");
+      setEventsList(fallbackEvents);
       setLoading(false); // Set loading to false on error
     });
   }, []);

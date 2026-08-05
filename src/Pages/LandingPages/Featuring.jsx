@@ -9,8 +9,17 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import FI1 from "../../assets/FI1.svg";
 import featuring from '../../assets/featuring.svg';
+import codingArenaPoster from '../../assets/coding_arena_4_0_insta.jpg';
+import promptParadoxPoster from '../../assets/the_prompt_paradox_2_0_insta.jpg';
+import agenticCodingPoster from '../../assets/agentic_coding_instagram.jpg';
 
 import client from '../../sanityClient.js';
+
+const fallbackFeatures = [
+  { image: { asset: { url: codingArenaPoster }, alt: "Coding Arena 4.0" }, tickets: "#" },
+  { image: { asset: { url: promptParadoxPoster }, alt: "The Prompt Paradox 2.0" }, tickets: "#" },
+  { image: { asset: { url: agenticCodingPoster }, alt: "Agentic Coding" }, tickets: "#" },
+];
 
 
 function Featuring() {
@@ -105,7 +114,7 @@ useEffect(() => {
         }}
         className="mySwiper bg-transparent px-10 pb-10 h-fit"
       >
-         {feature.map(({ image, tickets }, index) => (
+         {(feature.length > 0 ? feature : fallbackFeatures).map(({ image, tickets }, index) => (
             <SwiperSlide key={index} className='px-5 pb-7 pt-7 bg-transparent rounded-full'>
               <a href={tickets}>
                 <img className='hover:shadow-white hover:shadow-[0_0px_20px_rgb(0,0,0,0.12)] h-full w-full rounded-xl hover:scale-105  duration-100' src={image?.asset?.url} alt={image?.alt || ''} data-aos="flip-right" />
