@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { FreeMode, Pagination, Navigation, Scrollbar, A11y } from 'swiper/modules';
+import { sanityImg } from '../../utils/sanityImage.js';
 
 
 export default function Modal({ images, open, onClose }) {
@@ -51,7 +52,7 @@ export default function Modal({ images, open, onClose }) {
             <SwiperSlide key={index} className='rounded-full flex justify-center items-center'>
               <img
                 className='h-fit w-fit rounded-xl ease-in-out duration-200  bg-cover'
-                src={url}
+                src={sanityImg(url, 1400)}
                 alt={`Slide ${index + 1}`}
               />
             </SwiperSlide>
