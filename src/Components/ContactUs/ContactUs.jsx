@@ -119,16 +119,10 @@ function ContactUs() {
   };
 
   return (
-    <div
-      className={`contact-container bg-[#101011] flex flex-col min-h-screen ${
-        window.screen.width < 768 ? "space-y-32" : "space-y-12"
-      }`}
-      id="contact"
-    >
+    <div className="contact-container bg-[#101011] flex flex-col min-h-screen justify-between" id="contact">
       <Navbar />
-      
 
-      <div className="font-Armata ">
+      <div className="font-Armata flex-grow flex flex-col justify-center py-10">
         <div className="flex items-center md:hidden">
           <div className="flex items-center pl-8">
             <div className="inline-block w-5 h-16 bg-[#4f4f54] relative"></div>
@@ -324,12 +318,10 @@ function ContactUs() {
             </div>
           </div>
         </div>
-       
-        <Footer />
       </div>   
+      <Footer />
       <ToastContainer/> 
     </div>
-    
   );
 }
 
