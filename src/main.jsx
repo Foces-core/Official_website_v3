@@ -1,3 +1,8 @@
+import * as THREE from 'three';
+if (typeof window !== 'undefined') {
+  window.THREE = THREE;
+}
+
 import React, { lazy, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';

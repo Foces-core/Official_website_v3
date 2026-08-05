@@ -38,6 +38,7 @@
     "reactjs-popup": "^2.0.6",
     "slick-carousel": "^1.8.1",
     "swiper": "^11.0.5",
+    "three": "^0.185.1",
     "vanilla-tilt": "^1.8.1",
     "vanta": "^0.5.24"
   },
