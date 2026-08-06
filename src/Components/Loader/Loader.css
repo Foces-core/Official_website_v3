@@ -84,6 +84,19 @@
                 opacity: 1;
               }
               
+/* Reduced-motion users still see the coffee mug loading screen, but the steam
+   bars stay static (no animation) — the mug is a loading indicator, not
+   decorative motion. */
+@media (prefers-reduced-motion: reduce) {
+  .coffee div {
+    animation: none;
+    opacity: 0.6;
+  }
+  .coffee {
+    animation: none;
+  }
+}
+
 .break-lines {
     white-space: pre-line;
     

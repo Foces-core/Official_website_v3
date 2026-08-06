@@ -26,7 +26,9 @@ function EventcardR({ Events, priority }) {
   }, [Events.date]);
 
   const images = Events.images || [];
+  const imageSets = Events.imageSets || [];
   const primaryImage = images[0];
+  const primarySet = imageSets[0];
 
   return (
     <div
@@ -36,16 +38,18 @@ function EventcardR({ Events, priority }) {
       {/* Poster / Image Section */}
       <div className='w-full md:w-1/2 flex flex-col gap-3'>
         <div
-          className='relative w-full h-64 md:h-80 rounded-2xl overflow-hidden bg-[#0b0b0c] border border-white/10 shadow-xl cursor-pointer group'
+          className='relative w-full rounded-2xl overflow-hidden bg-[#0b0b0c] border border-white/10 shadow-xl cursor-pointer group'
           onClick={() => setExpanding(true)}
         >
           {primaryImage && (
             <img
               src={sanityImg(primaryImage, slowNetwork ? 640 : 1000)}
+              srcSet={primarySet}
+              sizes="(min-width: 768px) 50vw, 92vw"
               alt={Events.name}
               loading={priority ? 'eager' : 'lazy'}
               decoding="async"
-              className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-500'
+              className='w-full h-auto object-contain bg-[#0b0b0c]'
             />
           )}
           <div className='absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4'>
@@ -61,6 +65,8 @@ function EventcardR({ Events, priority }) {
               <img
                 key={idx}
                 src={sanityImg(img, slowNetwork ? 160 : 240)}
+                srcSet={imageSets[idx + 1]}
+                sizes="80px"
                 alt=""
                 loading="lazy"
                 decoding="async"
@@ -118,6 +124,7 @@ EventcardR.propTypes = {
     date: PropTypes.string,
     tickets: PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf(['closed'])]),
     images: PropTypes.arrayOf(PropTypes.string),
+    imageSets: PropTypes.arrayOf(PropTypes.string),
     content: PropTypes.array,
   }).isRequired,
   priority: PropTypes.bool,

@@ -1,11 +1,9 @@
 import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { SpeedInsights } from '@vercel/speed-insights/react';
-import App from './App.jsx';
+import DeferredAnalytics from './utils/DeferredAnalytics.jsx';import App from './App.jsx';
 import Loader from './Components/Loader/Loader.jsx';
-import '@fontsource-variable/inter';
-import '@fontsource-variable/space-grotesk';
+import './assets/fonts-latin.css';
 import './index.css';
 
 const Eventpage = lazy(() => import('./Pages/EventPage/Eventpage'));
@@ -17,34 +15,10 @@ const ContactUs = lazy(() => import('./Components/ContactUs/ContactUs.jsx'));
  * once per full page load — never on client-side navigation.
  */
 function Root() {
-  // Respect reduced-motion / Data Saver / slow-network / low-end users (same
-  // adaptive signals as the site's low-power mode) — skip the branded splash
-  // for them entirely so real content paints faster on constrained devices.
-  const skipSplash = (() => {
-    if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
-
-    if (typeof window.matchMedia === 'function' &&
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
-
-    try {
-      const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-      if (conn) {
-        if (conn.saveData) return true;
-        const type = (conn.effectiveType || '').toLowerCase();
-        if (type === 'slow-2g' || type === '2g') return true;
-        if (typeof conn.downlink === 'number' && conn.downlink > 0 && conn.downlink < 1.2) return true;
-      }
-      const cores = navigator.hardwareConcurrency;
-      const lowRam =
-        typeof navigator.deviceMemory === 'number' && navigator.deviceMemory > 0 && navigator.deviceMemory <= 4;
-      const fewCores = typeof cores !== 'number' || cores <= 4;
-      if (lowRam && fewCores) return true;
-    } catch {
-      // ignore
-    }
-    return false;
-  })();
-  const [loaderPhase, setLoaderPhase] = useState(skipSplash ? 'gone' : 'show'); // 'show' -> 'fade' -> 'gone'
+  // Always show the branded splash — a loading screen is better than blank
+  // while the app boots. Reduced-motion users get a static mug (no steam),
+  // handled in Loader.css; the splash still covers the boot gap for everyone.
+  const [loaderPhase, setLoaderPhase] = useState('show'); // 'show' -> 'fade' -> 'gone'
 
   useEffect(() => {
     const t1 = setTimeout(() => setLoaderPhase('fade'), 1600);
@@ -85,7 +59,7 @@ root.render(
   <React.StrictMode>
     <Router>
       <Root />
-      <SpeedInsights />
+      <DeferredAnalytics />
     </Router>
   </React.StrictMode>
 );

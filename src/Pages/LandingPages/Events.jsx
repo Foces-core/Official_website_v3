@@ -50,6 +50,8 @@ function Events() {
               <div className="relative h-64 w-full overflow-hidden bg-gray-900">
                 <img
                   src={evt.image}
+                  srcSet={evt.imageSet}
+                  sizes="(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 90vw"
                   alt={evt.title}
                   loading={index === 0 ? 'eager' : 'lazy'}
                   decoding="async"

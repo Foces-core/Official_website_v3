@@ -6,17 +6,26 @@ import { Pagination, Scrollbar, A11y } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import featuring from '../../assets/featuring.svg';
-import episodeOne from '../../assets/episode-1.png';
-import series from '../../assets/series.png';
-import fourth from '../../assets/fourth.png';
-import mentorReveal from '../../assets/Mentor_reveal.png';
+import episodeOne from '../../assets/episode-1.webp';
+import episodeOne480 from '../../assets/episode-1-480.webp';
+import episodeOne960 from '../../assets/episode-1-960.webp';
+import series from '../../assets/series.webp';
+import series480 from '../../assets/series-480.webp';
+import series960 from '../../assets/series-960.webp';
+import fourth from '../../assets/fourth.webp';
+import fourth480 from '../../assets/fourth-480.webp';
+import fourth960 from '../../assets/fourth-960.webp';
+import mentorReveal from '../../assets/Mentor_reveal.webp';
+import mentorReveal480 from '../../assets/Mentor_reveal-480.webp';
+import mentorReveal960 from '../../assets/Mentor_reveal-960.webp';
 import { aosDisabled } from '../../utils/aosGating.js';
+import { srcset } from '../../utils/srcset.js';
 
 const echoSlides = [
-  { image: episodeOne, alt: "ECHO - Episode 1" },
-  { image: series, alt: "ECHO Series" },
-  { image: fourth, alt: "ECHO - Fourth" },
-  { image: mentorReveal, alt: "ECHO - Mentor Reveal" },
+  { image: episodeOne, imageSet: srcset([[episodeOne, 1280], [episodeOne960, 960], [episodeOne480, 480]]), alt: "ECHO - Episode 1" },
+  { image: series, imageSet: srcset([[series, 1280], [series960, 960], [series480, 480]]), alt: "ECHO Series" },
+  { image: fourth, imageSet: srcset([[fourth, 1280], [fourth960, 960], [fourth480, 480]]), alt: "ECHO - Fourth" },
+  { image: mentorReveal, imageSet: srcset([[mentorReveal, 1280], [mentorReveal960, 960], [mentorReveal480, 480]]), alt: "ECHO - Mentor Reveal" },
 ];
 
 function Featuring() {
@@ -76,11 +85,13 @@ function Featuring() {
           }}
           className="mySwiper bg-transparent px-10 pb-10 h-fit"
         >
-          {echoSlides.map(({ image, alt }, index) => (
+          {echoSlides.map(({ image, imageSet, alt }, index) => (
             <SwiperSlide key={index} className='px-3 pb-8 pt-4 bg-transparent'>
               <img
                 className='hover:shadow-white hover:shadow-[0_0px_20px_rgba(255,255,255,0.2)] h-full w-full rounded-2xl object-cover hover:scale-105 transition-transform duration-300 shadow-xl'
                 src={image}
+                srcSet={imageSet}
+                sizes="(min-width: 768px) 33vw, (min-width: 500px) 50vw, 90vw"
                 alt={alt}
                 loading="lazy"
                 decoding="async"

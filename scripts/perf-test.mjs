@@ -52,6 +52,56 @@ const PROFILES = [
     },
     rmFlag: true,
   },
+  {
+    id: 'mobile-3g',
+    label: 'Mobile / 3G (simulated) / motion on',
+    flags: {
+      formFactor: 'mobile',
+      screenEmulation: { mobile: true, width: 390, height: 844, deviceScaleFactor: 2.625, disabled: false },
+      throttling: { rttMs: 300, throughputKbps: 770, cpuSlowdownMultiplier: 4, requestLatencyMs: 0, downloadThroughputKbps: 0, uploadThroughputKbps: 0 },
+    },
+    rmFlag: false,
+  },
+  {
+    id: 'mobile-2g',
+    label: 'Mobile / 2G (simulated) / motion on',
+    flags: {
+      formFactor: 'mobile',
+      screenEmulation: { mobile: true, width: 390, height: 844, deviceScaleFactor: 2.625, disabled: false },
+      throttling: { rttMs: 800, throughputKbps: 250, cpuSlowdownMultiplier: 4, requestLatencyMs: 0, downloadThroughputKbps: 0, uploadThroughputKbps: 0 },
+    },
+    rmFlag: false,
+  },
+  {
+    id: 'mobile-cpu6x',
+    label: 'Mobile / 4G / 6x CPU slowdown',
+    flags: {
+      formFactor: 'mobile',
+      screenEmulation: { mobile: true, width: 390, height: 844, deviceScaleFactor: 2.625, disabled: false },
+      throttling: { rttMs: 150, throughputKbps: 1638, cpuSlowdownMultiplier: 6, requestLatencyMs: 0, downloadThroughputKbps: 0, uploadThroughputKbps: 0 },
+    },
+    rmFlag: false,
+  },
+  {
+    id: 'mobile-cpu7x',
+    label: 'Mobile / 4G / 7x CPU slowdown',
+    flags: {
+      formFactor: 'mobile',
+      screenEmulation: { mobile: true, width: 390, height: 844, deviceScaleFactor: 2.625, disabled: false },
+      throttling: { rttMs: 150, throughputKbps: 1638, cpuSlowdownMultiplier: 7, requestLatencyMs: 0, downloadThroughputKbps: 0, uploadThroughputKbps: 0 },
+    },
+    rmFlag: false,
+  },
+  {
+    id: 'mobile-cpu20x',
+    label: 'Mobile / 4G / 20x CPU slowdown',
+    flags: {
+      formFactor: 'mobile',
+      screenEmulation: { mobile: true, width: 390, height: 844, deviceScaleFactor: 2.625, disabled: false },
+      throttling: { rttMs: 150, throughputKbps: 1638, cpuSlowdownMultiplier: 20, requestLatencyMs: 0, downloadThroughputKbps: 0, uploadThroughputKbps: 0 },
+    },
+    rmFlag: false,
+  },
 ];
 
 const fmt = (n, d = 1) => (typeof n === 'number' ? n.toFixed(d) : 'n/a');
