@@ -6,7 +6,7 @@
     padding: .5em .8em;
     position: relative;
     text-decoration: none;
-    font-size: 18px;
+    font-size: clamp(0.78rem, 1vw, 1.02rem);
   }
 
 .nav-w *, .nav-b * {

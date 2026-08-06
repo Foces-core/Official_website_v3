@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AiOutlineClose } from "react-icons/ai";
 import toggleW from "../../../assets/ButtonW.svg";
@@ -121,14 +121,54 @@ export default function Navbar() {
   };
 
   // Foresight.js / Quicklink intelligent route chunk prefetching
-  const handlePrefetch = (id) => {
-    if (slowNetwork) return; // don't waste slow bandwidth on speculative fetches
-    if (id === 'events') {
-      import('../../EventPage/Eventpage.jsx').catch(() => {});
-    } else if (id === 'contact') {
-      import('../../../Components/ContactUs/ContactUs.jsx').catch(() => {});
-    }
-  };
+  const handlePrefetch = useCallback(
+    (id) => {
+      if (slowNetwork) return; // don't waste slow bandwidth on speculative fetches
+      if (id === 'events') {
+        import('../../EventPage/Eventpage.jsx').catch(() => {});
+      } else if (id === 'contact') {
+        import('../../../Components/ContactUs/ContactUs.jsx').catch(() => {});
+      }
+    },
+    [slowNetwork]
+  );
+
+  // ForesightJS: predict intent from mouse trajectory / touch / keyboard and
+  // prefetch the matching route chunk a beat BEFORE the user actually hovers.
+  // Code-split via dynamic import so it never bloats the main bundle.
+  useEffect(() => {
+    if (slowNetwork) return;
+    let cancelled = false;
+    let unregisters = [];
+    import('js.foresight')
+      .then(({ ForesightManager }) => {
+        if (cancelled) return;
+        if (!ForesightManager.isInitiated) {
+          ForesightManager.initialize({
+            enableManagerLogging: false,
+            minimumConnectionType: '3g',
+            setDataAttributes: false,
+          });
+        }
+        const manager = ForesightManager.instance;
+        const els = document.querySelectorAll('[data-foresight]');
+        els.forEach((el) => {
+          const id = el.getAttribute('data-foresight');
+          if (id !== 'events' && id !== 'contact') return;
+          manager.register({
+            element: el,
+            name: id,
+            callback: () => handlePrefetch(id),
+          });
+          unregisters.push(() => manager.unregister(el));
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+      unregisters.forEach((fn) => fn());
+    };
+  }, [slowNetwork, handlePrefetch]);
 
   // Quicklink: once the page is idle, preload real route documents in the
   // viewport (e.g. /events, /contact) so navigation feels instant. Hash-only
@@ -161,7 +201,7 @@ export default function Navbar() {
 
   return (
     <div
-      className={`fixed z-10 shadow ${
+      className={`fixed z-10 left-0 top-0 w-full shadow ${
         ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
           ? "nav-w"
           : "nav-b"
@@ -199,7 +239,7 @@ export default function Navbar() {
               : LogoGrey
           }
           alt="FOCES"
-          className="h-auto w-[clamp(88px,8vw,140px)] cursor-pointer"
+          className="h-auto w-[clamp(88px,8vw,140px)] flex-none cursor-pointer"
           onClick={handleLogoClick}
         />
       )}
@@ -217,11 +257,11 @@ export default function Navbar() {
       )}
 
       <div
-        className={`container z-10 Items flex justify-center space-x-9 min-[767px]:bg-transparent pt-2  ${
+        className={`z-10 Items flex items-center justify-center gap-[clamp(0.75rem,2vw,2.25rem)] whitespace-nowrap min-[1024px]:absolute min-[1024px]:left-1/2 min-[1024px]:top-1/2 min-[1024px]:-translate-x-1/2 min-[1024px]:-translate-y-1/2 ${
           ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
             ? "bg-[#101011]"
             : "bg-[#F5F5F5]"
-        }  max-[767px]:h-[60vh] max-[767px]:flex-col max-[767px]:w-screen max-[767px]:-ml-4 max-[767px]:items-center max-[767px]:space-x-0 max-[767px]:absolute max-[767px]:mt-10 max-[767px]:gap-7 max-[767px]:pb-10 ${
+        } min-[767px]:bg-transparent max-[767px]:h-[60vh] max-[767px]:flex-col max-[767px]:w-screen max-[767px]:-ml-4 max-[767px]:items-center max-[767px]:absolute max-[767px]:mt-10 max-[767px]:gap-7 max-[767px]:pb-10 ${
           showItems ? "" : "hidden"
         } 
            ${isMobile && showItems ? "h-[80%]" : ""}
@@ -231,6 +271,7 @@ export default function Navbar() {
           <Link
             to={item.id !== "contact" ? `/#${item.id}` : "/contact"}
             key={item.id}
+            data-foresight={item.id}
             className={`border-b-2 border-transparent z-10 tracking-wider ${
               ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
                 ? "text-[#ffffff80]"
@@ -247,11 +288,11 @@ export default function Navbar() {
       </div>
 
       <div
-        className={`contact cursor-pointer w-[8em] h-[2.3em] text-[clamp(0.7rem,0.9vw,0.85rem)] ${
+        className={`contact cursor-pointer px-[clamp(1.1em,1.6vw,1.7em)] h-[clamp(2em,2.4vh,2.3em)] text-[clamp(0.7rem,0.85vw,0.88rem)] ${
           ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
             ? "bg-[#F5F5F5] text-[#101011] hover:bg-cyan-400 hover:text-black"
             : "bg-black text-[#F5F5F5] hover:bg-cyan-400 hover:text-black"
-        } flex justify-center items-center rounded-3xl transition-colors duration-300 whitespace-nowrap select-none max-[767px]:ml-auto max-[767px]:mr-12 max-[767px]:w-auto max-[767px]:h-auto max-[767px]:px-4 max-[767px]:py-1.5 max-[767px]:text-[0.7rem] max-[767px]:font-medium max-[767px]:tracking-wide ${
+        } flex justify-center items-center rounded-3xl transition-colors duration-300 whitespace-nowrap select-none ml-auto max-[767px]:mr-12 max-[767px]:w-auto max-[767px]:h-auto max-[767px]:px-4 max-[767px]:py-1.5 max-[767px]:text-[0.7rem] max-[767px]:font-medium max-[767px]:tracking-wide ${
           showItems && isMobile ? "hidden" : ""
         }`}
         onClick={handleJoinFocesClick}
