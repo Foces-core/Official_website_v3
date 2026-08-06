@@ -21,12 +21,14 @@ function HeroSection() {
           mouseControls: true,
           touchControls: true,
           gyroControls: false,
-          scale: 0.75,
-          scaleMobile: 0.5,
-          color: 0x000000,
-          waveHeight: 18,
-          waveSpeed: 0.8,
-          zoom: 0.7,
+          scale: 1.0,
+          scaleMobile: 1.0,
+          color: 0x1a1a20,
+          backgroundColor: 0x0a0a0c,
+          shininess: 35.0,
+          waveHeight: 18.0,
+          waveSpeed: 0.75,
+          zoom: 0.85,
         });
       } catch (err) {
         console.warn('Vanta Waves init warning:', err);
@@ -42,9 +44,7 @@ function HeroSection() {
 
   return (
     <div
-      className={`HeroSection relative ${
-        lowPower ? 'bg-[radial-gradient(circle_at_50%_35%,#1b1b20_0%,#0b0b0c_75%)]' : 'bg-transparent'
-      } overflow-hidden h-screen cursor-none`}
+      className="HeroSection relative bg-[#0a0a0c] overflow-hidden h-screen cursor-none"
       id='home'
       ref={myRef}
     >
