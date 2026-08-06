@@ -8,17 +8,17 @@ import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import '../Execom/custom.css';
 
-import Aleetta from '../../assets/aleeta.jpg';
-import Lisha from '../../assets/lisha1.jpg';
-import Steve from '../../assets/steve.jpg';
-import AnnaRachel from '../../assets/anna_rachel.jpg';
-import Amanul from '../../assets/amanul.jpg';
-import Abel from '../../assets/abel.jpg';
-import Saniya from '../../assets/saniya.jpg';
-import Sebin from '../../assets/sebin.jpg';
-import Anjitha from '../../assets/anjitha.jpg';
-import Abhirami from '../../assets/abhirami_p.jpg';
-import Devadarsana from '../../assets/WhatsApp Image 2026-08-04 at 12.07.46 PM.jpeg';
+import Aleetta from '../../assets/aleeta.webp';
+import Lisha from '../../assets/lisha1.webp';
+import Steve from '../../assets/steve.webp';
+import AnnaRachel from '../../assets/anna_rachel.webp';
+import Amanul from '../../assets/amanul.webp';
+import Abel from '../../assets/abel.webp';
+import Saniya from '../../assets/saniya.webp';
+import Sebin from '../../assets/sebin.webp';
+import Anjitha from '../../assets/anjitha.webp';
+import Abhirami from '../../assets/abhirami_p.webp';
+import Devadarsana from '../../assets/devadarsana.webp';
 
 import MeetTheTeam from '../../assets/MeetTheTeam.svg';
 import useDeviceProfile from '../../hooks/useLowPower.js';

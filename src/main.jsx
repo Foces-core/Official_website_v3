@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- entry file: no exports, fast-refresh irrelevant */
 import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
