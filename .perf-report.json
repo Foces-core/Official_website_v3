@@ -1,0 +1,116 @@
+[
+  {
+    "id": "desktop-fast",
+    "perf": 0.99,
+    "a11y": 0.94,
+    "bp": 0.96,
+    "fcp": 570.86275,
+    "lcp": 960.9860000000001,
+    "tbt": 9.499999999999943,
+    "cls": 0,
+    "si": 698.3156704179277,
+    "transferKB": 2675,
+    "opps": [
+      {
+        "title": "Initial server response time was short",
+        "ms": 0
+      },
+      {
+        "title": "Avoid multiple page redirects",
+        "ms": 0
+      },
+      {
+        "title": "Minify CSS",
+        "ms": 0
+      },
+      {
+        "title": "Minify JavaScript",
+        "ms": 0
+      },
+      {
+        "title": "Reduce unused CSS",
+        "ms": 0
+      },
+      {
+        "title": "Reduce unused JavaScript",
+        "ms": 0
+      }
+    ]
+  },
+  {
+    "id": "mobile-4g",
+    "perf": 0.73,
+    "a11y": 0.94,
+    "bp": 0.96,
+    "fcp": 2425.0455,
+    "lcp": 4977.0585,
+    "tbt": 259.99350000000004,
+    "cls": 0,
+    "si": 2425.0455,
+    "transferKB": 2668,
+    "opps": [
+      {
+        "title": "Initial server response time was short",
+        "ms": 0
+      },
+      {
+        "title": "Avoid multiple page redirects",
+        "ms": 0
+      },
+      {
+        "title": "Minify CSS",
+        "ms": 0
+      },
+      {
+        "title": "Minify JavaScript",
+        "ms": 0
+      },
+      {
+        "title": "Reduce unused CSS",
+        "ms": 0
+      },
+      {
+        "title": "Reduce unused JavaScript",
+        "ms": 0
+      }
+    ]
+  },
+  {
+    "id": "mobile-4g-reduced-motion",
+    "perf": 0.74,
+    "a11y": 0.94,
+    "bp": 0.96,
+    "fcp": 2413.8199999999997,
+    "lcp": 5045.340000000001,
+    "tbt": 251.5,
+    "cls": 0,
+    "si": 2413.8199999999997,
+    "transferKB": 2668,
+    "opps": [
+      {
+        "title": "Initial server response time was short",
+        "ms": 0
+      },
+      {
+        "title": "Avoid multiple page redirects",
+        "ms": 0
+      },
+      {
+        "title": "Minify CSS",
+        "ms": 0
+      },
+      {
+        "title": "Minify JavaScript",
+        "ms": 0
+      },
+      {
+        "title": "Reduce unused CSS",
+        "ms": 0
+      },
+      {
+        "title": "Reduce unused JavaScript",
+        "ms": 0
+      }
+    ]
+  }
+]
