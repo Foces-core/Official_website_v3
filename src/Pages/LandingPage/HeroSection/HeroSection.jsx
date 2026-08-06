@@ -1,95 +1,48 @@
 import './HeroSection.css';
 import { useEffect, useRef } from 'react';
+import * as THREE from 'three';
+import WAVES from 'vanta/dist/vanta.waves.min';
 import Cursor from '../../../Components/Cursor/Cursor';
 import ddd from '../../../assets/ddd.svg';
 import focespng from '../../../assets/foces.png';
 import foces1 from '../../../assets/foces1.svg';
-import useDeviceProfile from '../../../hooks/useLowPower.js';
+
+if (typeof window !== 'undefined') {
+  window.THREE = THREE;
+}
 
 function HeroSection() {
   const myRef = useRef(null);
-  const { lowPower } = useDeviceProfile();
 
   useEffect(() => {
-    // Skip the heavy WebGL background entirely on low-power devices
-    // (Data Saver, 2G, low RAM, reduced motion) — the three+vanta chunks
-    // are never even downloaded in that case.
-    if (lowPower) return;
-
     let vantaEffect = null;
-    let cancelled = false;
 
-    // Vanta already skips renderer.render() while the hero is off-screen, but
-    // its requestAnimationFrame loop keeps ticking (with a getBoundingClientRect
-    // layout read every single frame). Fully stop the loop while the hero is
-    // out of view and restart it when it comes back — no destroy/recreate, so
-    // no shader recompile hitch on scroll-back.
-    const heroVisible = { current: true };
-
-    const pauseVanta = (v) => {
-      if (v._focesPaused) return;
-      v._focesPaused = true;
-      window.cancelAnimationFrame(v.req);
-    };
-    const resumeVanta = (v) => {
-      if (!v._focesPaused) return;
-      v._focesPaused = false;
-      v.animationLoop(); // re-schedules itself; elapsed time is clamped internally
-    };
-
-    let io = null;
-    const heroEl = myRef.current;
-    if (heroEl && typeof IntersectionObserver !== 'undefined') {
-      io = new IntersectionObserver(([entry]) => {
-        heroVisible.current = entry.isIntersecting;
-        if (!vantaEffect) return;
-        if (entry.isIntersecting) {
-          resumeVanta(vantaEffect);
-        } else {
-          pauseVanta(vantaEffect);
-        }
-      }, { threshold: 0 });
-      io.observe(heroEl);
-    }
-
-    // Lazy-load three + vanta AFTER window.THREE is set.
-    // (vanta captures window.THREE at module-evaluation time, so a static
-    // import would capture it before main.jsx/HeroSection can assign it.)
-    (async () => {
+    if (myRef.current) {
       try {
-        const THREE = await import('three');
-        if (typeof window !== 'undefined') {
-          window.THREE = THREE;
-        }
-        const { default: WAVES } = await import('vanta/dist/vanta.waves.min');
-        if (cancelled || !myRef.current) return;
         vantaEffect = WAVES({
           el: myRef.current,
+          THREE: THREE,
           mouseControls: true,
           touchControls: true,
           gyroControls: false,
           scale: 0.75,
           scaleMobile: 0.5,
           color: 0x000000,
+          waveHeight: 18,
+          waveSpeed: 0.8,
+          zoom: 0.7,
         });
-        // Hero may already be off-screen (e.g. page loaded mid-scroll) — flush
-        // any pending IO callback so heroVisible reflects reality, then pause
-        // immediately so the loop never runs in the background.
-        if (io) io.takeRecords();
-        if (!heroVisible.current) pauseVanta(vantaEffect);
       } catch (err) {
         console.warn('Vanta Waves init warning:', err);
       }
-    })();
+    }
 
     return () => {
-      cancelled = true;
-      if (io) io.disconnect();
       if (vantaEffect && typeof vantaEffect.destroy === 'function') {
         vantaEffect.destroy();
       }
     };
-  }, [lowPower]);
+  }, []);
 
   return (
     <div
