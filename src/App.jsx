@@ -31,15 +31,17 @@ function App() {
 
   return (
     <div className="App bg-[#101011]">
-      <a href="#home" className="skip-link">
+      <a href="#main-content" className="skip-link">
         Skip to content
       </a>
       <Navbar />
-      <HeroSection />
-      <AboutUs />
-      <Featuring />
-      <Events />
-      <Execom />
+      <main id="main-content" tabIndex={-1}>
+        <HeroSection />
+        <AboutUs />
+        <Featuring />
+        <Events />
+        <Execom />
+      </main>
       <Footer />
     </div>
   );

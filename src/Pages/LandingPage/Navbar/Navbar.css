@@ -67,7 +67,11 @@
   .nav-w a:hover:before,
   .nav-w a:hover:after,
   .nav-b a:hover:before,
-  .nav-b a:hover:after {
+  .nav-b a:hover:after,
+  .nav-w a:focus-visible:before,
+  .nav-w a:focus-visible:after,
+  .nav-b a:focus-visible:before,
+  .nav-b a:focus-visible:after {
     transform: translate(0,0);
     opacity: 1;
   }
@@ -80,6 +84,14 @@
   .nav-b a:hover {
     color: #000;
     scale: 1.1;
+  }
+
+  /* Keyboard focus on a nav link shows the corner brackets AND the cyan
+     focus ring, so the outline is visible on both the light and dark
+     navbar variants. */
+  .nav-w a:focus-visible,
+  .nav-b a:focus-visible {
+    color: #22d3ee;
   }
 
 /* Join FOCES CTA hover — only on devices that genuinely hover (mouse/trackpad).

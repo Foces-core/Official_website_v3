@@ -36,7 +36,17 @@ function EventCardMobile({ Events, priority }) {
     >
       <div
         className='relative w-full rounded-xl overflow-hidden bg-[#0b0b0c] border border-white/10 shadow-md cursor-pointer group'
+        role="button"
+        tabIndex={0}
+        aria-haspopup="dialog"
+        aria-label={`Open photo gallery for ${Events.name}`}
         onClick={() => setExpanding(true)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setExpanding(true);
+          }
+        }}
       >
         {primaryImage && (
           <img

@@ -31,6 +31,10 @@ export default function Navbar() {
   const joinTimer = useRef(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [currentItem, setCurrentItem] = useState(navItems[0].id);
+  // Roving tabindex (ARIA APG): exactly one link owns tabindex=0. When the
+  // user arrow-keys through the links, the tabstop follows the focused link.
+  // null = fall back to the scrollspy-current item (or the first link).
+  const [rovingId, setRovingId] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => () => clearTimeout(joinTimer.current), []);
@@ -107,6 +111,7 @@ export default function Navbar() {
       return;
     }
     setCurrentItem(id);
+    setRovingId(id);
     const element = document.getElementById(id);
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
@@ -154,6 +159,8 @@ export default function Navbar() {
       const dir = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? 1 : -1;
       e.preventDefault();
       const next = links[(idx + dir + links.length) % links.length];
+      const nextId = next.getAttribute('data-foresight');
+      if (nextId) setRovingId(nextId);
       next.focus();
     };
     window.addEventListener('keydown', onKey);
@@ -258,7 +265,13 @@ export default function Navbar() {
     };
   }, [slowNetwork]);
 
-  const isDark = ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem);
+  // On non-home routes (e.g. /events, /contact) no section ever becomes
+  // "current", so currentItem stays null. Treat null as dark-theme: the
+  // navbar sits on the dark #0b0b0c page background and needs white styling.
+  const isDark =
+    currentItem === null ||
+    ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem);
+  const rovingIndex = rovingId ?? currentItem ?? navItems[0].id;
 
   return (
     <div
@@ -301,6 +314,7 @@ export default function Navbar() {
             key={item.id}
             data-foresight={item.id}
             aria-current={currentItem === item.id ? "true" : undefined}
+            tabIndex={rovingIndex === item.id ? 0 : -1}
             className={`border-b-2 z-10 tracking-wider ${
               currentItem === item.id
                 ? "border-[#22d3ee] text-[#22d3ee]"
