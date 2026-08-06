@@ -30,7 +30,7 @@
     width: 200px; 
     height: 200px; 
     transform-style: preserve-3d; 
-    touch-action: pan-y;
+    touch-action: none;
     cursor: grab;
 }
 
@@ -223,7 +223,7 @@
     width: 150px; /* Reduced width */
     height: 150px; /* Reduced height */
     animation: none; /* Disable 3D rotation on mobile; rotation is controlled by drag */
-    touch-action: pan-y; /* Let vertical page scroll through, capture horizontal drags for rotation */
+    touch-action: none; /* Full capture — any drag direction rotates the cube */
     cursor: grab;
 }
 
