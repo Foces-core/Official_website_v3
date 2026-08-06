@@ -16,14 +16,17 @@ function AboutUs() {
   const manualUntilRef = useRef(0);
   const transTimerRef = useRef(null);
 
-  // Auto-rotation effect when not dragging
+  // Smooth 60fps direct DOM auto-rotation when not dragging
   useEffect(() => {
     if (reducedMotion) return;
 
     let animFrame;
     const animate = () => {
       if (!isDraggingRef.current && Date.now() >= manualUntilRef.current) {
-        setRotationY((prev) => (prev + 0.4) % 360);
+        rotRef.current = (rotRef.current + 0.5) % 360;
+        if (boxRef.current) {
+          boxRef.current.style.transform = `rotateY(${rotRef.current}deg)`;
+        }
       }
       animFrame = requestAnimationFrame(animate);
     };
@@ -31,11 +34,6 @@ function AboutUs() {
     animFrame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animFrame);
   }, [reducedMotion]);
-
-  // Keep rotRef updated for smooth transitions
-  useEffect(() => {
-    rotRef.current = rotationY;
-  }, [rotationY]);
 
   // Keyboard navigation (ArrowLeft / ArrowRight)
   useEffect(() => {
@@ -48,22 +46,22 @@ function AboutUs() {
 
       e.preventDefault();
       const delta = e.key === 'ArrowRight' ? 90 : -90;
-      const nextRot = Math.round(rotRef.current / 90) * 90 + delta;
+      rotRef.current = Math.round(rotRef.current / 90) * 90 + delta;
       manualUntilRef.current = Date.now() + 3000;
-      setRotationY(nextRot);
+      if (boxRef.current) {
+        boxRef.current.style.transition = 'transform 0.4s ease-out';
+        boxRef.current.style.transform = `rotateY(${rotRef.current}deg)`;
+      }
     };
 
     window.addEventListener('keydown', onKey);
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      clearTimeout(transTimerRef.current);
-    };
+    return () => window.removeEventListener('keydown', onKey);
   }, []);
 
   // Touch Drag Handlers
   const handleTouchStart = (e) => {
     startX.current = e.touches[0].clientX;
-    startRot.current = rotationY;
+    startRot.current = rotRef.current;
     setIsDragging(true);
     isDraggingRef.current = true;
     manualUntilRef.current = Date.now() + 5000;
@@ -72,19 +70,23 @@ function AboutUs() {
   const handleTouchMove = (e) => {
     if (!isDraggingRef.current) return;
     const deltaX = e.touches[0].clientX - startX.current;
-    setRotationY(startRot.current + deltaX * 0.6);
+    rotRef.current = startRot.current + deltaX * 0.6;
+    if (boxRef.current) {
+      boxRef.current.style.transition = 'none';
+      boxRef.current.style.transform = `rotateY(${rotRef.current}deg)`;
+    }
   };
 
   const handleTouchEnd = () => {
     setIsDragging(false);
     isDraggingRef.current = false;
-    manualUntilRef.current = Date.now() + 3000;
+    manualUntilRef.current = Date.now() + 2500;
   };
 
   // Mouse Drag Handlers (for Desktop & Laptop trackpads)
   const handleMouseDown = (e) => {
     startX.current = e.clientX;
-    startRot.current = rotationY;
+    startRot.current = rotRef.current;
     setIsDragging(true);
     isDraggingRef.current = true;
     manualUntilRef.current = Date.now() + 5000;
@@ -93,13 +95,17 @@ function AboutUs() {
   const handleMouseMove = (e) => {
     if (!isDraggingRef.current) return;
     const deltaX = e.clientX - startX.current;
-    setRotationY(startRot.current + deltaX * 0.6);
+    rotRef.current = startRot.current + deltaX * 0.6;
+    if (boxRef.current) {
+      boxRef.current.style.transition = 'none';
+      boxRef.current.style.transform = `rotateY(${rotRef.current}deg)`;
+    }
   };
 
   const handleMouseUp = () => {
     setIsDragging(false);
     isDraggingRef.current = false;
-    manualUntilRef.current = Date.now() + 3000;
+    manualUntilRef.current = Date.now() + 2500;
   };
 
   return (
@@ -123,8 +129,7 @@ function AboutUs() {
             id="boxDiv-about"
             ref={boxRef}
             style={{
-              transform: `rotateY(${rotationY}deg)`,
-              transition: isDragging ? 'none' : 'transform 0.1s linear',
+              transform: `rotateY(0deg)`,
               animation: 'none',
               touchAction: 'pan-y',
             }}
