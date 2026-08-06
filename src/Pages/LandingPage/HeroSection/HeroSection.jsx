@@ -1,15 +1,11 @@
+import '../../../initThree.js';
 import './HeroSection.css';
 import { useEffect, useRef } from 'react';
-import * as THREE from 'three';
 import WAVES from 'vanta/dist/vanta.waves.min';
 import Cursor from '../../../Components/Cursor/Cursor';
 import ddd from '../../../assets/ddd.svg';
 import focespng from '../../../assets/foces.png';
 import foces1 from '../../../assets/foces1.svg';
-
-if (typeof window !== 'undefined') {
-  window.THREE = THREE;
-}
 
 function HeroSection() {
   const myRef = useRef(null);
@@ -21,7 +17,7 @@ function HeroSection() {
       try {
         vantaEffect = WAVES({
           el: myRef.current,
-          THREE: THREE,
+          THREE: window.THREE,
           mouseControls: true,
           touchControls: true,
           gyroControls: false,
