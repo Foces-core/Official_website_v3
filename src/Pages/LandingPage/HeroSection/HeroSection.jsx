@@ -52,6 +52,7 @@ function HeroSection() {
     <div
       className="HeroSection relative bg-[#0a0a0c] overflow-hidden h-screen cursor-none"
       id='home'
+      tabIndex={-1}
       ref={myRef}
     >
       <div className="hero">

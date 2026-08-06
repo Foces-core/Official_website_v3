@@ -32,6 +32,9 @@ function App() {
 
   return (
     <div className="App bg-[#101011]">
+      <a href="#home" className="skip-link">
+        Skip to content
+      </a>
       <Navbar />
       <HeroSection />
       <AboutUs />
