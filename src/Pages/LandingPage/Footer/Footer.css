@@ -2,7 +2,7 @@
 
 @media (max-width: 767px) {
     .map_overlay {
-        background-image: url(../../../assets/map_mask.png);
+        background-image: url(../../../assets/map_mask.webp);
         background-size: cover;
         background-repeat: no-repeat;
         border-radius: 32px;

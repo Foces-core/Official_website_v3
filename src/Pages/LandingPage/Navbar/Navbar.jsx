@@ -131,6 +131,35 @@ export default function Navbar() {
     setShowItems(!isMobile);
   }, [isMobile]);
 
+  // Keyboard navigation: ArrowLeft/ArrowUp / ArrowRight/ArrowDown cycle focus
+  // through the nav links, Enter/Space activates the focused link, Escape
+  // closes the mobile menu.
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        if (isMobile && showItems) {
+          e.preventDefault();
+          setShowItems(false);
+          const toggle = document.querySelector('#nav-toggle');
+          if (toggle) toggle.focus();
+        }
+        return;
+      }
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+      const links = Array.from(document.querySelectorAll('#nav-items a'));
+      if (!links.length) return;
+      const focused = document.activeElement;
+      const idx = links.indexOf(focused);
+      if (idx === -1) return;
+      const dir = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? 1 : -1;
+      e.preventDefault();
+      const next = links[(idx + dir + links.length) % links.length];
+      next.focus();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isMobile, showItems]);
+
   const handleJoinFocesClick = () => {
     if (isMobile) {
       setShowItems(false);
@@ -310,6 +339,7 @@ export default function Navbar() {
         {isMobile && (
           <button
             type="button"
+            id="nav-toggle"
             className="w-[2rem] h-full flex items-center justify-center cursor-none"
             onClick={toggleItems}
             aria-expanded={showItems}
