@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { HashLink } from "react-router-hash-link";
+import { useNavigate, Link } from "react-router-dom";
 import { AiOutlineClose } from "react-icons/ai";
 import toggleW from "../../../assets/ButtonW.svg";
 import toggleB from "../../../assets/ButtonB.svg";
@@ -229,7 +228,7 @@ export default function Navbar() {
           `}
       >
         {navItems.map((item) => (
-          <HashLink
+          <Link
             to={item.id !== "contact" ? `/#${item.id}` : "/contact"}
             key={item.id}
             className={`border-b-2 border-transparent z-10 tracking-wider ${
@@ -243,7 +242,7 @@ export default function Navbar() {
             onClick={(e) => handleItemClick(item.id, e)}
           >
             {item.name}
-          </HashLink>
+          </Link>
         ))}
       </div>
 

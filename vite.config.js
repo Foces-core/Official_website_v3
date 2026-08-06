@@ -59,12 +59,15 @@ export default defineConfig({
     }),
   ],
   assetsInclude: ['**/*.glb'],
+  resolve: {
+    dedupe: ['react', 'react-dom'],
+  },
   build: {
     chunkSizeWarningLimit: 800,
     rollupOptions: {
       output: {
         manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'react-vendor': ['react', 'react-dom'],
           'swiper-vendor': ['swiper'],
           'icons-vendor': ['react-icons'],
         },
