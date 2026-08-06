@@ -29,7 +29,8 @@
     width: 200px; 
     height: 200px; 
     transform-style: preserve-3d; 
-    animation: rotate 15s linear infinite;
+    touch-action: pan-y;
+    cursor: grab;
 }
 
 #boxDiv-about div {
