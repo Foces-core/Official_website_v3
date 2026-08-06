@@ -5,6 +5,7 @@ import 'aos/dist/aos.css';
 import BlockContent from '@sanity/block-content-to-react';
 import Modal from './Modal';
 import { sanityImg } from '../../utils/sanityImage.js';
+import { aosDisabled } from '../../utils/aosGating.js';
 import useDeviceProfile from '../../hooks/useLowPower.js';
 
 function EventCardMobile({ Events, priority }) {
@@ -13,7 +14,7 @@ function EventCardMobile({ Events, priority }) {
   const [isEventClosed, setIsEventClosed] = useState(false);
 
   useEffect(() => {
-    AOS.init({ duration: 1000, once: true, disable: () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches });
+    AOS.init({ duration: 1000, once: true, disable: aosDisabled });
 
     const eventDate = new Date(Events.date);
     const currentDate = new Date();

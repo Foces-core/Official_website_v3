@@ -4,6 +4,7 @@ import "aos/dist/aos.css";
 import { Link } from "react-router-dom";
 import EventTitle from '../../assets/Event.svg';
 import { featuredEvents } from '../../data/events.js';
+import { aosDisabled } from '../../utils/aosGating.js';
 
 function Events() {
   useEffect(() => {
@@ -11,9 +12,7 @@ function Events() {
       duration: 400,
       offset: 50,
       once: true,
-      disable: () =>
-        typeof window !== 'undefined' &&
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+      disable: aosDisabled,
     });
   }, []);
 
@@ -82,7 +81,7 @@ function Events() {
         {/* Call to Action Button */}
         <div data-aos="fade-up" data-aos-duration="300" className="mt-2">
           <Link
-            to="/Events"
+            to="/events"
             onMouseEnter={() => import('../EventPage/Eventpage.jsx').catch(() => {})}
             onTouchStart={() => import('../EventPage/Eventpage.jsx').catch(() => {})}
             className="inline-flex items-center space-x-3 bg-white text-black font-bold text-base px-8 py-3.5 rounded-xl shadow-lg hover:bg-cyan-400 hover:text-black transition-all duration-300 transform hover:scale-105"

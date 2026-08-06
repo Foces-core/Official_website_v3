@@ -10,12 +10,11 @@ import Navbar from "./Pages/LandingPage/Navbar/Navbar";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { useLocation } from "react-router-dom";
+import { aosDisabled } from "./utils/aosGating.js";
 
 AOS.init({
   once: true,
-  disable: () =>
-    typeof window !== 'undefined' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  disable: aosDisabled,
 });
 
 function App() {

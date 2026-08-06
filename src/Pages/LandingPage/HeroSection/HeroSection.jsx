@@ -1,7 +1,5 @@
-import '../../../initThree.js';
 import './HeroSection.css';
 import { useEffect, useRef } from 'react';
-import WAVES from 'vanta/dist/vanta.waves.min';
 import Cursor from '../../../Components/Cursor/Cursor';
 import ddd from '../../../assets/ddd.svg';
 import focespng from '../../../assets/foces.png';
@@ -14,16 +12,29 @@ function HeroSection() {
 
   useEffect(() => {
     let vantaEffect = null;
+    let cancelled = false;
 
     // Skip the WebGL waves on low-end phones (it stutters there) and on
     // prefers-reduced-motion (a11y). The plain #0a0a0c backdrop remains.
     if (lowPower) return;
 
-    if (myRef.current) {
+    // three.js + vanta are ~700KB combined, so they're loaded on demand as a
+    // separate chunk. Low-end devices never download them; capable machines
+    // fetch them once here (after the shell is interactive).
+    (async () => {
       try {
+        // three's ESM entry has no default export — the namespace object IS the
+        // THREE api vanta expects. Vanta's UMD default is on `mod.default`.
+        const [THREE, vantaMod] = await Promise.all([
+          import('three'),
+          import('vanta/dist/vanta.waves.min'),
+        ]);
+        const WAVES = vantaMod.default;
+        window.THREE = THREE;
+        if (cancelled || !myRef.current) return;
         vantaEffect = WAVES({
           el: myRef.current,
-          THREE: window.THREE,
+          THREE,
           mouseControls: true,
           touchControls: true,
           gyroControls: false,
@@ -39,9 +50,10 @@ function HeroSection() {
       } catch (err) {
         console.warn('Vanta Waves init warning:', err);
       }
-    }
+    })();
 
     return () => {
+      cancelled = true;
       if (vantaEffect && typeof vantaEffect.destroy === 'function') {
         vantaEffect.destroy();
       }

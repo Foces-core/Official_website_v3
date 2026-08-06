@@ -10,6 +10,7 @@ import episodeOne from '../../assets/episode-1.png';
 import series from '../../assets/series.png';
 import fourth from '../../assets/fourth.png';
 import mentorReveal from '../../assets/Mentor_reveal.png';
+import { aosDisabled } from '../../utils/aosGating.js';
 
 const echoSlides = [
   { image: episodeOne, alt: "ECHO - Episode 1" },
@@ -23,9 +24,7 @@ function Featuring() {
     AOS.init({
       duration: 1000,
       once: true,
-      disable: () =>
-        typeof window !== 'undefined' &&
-        window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+      disable: aosDisabled,
     });
   }, []);
 
@@ -80,7 +79,7 @@ function Featuring() {
           {echoSlides.map(({ image, alt }, index) => (
             <SwiperSlide key={index} className='px-3 pb-8 pt-4 bg-transparent'>
               <img
-                className='hover:shadow-white hover:shadow-[0_0px_20px_rgba(255,255,255,0.2)] h-full w-full rounded-2xl object-cover hover:scale-105 transition-all duration-300 shadow-xl'
+                className='hover:shadow-white hover:shadow-[0_0px_20px_rgba(255,255,255,0.2)] h-full w-full rounded-2xl object-cover hover:scale-105 transition-transform duration-300 shadow-xl'
                 src={image}
                 alt={alt}
                 loading="lazy"

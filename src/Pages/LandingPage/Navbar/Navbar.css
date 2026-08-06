@@ -11,7 +11,9 @@
 
 .nav-w *, .nav-b * {
     box-sizing: border-box;
-    transition: all .35s ease;
+    /* Hover feedback should feel snappy — 0.2s and only transition the
+       properties that actually change (color/transform), never `all`. */
+    transition: color .2s ease, transform .2s ease, background-color .2s ease, border-color .2s ease, opacity .2s ease;
   }
 
 .nav-w a::before,
@@ -22,7 +24,7 @@
   height: 14px;
   width: 14px;
   position: absolute;
-  transition: all .35s ease;
+  transition: all .2s ease;
   opacity: 0;
 }
 
