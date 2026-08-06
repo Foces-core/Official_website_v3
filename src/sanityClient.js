@@ -8,7 +8,7 @@
 
 const projectId = 'n7hx0w67';
 const dataset = 'production';
-const apiVersion = '2023-05-03';
+const apiVersion = 'v2023-05-03';
 
 const isLocal =
   typeof window !== 'undefined' &&
