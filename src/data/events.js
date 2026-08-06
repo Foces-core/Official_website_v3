@@ -10,6 +10,9 @@ import codingArenaPoster800 from '../assets/coding_arena_4_0_insta-800.webp';
 import codingArenaPhoto from '../assets/coding_arena.webp';
 import codingArenaPhoto400 from '../assets/coding_arena-400.webp';
 import codingArenaPhoto800 from '../assets/coding_arena-800.webp';
+import codingArenaPhoto2 from '../assets/coding_arena_photo.webp';
+import codingArenaPhoto2_400 from '../assets/coding_arena_photo-400.webp';
+import codingArenaPhoto2_800 from '../assets/coding_arena_photo-800.webp';
 import promptParadoxPoster from '../assets/the_prompt_paradox_2_0_insta.webp';
 import promptParadoxPoster400 from '../assets/the_prompt_paradox_2_0_insta-400.webp';
 import promptParadoxPoster800 from '../assets/the_prompt_paradox_2_0_insta-800.webp';
@@ -59,8 +62,8 @@ export const featuredEvents = [
     imageSet: set(codingArenaPoster, codingArenaPoster800, codingArenaPoster400),
     poster: codingArenaPoster,
     posterSet: set(codingArenaPoster, codingArenaPoster800, codingArenaPoster400),
-    images: [codingArenaPoster, codingArenaPhoto],
-    imageSets: [set(codingArenaPoster, codingArenaPoster800, codingArenaPoster400), set(codingArenaPhoto, codingArenaPhoto800, codingArenaPhoto400)],
+    images: [codingArenaPoster, codingArenaPhoto, codingArenaPhoto2],
+    imageSets: [set(codingArenaPoster, codingArenaPoster800, codingArenaPoster400), set(codingArenaPhoto, codingArenaPhoto800, codingArenaPhoto400), set(codingArenaPhoto2, codingArenaPhoto2_800, codingArenaPhoto2_400)],
     desc: 'The ultimate competitive programming and rapid prototyping battlefield at MCA Lab.',
     content: toBlocks(
       'The ultimate competitive programming and rapid prototyping battlefield at MCA Lab.',

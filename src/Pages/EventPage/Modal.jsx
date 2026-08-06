@@ -1,7 +1,7 @@
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Pagination, Navigation, Scrollbar, A11y } from 'swiper/modules';
+import { Pagination, Navigation, Scrollbar, A11y, Keyboard } from 'swiper/modules';
 import { sanityImg } from '../../utils/sanityImage.js';
 
 
@@ -28,9 +28,10 @@ export default function Modal({ images, open, onClose }) {
           ✕
         </button>
         <Swiper
-          modules={[Navigation, Pagination, Scrollbar, A11y]}
+          modules={[Navigation, Pagination, Scrollbar, A11y, Keyboard]}
           slidesPerView={1}
           spaceBetween={50}
+          keyboard={{ enabled: true, onlyInViewport: true }}
           navigation={{
             clickable: true,
           }}

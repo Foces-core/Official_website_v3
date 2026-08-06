@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Pagination, Scrollbar, A11y } from 'swiper/modules';
+import { Pagination, Scrollbar, A11y, Keyboard } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import featuring from '../../assets/featuring.svg';
@@ -24,8 +24,8 @@ import { srcset } from '../../utils/srcset.js';
 const echoSlides = [
   { image: episodeOne, imageSet: srcset([[episodeOne, 1280], [episodeOne960, 960], [episodeOne480, 480]]), alt: "ECHO - Episode 1" },
   { image: series, imageSet: srcset([[series, 1280], [series960, 960], [series480, 480]]), alt: "ECHO Series" },
-  { image: fourth, imageSet: srcset([[fourth, 1280], [fourth960, 960], [fourth480, 480]]), alt: "ECHO - Fourth" },
   { image: mentorReveal, imageSet: srcset([[mentorReveal, 1280], [mentorReveal960, 960], [mentorReveal480, 480]]), alt: "ECHO - Mentor Reveal" },
+  { image: fourth, imageSet: srcset([[fourth, 1280], [fourth960, 960], [fourth480, 480]]), alt: "ECHO - Fourth" },
 ];
 
 function Featuring() {
@@ -70,10 +70,11 @@ function Featuring() {
       </div>
       <div className='flex pt-10 justify-center items-center overflow-hidden'>
         <Swiper
-          modules={[Pagination, Scrollbar, A11y]}
+          modules={[Pagination, Scrollbar, A11y, Keyboard]}
           slidesPerView={noSlides}
           spaceBetween={50}
           scrollbar={{ draggable: true }}
+          keyboard={{ enabled: true, onlyInViewport: true }}
           pagination={{
             clickable: true,
           }}
