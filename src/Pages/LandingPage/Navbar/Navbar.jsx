@@ -87,14 +87,22 @@ export default function Navbar() {
   }, []);
 
   const handleItemClick = (id, e) => {
-    if (id === "events" || id === "contact") {
-      // Stop the HashLink's own navigation (it points to /#events on the home
-      // page) so the real route navigation below isn't overridden.
+    if (id === "contact") {
+      // Contact is a real route, not a same-page anchor.
       e.preventDefault();
       if (isMobile) {
         setShowItems(false);
       }
-      navigate(id === "events" ? '/events' : '/contact');
+      navigate('/contact');
+      return;
+    }
+    if (id === "events" && window.location.pathname !== "/") {
+      // Not on the home page: navigate home, then scroll to the #events section.
+      e.preventDefault();
+      if (isMobile) {
+        setShowItems(false);
+      }
+      navigate("/", { state: { id: "events" } });
       return;
     }
     setCurrentItem(id);
@@ -220,77 +228,42 @@ export default function Navbar() {
     };
   }, [slowNetwork]);
 
+  const isDark = ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem);
+
   return (
     <div
       className={`fixed z-10 left-0 top-0 w-full shadow ${
-        ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
-          ? "nav-w"
-          : "nav-b"
-      } flex items-center px-5 pt-4 pb-2 font-semibold max-[767px]:pl-4 max-[767px]:py-4 cursor-none max-[767px]:h-[12vh] max-[767px]:w-screen ${
+        isDark ? "nav-w" : "nav-b"
+      } flex items-center px-5 pt-4 pb-2 font-semibold max-[767px]:pl-4 max-[767px]:py-4 cursor-none max-[767px]:h-[12vh] max-[767px]:w-screen min-[768px]:grid min-[768px]:grid-cols-[1fr_auto_1fr] ${
         isScrolled || currentItem === "contact"
           ? "bg-[#101011e6] border-b border-[#ffffff1a]"
           : "bg-transparent"
       }`}
     >
-      {isMobile && (
-        <div
-          className="h-full w-[2rem] Button absolute right-5 top-1/2 -translate-y-1/2 flex items-center justify-center cursor-none"
-          onClick={toggleItems}
-          aria-expanded={showItems}
-          aria-controls="nav-items"
-          aria-label={showItems ? "Close menu" : "Open menu"}
-        >
-          {showItems ? (
-            <AiOutlineClose size={24} color={["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem) ? "#fff" : "#000"} />
-          ) : (
-            <img
-              src={
-                ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
-                  ? toggleW
-                  : toggleB
-              }
-              alt=""
-            />
-          )}
-        </div>
-      )}
-
-      {!isMobile && (
+      {/* Left: FOCES logo */}
+      <div className="min-[768px]:justify-self-start flex items-center">
         <img
-          src={
-            ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
-              ? LogoWhite
-              : LogoGrey
-          }
+          src={isDark ? LogoWhite : LogoGrey}
           alt="FOCES"
-          className="h-auto w-[clamp(88px,8vw,140px)] flex-none cursor-pointer"
+          className={`h-auto w-[clamp(88px,8vw,140px)] flex-none cursor-pointer ${isMobile ? "hidden" : ""}`}
           onClick={handleLogoClick}
         />
-      )}
-      {isMobile && (
         <img
-          src={
-            ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
-              ? LogoWhite
-              : LogoGrey
-          }
+          src={isDark ? LogoWhite : LogoGrey}
           alt="FOCES"
-          className="h-auto w-[clamp(56px,19vw,84px)] min-[767px]:hidden cursor-pointer"
+          className={`h-auto w-[clamp(56px,19vw,84px)] cursor-pointer ${isMobile ? "" : "hidden"}`}
           onClick={handleLogoClick}
         />
-      )}
+      </div>
 
+      {/* Center: nav links (perfectly centered between logo and CTA) */}
       <div
         id="nav-items"
-        className={`z-10 Items flex items-center justify-center gap-[clamp(0.75rem,2vw,2.25rem)] whitespace-nowrap min-[1024px]:absolute min-[1024px]:left-1/2 min-[1024px]:top-1/2 min-[1024px]:-translate-x-1/2 min-[1024px]:-translate-y-1/2 ${
-          ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
-            ? "bg-[#101011]"
-            : "bg-[#F5F5F5]"
-        } min-[767px]:bg-transparent max-[767px]:h-[60vh] max-[767px]:flex-col max-[767px]:w-screen max-[767px]:-ml-4 max-[767px]:items-center max-[767px]:absolute max-[767px]:top-full max-[767px]:mt-10 max-[767px]:gap-7 max-[767px]:pb-10 ${
+        className={`z-10 Items flex items-center justify-center gap-[clamp(0.75rem,2vw,2.25rem)] whitespace-nowrap min-[768px]:justify-self-center ${
+          isDark ? "bg-[#101011]" : "bg-[#F5F5F5]"
+        } min-[768px]:bg-transparent max-[767px]:h-[60vh] max-[767px]:flex-col max-[767px]:w-screen max-[767px]:-ml-4 max-[767px]:items-center max-[767px]:absolute max-[767px]:top-full max-[767px]:mt-10 max-[767px]:gap-7 max-[767px]:pb-10 ${
           showItems ? "" : "hidden"
-        } 
-           ${isMobile && showItems ? "h-[80%]" : ""}
-          `}
+        } ${isMobile && showItems ? "h-[80%]" : ""}`}
       >
         {navItems.map((item) => (
           <Link
@@ -298,9 +271,7 @@ export default function Navbar() {
             key={item.id}
             data-foresight={item.id}
             className={`border-b-2 border-transparent z-10 tracking-wider ${
-              ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
-                ? "text-[#ffffff80]"
-                : "text-[#000000b3]"
+              isDark ? "text-[#ffffff80]" : "text-[#000000b3]"
             } `}
             onMouseEnter={() => handlePrefetch(item.id)}
             onTouchStart={() => handlePrefetch(item.id)}
@@ -312,19 +283,43 @@ export default function Navbar() {
         ))}
       </div>
 
-      <div
-        className={`contact cursor-pointer px-[clamp(1.1em,1.6vw,1.7em)] h-[clamp(2em,2.4vh,2.3em)] text-[clamp(0.7rem,0.85vw,0.88rem)] ${
-          joinPressed
-            ? "bg-cyan-400 text-black"
-            : ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
-              ? "bg-[#F5F5F5] text-[#101011]"
-              : "bg-black text-[#F5F5F5]"
-        } flex justify-center items-center rounded-3xl transition-colors duration-300 whitespace-nowrap select-none ml-auto max-[767px]:mr-12 max-[767px]:w-auto max-[767px]:h-auto max-[767px]:px-4 max-[767px]:py-1.5 max-[767px]:text-[0.7rem] max-[767px]:font-medium max-[767px]:tracking-wide ${
-          showItems && isMobile ? "hidden" : ""
-        }`}
-        onClick={handleJoinFocesClick}
-      >
-        Join FOCES
+      {/* Right: Join CTA + mobile hamburger */}
+      <div className="min-[768px]:justify-self-end max-[767px]:ml-auto flex items-center gap-2">
+        <button
+          type="button"
+          className={`contact cursor-pointer px-[clamp(1.1em,1.6vw,1.7em)] h-[clamp(2em,2.4vh,2.3em)] text-[clamp(0.7rem,0.85vw,0.88rem)] ${
+            joinPressed
+              ? "bg-cyan-400 text-black"
+              : isDark
+                ? "bg-[#F5F5F5] text-[#101011]"
+                : "bg-black text-[#F5F5F5]"
+          } flex justify-center items-center rounded-3xl whitespace-nowrap select-none max-[767px]:w-auto max-[767px]:h-auto max-[767px]:px-4 max-[767px]:py-1.5 max-[767px]:text-[0.7rem] max-[767px]:font-medium max-[767px]:tracking-wide transition-colors duration-200 ${
+            showItems && isMobile ? "hidden" : ""
+          }`}
+          onClick={handleJoinFocesClick}
+        >
+          Join FOCES
+        </button>
+
+        {isMobile && (
+          <button
+            type="button"
+            className="w-[2rem] h-full flex items-center justify-center cursor-none"
+            onClick={toggleItems}
+            aria-expanded={showItems}
+            aria-controls="nav-items"
+            aria-label={showItems ? "Close menu" : "Open menu"}
+          >
+            {showItems ? (
+              <AiOutlineClose size={24} color={isDark ? "#fff" : "#000"} />
+            ) : (
+              <img
+                src={isDark ? toggleW : toggleB}
+                alt=""
+              />
+            )}
+          </button>
+        )}
       </div>
     </div>
   );

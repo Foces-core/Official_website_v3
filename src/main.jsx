@@ -1,4 +1,3 @@
-import './initThree.js';
 import React, { lazy, Suspense, useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
