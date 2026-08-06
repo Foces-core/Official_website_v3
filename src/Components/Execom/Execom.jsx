@@ -43,7 +43,7 @@ const cardData = [
 const cubeSlides = [...cardData, ...cardData, ...cardData];
 
 function Execom() {
-  const { lowPower, slowNetwork } = useDeviceProfile();
+  const { lowPower } = useDeviceProfile();
   const flatCube = lowPower;
   const [activeCube, setActiveCube] = React.useState(0);
   const cubeRef = React.useRef(null);
@@ -136,7 +136,7 @@ function Execom() {
                     className={`object-cover ${d.name === 'Sebin Mathew' ? 'object-center' : 'object-top'} w-full h-full card-hover grayscale group-hover:filter-none transition-all duration-300`}
                     src={d.img}
                     alt={d.name}
-                    loading="lazy"
+                    loading={index < 4 ? 'eager' : 'lazy'}
                     decoding="async"
                   />
                   <div className="absolute rounded-b-3xl bottom-0 w-full bg-gradient-to-t from-black via-black/85 to-transparent p-4 text-left">
@@ -185,7 +185,7 @@ function Execom() {
                     className={`object-cover ${d.imgPos || 'object-top'} w-full h-full`}
                     src={d.img}
                     alt={d.name}
-                    loading={slowNetwork ? 'lazy' : 'eager'}
+                    loading={index < 2 ? 'eager' : 'lazy'}
                     decoding="async"
                   />
                   <div className="absolute rounded-b-3xl bottom-0 w-full bg-gradient-to-t from-black via-black/90 to-transparent p-4 text-left">

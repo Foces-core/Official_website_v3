@@ -17,14 +17,33 @@ const ContactUs = lazy(() => import('./Components/ContactUs/ContactUs.jsx'));
  * once per full page load — never on client-side navigation.
  */
 function Root() {
-  // Respect reduced-motion / Data Saver users (same adaptive signals as the
-  // site's low-power mode) — skip the branded splash for them entirely.
-  const skipSplash =
-    (typeof window !== 'undefined' &&
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches) ||
-    (typeof navigator !== 'undefined' &&
-      !!navigator.connection &&
-      navigator.connection.saveData);
+  // Respect reduced-motion / Data Saver / slow-network / low-end users (same
+  // adaptive signals as the site's low-power mode) — skip the branded splash
+  // for them entirely so real content paints faster on constrained devices.
+  const skipSplash = (() => {
+    if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
+
+    if (typeof window.matchMedia === 'function' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches) return true;
+
+    try {
+      const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+      if (conn) {
+        if (conn.saveData) return true;
+        const type = (conn.effectiveType || '').toLowerCase();
+        if (type === 'slow-2g' || type === '2g') return true;
+        if (typeof conn.downlink === 'number' && conn.downlink > 0 && conn.downlink < 1.2) return true;
+      }
+      const cores = navigator.hardwareConcurrency;
+      const lowRam =
+        typeof navigator.deviceMemory === 'number' && navigator.deviceMemory > 0 && navigator.deviceMemory <= 4;
+      const fewCores = typeof cores !== 'number' || cores <= 4;
+      if (lowRam && fewCores) return true;
+    } catch {
+      // ignore
+    }
+    return false;
+  })();
   const [loaderPhase, setLoaderPhase] = useState(skipSplash ? 'gone' : 'show'); // 'show' -> 'fade' -> 'gone'
 
   useEffect(() => {
