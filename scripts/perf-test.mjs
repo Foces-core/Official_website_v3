@@ -162,7 +162,9 @@ function summarize(result) {
 
 async function main() {
   const rows = [];
-  for (const p of PROFILES) {
+  const filter = (process.env.PERF_ONLY || '').split(',').filter(Boolean);
+  const profiles = filter.length ? PROFILES.filter((p) => filter.includes(p.id)) : PROFILES;
+  for (const p of profiles) {
     const t = Date.now();
     console.log(`\n=== ${p.label} ===`);
     try {
