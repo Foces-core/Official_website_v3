@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { AiOutlineClose } from "react-icons/ai";
 import toggleW from "../../../assets/ButtonW.svg";
@@ -19,11 +19,21 @@ const navItems = [
 
 export default function Navbar() {
   const { slowNetwork } = useDeviceProfile();
-  const [isMobile, setIsMobile] = useState(false);
-  const [showItems, setShowItems] = useState(false);
+  // Read the viewport synchronously on first render so phones never flash the
+  // desktop menu open for a frame before the resize effect kicks in.
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth <= 767
+  );
+  const [showItems, setShowItems] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth > 767
+  );
+  const [joinPressed, setJoinPressed] = useState(false);
+  const joinTimer = useRef(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [currentItem, setCurrentItem] = useState(navItems[0].id);
   const navigate = useNavigate();
+
+  useEffect(() => () => clearTimeout(joinTimer.current), []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -116,8 +126,19 @@ export default function Navbar() {
     if (isMobile) {
       setShowItems(false);
     }
+
+    // Flip the CTA to cyan first so the click is always visible, even if the
+    // popup is blocked or slow.
+    setJoinPressed(true);
+    clearTimeout(joinTimer.current);
+    joinTimer.current = setTimeout(() => setJoinPressed(false), 1200);
+
     // Open in a new tab so the current page isn't hijacked
-    window.open("https://www.instagram.com/foces_cec/", "_blank", "noopener,noreferrer");
+    try {
+      window.open("https://www.instagram.com/foces_cec/", "_blank", "noopener,noreferrer");
+    } catch {
+      // popup blocked — the visual flip above still shows the click happened
+    }
   };
 
   // Foresight.js / Quicklink intelligent route chunk prefetching
@@ -215,6 +236,9 @@ export default function Navbar() {
         <div
           className="h-full w-[2rem] Button absolute right-5 top-1/2 -translate-y-1/2 flex items-center justify-center cursor-none"
           onClick={toggleItems}
+          aria-expanded={showItems}
+          aria-controls="nav-items"
+          aria-label={showItems ? "Close menu" : "Open menu"}
         >
           {showItems ? (
             <AiOutlineClose size={24} color={["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem) ? "#fff" : "#000"} />
@@ -257,11 +281,12 @@ export default function Navbar() {
       )}
 
       <div
+        id="nav-items"
         className={`z-10 Items flex items-center justify-center gap-[clamp(0.75rem,2vw,2.25rem)] whitespace-nowrap min-[1024px]:absolute min-[1024px]:left-1/2 min-[1024px]:top-1/2 min-[1024px]:-translate-x-1/2 min-[1024px]:-translate-y-1/2 ${
           ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
             ? "bg-[#101011]"
             : "bg-[#F5F5F5]"
-        } min-[767px]:bg-transparent max-[767px]:h-[60vh] max-[767px]:flex-col max-[767px]:w-screen max-[767px]:-ml-4 max-[767px]:items-center max-[767px]:absolute max-[767px]:mt-10 max-[767px]:gap-7 max-[767px]:pb-10 ${
+        } min-[767px]:bg-transparent max-[767px]:h-[60vh] max-[767px]:flex-col max-[767px]:w-screen max-[767px]:-ml-4 max-[767px]:items-center max-[767px]:absolute max-[767px]:top-full max-[767px]:mt-10 max-[767px]:gap-7 max-[767px]:pb-10 ${
           showItems ? "" : "hidden"
         } 
            ${isMobile && showItems ? "h-[80%]" : ""}
@@ -289,9 +314,11 @@ export default function Navbar() {
 
       <div
         className={`contact cursor-pointer px-[clamp(1.1em,1.6vw,1.7em)] h-[clamp(2em,2.4vh,2.3em)] text-[clamp(0.7rem,0.85vw,0.88rem)] ${
-          ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
-            ? "bg-[#F5F5F5] text-[#101011] hover:bg-cyan-400 hover:text-black"
-            : "bg-black text-[#F5F5F5] hover:bg-cyan-400 hover:text-black"
+          joinPressed
+            ? "bg-cyan-400 text-black"
+            : ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem)
+              ? "bg-[#F5F5F5] text-[#101011]"
+              : "bg-black text-[#F5F5F5]"
         } flex justify-center items-center rounded-3xl transition-colors duration-300 whitespace-nowrap select-none ml-auto max-[767px]:mr-12 max-[767px]:w-auto max-[767px]:h-auto max-[767px]:px-4 max-[767px]:py-1.5 max-[767px]:text-[0.7rem] max-[767px]:font-medium max-[767px]:tracking-wide ${
           showItems && isMobile ? "hidden" : ""
         }`}

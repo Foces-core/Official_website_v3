@@ -4,14 +4,11 @@ import { useEffect, useState } from 'react';
 // cheapest way for the *kind* of constraint it hits:
 //   slowNetwork  -> cut payload (lazy-load chunks/images, skip prefetch)
 //   lowCPU       -> cut JS animation cost (flatter, shorter, cheaper transitions)
-//   reducedMotion-> user asked for no animation at all
-//   lowPower     -> coarse "skip heavy stuff" — driven ONLY by hardware/network
-//                   limits, NOT by prefers-reduced-motion. A capable machine
-//                   (fast CPU, good RAM, fast wifi) runs the full experience
-//                   even when the OS reports reduced-motion, so vanta / cube
-//                   autoplay / swiper carousels stay alive where they can.
-//                   reducedMotion still flattens animations on constrained
-//                   devices via lowPower (kept for a11y on low-end).
+//   reducedMotion-> user asked for no animation at all (a11y preference)
+//   lowPower     -> coarse "skip heavy/motion stuff". Includes reducedMotion
+//                   because prefers-reduced-motion is an accessibility setting
+//                   and is honored regardless of hardware. Capable machines
+//                   without the setting still get the full experience.
 function detectProfile() {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') {
     return { slowNetwork: false, lowCPU: false, reducedMotion: false, lowPower: false };
@@ -55,7 +52,7 @@ function detectProfile() {
     slowNetwork,
     lowCPU,
     reducedMotion,
-    lowPower: slowNetwork || lowCPU,
+    lowPower: slowNetwork || lowCPU || reducedMotion,
   };
 }
 

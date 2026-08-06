@@ -14,7 +14,7 @@ function EventcardL({ Events, priority }) {
   const [isEventClosed, setIsEventClosed] = useState(false);
 
   useEffect(() => {
-    AOS.init({ duration: 1000, once: true });
+    AOS.init({ duration: 1000, once: true, disable: () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches });
 
     const eventDate = new Date(Events.date);
     const currentDate = new Date();

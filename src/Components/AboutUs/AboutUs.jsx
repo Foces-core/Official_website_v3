@@ -102,7 +102,7 @@ function AboutUs() {
   };
 
   return (
-    <div className='mx-6 mt-14 lg:mx-1 flex flex-col justify-center text-white lg:px-44' id='about'>
+    <div className='mx-6 mt-14 lg:mx-1 flex flex-col justify-center text-white lg:px-44 scroll-mt-24' id='about'>
       <div className='md:text-xl lg:text-2xl mb-4 md:mb-6 lg:mb-8 flex items-center'>
         <div className='inline-block w-5 h-16 bg-[#4f4f54] relative' data-aos="flip-up"></div>
         <img className='absolute w-44 h-[25px] pl-2.5' data-aos="flip-up" data-aos-duration="750" src={Aboutus} alt="" />

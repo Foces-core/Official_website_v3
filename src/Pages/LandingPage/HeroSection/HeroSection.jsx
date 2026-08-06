@@ -6,12 +6,18 @@ import Cursor from '../../../Components/Cursor/Cursor';
 import ddd from '../../../assets/ddd.svg';
 import focespng from '../../../assets/foces.png';
 import foces1 from '../../../assets/foces1.svg';
+import useDeviceProfile from '../../../hooks/useLowPower.js';
 
 function HeroSection() {
   const myRef = useRef(null);
+  const { lowPower } = useDeviceProfile();
 
   useEffect(() => {
     let vantaEffect = null;
+
+    // Skip the WebGL waves on low-end phones (it stutters there) and on
+    // prefers-reduced-motion (a11y). The plain #0a0a0c backdrop remains.
+    if (lowPower) return;
 
     if (myRef.current) {
       try {
@@ -40,7 +46,7 @@ function HeroSection() {
         vantaEffect.destroy();
       }
     };
-  }, []);
+  }, [lowPower]);
 
   return (
     <div
