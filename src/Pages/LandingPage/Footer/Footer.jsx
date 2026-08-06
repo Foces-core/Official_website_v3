@@ -1,6 +1,5 @@
 import { FaSquareFacebook, FaInstagram, FaXTwitter, FaLinkedin, FaHeart } from "react-icons/fa6";
 import FocesLogo from "../../../assets/FOCES White.svg";
-import CollegeLogo from "../../../assets/clogo.png";
 import "./Footer.css";
 
 function Footer() {
@@ -32,7 +31,6 @@ function Footer() {
       </div>
 
       <div className="w-full md:w-[20%] hidden md:flex justify-end items-center">
-        <img src={CollegeLogo} alt="College Logo" className="h-10 w-auto opacity-70 hover:opacity-100 transition-opacity" />
       </div>
     </footer>
   );

@@ -65,8 +65,10 @@ function Cursor() {
     };
 
     const handleMouseMove = (e) => {
-      posRef.current.targetX = e.pageX;
-      posRef.current.targetY = e.pageY;
+      // clientX/Y are viewport-relative — correct for a position:fixed element.
+      // pageX/Y would shift the glow by scrollY and desync it from the real cursor.
+      posRef.current.targetX = e.clientX;
+      posRef.current.targetY = e.clientY;
       startLoop();
     };
 
