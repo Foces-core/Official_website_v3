@@ -3,6 +3,9 @@ import PropTypes from 'prop-types';
 import { useRef, useEffect } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Navigation, Scrollbar, A11y, Keyboard } from 'swiper/modules';
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
 import { sanityImg } from '../../utils/sanityImage.js';
 
 // WCAG 2.1/2.2 + ARIA APG modal pattern:
@@ -106,6 +109,7 @@ function Modal({ images, open, onClose }) {
           modules={[Navigation, Pagination, Scrollbar, A11y, Keyboard]}
           slidesPerView={1}
           spaceBetween={50}
+          loop={true}
           keyboard={{ enabled: true, onlyInViewport: true }}
           navigation={{
             clickable: true,

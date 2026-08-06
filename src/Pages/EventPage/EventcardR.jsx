@@ -12,18 +12,10 @@ import 'reactjs-popup/dist/index.css';
 function EventcardR({ Events, priority }) {
   const { slowNetwork } = useDeviceProfile();
   const [Expanding, setExpanding] = useState(false);
-  const [isEventClosed, setIsEventClosed] = useState(false);
 
   useEffect(() => {
     AOS.init({ duration: 1000, once: true, disable: aosDisabled });
-
-    const eventDate = new Date(Events.date);
-    const currentDate = new Date();
-
-    if (eventDate < currentDate) {
-      setIsEventClosed(true);
-    }
-  }, [Events.date]);
+  }, []);
 
   const images = Events.images || [];
   const imageSets = Events.imageSets || [];
@@ -96,23 +88,6 @@ function EventcardR({ Events, priority }) {
             📅 Date: {Events.date}
           </div>
         </div>
-
-        <div className='pt-2 flex justify-start items-center'>
-          {isEventClosed || Events.tickets === 'closed' ? (
-            <span className='inline-block px-4 py-2 bg-red-950/60 border border-red-800 text-red-400 font-semibold text-sm rounded-xl'>
-              Registration Closed
-            </span>
-          ) : (
-            <a
-              className='inline-block bg-cyan-600 hover:bg-cyan-500 px-6 py-2.5 rounded-xl font-medium text-white shadow-lg hover:shadow-cyan-500/20 hover:scale-105 transition-all duration-300'
-              href={Events.tickets}
-              target='_blank'
-              rel='noreferrer'
-            >
-              Register Now
-            </a>
-          )}
-        </div>
       </div>
     </div>
   );
@@ -122,7 +97,6 @@ EventcardR.propTypes = {
   Events: PropTypes.shape({
     name: PropTypes.string,
     date: PropTypes.string,
-    tickets: PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf(['closed'])]),
     images: PropTypes.arrayOf(PropTypes.string),
     imageSets: PropTypes.arrayOf(PropTypes.string),
     content: PropTypes.array,

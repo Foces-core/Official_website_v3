@@ -43,6 +43,8 @@ Results are stored in `.perf-report.json`. Run a single profile with
 - `scripts/wcag-probe.mjs` — puppeteer checks for skip link, roving tabindex,
   modal focus trap/restore, navbar theme, no console errors
 - `scripts/mobile-probe.mjs` — mobile viewport nav/modal/cursor checks
+- `scripts/carousel-probe.mjs` — Featuring/Modal carousel arrows, infinite
+  loop, hover glow, register-button absence checks
 - `scripts/img-probe.mjs` — image asset checks
 - `scripts/firefox-probe.mjs` — Gecko (Firefox/Waterfox) rendering check
 

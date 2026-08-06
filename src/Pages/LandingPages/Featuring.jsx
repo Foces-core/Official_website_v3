@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Scrollbar, A11y, Keyboard } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 import featuring from '../../assets/featuring.svg';
 import episodeOne from '../../assets/episode-1.webp';
 import episodeOne480 from '../../assets/episode-1-480.webp';
@@ -38,6 +39,7 @@ function Featuring() {
   }, []);
 
   const [noSlides, setNoSlides] = useState(1);
+  const swiperRef = useRef(null);
 
   useEffect(() => {
     const handleResize = () => {
@@ -68,13 +70,24 @@ function Featuring() {
           <img className='w-72 h-[45%] pl-2.5' data-aos="flip-up" data-aos-duration="750" src={featuring} alt="" />
         </div>
       </div>
-      <div className='flex pt-10 justify-center items-center overflow-hidden'>
+      <div className='flex pt-10 justify-center items-center overflow-hidden relative'>
+        {/* Arrow indicators: hint the carousel is scrollable/infinite */}
+        <button
+          type="button"
+          aria-label="Previous ECHO photos"
+          onClick={() => swiperRef.current?.slidePrev()}
+          className='absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-colors duration-200 backdrop-blur-sm'
+        >
+          <FaChevronLeft />
+        </button>
         <Swiper
           modules={[Pagination, Scrollbar, A11y, Keyboard]}
           slidesPerView={noSlides}
           spaceBetween={50}
+          loop={true}
           scrollbar={{ draggable: true }}
           keyboard={{ enabled: true, onlyInViewport: true }}
+          onSwiper={(swiper) => { swiperRef.current = swiper; }}
           pagination={{
             clickable: true,
           }}
@@ -84,12 +97,12 @@ function Featuring() {
             "--swiper-pagination-bullet-inactive-color": "white",
             "--swiper-pagination-top": "90%",
           }}
-          className="mySwiper bg-transparent px-10 pb-10 h-fit"
+          className="mySwiper bg-transparent px-14 pb-10 h-fit"
         >
           {echoSlides.map(({ image, imageSet, alt }, index) => (
             <SwiperSlide key={index} className='px-3 pb-8 pt-4 bg-transparent'>
               <img
-                className='hover:shadow-white hover:shadow-[0_0px_20px_rgba(255,255,255,0.2)] h-full w-full rounded-2xl object-cover hover:scale-105 transition-transform duration-300 shadow-xl'
+                className='h-full w-full rounded-2xl object-cover transition-all duration-300 shadow-xl hover:scale-105 hover:ring-2 hover:ring-white/50 hover:shadow-[0_0_25px_6px_rgba(255,255,255,0.25)]'
                 src={image}
                 srcSet={imageSet}
                 sizes="(min-width: 768px) 33vw, (min-width: 500px) 50vw, 90vw"
@@ -101,6 +114,14 @@ function Featuring() {
             </SwiperSlide>
           ))}
         </Swiper>
+        <button
+          type="button"
+          aria-label="Next ECHO photos"
+          onClick={() => swiperRef.current?.slideNext()}
+          className='absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-colors duration-200 backdrop-blur-sm'
+        >
+          <FaChevronRight />
+        </button>
       </div>
     </div>
   );
