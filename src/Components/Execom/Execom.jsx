@@ -159,21 +159,21 @@ function Execom() {
             cubeEffect={cubeEffectConfig}
             loop={false}
             initialSlide={cardData.length}
-            autoplay={lowPower ? false : { delay: 3000, disableOnInteraction: false, stopOnLastSlide: true }}
+            autoplay={{ delay: 2500, disableOnInteraction: false, stopOnLastSlide: false }}
             modules={[EffectCube, Pagination, Autoplay]}
             onSlideChange={(swiper) => setActiveCube(swiper.activeIndex % cardData.length)}
             onTransitionEnd={(swiper) => {
-              // Seamless infinite wrap: at either edge, jump 0ms to the copy that
-              // shares the same cube orientation — invisible to the eye.
+              // Seamless infinite wrap: at either edge, jump 0ms to the matching slide copy
               const now = Date.now();
               if (now - lastWrap.current < 120) return;
               if (swiper.activeIndex >= cardData.length * 3 - 1) {
                 lastWrap.current = now;
-                swiper.slideTo(0, 0);
-                if (!lowPower && cubeVisibleRef.current) swiper.autoplay.start();
+                swiper.slideTo(cardData.length, 0);
+                if (swiper.autoplay) swiper.autoplay.start();
               } else if (swiper.activeIndex <= 0) {
                 lastWrap.current = now;
-                swiper.slideTo(cardData.length * 3 - 1, 0);
+                swiper.slideTo(cardData.length, 0);
+                if (swiper.autoplay) swiper.autoplay.start();
               }
             }}
             className="execom-cube-swiper"
