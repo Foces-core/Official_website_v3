@@ -25,7 +25,9 @@ function EventCardMobile({ Events, priority }) {
   }, [Events.date]);
 
   const images = Events.images || [];
+  const imageSets = Events.imageSets || [];
   const primaryImage = images[0];
+  const primarySet = imageSets[0];
 
   return (
     <div
@@ -33,16 +35,18 @@ function EventCardMobile({ Events, priority }) {
       data-aos='fade-up'
     >
       <div
-        className='relative w-full h-52 rounded-xl overflow-hidden bg-[#0b0b0c] border border-white/10 shadow-md cursor-pointer group'
+        className='relative w-full rounded-xl overflow-hidden bg-[#0b0b0c] border border-white/10 shadow-md cursor-pointer group'
         onClick={() => setExpanding(true)}
       >
         {primaryImage && (
           <img
             src={sanityImg(primaryImage, slowNetwork ? 640 : 1000)}
+            srcSet={primarySet}
+            sizes="(max-width: 767px) 92vw, 400px"
             alt={Events.name}
             loading={priority ? 'eager' : 'lazy'}
             decoding="async"
-            className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
+            className='w-full h-auto object-contain bg-[#0b0b0c]'
           />
         )}
         <div className='absolute bottom-2 right-2 bg-cyan-600/90 text-white text-xs font-semibold px-2.5 py-1 rounded-full backdrop-blur-sm'>
@@ -94,6 +98,7 @@ EventCardMobile.propTypes = {
     date: PropTypes.string,
     tickets: PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf(['closed'])]),
     images: PropTypes.arrayOf(PropTypes.string),
+    imageSets: PropTypes.arrayOf(PropTypes.string),
     content: PropTypes.array,
   }).isRequired,
   priority: PropTypes.bool,

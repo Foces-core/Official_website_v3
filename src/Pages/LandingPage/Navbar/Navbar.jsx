@@ -36,27 +36,28 @@ export default function Navbar() {
   useEffect(() => () => clearTimeout(joinTimer.current), []);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setCurrentItem(entry.target.id);
-          }
-        });
-      },
-      { threshold: 0, rootMargin: "-7% 0% -93% 0%" }
-    );
-
-    navItems.forEach((item) => {
-      const element = document.getElementById(item.id);
-      if (element) observer.observe(element);
-    });
-
+    const sectionIds = navItems
+      .map((item) => item.id)
+      .filter((id) => id !== "contact" && document.getElementById(id));
+    const pick = () => {
+      // Reference line ~35% down the viewport: the section whose top edge has
+      // crossed that line is "current". This guarantees the link unselects as
+      // soon as you scroll into the next section (unlike a zero-height band).
+      const refY = window.innerHeight * 0.35;
+      let current = null;
+      for (const id of sectionIds) {
+        const top = document.getElementById(id).getBoundingClientRect().top;
+        if (top <= refY) current = id;
+      }
+      if (!current && sectionIds.length > 0) current = sectionIds[0];
+      setCurrentItem(current);
+    };
+    pick();
+    window.addEventListener("scroll", pick, { passive: true });
+    window.addEventListener("resize", pick);
     return () => {
-      navItems.forEach((item) => {
-        const element = document.getElementById(item.id);
-        if (element) observer.unobserve(element);
-      });
+      window.removeEventListener("scroll", pick);
+      window.removeEventListener("resize", pick);
     };
   }, []);
 
@@ -270,8 +271,13 @@ export default function Navbar() {
             to={item.id !== "contact" ? `/#${item.id}` : "/contact"}
             key={item.id}
             data-foresight={item.id}
-            className={`border-b-2 border-transparent z-10 tracking-wider ${
-              isDark ? "text-[#ffffff80]" : "text-[#000000b3]"
+            aria-current={currentItem === item.id ? "true" : undefined}
+            className={`border-b-2 z-10 tracking-wider ${
+              currentItem === item.id
+                ? "border-[#22d3ee] text-[#22d3ee]"
+                : isDark
+                  ? "border-transparent text-[#ffffff80]"
+                  : "border-transparent text-[#000000b3]"
             } `}
             onMouseEnter={() => handlePrefetch(item.id)}
             onTouchStart={() => handlePrefetch(item.id)}

@@ -1,8 +1,21 @@
-import agenticCodingPoster from '../assets/agentic_coding_instagram.jpg';
-import agenticCodingPhoto from '../assets/agentic_coding.jpg';
-import codingArenaPoster from '../assets/coding_arena_4_0_insta.jpg';
-import codingArenaPhoto from '../assets/coding_arena.jpg';
-import promptParadoxPoster from '../assets/the_prompt_paradox_2_0_insta.jpg';
+import agenticCodingPoster from '../assets/agentic_coding_instagram.webp';
+import agenticCodingPoster400 from '../assets/agentic_coding_instagram-400.webp';
+import agenticCodingPoster800 from '../assets/agentic_coding_instagram-800.webp';
+import agenticCodingPhoto from '../assets/agentic_coding.webp';
+import agenticCodingPhoto400 from '../assets/agentic_coding-400.webp';
+import agenticCodingPhoto800 from '../assets/agentic_coding-800.webp';
+import codingArenaPoster from '../assets/coding_arena_4_0_insta.webp';
+import codingArenaPoster400 from '../assets/coding_arena_4_0_insta-400.webp';
+import codingArenaPoster800 from '../assets/coding_arena_4_0_insta-800.webp';
+import codingArenaPhoto from '../assets/coding_arena.webp';
+import codingArenaPhoto400 from '../assets/coding_arena-400.webp';
+import codingArenaPhoto800 from '../assets/coding_arena-800.webp';
+import promptParadoxPoster from '../assets/the_prompt_paradox_2_0_insta.webp';
+import promptParadoxPoster400 from '../assets/the_prompt_paradox_2_0_insta-400.webp';
+import promptParadoxPoster800 from '../assets/the_prompt_paradox_2_0_insta-800.webp';
+import { srcset } from '../utils/srcset.js';
+
+const set = (full, s800, s400) => srcset([[full, 1000], [s800, 800], [s400, 400]]);
 
 // Wrap a plain-text description as a Sanity portable-text block so the
 // EventPage cards (which render content via BlockContent) can display it.
@@ -24,7 +37,11 @@ export const featuredEvents = [
     tag: 'Hands-on Workshop',
     date: '9th July 2026',
     image: agenticCodingPhoto,
+    imageSet: set(agenticCodingPhoto, agenticCodingPhoto800, agenticCodingPhoto400),
+    poster: agenticCodingPoster,
+    posterSet: set(agenticCodingPoster, agenticCodingPoster800, agenticCodingPoster400),
     images: [agenticCodingPoster, agenticCodingPhoto],
+    imageSets: [set(agenticCodingPoster, agenticCodingPoster800, agenticCodingPoster400), set(agenticCodingPhoto, agenticCodingPhoto800, agenticCodingPhoto400)],
     desc: 'Empowering developers to build autonomous AI agents using cutting-edge LLMs and agent frameworks.',
     content: toBlocks(
       'Empowering developers to build autonomous AI agents using cutting-edge LLMs and agent frameworks.',
@@ -39,7 +56,11 @@ export const featuredEvents = [
     tag: 'Bootcamp',
     date: '27th July - 5th Aug',
     image: codingArenaPoster,
+    imageSet: set(codingArenaPoster, codingArenaPoster800, codingArenaPoster400),
+    poster: codingArenaPoster,
+    posterSet: set(codingArenaPoster, codingArenaPoster800, codingArenaPoster400),
     images: [codingArenaPoster, codingArenaPhoto],
+    imageSets: [set(codingArenaPoster, codingArenaPoster800, codingArenaPoster400), set(codingArenaPhoto, codingArenaPhoto800, codingArenaPhoto400)],
     desc: 'The ultimate competitive programming and rapid prototyping battlefield at MCA Lab.',
     content: toBlocks(
       'The ultimate competitive programming and rapid prototyping battlefield at MCA Lab.',
@@ -54,7 +75,11 @@ export const featuredEvents = [
     tag: 'AI & Prompt Engineering',
     date: '21st June 2026',
     image: promptParadoxPoster,
+    imageSet: set(promptParadoxPoster, promptParadoxPoster800, promptParadoxPoster400),
+    poster: promptParadoxPoster,
+    posterSet: set(promptParadoxPoster, promptParadoxPoster800, promptParadoxPoster400),
     images: [promptParadoxPoster],
+    imageSets: [set(promptParadoxPoster, promptParadoxPoster800, promptParadoxPoster400)],
     desc: 'Test your prompt engineering mastery, solve complex AI puzzles, and break through the digital maze.',
     content: toBlocks(
       'Test your prompt engineering mastery, solve complex AI puzzles, and break through the digital maze.',

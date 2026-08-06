@@ -32,8 +32,20 @@
 
     <!-- Performance & Preloading Optimization Hints -->
     <meta http-equiv="x-dns-prefetch-control" content="on" />
-    <link rel="dns-prefetch" href="https://cdn.sanity.io" />
-    <link rel="preconnect" href="https://cdn.sanity.io" crossorigin="anonymous" />
+    <!-- CDN guidance:
+         - All static assets (JS/CSS/webp images) are bundled and served from
+           Vercel's edge CDN, same origin as the site. Same-origin requests
+           need NO preconnect — preconnect only helps cross-origin fetches.
+         - The only cross-origin request on load is Vercel SpeedInsights
+           (https://va.vercel-scripts.com), so only it is preconnected below.
+         - IF hero/featured images are later moved to an external CDN
+           (Cloudflare R2, Cloudinary, etc.), add one preconnect per image
+           host and remove it if images come back same-origin:
+             <link rel="preconnect" href="https://yourcdn.example.com" crossorigin />
+           A wildcard preconnect for unused hosts wastes connection slots —
+           only preconnect what actually loads above the fold.
+         - (Sanity was removed; its old preconnect hints were dead weight.) -->
+    <link rel="preconnect" href="https://va.vercel-scripts.com" crossorigin="anonymous" />
     <!-- Fonts are self-hosted via @fontsource (no render-blocking Google
          Fonts request; woff2 gets precached by the service worker). -->
   </head>
