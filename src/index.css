@@ -22,3 +22,25 @@ body{
     border-radius: 4px;
 }
 
+/* Skip-to-content link (WCAG 2.4.1): hidden off-canvas until a keyboard
+   user focuses it, then it slides in and jumps focus past the navbar. */
+.skip-link {
+    position: fixed;
+    top: -48px;
+    left: 12px;
+    z-index: 300;
+    padding: 0.55rem 1.1rem;
+    background: #22d3ee;
+    color: #000;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-radius: 0 0 8px 8px;
+    transition: top 0.15s ease-out;
+    text-decoration: none;
+}
+
+.skip-link:focus-visible {
+    top: 0;
+}
+
+
