@@ -13,9 +13,37 @@ import react from '@vitejs/plugin-react-swc';
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 import { VitePWA } from 'vite-plugin-pwa';
 
+// Preloads the two self-hosted woff2 fonts in the HTML so the browser starts
+// the fetch as soon as the document is parsed — instead of waiting for the
+// CSS bundle (which carries the @font-face) to download + parse. Inter is used
+// above the fold (navbar + hero), so this cuts the first-paint font swap.
+function preloadFonts() {
+  let fontUrls = [];
+  return {
+    name: 'preload-fonts',
+    apply: 'build',
+    generateBundle(_opts, bundle) {
+      fontUrls = Object.keys(bundle)
+        .filter((n) => /-(latin)-wght-normal-.*\.woff2$/.test(n))
+        .map((n) => bundle[n].fileName);
+    },
+    transformIndexHtml(html) {
+      const links = fontUrls
+        .map(
+          (u) =>
+            `<link rel="preload" as="font" type="font/woff2" crossorigin href="/${u}" />`
+        )
+        .join('\n    ');
+      if (!links) return html;
+      return html.replace('</head>', `    ${links}\n  </head>`);
+    },
+  };
+}
+
 export default defineConfig({
   plugins: [
     react(),
+    preloadFonts(),
     // Compress every image at build time (smaller payloads for everyone,
     // especially low-end devices on slow connections)
     ViteImageOptimizer({
