@@ -11,18 +11,10 @@ import useDeviceProfile from '../../hooks/useLowPower.js';
 function EventCardMobile({ Events, priority }) {
   const { slowNetwork } = useDeviceProfile();
   const [Expanding, setExpanding] = useState(false);
-  const [isEventClosed, setIsEventClosed] = useState(false);
 
   useEffect(() => {
     AOS.init({ duration: 1000, once: true, disable: aosDisabled });
-
-    const eventDate = new Date(Events.date);
-    const currentDate = new Date();
-
-    if (eventDate < currentDate) {
-      setIsEventClosed(true);
-    }
-  }, [Events.date]);
+  }, []);
 
   const images = Events.images || [];
   const imageSets = Events.imageSets || [];
@@ -80,23 +72,6 @@ function EventCardMobile({ Events, priority }) {
         <div className='text-cyan-400 font-medium text-xs'>
           📅 {Events.date}
         </div>
-
-        <div className='pt-2 flex justify-start items-center'>
-          {isEventClosed || Events.tickets === 'closed' ? (
-            <span className='px-3 py-1.5 bg-red-950/60 border border-red-800 text-red-400 font-semibold text-xs rounded-lg'>
-              Closed
-            </span>
-          ) : (
-            <a
-              className='bg-cyan-600 hover:bg-cyan-500 px-5 py-2 rounded-xl font-medium text-white text-sm shadow-md'
-              href={Events.tickets}
-              target='_blank'
-              rel='noreferrer'
-            >
-              Register Now
-            </a>
-          )}
-        </div>
       </div>
     </div>
   );
@@ -106,7 +81,6 @@ EventCardMobile.propTypes = {
   Events: PropTypes.shape({
     name: PropTypes.string,
     date: PropTypes.string,
-    tickets: PropTypes.oneOfType([PropTypes.string, PropTypes.oneOf(['closed'])]),
     images: PropTypes.arrayOf(PropTypes.string),
     imageSets: PropTypes.arrayOf(PropTypes.string),
     content: PropTypes.array,
