@@ -5,11 +5,19 @@ import '../AboutUs/AboutUs.css';
 import useDeviceProfile from '../../hooks/useLowPower.js';
 
 // Easter egg: if the user spins the cube 11 times in RAPID succession (via
-// keyboard arrows or a fast drag on touch), a celebration fires. A spin =
-// one 90° turn. A gap longer than RAPID_GAP between spins resets the counter,
-// so casual rotating never triggers it — only deliberate rapid spinning.
+// keyboard arrows, a fast drag in any direction, or the release wind-down), a
+// celebration fires. A spin = one 90° of *combined* rotation (X + Y). A gap
+// longer than RAPID_GAP between spins resets the counter, so casual rotating
+// never triggers it — only deliberate rapid spinning.
 const RAPID_GAP = 1000;
 const SPIN_TARGET = 11;
+
+// Drag + wind-down tuning
+const DRAG_SENS = 0.6;
+const WIND_FRICTION = 0.94; // per-frame velocity decay
+const MAX_WIND_SPEED = 12; // deg/frame cap so a release never explodes
+const MIN_WIND_SPEED = 0.02; // deg/frame — below this the cube snaps to a face
+const SNAP_MS = 650; // how long the settle-to-face animation takes
 
 const PARTICLE_COLORS = ['#22d3ee', '#a855f7', '#f472b6', '#facc15', '#4ade80', '#ffffff', '#fb7185', '#38bdf8'];
 const PARTICLE_EMOJIS = ['✨', '🎉', '⭐', '🔥', '💥', '🚀'];
@@ -22,16 +30,34 @@ const EASTER_MESSAGES = [
 
 function AboutUs() {
   const { lowPower } = useDeviceProfile();
-  const startX = useRef(0);
-  const startRot = useRef(0);
   const boxRef = useRef(null);
-  const rotRef = useRef(0);
+  const rotXRef = useRef(0);
+  const rotYRef = useRef(0);
+
+  // Drag state
+  const startX = useRef(0);
+  const startY = useRef(0);
+  const startRotX = useRef(0);
+  const startRotY = useRef(0);
+  const lastMove = useRef({ t: 0, x: 0, y: 0 });
+  const velX = useRef(0); // deg/ms while dragging, deg/frame during wind-down
+  const velY = useRef(0);
   const isDraggingRef = useRef(false);
+
+  // Wind-down / auto-rotation
+  const windingRef = useRef(false);
+  const windRaf = useRef(null);
   const manualUntilRef = useRef(0);
+
+  // Easter-egg tracking
   const spinCountRef = useRef(0);
   const lastSpinRef = useRef(0);
-  const dragStartRotRef = useRef(0);
-  const dragCrossedRef = useRef(0);
+  const accumAngleRef = useRef(0);
+
+  const applyTransform = useCallback(() => {
+    if (!boxRef.current) return;
+    boxRef.current.style.transform = `rotateX(${rotXRef.current}deg) rotateY(${rotYRef.current}deg)`;
+  }, []);
 
   const triggerEasterEgg = useCallback(() => {
     const wrap = document.getElementById('mainDiv-about');
@@ -43,7 +69,7 @@ function AboutUs() {
     wrap.querySelectorAll('.about-burst').forEach((n) => n.remove());
     wrap.classList.remove('about-wobble');
 
-    // Celebratory wobble (on the wrapper, so it never fights the cube's inline rotateY)
+    // Celebratory wobble (on the wrapper, so it never fights the cube's inline rotate)
     if (!reduceMotion) {
       wrap.classList.add('about-wobble');
       setTimeout(() => wrap.classList.remove('about-wobble'), 1000);
@@ -56,13 +82,7 @@ function AboutUs() {
     wrap.appendChild(toast);
     setTimeout(() => toast.remove(), 1700);
 
-    if (reduceMotion || lowPower) {
-      if (lowPower) {
-        // low-power devices still get a small burst, just fewer particles
-      } else {
-        return; // reduced motion: skip the particle animation entirely
-      }
-    }
+    if (reduceMotion && !lowPower) return; // reduced motion: skip particles entirely
 
     const burst = document.createElement('div');
     burst.className = 'about-burst';
@@ -103,118 +123,251 @@ function AboutUs() {
     }
   }, [triggerEasterEgg]);
 
-  // Count 90° crossings during a drag (works for touch and mouse).
-  const countDragCrossings = () => {
-    const delta = Math.abs(rotRef.current - dragStartRotRef.current);
-    const crossed = Math.floor(delta / 90);
-    while (crossed > dragCrossedRef.current) {
-      dragCrossedRef.current++;
-      registerSpin();
-    }
-  };
+  // Accumulate *combined* (X + Y) angular travel; every full 90° = one spin,
+  // no matter which axis the motion came from.
+  const accumulateAngle = useCallback(
+    (deg) => {
+      accumAngleRef.current += deg;
+      while (accumAngleRef.current >= 90) {
+        accumAngleRef.current -= 90;
+        registerSpin();
+      }
+    },
+    [registerSpin]
+  );
 
-  // Smooth 60fps direct DOM auto-rotation when not dragging
+  // Settle the cube onto the nearest 90° face with a smooth, slow transition.
+  const snapToFace = useCallback(() => {
+    windingRef.current = false;
+    if (windRaf.current != null) {
+      cancelAnimationFrame(windRaf.current);
+      windRaf.current = null;
+    }
+    const el = boxRef.current;
+    if (!el) return;
+    const tx = Math.round(rotXRef.current / 90) * 90;
+    const ty = Math.round(rotYRef.current / 90) * 90;
+    el.style.transition = `transform ${SNAP_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+    rotXRef.current = tx;
+    rotYRef.current = ty;
+    applyTransform();
+    setTimeout(() => {
+      if (boxRef.current) boxRef.current.style.transition = 'none';
+    }, SNAP_MS);
+    manualUntilRef.current = Date.now() + 1200;
+  }, [applyTransform]);
+
+  // Release "inertia": keep rotating with the release velocity, decaying, until
+  // it's slow enough to settle onto a face.
+  const startWindDown = useCallback(() => {
+    windingRef.current = true;
+    manualUntilRef.current = Date.now() + 6000;
+    if (windRaf.current != null) cancelAnimationFrame(windRaf.current);
+    const step = () => {
+      rotXRef.current += velX.current;
+      rotYRef.current += velY.current;
+      velX.current *= WIND_FRICTION;
+      velY.current *= WIND_FRICTION;
+      accumulateAngle(Math.hypot(velX.current, velY.current));
+      const speed = Math.hypot(velX.current, velY.current);
+      if (speed < MIN_WIND_SPEED) {
+        snapToFace();
+        return;
+      }
+      applyTransform();
+      windRaf.current = requestAnimationFrame(step);
+    };
+    windRaf.current = requestAnimationFrame(step);
+  }, [accumulateAngle, applyTransform, snapToFace]);
+
+  const stopWindDown = useCallback(() => {
+    windingRef.current = false;
+    if (windRaf.current != null) {
+      cancelAnimationFrame(windRaf.current);
+      windRaf.current = null;
+    }
+  }, []);
+
+  // Smooth 60fps direct-DOM auto-rotation when idle (pauses while offscreen).
   useEffect(() => {
     if (lowPower) return;
 
-    let animFrame;
+    let animFrame = null;
+    let visible = true;
+    let observer = null;
+
     const animate = () => {
-      if (!isDraggingRef.current && Date.now() >= manualUntilRef.current) {
-        rotRef.current = (rotRef.current + 0.5) % 360;
-        if (boxRef.current) {
-          boxRef.current.style.transform = `rotateY(${rotRef.current}deg)`;
+      if (
+        visible &&
+        !isDraggingRef.current &&
+        !windingRef.current &&
+        Date.now() >= manualUntilRef.current
+      ) {
+        const el = boxRef.current;
+        if (el) {
+          rotYRef.current = (rotYRef.current + 0.5) % 360;
+          rotXRef.current = 6 * Math.sin(performance.now() / 4000);
+          el.style.transition = 'none';
+          el.style.transform = `rotateX(${rotXRef.current}deg) rotateY(${rotYRef.current}deg)`;
         }
       }
-      animFrame = requestAnimationFrame(animate);
+      if (visible) {
+        animFrame = requestAnimationFrame(animate);
+      } else {
+        animFrame = null;
+      }
     };
 
-    animFrame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(animFrame);
-  }, [lowPower]);
+    if (typeof IntersectionObserver === 'function' && boxRef.current) {
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          visible = entry.isIntersecting;
+          if (visible && animFrame == null) animFrame = requestAnimationFrame(animate);
+        },
+        { rootMargin: '100px' }
+      );
+      observer.observe(boxRef.current);
+    } else {
+      visible = true;
+    }
 
-  // Keyboard navigation (ArrowLeft / ArrowRight)
+    if (visible && animFrame == null) animFrame = requestAnimationFrame(animate);
+
+    return () => {
+      if (animFrame != null) cancelAnimationFrame(animFrame);
+      if (observer) observer.disconnect();
+      stopWindDown();
+    };
+  }, [lowPower, stopWindDown]);
+
+  // Keyboard navigation — all four arrows, all directions.
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      const dirs = { ArrowLeft: 1, ArrowRight: 1, ArrowUp: 1, ArrowDown: 1 };
+      if (!dirs[e.key]) return;
       const el = boxRef.current;
       if (!el) return;
       const rect = el.getBoundingClientRect();
       if (rect.bottom < 0 || rect.top > window.innerHeight) return;
 
       e.preventDefault();
-      const delta = e.key === 'ArrowRight' ? 90 : -90;
-      rotRef.current = Math.round(rotRef.current / 90) * 90 + delta;
+      stopWindDown();
+      el.style.transition = 'transform 0.4s ease-out';
+      if (e.key === 'ArrowLeft') rotYRef.current -= 90;
+      else if (e.key === 'ArrowRight') rotYRef.current += 90;
+      else if (e.key === 'ArrowUp') rotXRef.current += 90;
+      else rotXRef.current -= 90;
+      applyTransform();
       manualUntilRef.current = Date.now() + 3000;
-      if (boxRef.current) {
-        boxRef.current.style.transition = 'transform 0.4s ease-out';
-        boxRef.current.style.transform = `rotateY(${rotRef.current}deg)`;
-      }
       registerSpin();
     };
 
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [registerSpin]);
+  }, [applyTransform, registerSpin, stopWindDown]);
 
-  // Touch Drag Handlers
-  const handleTouchStart = (e) => {
-    startX.current = e.touches[0].clientX;
-    startRot.current = rotRef.current;
-    dragStartRotRef.current = rotRef.current;
-    dragCrossedRef.current = 0;
+  // Cancel any wind-down rAF on unmount.
+  useEffect(
+    () => () => {
+      if (windRaf.current != null) cancelAnimationFrame(windRaf.current);
+    },
+    []
+  );
+
+  // ---- Shared drag helpers (touch + mouse) ----
+  const beginDrag = useCallback((clientX, clientY) => {
     isDraggingRef.current = true;
-    manualUntilRef.current = Date.now() + 5000;
-  };
+    windingRef.current = false;
+    if (windRaf.current != null) {
+      cancelAnimationFrame(windRaf.current);
+      windRaf.current = null;
+    }
+    startX.current = clientX;
+    startY.current = clientY;
+    startRotX.current = rotXRef.current;
+    startRotY.current = rotYRef.current;
+    lastMove.current = { t: Date.now(), x: rotXRef.current, y: rotYRef.current };
+    velX.current = 0;
+    velY.current = 0;
+    manualUntilRef.current = Date.now() + 60000;
+    if (boxRef.current) boxRef.current.style.transition = 'none';
+  }, []);
 
+  const moveDrag = useCallback(
+    (clientX, clientY) => {
+      if (!isDraggingRef.current) return;
+      const now = Date.now();
+      const nx = startRotX.current + (clientY - startY.current) * DRAG_SENS;
+      const ny = startRotY.current + (clientX - startX.current) * DRAG_SENS;
+      const dt = Math.max(now - lastMove.current.t, 1);
+      const k = 0.4;
+      velX.current = velX.current * (1 - k) + ((nx - lastMove.current.x) / dt) * k;
+      velY.current = velY.current * (1 - k) + ((ny - lastMove.current.y) / dt) * k;
+      accumulateAngle(Math.hypot(nx - lastMove.current.x, ny - lastMove.current.y));
+      lastMove.current = { t: now, x: nx, y: ny };
+      rotXRef.current = nx;
+      rotYRef.current = ny;
+      applyTransform();
+    },
+    [accumulateAngle, applyTransform]
+  );
+
+  const endDrag = useCallback(() => {
+    if (!isDraggingRef.current) return;
+    isDraggingRef.current = false;
+
+    // Convert release velocity from deg/ms to deg/frame, cap it, then wind down.
+    const vx = velX.current * (1000 / 60);
+    const vy = velY.current * (1000 / 60);
+    const speed = Math.hypot(vx, vy);
+    if (speed > 0.15) {
+      const s = Math.min(speed, MAX_WIND_SPEED) / speed;
+      velX.current = vx * s;
+      velY.current = vy * s;
+      startWindDown();
+    } else {
+      snapToFace();
+    }
+  }, [snapToFace, startWindDown]);
+
+  // Touch handlers
+  const handleTouchStart = (e) => {
+    beginDrag(e.touches[0].clientX, e.touches[0].clientY);
+  };
   const handleTouchMove = (e) => {
     if (!isDraggingRef.current) return;
-    const deltaX = e.touches[0].clientX - startX.current;
-    rotRef.current = startRot.current + deltaX * 0.6;
-    if (boxRef.current) {
-      boxRef.current.style.transition = 'none';
-      boxRef.current.style.transform = `rotateY(${rotRef.current}deg)`;
-    }
-    countDragCrossings();
+    moveDrag(e.touches[0].clientX, e.touches[0].clientY);
   };
+  const handleTouchEnd = () => endDrag();
 
-  const handleTouchEnd = () => {
-    isDraggingRef.current = false;
-    manualUntilRef.current = Date.now() + 2500;
-  };
+  // Mouse handlers. Move/up live on `window` so a fast drag keeps going past
+  // the small cube bounds — otherwise the gesture dies at the box edge.
+  const mouseHandlersRef = useRef(null);
 
-  // Mouse Drag Handlers (for Desktop & Laptop trackpads). Mouse move/up are
-  // tracked on `window` so a fast drag can keep spinning past the small cube
-  // bounds — otherwise the gesture dies the moment the cursor leaves the box.
   const handleMouseDown = (e) => {
+    if (e.button !== 0) return;
     e.preventDefault();
-    startX.current = e.clientX;
-    startRot.current = rotRef.current;
-    dragStartRotRef.current = rotRef.current;
-    dragCrossedRef.current = 0;
-    isDraggingRef.current = true;
-    manualUntilRef.current = Date.now() + 5000;
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
+    beginDrag(e.clientX, e.clientY);
+    const move = (ev) => moveDrag(ev.clientX, ev.clientY);
+    const up = () => {
+      endDrag();
+      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mouseup', up);
+    };
+    mouseHandlersRef.current = { move, up };
+    window.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', up);
   };
 
-  const handleMouseMove = (e) => {
-    if (!isDraggingRef.current) return;
-    const deltaX = e.clientX - startX.current;
-    rotRef.current = startRot.current + deltaX * 0.6;
-    if (boxRef.current) {
-      boxRef.current.style.transition = 'none';
-      boxRef.current.style.transform = `rotateY(${rotRef.current}deg)`;
-    }
-    countDragCrossings();
-  };
-
-  const handleMouseUp = () => {
-    if (!isDraggingRef.current) return;
-    isDraggingRef.current = false;
-    manualUntilRef.current = Date.now() + 2500;
-    window.removeEventListener('mousemove', handleMouseMove);
-    window.removeEventListener('mouseup', handleMouseUp);
-  };
+  useEffect(
+    () => () => {
+      if (mouseHandlersRef.current) {
+        window.removeEventListener('mousemove', mouseHandlersRef.current.move);
+        window.removeEventListener('mouseup', mouseHandlersRef.current.up);
+      }
+    },
+    []
+  );
 
   return (
     <div className='mx-6 mt-14 lg:mx-1 flex flex-col justify-center text-white lg:px-44 scroll-mt-24' id='about'>
@@ -237,19 +390,17 @@ function AboutUs() {
             id="boxDiv-about"
             ref={boxRef}
             style={{
-              transform: `rotateY(0deg)`,
+              transform: 'rotateX(0deg) rotateY(0deg)',
               animation: 'none',
-              touchAction: 'pan-y',
+              touchAction: 'none',
             }}
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
             onTouchCancel={handleTouchEnd}
             onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
             role="group"
-            aria-label="FOCES values cube, touch or drag to rotate, use left and right arrow keys"
+            aria-label="FOCES values cube, rotate it with arrow keys or by dragging in any direction"
           >
             <div id="front-about" className='font-about text-shadow-white'>DARE</div>
             <div id="back-about" className='font-about text-shadow-white'>DEVELOP</div>
