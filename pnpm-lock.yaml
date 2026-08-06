@@ -29,6 +29,9 @@ importers:
       framer-motion:
         specifier: ^10.16.15
         version: 10.18.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      js.foresight:
+        specifier: ^4.2.1
+        version: 4.2.1
       prop-types:
         specifier: ^15.8.1
         version: 15.8.1
@@ -2246,6 +2249,9 @@ packages:
     resolution: {integrity: sha512-CY6crGq313MX8GkwvB7tzgp99vjQxY1++5y10/BKN/GUfHqWaOGQMNZkBvqSzsZKWk/ijwHlWzzkLulsGHhjWQ==}
     hasBin: true
 
+  js.foresight@4.2.1:
+    resolution: {integrity: sha512-0IMLIEhYmUobu3I6YNFeSpuK2OYOep3kRhue0DX7qqbUFzuX+Cb0ujkDK3RE97ahysnza7Q63ROWqP1dxAXVuw==}
+
   jsesc@3.1.0:
     resolution: {integrity: sha512-/sM3dO2FOzXjKQhJuo0Q173wf2KOo8t4I8vHy6lF9poUp7bKT0/NHE8fPX23PwfhnykfqnC2xRxOnVw5XuGIaA==}
     engines: {node: '>=6'}
@@ -2491,6 +2497,9 @@ packages:
   pirates@4.0.7:
     resolution: {integrity: sha512-TfySrs/5nm8fQJDcBDuUng3VOUKsd7S+zqvbOTiGXHfxX4wK31ard+hoNuvkicM/2YFzlpDgABOevKSsB4G/FA==}
     engines: {node: '>= 6'}
+
+  position-observer@1.0.3:
+    resolution: {integrity: sha512-iqzsYcYB7wo9kd3Juw4XaVPhlLCfKhZLv6TrH096reU6tIcXuftPkA41+nqQgnPGzVo5zTC4tJ7GnIRTxrnZbQ==}
 
   possible-typed-array-names@1.1.0:
     resolution: {integrity: sha512-/+5VFTchJDoVj3bhoqi6UeymcD00DAwb1nJwamzPvHEszJ4FpF6SNNbUbOS8yI56qHzdV8eK0qEfOSiodkTdxg==}
@@ -2871,6 +2880,9 @@ packages:
   swiper@12.2.0:
     resolution: {integrity: sha512-K8uXsBZU6ME97Ia3xbBge8IRCnR1lOmIILzvY/jGVic7dSTQ530s3uO8RvXbPUtkkXLWIwmZLRPbtDxRWVAFdg==}
     engines: {node: '>= 4.7.0'}
+
+  tabbable@6.5.0:
+    resolution: {integrity: sha512-wieBHXygIm7OyQOu5hQlkk62/WyCFYGlWg7L6/ZCUZwx0o398Zkn4pVmMyfYhfMG8kGrj/Krt8eIk6UKC6VzwA==}
 
   tailwindcss@3.4.19:
     resolution: {integrity: sha512-3ofp+LL8E+pK/JuPLPggVAIaEuhvIz4qNcf3nA1Xn2o/7fb7s/TYpHhwGDv1ZU3PkBluUVaF8PyCHcm48cKLWQ==}
@@ -5381,6 +5393,11 @@ snapshots:
     dependencies:
       argparse: 2.0.1
 
+  js.foresight@4.2.1:
+    dependencies:
+      position-observer: 1.0.3
+      tabbable: 6.5.0
+
   jsesc@3.1.0: {}
 
   json-buffer@3.0.1: {}
@@ -5601,6 +5618,10 @@ snapshots:
   pify@2.3.0: {}
 
   pirates@4.0.7: {}
+
+  position-observer@1.0.3:
+    optionalDependencies:
+      '@rollup/rollup-linux-x64-gnu': 4.62.4
 
   possible-typed-array-names@1.1.0: {}
 
@@ -6075,6 +6096,8 @@ snapshots:
       sax: 1.6.1
 
   swiper@12.2.0: {}
+
+  tabbable@6.5.0: {}
 
   tailwindcss@3.4.19:
     dependencies:

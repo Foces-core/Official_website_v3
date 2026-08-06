@@ -1,24 +1,21 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import '../../index.css';
 import Aboutus from '../../assets/about us.svg';
 import '../AboutUs/AboutUs.css';
 import useDeviceProfile from '../../hooks/useLowPower.js';
 
 function AboutUs() {
-  const { lowCPU, reducedMotion } = useDeviceProfile();
-  const [rotationY, setRotationY] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
+  const { lowPower } = useDeviceProfile();
   const startX = useRef(0);
   const startRot = useRef(0);
   const boxRef = useRef(null);
   const rotRef = useRef(0);
   const isDraggingRef = useRef(false);
   const manualUntilRef = useRef(0);
-  const transTimerRef = useRef(null);
 
   // Smooth 60fps direct DOM auto-rotation when not dragging
   useEffect(() => {
-    if (reducedMotion) return;
+    if (lowPower) return;
 
     let animFrame;
     const animate = () => {
@@ -33,7 +30,7 @@ function AboutUs() {
 
     animFrame = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animFrame);
-  }, [reducedMotion]);
+  }, [lowPower]);
 
   // Keyboard navigation (ArrowLeft / ArrowRight)
   useEffect(() => {
@@ -62,7 +59,6 @@ function AboutUs() {
   const handleTouchStart = (e) => {
     startX.current = e.touches[0].clientX;
     startRot.current = rotRef.current;
-    setIsDragging(true);
     isDraggingRef.current = true;
     manualUntilRef.current = Date.now() + 5000;
   };
@@ -78,7 +74,6 @@ function AboutUs() {
   };
 
   const handleTouchEnd = () => {
-    setIsDragging(false);
     isDraggingRef.current = false;
     manualUntilRef.current = Date.now() + 2500;
   };
@@ -87,7 +82,6 @@ function AboutUs() {
   const handleMouseDown = (e) => {
     startX.current = e.clientX;
     startRot.current = rotRef.current;
-    setIsDragging(true);
     isDraggingRef.current = true;
     manualUntilRef.current = Date.now() + 5000;
   };
@@ -103,7 +97,6 @@ function AboutUs() {
   };
 
   const handleMouseUp = () => {
-    setIsDragging(false);
     isDraggingRef.current = false;
     manualUntilRef.current = Date.now() + 2500;
   };

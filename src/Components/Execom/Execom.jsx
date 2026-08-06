@@ -43,8 +43,8 @@ const cardData = [
 const cubeSlides = [...cardData, ...cardData, ...cardData];
 
 function Execom() {
-  const { lowPower, lowCPU, reducedMotion, slowNetwork } = useDeviceProfile();
-  const flatCube = lowCPU || reducedMotion;
+  const { lowPower, slowNetwork } = useDeviceProfile();
+  const flatCube = lowPower;
   const [activeCube, setActiveCube] = React.useState(0);
   const cubeRef = React.useRef(null);
   const cubeWrapRef = React.useRef(null);
