@@ -133,7 +133,7 @@ function Execom() {
               <SwiperSlide key={index}>
                 <div className='container-execom bg-[#161618] border-box relative rounded-3xl overflow-hidden group'>
                   <img
-                    className={`object-cover ${d.imgPos || 'object-top'} w-full h-full card-hover grayscale group-hover:filter-none transition-all duration-300`}
+                    className={`object-cover ${d.name === 'Sebin Mathew' ? 'object-center' : 'object-top'} w-full h-full card-hover grayscale group-hover:filter-none transition-all duration-300`}
                     src={d.img}
                     alt={d.name}
                     loading="lazy"
