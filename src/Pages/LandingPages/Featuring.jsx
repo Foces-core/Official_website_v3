@@ -100,7 +100,7 @@ function Featuring() {
           className="mySwiper bg-transparent px-14 pb-10 h-fit"
         >
           {echoSlides.map(({ image, imageSet, alt }, index) => (
-            <SwiperSlide key={index} className='px-3 pb-8 pt-4 bg-transparent'>
+            <SwiperSlide key={index} className='px-3 pt-9 pb-8 bg-transparent'>
               <img
                 className='h-full w-full rounded-2xl object-cover transition-all duration-300 shadow-xl hover:scale-105 hover:ring-2 hover:ring-white/50 hover:shadow-[0_0_25px_6px_rgba(255,255,255,0.25)]'
                 src={image}

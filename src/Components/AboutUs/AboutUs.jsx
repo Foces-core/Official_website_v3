@@ -1,8 +1,24 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import '../../index.css';
 import Aboutus from '../../assets/about us.svg';
 import '../AboutUs/AboutUs.css';
 import useDeviceProfile from '../../hooks/useLowPower.js';
+
+// Easter egg: if the user spins the cube 11 times in RAPID succession (via
+// keyboard arrows or a fast drag on touch), a celebration fires. A spin =
+// one 90° turn. A gap longer than RAPID_GAP between spins resets the counter,
+// so casual rotating never triggers it — only deliberate rapid spinning.
+const RAPID_GAP = 1000;
+const SPIN_TARGET = 11;
+
+const PARTICLE_COLORS = ['#22d3ee', '#a855f7', '#f472b6', '#facc15', '#4ade80', '#ffffff', '#fb7185', '#38bdf8'];
+const PARTICLE_EMOJIS = ['✨', '🎉', '⭐', '🔥', '💥', '🚀'];
+const EASTER_MESSAGES = [
+  'DARE to spin! 🎉',
+  '11 spins? You DEVELOP-ded that. 😎',
+  'DOMINATE the cube! 🔥',
+  'You FOCES-inated the cube ✨',
+];
 
 function AboutUs() {
   const { lowPower } = useDeviceProfile();
@@ -12,6 +28,90 @@ function AboutUs() {
   const rotRef = useRef(0);
   const isDraggingRef = useRef(false);
   const manualUntilRef = useRef(0);
+  const spinCountRef = useRef(0);
+  const lastSpinRef = useRef(0);
+  const dragStartRotRef = useRef(0);
+  const dragCrossedRef = useRef(0);
+
+  const triggerEasterEgg = useCallback(() => {
+    const wrap = document.getElementById('mainDiv-about');
+    if (!wrap) return;
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Clean up any previous burst
+    wrap.querySelectorAll('.about-burst').forEach((n) => n.remove());
+    wrap.classList.remove('about-wobble');
+
+    // Celebratory wobble (on the wrapper, so it never fights the cube's inline rotateY)
+    if (!reduceMotion) {
+      wrap.classList.add('about-wobble');
+      setTimeout(() => wrap.classList.remove('about-wobble'), 1000);
+    }
+
+    // Toast message (always shown, cheap)
+    const toast = document.createElement('div');
+    toast.className = 'about-toast';
+    toast.textContent = EASTER_MESSAGES[Math.floor(Math.random() * EASTER_MESSAGES.length)];
+    wrap.appendChild(toast);
+    setTimeout(() => toast.remove(), 1700);
+
+    if (reduceMotion || lowPower) {
+      if (lowPower) {
+        // low-power devices still get a small burst, just fewer particles
+      } else {
+        return; // reduced motion: skip the particle animation entirely
+      }
+    }
+
+    const burst = document.createElement('div');
+    burst.className = 'about-burst';
+    const count = lowPower ? 8 : 24;
+    const frag = document.createDocumentFragment();
+    for (let i = 0; i < count; i++) {
+      const p = document.createElement('span');
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 70 + Math.random() * 110;
+      const emoji = i % 3 === 0 && Math.random() < 0.5;
+      p.style.setProperty('--tx', `${Math.cos(angle) * dist}px`);
+      p.style.setProperty('--ty', `${Math.sin(angle) * dist}px`);
+      if (emoji) {
+        p.className = 'about-particle about-particle--emoji';
+        p.textContent = PARTICLE_EMOJIS[Math.floor(Math.random() * PARTICLE_EMOJIS.length)];
+        p.style.setProperty('--s', `${16 + Math.random() * 14}px`);
+      } else {
+        p.className = 'about-particle';
+        p.style.setProperty('--c', PARTICLE_COLORS[i % PARTICLE_COLORS.length]);
+        p.style.setProperty('--s', `${6 + Math.random() * 9}px`);
+      }
+      p.style.animationDelay = `${Math.random() * 0.15}s`;
+      frag.appendChild(p);
+    }
+    burst.appendChild(frag);
+    wrap.appendChild(burst);
+    setTimeout(() => burst.remove(), 1800);
+  }, [lowPower]);
+
+  // Register one manual spin; fires the easter egg after SPIN_TARGET rapid spins.
+  const registerSpin = useCallback(() => {
+    const now = Date.now();
+    spinCountRef.current = now - lastSpinRef.current > RAPID_GAP ? 1 : spinCountRef.current + 1;
+    lastSpinRef.current = now;
+    if (spinCountRef.current >= SPIN_TARGET) {
+      spinCountRef.current = 0;
+      triggerEasterEgg();
+    }
+  }, [triggerEasterEgg]);
+
+  // Count 90° crossings during a drag (works for touch and mouse).
+  const countDragCrossings = () => {
+    const delta = Math.abs(rotRef.current - dragStartRotRef.current);
+    const crossed = Math.floor(delta / 90);
+    while (crossed > dragCrossedRef.current) {
+      dragCrossedRef.current++;
+      registerSpin();
+    }
+  };
 
   // Smooth 60fps direct DOM auto-rotation when not dragging
   useEffect(() => {
@@ -49,16 +149,19 @@ function AboutUs() {
         boxRef.current.style.transition = 'transform 0.4s ease-out';
         boxRef.current.style.transform = `rotateY(${rotRef.current}deg)`;
       }
+      registerSpin();
     };
 
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, [registerSpin]);
 
   // Touch Drag Handlers
   const handleTouchStart = (e) => {
     startX.current = e.touches[0].clientX;
     startRot.current = rotRef.current;
+    dragStartRotRef.current = rotRef.current;
+    dragCrossedRef.current = 0;
     isDraggingRef.current = true;
     manualUntilRef.current = Date.now() + 5000;
   };
@@ -71,6 +174,7 @@ function AboutUs() {
       boxRef.current.style.transition = 'none';
       boxRef.current.style.transform = `rotateY(${rotRef.current}deg)`;
     }
+    countDragCrossings();
   };
 
   const handleTouchEnd = () => {
@@ -78,12 +182,19 @@ function AboutUs() {
     manualUntilRef.current = Date.now() + 2500;
   };
 
-  // Mouse Drag Handlers (for Desktop & Laptop trackpads)
+  // Mouse Drag Handlers (for Desktop & Laptop trackpads). Mouse move/up are
+  // tracked on `window` so a fast drag can keep spinning past the small cube
+  // bounds — otherwise the gesture dies the moment the cursor leaves the box.
   const handleMouseDown = (e) => {
+    e.preventDefault();
     startX.current = e.clientX;
     startRot.current = rotRef.current;
+    dragStartRotRef.current = rotRef.current;
+    dragCrossedRef.current = 0;
     isDraggingRef.current = true;
     manualUntilRef.current = Date.now() + 5000;
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
   };
 
   const handleMouseMove = (e) => {
@@ -94,11 +205,15 @@ function AboutUs() {
       boxRef.current.style.transition = 'none';
       boxRef.current.style.transform = `rotateY(${rotRef.current}deg)`;
     }
+    countDragCrossings();
   };
 
   const handleMouseUp = () => {
+    if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
     manualUntilRef.current = Date.now() + 2500;
+    window.removeEventListener('mousemove', handleMouseMove);
+    window.removeEventListener('mouseup', handleMouseUp);
   };
 
   return (
@@ -133,7 +248,6 @@ function AboutUs() {
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
             role="group"
             aria-label="FOCES values cube, touch or drag to rotate, use left and right arrow keys"
           >
