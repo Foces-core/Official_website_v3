@@ -118,7 +118,7 @@ function ContactUs() {
   };
 
   return (
-    <div className="contact-container bg-[#101011] flex flex-col min-h-screen justify-between" id="contact">
+    <div className="contact-container bg-[#101011] flex flex-col min-h-screen justify-between scroll-mt-24" id="contact">
       <Navbar />
 
       <div className="font-Grotesk flex-grow flex flex-col justify-center py-10 max-[767px]:pt-[15vh]">
@@ -245,6 +245,7 @@ function ContactUs() {
                     <input
                       type="text"
                       name="name"
+                      id="name"
                       value={formData.name}
                       onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
@@ -263,6 +264,7 @@ function ContactUs() {
                     <input
                       type="email"
                       name="email"
+                      id="email"
                       value={formData.email}
                       onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
@@ -279,6 +281,7 @@ function ContactUs() {
                     <input
                       type="text"
                       name="subject"
+                      id="subject"
                       value={formData.subject}
                       onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
@@ -295,6 +298,7 @@ function ContactUs() {
                     <textarea
                       type="text"
                       name="message"
+                      id="message"
                       placeholder=""
                       value={formData.message}
                       onChange={handleInputChange}

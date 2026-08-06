@@ -13,6 +13,9 @@ import { useLocation } from "react-router-dom";
 
 AOS.init({
   once: true,
+  disable: () =>
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches,
 });
 
 function App() {

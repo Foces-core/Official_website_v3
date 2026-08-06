@@ -14,3 +14,11 @@ body{
     background: #101011;
 }
 
+/* Keyboard focus visibility (accessibility): cyan ring on whatever is
+   focused via keyboard, without affecting mouse/touch users. */
+:focus-visible {
+    outline: 2px solid #22d3ee;
+    outline-offset: 3px;
+    border-radius: 4px;
+}
+

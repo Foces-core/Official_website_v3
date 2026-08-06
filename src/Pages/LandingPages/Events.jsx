@@ -3,53 +3,37 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import { Link } from "react-router-dom";
 import EventTitle from '../../assets/Event.svg';
-import agenticCodingPhoto from '../../assets/agentic_coding.jpg';
-import codingArenaPoster from '../../assets/coding_arena_4_0_insta.jpg';
-import promptParadoxPoster from '../../assets/the_prompt_paradox_2_0_insta.jpg';
-
-const featuredEvents = [
-  {
-    id: 1,
-    title: "Agentic Coding Workshop",
-    tag: "Hands-on Workshop",
-    date: "9th July 2026",
-    image: agenticCodingPhoto,
-    desc: "Empowering developers to build autonomous AI agents using cutting-edge LLMs and agent frameworks."
-  },
-  {
-    id: 2,
-    title: "Coding Arena 4.0",
-    tag: "Bootcamp",
-    date: "27th July - 5th Aug",
-    image: codingArenaPoster,
-    desc: "The ultimate competitive programming and rapid prototyping battlefield at MCA Lab."
-  },
-  {
-    id: 3,
-    title: "The Prompt Paradox 2.0",
-    tag: "AI & Prompt Engineering",
-    date: "21st June 2026",
-    image: promptParadoxPoster,
-    desc: "Test your prompt engineering mastery, solve complex AI puzzles, and break through the digital maze."
-  }
-];
+import { featuredEvents } from '../../data/events.js';
 
 function Events() {
   useEffect(() => {
-    AOS.init({ duration: 400, offset: 50, once: true });
+    AOS.init({
+      duration: 400,
+      offset: 50,
+      once: true,
+      disable: () =>
+        typeof window !== 'undefined' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    });
   }, []);
 
   return (
-    <section className="bg-[#0b0b0c] text-white py-16 px-4 md:px-12 relative overflow-hidden" id="events">
+    <section className="bg-[#0b0b0c] text-white py-16 px-4 md:px-12 relative overflow-hidden scroll-mt-24" id="events">
       {/* Background Decorative Neon Glows */}
       <div className="absolute top-1/4 -left-32 w-96 h-96 bg-cyan-600/15 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-10 -right-32 w-96 h-96 bg-purple-600/15 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="max-w-7xl mx-auto flex flex-col items-center">
-        {/* Section Header */}
+        {/* Section Header — matches the FEATURING heading sizing */}
         <div className="flex flex-col items-center text-center mb-10" data-aos="fade-down" data-aos-duration="300">
-          <img src={EventTitle} alt="Events" className="h-16 md:h-20 w-auto mb-4 filter drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]" />
-          <p className="text-gray-400 text-sm md:text-base max-w-xl font-light tracking-wide">
+          <img
+            src={EventTitle}
+            alt="Events"
+            className="w-72 h-[45%] pl-2.5"
+            data-aos="flip-up"
+            data-aos-duration="750"
+          />
+          <p className="text-gray-400 text-sm md:text-base max-w-xl font-light tracking-wide mt-2">
             Participate in our flagship hackathons, technical workshops, and competitive coding arenas.
           </p>
         </div>

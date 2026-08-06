@@ -3,52 +3,31 @@ import AOS from "aos";
 import "aos/dist/aos.css";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Scrollbar, A11y } from 'swiper/modules';
-import 'swiper/css'; 
+import 'swiper/css';
 import 'swiper/css/pagination';
 import featuring from '../../assets/featuring.svg';
-import codingArenaPoster from '../../assets/coding_arena_4_0_insta.jpg';
-import promptParadoxPoster from '../../assets/the_prompt_paradox_2_0_insta.jpg';
-import agenticCodingPoster from '../../assets/agentic_coding_instagram.jpg';
+import episodeOne from '../../assets/episode-1.png';
+import series from '../../assets/series.png';
+import fourth from '../../assets/fourth.png';
+import mentorReveal from '../../assets/Mentor_reveal.png';
 
-import client from '../../sanityClient.js';
-import { sanityImg } from '../../utils/sanityImage.js';
-import useDeviceProfile from '../../hooks/useLowPower.js';
-
-const fallbackFeatures = [
-  { image: { asset: { url: codingArenaPoster }, alt: "Coding Arena 4.0" } },
-  { image: { asset: { url: promptParadoxPoster }, alt: "The Prompt Paradox 2.0" } },
-  { image: { asset: { url: agenticCodingPoster }, alt: "Agentic Coding" } },
+const echoSlides = [
+  { image: episodeOne, alt: "ECHO - Episode 1" },
+  { image: series, alt: "ECHO Series" },
+  { image: fourth, alt: "ECHO - Fourth" },
+  { image: mentorReveal, alt: "ECHO - Mentor Reveal" },
 ];
 
-
 function Featuring() {
-  const { slowNetwork } = useDeviceProfile();
-
   useEffect(() => {
-    AOS.init({ duration: 1000, once: true }); // AOS initialization
+    AOS.init({
+      duration: 1000,
+      once: true,
+      disable: () =>
+        typeof window !== 'undefined' &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    });
   }, []);
-
-
-  const[feature,setFeature] = useState([]);
-useEffect(() => {
-  client.fetch(
-    `*[_type == "featuring"]{
-      image{
-        asset ->{
-          _id,
-          url
-        },
-        alt
-      },
-      tickets,
-    }`
-  ).then((data) => { // Log fetched data
-    setFeature(data);
-
-  }).catch(() => {
-    // Fall back to local fallbackFeatures array seamlessly
-  });
-}, []);
 
   const [noSlides, setNoSlides] = useState(1);
 
@@ -75,61 +54,42 @@ useEffect(() => {
   }, []);
 
   return (
-    <div className="bg-[#101011] h-fit w-full  flex  flex-col pt-32  overflow-x-hidden pb-20 " id='featuring'>
-      <div className='flex  items-center h-20 pb-9 '>
-    <div className='flex items-center justify-center w-full'>
-   
-    <img className=' w-72 h-[45%] pl-2.5' data-aos="flip-up" data-aos-duration="750" src={featuring}alt="" />
-    </div>
-  </div>
-      <div className=' flex pt-10 justify-center items-center overflow-hidden '>
-      <Swiper
-        modules={[Pagination, Scrollbar, A11y]}
-        slidesPerView={noSlides} 
-        spaceBetween={50}
-        scrollbar={{ draggable: true }}
-        pagination={{
-          clickable: true,
-        }}
-        style={{
-          "--swiper-pagination-color": "white",
-          "--swiper-pagination-bullet-inactive-opacity":".5",
-          "--swiper-pagination-bullet-inactive-color":"white",
-          "--swiper-pagination-top":"90%",
-        }}
-        className="mySwiper bg-transparent px-10 pb-10 h-fit"
-      >
-         {(feature.length > 0 ? feature : fallbackFeatures).map(({ image, tickets }, index) => {
-            // Guard against Sanity docs that come back without an image asset —
-            // fall back to the local poster so the slide never renders blank.
-            const url = image?.asset?.url || fallbackFeatures[index % fallbackFeatures.length]?.image?.asset?.url;
-            const hasValidLink = tickets && tickets !== '#' && tickets.startsWith('http');
-            const imgElement = (
+    <div className="bg-[#101011] h-fit w-full flex flex-col pt-32 overflow-x-hidden pb-20 scroll-mt-24" id='featuring'>
+      <div className='flex items-center h-20 pb-9'>
+        <div className='flex items-center justify-center w-full'>
+          <img className='w-72 h-[45%] pl-2.5' data-aos="flip-up" data-aos-duration="750" src={featuring} alt="" />
+        </div>
+      </div>
+      <div className='flex pt-10 justify-center items-center overflow-hidden'>
+        <Swiper
+          modules={[Pagination, Scrollbar, A11y]}
+          slidesPerView={noSlides}
+          spaceBetween={50}
+          scrollbar={{ draggable: true }}
+          pagination={{
+            clickable: true,
+          }}
+          style={{
+            "--swiper-pagination-color": "white",
+            "--swiper-pagination-bullet-inactive-opacity": ".5",
+            "--swiper-pagination-bullet-inactive-color": "white",
+            "--swiper-pagination-top": "90%",
+          }}
+          className="mySwiper bg-transparent px-10 pb-10 h-fit"
+        >
+          {echoSlides.map(({ image, alt }, index) => (
+            <SwiperSlide key={index} className='px-3 pb-8 pt-4 bg-transparent'>
               <img
                 className='hover:shadow-white hover:shadow-[0_0px_20px_rgba(255,255,255,0.2)] h-full w-full rounded-2xl object-cover hover:scale-105 transition-all duration-300 shadow-xl'
-                src={sanityImg(url, slowNetwork ? 640 : 1000)}
-                alt={image?.alt || 'Featured Event'}
+                src={image}
+                alt={alt}
                 loading="lazy"
                 decoding="async"
                 data-aos="flip-right"
               />
-            );
-
-            return (
-              <SwiperSlide key={index} className='px-3 pb-8 pt-4 bg-transparent'>
-                {hasValidLink ? (
-                  <a href={tickets} target='_blank' rel='noreferrer'>
-                    {imgElement}
-                  </a>
-                ) : (
-                  <div className='cursor-default'>
-                    {imgElement}
-                  </div>
-                )}
-              </SwiperSlide>
-            );
-          })}
-      </Swiper>
+            </SwiperSlide>
+          ))}
+        </Swiper>
       </div>
     </div>
   );
