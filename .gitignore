@@ -11,6 +11,7 @@ node_modules
 dist
 dist-ssr
 test-results
+playwright-report
 *.local
 .env
 .env.local
@@ -36,3 +37,8 @@ test-results
 # Local scratch / session notes
 .freebuff/
 towrok.txt
+.perf-report.json
+suggestions.md
+suggestions-monitor.ps1
+devserver.log
+devserver.err.log

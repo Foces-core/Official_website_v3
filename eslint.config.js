@@ -6,6 +6,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import prettier from 'eslint-config-prettier';
 
 export default [
+  // node_modules and .git are ignored by default in flat config.
   { ignores: ['dist', 'foces-webv23'] },
   js.configs.recommended,
   react.configs.flat.recommended,
