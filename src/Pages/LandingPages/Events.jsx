@@ -1,17 +1,24 @@
-import { Link } from "react-router-dom";
+import { Link } from 'react-router-dom';
 import EventTitle from '../../assets/Event.svg';
 import { featuredEvents } from '../../data/events.js';
 
 function Events() {
   return (
-    <section className="bg-[#0b0b0c] text-white py-16 px-4 md:px-12 relative overflow-hidden scroll-mt-24" id="events">
+    <section
+      className="bg-[#0b0b0c] text-white py-16 px-4 md:px-12 relative overflow-hidden scroll-mt-24"
+      id="events"
+    >
       {/* Background Decorative Neon Glows */}
       <div className="absolute top-1/4 -left-32 w-96 h-96 bg-cyan-600/15 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-10 -right-32 w-96 h-96 bg-purple-600/15 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="max-w-7xl mx-auto flex flex-col items-center">
         {/* Section Header — matches the FEATURING heading sizing */}
-        <div className="flex flex-col items-center text-center mb-10" data-aos="fade-down" data-aos-duration="300">
+        <div
+          className="flex flex-col items-center text-center mb-10"
+          data-aos="fade-down"
+          data-aos-duration="300"
+        >
           <img
             src={EventTitle}
             alt="Events"
@@ -20,7 +27,8 @@ function Events() {
             data-aos-duration="750"
           />
           <p className="text-gray-400 text-sm md:text-base max-w-xl font-light tracking-wide mt-2">
-            Participate in our flagship hackathons, technical workshops, and competitive coding arenas.
+            Participate in our flagship hackathons, technical workshops, and competitive coding
+            arenas.
           </p>
         </div>
 
@@ -77,7 +85,12 @@ function Events() {
           >
             <span>Explore All Events</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M14 5l7 7m0 0l-7 7m7-7H3"
+              />
             </svg>
           </Link>
         </div>

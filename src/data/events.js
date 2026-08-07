@@ -18,7 +18,12 @@ import promptParadoxPoster400 from '../assets/the_prompt_paradox_2_0_insta-400.w
 import promptParadoxPoster800 from '../assets/the_prompt_paradox_2_0_insta-800.webp';
 import { srcset } from '../utils/srcset.js';
 
-const set = (full, s800, s400) => srcset([[full, 1000], [s800, 800], [s400, 400]]);
+const set = (full, s800, s400) =>
+  srcset([
+    [full, 1000],
+    [s800, 800],
+    [s400, 400],
+  ]);
 
 // Single source of truth for events. The home "Events" section and the
 // /events route both render from this list so they can never drift apart.
@@ -31,7 +36,10 @@ export const featuredEvents = [
     image: agenticCodingPhoto,
     imageSet: set(agenticCodingPhoto, agenticCodingPhoto800, agenticCodingPhoto400),
     images: [agenticCodingPoster, agenticCodingPhoto],
-    imageSets: [set(agenticCodingPoster, agenticCodingPoster800, agenticCodingPoster400), set(agenticCodingPhoto, agenticCodingPhoto800, agenticCodingPhoto400)],
+    imageSets: [
+      set(agenticCodingPoster, agenticCodingPoster800, agenticCodingPoster400),
+      set(agenticCodingPhoto, agenticCodingPhoto800, agenticCodingPhoto400),
+    ],
     desc: 'Empowering developers to build autonomous AI agents using cutting-edge LLMs and agent frameworks.',
   },
   {
@@ -42,7 +50,11 @@ export const featuredEvents = [
     image: codingArenaPoster,
     imageSet: set(codingArenaPoster, codingArenaPoster800, codingArenaPoster400),
     images: [codingArenaPoster, codingArenaPhoto, codingArenaPhoto2],
-    imageSets: [set(codingArenaPoster, codingArenaPoster800, codingArenaPoster400), set(codingArenaPhoto, codingArenaPhoto800, codingArenaPhoto400), set(codingArenaPhoto2, codingArenaPhoto2_800, codingArenaPhoto2_400)],
+    imageSets: [
+      set(codingArenaPoster, codingArenaPoster800, codingArenaPoster400),
+      set(codingArenaPhoto, codingArenaPhoto800, codingArenaPhoto400),
+      set(codingArenaPhoto2, codingArenaPhoto2_800, codingArenaPhoto2_400),
+    ],
     desc: 'The ultimate competitive programming and rapid prototyping battlefield at MCA Lab.',
   },
   {

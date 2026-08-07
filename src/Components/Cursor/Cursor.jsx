@@ -124,11 +124,8 @@ function Cursor() {
   }, []);
 
   return (
-    <div className='overflow-hidden z-10'>
-      <div
-        className='cursor-glow max-[767px]:hidden'
-        ref={cursorOutlineRef}
-      />
+    <div className="overflow-hidden z-10">
+      <div className="cursor-glow max-[767px]:hidden" ref={cursorOutlineRef} />
     </div>
   );
 }

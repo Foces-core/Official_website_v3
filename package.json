@@ -5,16 +5,23 @@
   "license": "MIT",
   "type": "module",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.13.0"
   },
   "packageManager": "pnpm@11.3.0",
   "lint-staged": {
-    "*.{js,jsx,cjs,mjs}": "eslint --fix --report-unused-disable-directives"
+    "*.{js,jsx,cjs,mjs}": [
+      "eslint --fix --report-unused-disable-directives",
+      "prettier --write"
+    ],
+    "*.{json,css,md,html}": "prettier --write"
   },
   "scripts": {
     "dev": "vite",
+    "dev:network": "vite --host",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "preview": "vite preview",
     "prepare": "husky"
   },
@@ -31,7 +38,6 @@
     "react-icons": "^4.12.0",
     "react-router-dom": "^6.30.4",
     "react-toastify": "^10.0.5",
-    "reactjs-popup": "^2.0.6",
     "swiper": "^12.1.2",
     "three": "^0.185.1",
     "vanta": "^0.5.24"
@@ -45,6 +51,7 @@
     "autoprefixer": "^10.4.16",
     "chrome-launcher": "^1.2.1",
     "eslint": "^8.45.0",
+    "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-react": "^7.32.2",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
@@ -52,6 +59,7 @@
     "lighthouse": "^13.4.1",
     "lint-staged": "^17.3.0",
     "postcss": "^8.4.31",
+    "prettier": "^3.9.6",
     "puppeteer-core": "^25.5.0",
     "sharp": "^0.35.3",
     "svgo": "^4.0.0",

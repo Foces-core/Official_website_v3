@@ -23,26 +23,40 @@ try {
   await page.setViewport({ width: 1280, height: 800 });
   const errors = [];
   page.on('pageerror', (e) => errors.push('pageerror: ' + e.message));
-  page.on('console', (m) => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
+  page.on('console', (m) => {
+    if (m.type() === 'error') errors.push('console: ' + m.text());
+  });
 
   await page.goto(BASE + '/', { waitUntil: 'networkidle0', timeout: 60000 });
   await sleep(1500);
 
   // skip link
-  const skipLink = await page.$eval('a.skip-link', (el) => ({
-    href: el.getAttribute('href'),
-    text: el.textContent.trim(),
-    top: getComputedStyle(el).top,
-  })).catch(() => null);
-  check('skip-link present + targets #main-content', skipLink && skipLink.href === '#main-content' && skipLink.top === '-48px', JSON.stringify(skipLink));
+  const skipLink = await page
+    .$eval('a.skip-link', (el) => ({
+      href: el.getAttribute('href'),
+      text: el.textContent.trim(),
+      top: getComputedStyle(el).top,
+    }))
+    .catch(() => null);
+  check(
+    'skip-link present + targets #main-content',
+    skipLink && skipLink.href === '#main-content' && skipLink.top === '-48px',
+    JSON.stringify(skipLink),
+  );
 
   const mainContent = await page.$('#main-content').catch(() => null);
   check('#main-content exists on home', !!mainContent);
 
   // roving tabindex: exactly one nav link with tabindex 0
-  const tabIdx = await page.$$eval('#nav-items a', (as) => as.map((a) => a.getAttribute('tabindex')));
+  const tabIdx = await page.$$eval('#nav-items a', (as) =>
+    as.map((a) => a.getAttribute('tabindex')),
+  );
   const zeroCount = tabIdx.filter((t) => t === '0').length;
-  check('roving tabindex: exactly one 0', zeroCount === 1 && tabIdx.length > 0, JSON.stringify(tabIdx));
+  check(
+    'roving tabindex: exactly one 0',
+    zeroCount === 1 && tabIdx.length > 0,
+    JSON.stringify(tabIdx),
+  );
 
   // skip link keyboard: focus reveals it
   await page.focus('body');
@@ -77,20 +91,30 @@ try {
     const linkColor = link ? getComputedStyle(link).color : null;
     return { cls: nav ? nav.className : null, linkColor };
   });
-  check('/events navbar is white (nav-w)', navColor.cls && navColor.cls.includes('nav-w'), JSON.stringify(navColor));
+  check(
+    '/events navbar is white (nav-w)',
+    navColor.cls && navColor.cls.includes('nav-w'),
+    JSON.stringify(navColor),
+  );
 
   const skip2 = await page2.$eval('a.skip-link', (el) => el.getAttribute('href')).catch(() => null);
   check('/events skip-link targets #main-content', skip2 === '#main-content', skip2);
 
   const headingCls = await page2.$eval('#main-content img', (el) => el.className).catch(() => null);
-  check('/events heading auto-scales (w-72 h-[45%])', !!headingCls && headingCls.includes('w-72') && headingCls.includes('h-[45%]'), headingCls);
+  check(
+    '/events heading auto-scales (w-72 h-[45%])',
+    !!headingCls && headingCls.includes('w-72') && headingCls.includes('h-[45%]'),
+    headingCls,
+  );
 
   // ---------- MODAL FOCUS TRAP on /events ----------
   await page2.evaluate(() => window.scrollTo(0, 0));
   await sleep(500);
   // find the gallery poster container (the relative cursor-pointer div)
   const opened = await page2.evaluate(() => {
-    const poster = document.querySelector('div[class*="relative"][class*="rounded-2xl"][class*="cursor-pointer"]');
+    const poster = document.querySelector(
+      'div[class*="relative"][class*="rounded-2xl"][class*="cursor-pointer"]',
+    );
     if (poster) {
       poster.focus();
       poster.click();
@@ -106,9 +130,15 @@ try {
 
   const dialogInfo = await page2.evaluate(() => {
     const d = document.querySelector('[role="dialog"]');
-    return d ? { ariaModal: d.getAttribute('aria-modal'), label: d.getAttribute('aria-label') } : null;
+    return d
+      ? { ariaModal: d.getAttribute('aria-modal'), label: d.getAttribute('aria-label') }
+      : null;
   });
-  check('modal aria-modal=true + label', dialogInfo && dialogInfo.ariaModal === 'true' && !!dialogInfo.label, JSON.stringify(dialogInfo));
+  check(
+    'modal aria-modal=true + label',
+    dialogInfo && dialogInfo.ariaModal === 'true' && !!dialogInfo.label,
+    JSON.stringify(dialogInfo),
+  );
 
   const focusInDialog = await page2.evaluate(() => {
     const d = document.querySelector('[role="dialog"]');
@@ -146,7 +176,9 @@ try {
 
   // reopen + Escape closes
   await page2.evaluate(() => {
-    const poster = document.querySelector('div[class*="relative"][class*="rounded-2xl"][class*="cursor-pointer"]');
+    const poster = document.querySelector(
+      'div[class*="relative"][class*="rounded-2xl"][class*="cursor-pointer"]',
+    );
     if (poster) poster.click();
   });
   await sleep(800);
@@ -157,7 +189,9 @@ try {
   const closed2 = await page2.$('[role="dialog"]').catch(() => null);
   check('Escape closes dialog', !closed2);
 
-  const navErrors = errors.filter((e) => !e.includes('favicon') && !e.includes('Failed to load resource'));
+  const navErrors = errors.filter(
+    (e) => !e.includes('favicon') && !e.includes('Failed to load resource'),
+  );
   check('no console/page errors', navErrors.length === 0, navErrors.slice(0, 3).join(' | '));
 
   console.log('\n=== SUMMARY ===');

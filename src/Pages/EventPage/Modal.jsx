@@ -47,8 +47,8 @@ function Modal({ images, open, onClose }) {
       const focusables = dialog
         ? Array.from(
             dialog.querySelectorAll(
-              'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-            )
+              'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+            ),
           ).filter((el) => !el.hasAttribute('disabled') && el.offsetParent !== null)
         : [];
       if (!focusables.length) return;
@@ -88,21 +88,21 @@ function Modal({ images, open, onClose }) {
   return ReactDOM.createPortal(
     <>
       <div
-        className='fixed top-0 left-0 right-0 bottom-0 bg-black/70 z-50 overflow-x-hidden'
+        className="fixed top-0 left-0 right-0 bottom-0 bg-black/70 z-50 overflow-x-hidden"
         onClick={onClose}
         aria-hidden={!open}
       />
       <div
         ref={dialogRef}
-        className='w-full h-[50%] min-[700px]:w-[90vh] min-[700px]:h-[80vh] flex items-center justify-center fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black rounded-xl p-1 z-50 shadow-black/50 drop-shadow-lg shadow-2xl'
+        className="w-full h-[50%] min-[700px]:w-[90vh] min-[700px]:h-[80vh] flex items-center justify-center fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black rounded-xl p-1 z-50 shadow-black/50 drop-shadow-lg shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           ref={closeBtnRef}
           type="button"
-          className='absolute top-4 right-4 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white text-xl transition-colors duration-200'
+          className="absolute top-4 right-4 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white text-xl transition-colors duration-200"
           onClick={onClose}
-          aria-label='Close gallery'
+          aria-label="Close gallery"
         >
           ✕
         </button>
@@ -122,9 +122,9 @@ function Modal({ images, open, onClose }) {
           className="modal-swiper h-full w-[120%] bg-black p-10 items-center flex justify-center"
         >
           {images.map((url, index) => (
-            <SwiperSlide key={index} className='rounded-full flex justify-center items-center'>
+            <SwiperSlide key={index} className="rounded-full flex justify-center items-center">
               <img
-                className='h-fit w-fit rounded-xl ease-in-out duration-200  bg-cover'
+                className="h-fit w-fit rounded-xl ease-in-out duration-200  bg-cover"
                 src={sanityImg(url, 1400)}
                 alt={`Slide ${index + 1}`}
               />
@@ -133,7 +133,7 @@ function Modal({ images, open, onClose }) {
         </Swiper>
       </div>
     </>,
-    document.getElementById('portal')
+    document.getElementById('portal'),
   );
 }
 

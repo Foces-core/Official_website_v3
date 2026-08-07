@@ -22,7 +22,13 @@ import Devadarsana from '../../assets/devadarsana.webp';
 
 import MeetTheTeam from '../../assets/MeetTheTeam.svg';
 import useDeviceProfile from '../../hooks/useLowPower.js';
-import { syncCarouselKeyboard, subscribeKeyboardArbitration } from '../../utils/keyboardLock.js';
+import {
+  syncCarouselKeyboard,
+  subscribeKeyboardArbitration,
+  registerWidget,
+  markInteracted,
+  rectIsOnScreen,
+} from '../../utils/keyboardLock.js';
 
 const cardData = [
   { name: 'Aleetta Mariya Sebastian', img: Aleetta, review: 'Chairperson' },
@@ -35,7 +41,7 @@ const cardData = [
   { name: 'Sebin Mathew', img: Sebin, review: 'Project Coordinator' },
   { name: 'Anjitha Aravind', img: Anjitha, review: 'Operations Lead' },
   { name: 'Abhirami P', img: Abhirami, review: 'Design Lead' },
-  { name: 'Devadarsana R', img: Devadarsana, review: 'Public Relations Lead' }
+  { name: 'Devadarsana R', img: Devadarsana, review: 'Public Relations Lead' },
 ];
 
 // The cube rotates 90° per face, so Swiper's loop mode can't be used.
@@ -49,6 +55,7 @@ function Execom() {
   const [activeCube, setActiveCube] = React.useState(0);
   const cubeRef = React.useRef(null);
   const cubeWrapRef = React.useRef(null);
+  const carouselRef = React.useRef(null);
   const cubeVisibleRef = React.useRef(true);
   const deskSwiperRef = React.useRef(null);
   const deskWrapRef = React.useRef(null);
@@ -58,13 +65,23 @@ function Execom() {
   // near-black site they read as a black smear, not a shadow. Keep them off.
   const cubeEffectConfig = { shadow: false, slideShadows: false };
 
-  // Arrow-key arbitration (see utils/keyboardLock.js): while the About cube
-  // is on screen — or a nav link/button/input has focus — the desktop
-  // carousel's keyboard is disabled. One keypress never drives two widgets.
+  // Arrow-key arbitration (see utils/keyboardLock.js): register the desktop
+  // carousel as a widget (only counts while it is actually rendered/visible)
+  // and enable its keyboard only while it owns the arrows (on screen + last
+  // interacted). Pointer use on the carousel area marks it.
   React.useEffect(() => {
-    const sync = () => syncCarouselKeyboard(deskSwiperRef.current);
+    const id = 'execom';
+    const unregister = registerWidget(id, () => rectIsOnScreen(deskSwiperRef.current?.el, 60));
+    const sync = () => syncCarouselKeyboard(deskSwiperRef.current, id);
+    const mark = () => markInteracted(id);
     sync();
-    return subscribeKeyboardArbitration(sync);
+    carouselRef.current?.addEventListener('pointerdown', mark, true);
+    const unsub = subscribeKeyboardArbitration(sync);
+    return () => {
+      unregister();
+      unsub();
+      carouselRef.current?.removeEventListener('pointerdown', mark, true);
+    };
   }, []);
 
   // Only run autoplay while a carousel is actually on screen — at 20x CPU
@@ -76,15 +93,18 @@ function Execom() {
     // Mobile cube
     const cubeEl = cubeWrapRef.current;
     const ioCube = cubeEl
-      ? new IntersectionObserver(([entry]) => {
-          cubeVisibleRef.current = entry.isIntersecting;
-          if (!cubeRef.current) return;
-          if (entry.isIntersecting) {
-            if (!lowPower) cubeRef.current.autoplay.start();
-          } else {
-            cubeRef.current.autoplay.stop();
-          }
-        }, { threshold: 0.1 })
+      ? new IntersectionObserver(
+          ([entry]) => {
+            cubeVisibleRef.current = entry.isIntersecting;
+            if (!cubeRef.current) return;
+            if (entry.isIntersecting) {
+              if (!lowPower) cubeRef.current.autoplay.start();
+            } else {
+              cubeRef.current.autoplay.stop();
+            }
+          },
+          { threshold: 0.1 },
+        )
       : null;
     if (ioCube) ioCube.observe(cubeEl);
 
@@ -92,14 +112,17 @@ function Execom() {
     // also stops it from spinning invisibly on phones)
     const deskEl = deskWrapRef.current;
     const ioDesk = deskEl
-      ? new IntersectionObserver(([entry]) => {
-          if (!deskSwiperRef.current) return;
-          if (entry.isIntersecting) {
-            if (!lowPower) deskSwiperRef.current.autoplay.start();
-          } else {
-            deskSwiperRef.current.autoplay.stop();
-          }
-        }, { threshold: 0.1 })
+      ? new IntersectionObserver(
+          ([entry]) => {
+            if (!deskSwiperRef.current) return;
+            if (entry.isIntersecting) {
+              if (!lowPower) deskSwiperRef.current.autoplay.start();
+            } else {
+              deskSwiperRef.current.autoplay.stop();
+            }
+          },
+          { threshold: 0.1 },
+        )
       : null;
     if (ioDesk) ioDesk.observe(deskEl);
 
@@ -110,22 +133,25 @@ function Execom() {
   }, [lowPower]);
 
   return (
-    <section className='min-h-full flex flex-col pt-10 pb-20 overflow-hidden scroll-mt-24' id='execom'>
+    <section
+      className="min-h-full flex flex-col pt-10 pb-20 overflow-hidden scroll-mt-24"
+      id="execom"
+    >
       {/* Section Header */}
-      <div className='flex items-center h-36 pl-6 lg:pl-40 pt-6 pb-12 relative'>
-        <div className='w-5 h-16 bg-[#4f4f54] relative'></div>
+      <div className="flex items-center h-36 pl-6 lg:pl-40 pt-6 pb-12 relative">
+        <div className="w-5 h-16 bg-[#4f4f54] relative"></div>
         <div className="absolute w-46 h-6 pl-2.5">
           <img src={MeetTheTeam} alt="Meet The Team" className="meet-the-team-title" />
         </div>
       </div>
-    
-      <div className='m-auto w-[90%] sm:w-5/6 md:w-4/5 px-2 relative'>
+
+      <div ref={carouselRef} className="m-auto w-[90%] sm:w-5/6 md:w-4/5 px-2 relative">
         {/* Desktop / Tablet Swiper (Multi-card) */}
         <div ref={deskWrapRef} className="hidden sm:block">
           <Swiper
             onSwiper={(swiper) => {
               deskSwiperRef.current = swiper;
-              syncCarouselKeyboard(swiper);
+              syncCarouselKeyboard(swiper, 'execom');
             }}
             modules={[Autoplay, Pagination, Navigation, Keyboard]}
             spaceBetween={20}
@@ -138,13 +164,13 @@ function Execom() {
             breakpoints={{
               640: { slidesPerView: 2, spaceBetween: 20 },
               1024: { slidesPerView: 3, spaceBetween: 24 },
-              1280: { slidesPerView: 4, spaceBetween: 24 }
+              1280: { slidesPerView: 4, spaceBetween: 24 },
             }}
             className="execom-swiper pb-12"
           >
             {cardData.map((d, index) => (
               <SwiperSlide key={index}>
-                <div className='container-execom bg-[#161618] border-box relative rounded-3xl overflow-hidden group'>
+                <div className="container-execom bg-[#161618] border-box relative rounded-3xl overflow-hidden group">
                   <img
                     className={`object-cover ${d.name === 'Sebin Mathew' ? 'object-center' : 'object-top'} w-full h-full card-hover grayscale group-hover:filter-none transition-all duration-300`}
                     src={d.img}
@@ -165,7 +191,9 @@ function Execom() {
         {/* Mobile 3D Cube Swiper — seamless infinite wrap (swipe any direction, forever) */}
         <div ref={cubeWrapRef} className="block sm:hidden max-w-[320px] mx-auto py-4">
           <Swiper
-            onSwiper={(swiper) => { cubeRef.current = swiper; }}
+            onSwiper={(swiper) => {
+              cubeRef.current = swiper;
+            }}
             effect={flatCube ? 'slide' : 'cube'}
             grabCursor={true}
             speed={flatCube ? 250 : 400}
@@ -193,7 +221,7 @@ function Execom() {
           >
             {cubeSlides.map((d, index) => (
               <SwiperSlide key={index}>
-                <div className='container-execom bg-[#161618] border-box relative rounded-3xl overflow-hidden'>
+                <div className="container-execom bg-[#161618] border-box relative rounded-3xl overflow-hidden">
                   <img
                     className={`object-cover ${d.name === 'Sebin Mathew' ? 'object-center' : 'object-top'} w-full h-full`}
                     src={d.img}

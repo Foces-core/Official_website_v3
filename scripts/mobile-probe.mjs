@@ -1,5 +1,9 @@
 import puppeteer from 'puppeteer-core';
-const b = await puppeteer.launch({ executablePath: 'C:/Users/sebin/AppData/Local/Chromium/Application/chrome.exe', headless: 'new', args: ['--no-sandbox'] });
+const b = await puppeteer.launch({
+  executablePath: 'C:/Users/sebin/AppData/Local/Chromium/Application/chrome.exe',
+  headless: 'new',
+  args: ['--no-sandbox'],
+});
 
 // MOBILE /events page
 const p = await b.newPage();
@@ -14,7 +18,7 @@ const info = await p.evaluate(() => {
     navCls: nav ? nav.className : null,
     linkColor: link ? getComputedStyle(link).color : null,
     menuBtn: !!menuBtn,
-    hamburger: menuBtn ? (menuBtn.getAttribute('aria-expanded')) : null,
+    hamburger: menuBtn ? menuBtn.getAttribute('aria-expanded') : null,
   };
 });
 console.log('MOBILE /events nav:', JSON.stringify(info));
@@ -36,7 +40,10 @@ console.log('MOBILE /events menu:', JSON.stringify(mobileMenu));
 // mobile gallery trigger + modal
 await p.evaluate(() => {
   const poster = document.querySelector('div[class*="cursor-pointer"]');
-  if (poster) { poster.focus(); poster.click(); }
+  if (poster) {
+    poster.focus();
+    poster.click();
+  }
 });
 await new Promise((r) => setTimeout(r, 700));
 const mmodal = await p.evaluate(() => {
@@ -52,7 +59,12 @@ await home.goto('http://localhost:4176/', { waitUntil: 'networkidle0', timeout: 
 await new Promise((r) => setTimeout(r, 1500));
 const cursorInfo = await home.evaluate(() => {
   const el = document.querySelector('.cursor-outline, [class*="cursor-outline"]');
-  return el ? { cls: String(el.className).slice(0, 60), pos: el.style.transform || el.style.left + ',' + el.style.top } : null;
+  return el
+    ? {
+        cls: String(el.className).slice(0, 60),
+        pos: el.style.transform || el.style.left + ',' + el.style.top,
+      }
+    : null;
 });
 console.log('cursor-outline el:', JSON.stringify(cursorInfo));
 await home.mouse.move(500, 400);

@@ -1,0 +1,9 @@
+dist
+node_modules
+foces-webv23
+pnpm-lock.yaml
+yarn.lock
+LICENSE
+# Tooling YAML — Prettier's YAML printer would reformat them for no benefit
+.github
+.coderabbit.yaml

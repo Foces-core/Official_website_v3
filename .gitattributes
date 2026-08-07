@@ -14,6 +14,10 @@
 *.cjs   text eol=lf
 *.mjs   text eol=lf
 
+# Husky hook scripts must stay LF on every OS — CRLF breaks sh execution
+# (a trailing \r ends up inside the hook's command arguments).
+.husky/*  text eol=lf
+
 # Lockfiles and images: never treat as text.
 *.png  binary
 *.jpg  binary

@@ -7,11 +7,18 @@ const THROTTLE = parseFloat(process.argv[4] || '4');
 const b = await puppeteer.launch({
   executablePath: 'C:/Users/sebin/AppData/Local/Chromium/Application/chrome.exe',
   headless: 'new',
-  args: ['--no-sandbox', '--disable-extensions', '--disable-component-extensions-with-background-pages', '--user-data-dir=C:/Users/sebin/AppData/Local/Temp/opencode/lh-prof3'],
+  args: [
+    '--no-sandbox',
+    '--disable-extensions',
+    '--disable-component-extensions-with-background-pages',
+    '--user-data-dir=C:/Users/sebin/AppData/Local/Temp/opencode/lh-prof3',
+  ],
 });
 const pg = await b.newPage();
 await pg.setViewport({ width: 412, height: 823 });
-await pg.setUserAgent('Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36');
+await pg.setUserAgent(
+  'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Mobile Safari/537.36',
+);
 await pg.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'no-preference' }]);
 const cdp = await pg.createCDPSession();
 await cdp.send('Emulation.setCPUThrottlingRate', { rate: THROTTLE });
@@ -35,7 +42,9 @@ const longObs = [];
 await pg.evaluateOnNewDocument(() => {
   try {
     new PerformanceObserver((list) => {
-      list.getEntries().forEach((e) => window.__lt = (window.__lt || 0) + Math.max(e.duration - 50, 0));
+      list
+        .getEntries()
+        .forEach((e) => (window.__lt = (window.__lt || 0) + Math.max(e.duration - 50, 0)));
     }).observe({ type: 'longtask', buffered: true });
   } catch {}
 });
@@ -44,7 +53,9 @@ await pg.goto(URL, { waitUntil: 'domcontentloaded', timeout: 120000 });
 await new Promise((r) => setTimeout(r, 5000));
 
 const metrics = await pg.evaluate(() => {
-  const paint = performance.getEntriesByType('paint').reduce((a, e) => ({ ...a, [e.name]: Math.round(e.startTime) }), {});
+  const paint = performance
+    .getEntriesByType('paint')
+    .reduce((a, e) => ({ ...a, [e.name]: Math.round(e.startTime) }), {});
   const res = performance.getEntriesByType('resource');
   const js = res.filter((e) => /\.js$/.test(e.name));
   const fonts = res.filter((e) => /\.woff2$/.test(e.name));
@@ -62,14 +73,28 @@ const metrics = await pg.evaluate(() => {
     obsTBT: Math.round(window.__lt || 0),
   };
 });
-metrics.TBTms = Math.round(longTasks.map((t) => t.duration - 50).filter((d) => d > 0).reduce((a, d) => a + d, 0));
+metrics.TBTms = Math.round(
+  longTasks
+    .map((t) => t.duration - 50)
+    .filter((d) => d > 0)
+    .reduce((a, d) => a + d, 0),
+);
 metrics.longTaskCount = longTasks.length;
 
 // are the woff2 fonts actually delaying first paint? check font request start vs FCP
 const fontTiming = await pg.evaluate(() => {
-  const f = performance.getEntriesByType('resource').filter((e) => /\.woff2$/.test(e.name)).map((e) => ({ n: e.name.split('/').pop(), start: Math.round(e.startTime), dur: Math.round(e.duration) }));
+  const f = performance
+    .getEntriesByType('resource')
+    .filter((e) => /\.woff2$/.test(e.name))
+    .map((e) => ({
+      n: e.name.split('/').pop(),
+      start: Math.round(e.startTime),
+      dur: Math.round(e.duration),
+    }));
   return f;
 });
 
-console.log(JSON.stringify({ run: NAME, throttle: THROTTLE, ...metrics, fonts: fontTiming }, null, 1));
+console.log(
+  JSON.stringify({ run: NAME, throttle: THROTTLE, ...metrics, fonts: fontTiming }, null, 1),
+);
 await b.close();

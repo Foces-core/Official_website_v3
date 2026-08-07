@@ -15,12 +15,12 @@ function EventCardMobile({ Events, priority }) {
 
   return (
     <div
-      className='w-[92%] max-w-sm bg-[#161618]/90 border border-white/10 rounded-2xl my-6 p-5 flex flex-col gap-4 shadow-xl'
-      data-aos='fade-up'
-      data-aos-duration='1000'
+      className="w-[92%] max-w-sm bg-[#161618]/90 border border-white/10 rounded-2xl my-6 p-5 flex flex-col gap-4 shadow-xl"
+      data-aos="fade-up"
+      data-aos-duration="1000"
     >
       <div
-        className='relative w-full rounded-xl overflow-hidden bg-[#0b0b0c] border border-white/10 shadow-md cursor-pointer group'
+        className="relative w-full rounded-xl overflow-hidden bg-[#0b0b0c] border border-white/10 shadow-md cursor-pointer group"
         role="button"
         tabIndex={0}
         aria-haspopup="dialog"
@@ -41,26 +41,22 @@ function EventCardMobile({ Events, priority }) {
             alt={Events.name}
             loading={priority ? 'eager' : 'lazy'}
             decoding="async"
-            className='w-full h-auto object-contain bg-[#0b0b0c]'
+            className="w-full h-auto object-contain bg-[#0b0b0c]"
           />
         )}
-        <div className='absolute bottom-2 right-2 bg-cyan-600/90 text-white text-xs font-semibold px-2.5 py-1 rounded-full backdrop-blur-sm'>
+        <div className="absolute bottom-2 right-2 bg-cyan-600/90 text-white text-xs font-semibold px-2.5 py-1 rounded-full backdrop-blur-sm">
           {images.length} Photos
         </div>
       </div>
 
       <Modal images={images} open={Expanding} onClose={() => setExpanding(false)} />
 
-      <div className='text-white space-y-3'>
-        <h3 className='text-2xl font-bold tracking-tight text-white'>
-          {Events.name}
-        </h3>
-        <div className='text-gray-300 text-sm leading-relaxed'>
+      <div className="text-white space-y-3">
+        <h3 className="text-2xl font-bold tracking-tight text-white">{Events.name}</h3>
+        <div className="text-gray-300 text-sm leading-relaxed">
           <p>{Events.desc}</p>
         </div>
-        <div className='text-cyan-400 font-medium text-xs'>
-          📅 {Events.date}
-        </div>
+        <div className="text-cyan-400 font-medium text-xs">📅 {Events.date}</div>
       </div>
     </div>
   );

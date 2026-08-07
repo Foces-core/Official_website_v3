@@ -1,5 +1,9 @@
 import puppeteer from 'puppeteer-core';
-const b = await puppeteer.launch({ executablePath: 'C:/Users/sebin/AppData/Local/Chromium/Application/chrome.exe', headless: 'new', args: ['--no-sandbox'] });
+const b = await puppeteer.launch({
+  executablePath: 'C:/Users/sebin/AppData/Local/Chromium/Application/chrome.exe',
+  headless: 'new',
+  args: ['--no-sandbox'],
+});
 const out = [];
 
 // HOME PAGE: Featuring carousel
@@ -16,7 +20,9 @@ const feat = await p.evaluate(() => {
   const sec = document.getElementById('featuring');
   const swiper = sec.querySelector('.swiper');
   const slides = sec.querySelectorAll('.swiper-slide');
-  const arrows = Array.from(sec.querySelectorAll('button[aria-label]')).map((b) => b.getAttribute('aria-label'));
+  const arrows = Array.from(sec.querySelectorAll('button[aria-label]')).map((b) =>
+    b.getAttribute('aria-label'),
+  );
   const img = sec.querySelector('.swiper-slide img');
   const imgCls = img ? img.className : '';
   return {
@@ -70,7 +76,11 @@ await p.evaluate(() => {
   const sec = document.getElementById('featuring');
   const img = sec.querySelector('.swiper-slide-active img');
   img.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
-  img.classList.add('hover\\:shadow-\\[0_0_25px_6px_rgba\\(255\\,255\\,255\\,0\\.25\\)\\]', 'hover\\:ring-white\\/50', 'hover\\:scale-105');
+  img.classList.add(
+    'hover\\:shadow-\\[0_0_25px_6px_rgba\\(255\\,255\\,255\\,0\\.25\\)\\]',
+    'hover\\:ring-white\\/50',
+    'hover\\:scale-105',
+  );
 });
 await new Promise((r) => setTimeout(r, 300));
 const hoverState = await p.evaluate(() => {
@@ -104,8 +114,13 @@ console.log('EVENTS register buttons:', JSON.stringify(reg));
 
 // open modal, check loop + arrows
 await p2.evaluate(() => {
-  const poster = document.querySelector('div[class*="relative"][class*="rounded-2xl"][class*="cursor-pointer"]');
-  if (poster) { poster.focus(); poster.click(); }
+  const poster = document.querySelector(
+    'div[class*="relative"][class*="rounded-2xl"][class*="cursor-pointer"]',
+  );
+  if (poster) {
+    poster.focus();
+    poster.click();
+  }
 });
 await new Promise((r) => setTimeout(r, 1000));
 const modal = await p2.evaluate(() => {

@@ -1,38 +1,45 @@
 .Items {
-  font-family: "Inter Variable", sans-serif;
+    font-family: 'Inter Variable', sans-serif;
 }
 
 /* Full-screen mobile menu overlay. 100vh fallback, then 100dvh where
    supported, so the collapsing URL bar doesn't leave a gap at the bottom. */
 .nav-overlay {
-  height: 100vh;
-  height: 100dvh;
+    height: 100vh;
+    height: 100dvh;
 }
 
-.nav-w a, .nav-b a {
-    padding: .5em .8em;
+.nav-w a,
+.nav-b a {
+    padding: 0.5em 0.8em;
     position: relative;
     text-decoration: none;
     font-size: clamp(0.78rem, 1vw, 1.02rem);
-  }
+}
 
-.nav-w *, .nav-b * {
+.nav-w *,
+.nav-b * {
     box-sizing: border-box;
     /* Hover feedback should feel snappy — 0.2s and only transition the
        properties that actually change (color/transform), never `all`. */
-    transition: color .2s ease, transform .2s ease, background-color .2s ease, border-color .2s ease, opacity .2s ease;
-  }
+    transition:
+        color 0.2s ease,
+        transform 0.2s ease,
+        background-color 0.2s ease,
+        border-color 0.2s ease,
+        opacity 0.2s ease;
+}
 
 .nav-w a::before,
 .nav-w a::after,
 .nav-b a::before,
-.nav-b a::after{
-  content: '';
-  height: 14px;
-  width: 14px;
-  position: absolute;
-  transition: all .2s ease;
-  opacity: 0;
+.nav-b a::after {
+    content: '';
+    height: 14px;
+    width: 14px;
+    position: absolute;
+    transition: all 0.2s ease;
+    opacity: 0;
 }
 
 .nav-w a::before {
@@ -42,71 +49,71 @@
     border-top: 4px solid #fff;
     border-right: 4px solid #fff;
     transform: translate(-100%, 50%);
-  }
+}
 
-  .nav-b a::before {
+.nav-b a::before {
     content: '';
     right: 0;
     top: 0;
     border-top: 4px solid #000;
     border-right: 4px solid #000;
     transform: translate(-100%, 50%);
-  }
-  
-  .nav-w a:after {
+}
+
+.nav-w a:after {
     content: '';
     left: 0;
     bottom: 0;
     border-bottom: 4px solid #fff;
     border-left: 4px solid #fff;
-    transform: translate(100%, -100%)
-  }
+    transform: translate(100%, -100%);
+}
 
-  .nav-b a:after {
+.nav-b a:after {
     content: '';
     left: 0;
     bottom: 0;
     border-bottom: 4px solid #000;
     border-left: 4px solid #000;
-    transform: translate(100%, -100%)
-  }
-  
-  .nav-w a:hover:before,
-  .nav-w a:hover:after,
-  .nav-b a:hover:before,
-  .nav-b a:hover:after,
-  .nav-w a:focus-visible:before,
-  .nav-w a:focus-visible:after,
-  .nav-b a:focus-visible:before,
-  .nav-b a:focus-visible:after {
-    transform: translate(0,0);
+    transform: translate(100%, -100%);
+}
+
+.nav-w a:hover:before,
+.nav-w a:hover:after,
+.nav-b a:hover:before,
+.nav-b a:hover:after,
+.nav-w a:focus-visible:before,
+.nav-w a:focus-visible:after,
+.nav-b a:focus-visible:before,
+.nav-b a:focus-visible:after {
+    transform: translate(0, 0);
     opacity: 1;
-  }
-  
-  .nav-w a:hover {
+}
+
+.nav-w a:hover {
     color: #fff;
     scale: 1.1;
-  }
+}
 
-  .nav-b a:hover {
+.nav-b a:hover {
     color: #000;
     scale: 1.1;
-  }
+}
 
-  /* Keyboard focus on a nav link shows the corner brackets AND the cyan
+/* Keyboard focus on a nav link shows the corner brackets AND the cyan
      focus ring, so the outline is visible on both the light and dark
      navbar variants. */
-  .nav-w a:focus-visible,
-  .nav-b a:focus-visible {
+.nav-w a:focus-visible,
+.nav-b a:focus-visible {
     color: #22d3ee;
-  }
+}
 
 /* Join FOCES CTA hover — only on devices that genuinely hover (mouse/trackpad).
    Touch devices never get a sticky :hover (which would leave the button cyan),
    so they rely on the React pressed-flash that flips back after ~1.2s. */
 @media (hover: hover) and (pointer: fine) {
-  .contact:hover {
-    background-color: #22d3ee;
-    color: #000;
-  }
+    .contact:hover {
+        background-color: #22d3ee;
+        color: #000;
+    }
 }

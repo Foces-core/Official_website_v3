@@ -45,6 +45,20 @@ updates:
       - dependency-name: "three"
         update-types: ["version-update:semver-major"]
 
+  # Legacy Sanity studio (foces-webv23) — kept in the repo for content
+  # tooling, but it's a standalone Yarn project, not part of the pnpm build.
+  # Blanket-ignore it so Dependabot's scheduled update job stops failing there
+  # (it was trying to bump transitive deps like vite in that stale lockfile).
+  - package-ecosystem: "npm"
+    directory: "/foces-webv23"
+    schedule:
+      interval: "weekly"
+    labels:
+      - "dependencies"
+      - "bot"
+    ignore:
+      - dependency-name: "*"
+
   # Keep GitHub Actions themselves updated.
   - package-ecosystem: "github-actions"
     directory: "/"
