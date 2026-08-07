@@ -18,6 +18,7 @@ import mentorReveal from '../../assets/Mentor_reveal.webp';
 import mentorReveal480 from '../../assets/Mentor_reveal-480.webp';
 import mentorReveal960 from '../../assets/Mentor_reveal-960.webp';
 import { srcset } from '../../utils/srcset.js';
+import { isCubeKeyboardActive, subscribeCubeKeyboard } from '../../utils/keyboardLock.js';
 import './Featuring.css';
 
 const echoSlides = [
@@ -53,6 +54,19 @@ function Featuring() {
     };
   }, []);
 
+  // Arrow-key arbitration: while the About cube is on screen, its arrow keys
+  // win and the carousel's keyboard is disabled (see utils/keyboardLock.js).
+  // One keypress never drives two widgets at once.
+  useEffect(() => {
+    const sync = (active) => {
+      if (!swiperRef.current?.keyboard) return;
+      if (active) swiperRef.current.keyboard.disable();
+      else swiperRef.current.keyboard.enable();
+    };
+    sync(isCubeKeyboardActive()); // cube may already be locked before this runs
+    return subscribeCubeKeyboard(sync);
+  }, []);
+
   return (
     <div className="bg-[#101011] h-fit w-full flex flex-col pt-32 overflow-x-hidden pb-20 scroll-mt-24" id='featuring'>
       <div className='flex items-center h-20 pb-9'>
@@ -77,7 +91,10 @@ function Featuring() {
           loop={true}
           scrollbar={{ draggable: true }}
           keyboard={{ enabled: true, onlyInViewport: true }}
-          onSwiper={(swiper) => { swiperRef.current = swiper; }}
+          onSwiper={(swiper) => {
+            swiperRef.current = swiper;
+            if (isCubeKeyboardActive()) swiper.keyboard?.disable();
+          }}
           pagination={{
             clickable: true,
           }}
