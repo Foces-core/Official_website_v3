@@ -1,16 +1,16 @@
 import { useEffect, useRef, useCallback } from 'react';
-import '../../index.css';
 import Aboutus from '../../assets/about us.svg';
 import '../AboutUs/AboutUs.css';
 import useDeviceProfile from '../../hooks/useLowPower.js';
 
-// Easter egg: if the user spins the cube 11 times in RAPID succession (via
-// keyboard arrows, a fast drag in any direction, or the release wind-down), a
-// celebration fires. A spin = one 90° of *combined* rotation (X + Y). A gap
-// longer than RAPID_GAP between spins resets the counter, so casual rotating
-// never triggers it — only deliberate rapid spinning.
-const RAPID_GAP = 1000;
-const SPIN_TARGET = 11;
+// Easter egg: if the user spins the cube 20 times in RAPID succession (via
+// keyboard arrows or a fast horizontal drag), a celebration fires. A spin =
+// one 90° of Y rotation. A gap longer than RAPID_GAP between spins resets
+// the counter, so casual rotating never triggers it — only deliberate rapid
+// spinning. Wind-down inertia deliberately does NOT count: only spins the
+// user actively drives. Hard to earn on purpose.
+const RAPID_GAP = 800;
+const SPIN_TARGET = 20;
 
 // Drag + wind-down tuning
 const DRAG_SENS = 0.6;
@@ -23,25 +23,30 @@ const PARTICLE_COLORS = ['#22d3ee', '#a855f7', '#f472b6', '#facc15', '#4ade80', 
 const PARTICLE_EMOJIS = ['✨', '🎉', '⭐', '🔥', '💥', '🚀'];
 const EASTER_MESSAGES = [
   'DARE to spin! 🎉',
-  '11 spins? You DEVELOP-ded that. 😎',
+  `${SPIN_TARGET} spins? You DEVELOP-ded that. 😎`,
   'DOMINATE the cube! 🔥',
   'You FOCES-inated the cube ✨',
+  'Spin champion! 🌀',
+  'The cube is dizzy now! 😵‍💫',
+  'Rapid-fire spinner! ⚡',
+  `${SPIN_TARGET} spins? The cube can't keep up! 💫`,
+  'All spins, no glitches — clean code! 🧹',
+  'You spin me right round! 💿',
+  'The cube bows to you. 🙇',
+  'Peak FOCES performance! 🏆',
 ];
 
 function AboutUs() {
-  const { lowPower } = useDeviceProfile();
+  const { lowPower, slowNetwork } = useDeviceProfile();
   const boxRef = useRef(null);
   const rotXRef = useRef(0);
   const rotYRef = useRef(0);
 
   // Drag state
   const startX = useRef(0);
-  const startY = useRef(0);
-  const startRotX = useRef(0);
   const startRotY = useRef(0);
-  const lastMove = useRef({ t: 0, x: 0, y: 0 });
-  const velX = useRef(0); // deg/ms while dragging, deg/frame during wind-down
-  const velY = useRef(0);
+  const lastMove = useRef({ t: 0, y: 0 });
+  const velY = useRef(0); // deg/ms while dragging, deg/frame during wind-down
   const isDraggingRef = useRef(false);
 
   // Wind-down / auto-rotation
@@ -123,8 +128,7 @@ function AboutUs() {
     }
   }, [triggerEasterEgg]);
 
-  // Accumulate *combined* (X + Y) angular travel; every full 90° = one spin,
-  // no matter which axis the motion came from.
+  // Accumulate horizontal (Y-axis) angular travel; every full 90° = one spin.
   const accumulateAngle = useCallback(
     (deg) => {
       accumAngleRef.current += deg;
@@ -164,12 +168,11 @@ function AboutUs() {
     manualUntilRef.current = Date.now() + 6000;
     if (windRaf.current != null) cancelAnimationFrame(windRaf.current);
     const step = () => {
-      rotXRef.current += velX.current;
+      // Y-axis only — spin decays on the horizontal plane. Inertia spins do
+      // NOT count toward the easter egg; only deliberate drags/keys do.
       rotYRef.current += velY.current;
-      velX.current *= WIND_FRICTION;
       velY.current *= WIND_FRICTION;
-      accumulateAngle(Math.hypot(velX.current, velY.current));
-      const speed = Math.hypot(velX.current, velY.current);
+      const speed = Math.abs(velY.current);
       if (speed < MIN_WIND_SPEED) {
         snapToFace();
         return;
@@ -178,7 +181,7 @@ function AboutUs() {
       windRaf.current = requestAnimationFrame(step);
     };
     windRaf.current = requestAnimationFrame(step);
-  }, [accumulateAngle, applyTransform, snapToFace]);
+  }, [applyTransform, snapToFace]);
 
   const stopWindDown = useCallback(() => {
     windingRef.current = false;
@@ -190,7 +193,7 @@ function AboutUs() {
 
   // Smooth 60fps direct-DOM auto-rotation when idle (pauses while offscreen).
   useEffect(() => {
-    if (lowPower) return;
+    if (lowPower || slowNetwork) return;
 
     let animFrame = null;
     let visible = true;
@@ -205,10 +208,10 @@ function AboutUs() {
       ) {
         const el = boxRef.current;
         if (el) {
+          // Left/right spin only — no X-axis wobble.
           rotYRef.current = (rotYRef.current + 0.5) % 360;
-          rotXRef.current = 6 * Math.sin(performance.now() / 4000);
           el.style.transition = 'none';
-          el.style.transform = `rotateX(${rotXRef.current}deg) rotateY(${rotYRef.current}deg)`;
+          el.style.transform = `rotateX(0deg) rotateY(${rotYRef.current}deg)`;
         }
       }
       if (visible) {
@@ -238,13 +241,13 @@ function AboutUs() {
       if (observer) observer.disconnect();
       stopWindDown();
     };
-  }, [lowPower, stopWindDown]);
+  }, [lowPower, slowNetwork, stopWindDown]);
 
-  // Keyboard navigation — all four arrows, all directions.
+  // Keyboard navigation — left/right arrows only (no vertical spin).
   useEffect(() => {
+    if (slowNetwork) return; // cube isn't rendered on slow networks
     const onKey = (e) => {
-      const dirs = { ArrowLeft: 1, ArrowRight: 1, ArrowUp: 1, ArrowDown: 1 };
-      if (!dirs[e.key]) return;
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
       const el = boxRef.current;
       if (!el) return;
       const rect = el.getBoundingClientRect();
@@ -253,10 +256,7 @@ function AboutUs() {
       e.preventDefault();
       stopWindDown();
       el.style.transition = 'transform 0.4s ease-out';
-      if (e.key === 'ArrowLeft') rotYRef.current -= 90;
-      else if (e.key === 'ArrowRight') rotYRef.current += 90;
-      else if (e.key === 'ArrowUp') rotXRef.current += 90;
-      else rotXRef.current -= 90;
+      rotYRef.current += e.key === 'ArrowRight' ? 90 : -90;
       applyTransform();
       manualUntilRef.current = Date.now() + 3000;
       registerSpin();
@@ -264,7 +264,7 @@ function AboutUs() {
 
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [applyTransform, registerSpin, stopWindDown]);
+  }, [applyTransform, registerSpin, slowNetwork, stopWindDown]);
 
   // Cancel any wind-down rAF on unmount.
   useEffect(
@@ -275,7 +275,7 @@ function AboutUs() {
   );
 
   // ---- Shared drag helpers (touch + mouse) ----
-  const beginDrag = useCallback((clientX, clientY) => {
+  const beginDrag = useCallback((clientX) => {
     isDraggingRef.current = true;
     windingRef.current = false;
     if (windRaf.current != null) {
@@ -283,29 +283,24 @@ function AboutUs() {
       windRaf.current = null;
     }
     startX.current = clientX;
-    startY.current = clientY;
-    startRotX.current = rotXRef.current;
     startRotY.current = rotYRef.current;
-    lastMove.current = { t: Date.now(), x: rotXRef.current, y: rotYRef.current };
-    velX.current = 0;
+    lastMove.current = { t: Date.now(), y: rotYRef.current };
     velY.current = 0;
     manualUntilRef.current = Date.now() + 60000;
     if (boxRef.current) boxRef.current.style.transition = 'none';
   }, []);
 
   const moveDrag = useCallback(
-    (clientX, clientY) => {
+    (clientX) => {
       if (!isDraggingRef.current) return;
       const now = Date.now();
-      const nx = startRotX.current + (clientY - startY.current) * DRAG_SENS;
+      // Horizontal movement only — vertical drags are ignored (left/right spin).
       const ny = startRotY.current + (clientX - startX.current) * DRAG_SENS;
       const dt = Math.max(now - lastMove.current.t, 1);
       const k = 0.4;
-      velX.current = velX.current * (1 - k) + ((nx - lastMove.current.x) / dt) * k;
       velY.current = velY.current * (1 - k) + ((ny - lastMove.current.y) / dt) * k;
-      accumulateAngle(Math.hypot(nx - lastMove.current.x, ny - lastMove.current.y));
-      lastMove.current = { t: now, x: nx, y: ny };
-      rotXRef.current = nx;
+      accumulateAngle(Math.abs(ny - lastMove.current.y));
+      lastMove.current = { t: now, y: ny };
       rotYRef.current = ny;
       applyTransform();
     },
@@ -317,12 +312,10 @@ function AboutUs() {
     isDraggingRef.current = false;
 
     // Convert release velocity from deg/ms to deg/frame, cap it, then wind down.
-    const vx = velX.current * (1000 / 60);
     const vy = velY.current * (1000 / 60);
-    const speed = Math.hypot(vx, vy);
+    const speed = Math.abs(vy);
     if (speed > 0.15) {
       const s = Math.min(speed, MAX_WIND_SPEED) / speed;
-      velX.current = vx * s;
       velY.current = vy * s;
       startWindDown();
     } else {
@@ -332,11 +325,11 @@ function AboutUs() {
 
   // Touch handlers
   const handleTouchStart = (e) => {
-    beginDrag(e.touches[0].clientX, e.touches[0].clientY);
+    beginDrag(e.touches[0].clientX);
   };
   const handleTouchMove = (e) => {
     if (!isDraggingRef.current) return;
-    moveDrag(e.touches[0].clientX, e.touches[0].clientY);
+    moveDrag(e.touches[0].clientX);
   };
   const handleTouchEnd = () => endDrag();
 
@@ -347,8 +340,8 @@ function AboutUs() {
   const handleMouseDown = (e) => {
     if (e.button !== 0) return;
     e.preventDefault();
-    beginDrag(e.clientX, e.clientY);
-    const move = (ev) => moveDrag(ev.clientX, ev.clientY);
+    beginDrag(e.clientX);
+    const move = (ev) => moveDrag(ev.clientX);
     const up = () => {
       endDrag();
       window.removeEventListener('mousemove', move);
@@ -385,33 +378,30 @@ function AboutUs() {
           </p>
         </div>
 
-        <div id="mainDiv-about" className="select-none cursor-grab active:cursor-grabbing">
-          <div
-            id="boxDiv-about"
-            ref={boxRef}
-            style={{
-              transform: 'rotateX(0deg) rotateY(0deg)',
-              animation: 'none',
-              touchAction: 'none',
-            }}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onTouchCancel={handleTouchEnd}
-            onMouseDown={handleMouseDown}
-            role="group"
-            aria-label="FOCES values cube, rotate it with arrow keys or by dragging in any direction"
-          >
-            <div id="front-about" className='font-about text-shadow-white'>DARE</div>
-            <div id="back-about" className='font-about text-shadow-white'>DEVELOP</div>
-            <div id="left-about" className='font-about text-shadow-white'>DOMINATE</div>
-            <div id="right-about" className='font-about text-shadow-white'>FOCES</div>
-            <div id="top-about" className='font-about text-shadow-white'>ICFOSS</div>
-            <div id="bottom-about" className='font-about text-shadow-white'>CEC</div>
+        {!slowNetwork && (
+          <div id="mainDiv-about" className="select-none cursor-grab active:cursor-grabbing">
+            <div
+              id="boxDiv-about"
+              ref={boxRef}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onTouchCancel={handleTouchEnd}
+              onMouseDown={handleMouseDown}
+              role="group"
+              aria-label="FOCES values cube, spin it left or right with the arrow keys or by dragging horizontally"
+            >
+              <div id="front-about" className='font-about text-shadow-white'>DARE</div>
+              <div id="back-about" className='font-about text-shadow-white'>DEVELOP</div>
+              <div id="left-about" className='font-about text-shadow-white'>DOMINATE</div>
+              <div id="right-about" className='font-about text-shadow-white'>FOCES</div>
+              <div id="top-about" className='font-about text-shadow-white'>ICFOSS</div>
+              <div id="bottom-about" className='font-about text-shadow-white'>CEC</div>
 
-            <div className="shadow-about"></div>
+              <div className="shadow-about"></div>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -12,9 +12,19 @@ import "aos/dist/aos.css";
 import { useLocation } from "react-router-dom";
 import { aosDisabled } from "./utils/aosGating.js";
 
+// AOS hides [data-aos] elements (opacity/transform) until they scroll into
+// view. Init runs at module scope, before React renders, so when the animation
+// gate is active (reduced motion / low-end device) AOS finds no elements to
+// unhide and never registers its observer — leaving every [data-aos] element
+// stuck invisible. So when gated, we tag <body> and CSS force-shows all
+// [data-aos] content (including anything mounted later, e.g. lazy routes).
+const aosGated = aosDisabled();
+if (document.body) {
+  document.body.classList.toggle('aos-disabled', aosGated);
+}
 AOS.init({
   once: true,
-  disable: aosDisabled,
+  disable: aosGated,
 });
 
 function App() {

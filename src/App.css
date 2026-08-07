@@ -1,9 +1,33 @@
+/* Scrollbars are hidden for the dark themed look (design choice). */
 *::-webkit-scrollbar {
     display: none;
 }
 
 * {
-    -ms-overflow-style: none; 
+    -ms-overflow-style: none;
     scrollbar-width: none;
-    scroll-behavior: smooth;
+}
+
+/* Note: `scroll-behavior: smooth` was intentionally removed — smooth scrolling
+   is driven explicitly by JS (scrollIntoView / scrollTo with behavior:'smooth'),
+   so the global CSS rule was redundant and forced every scroll (including
+   programmatic instant jumps) to animate. */
+
+/* AOS safety net: never leave [data-aos] content stuck invisible. When the
+   animation gate is on (reduced motion / low-end device), AOS strips the
+   data-aos attributes from elements present at init; this rule force-shows
+   any [data-aos] elements that mount later (e.g. lazy-loaded routes), and
+   the media query covers OS-level reduced-motion as a final backstop. */
+body.aos-disabled [data-aos] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [data-aos] {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
+    }
 }
