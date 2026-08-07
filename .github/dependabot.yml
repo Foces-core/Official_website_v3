@@ -39,25 +39,7 @@ updates:
           - "postcss*"
           - "autoprefixer"
           - "vite-plugin-*"
-    # three.js is a fragile peer of vanta — surface major bumps as review
-    # opportunities instead of auto-PRs.
-    ignore:
-      - dependency-name: "three"
-        update-types: ["version-update:semver-major"]
-
-  # Legacy Sanity studio (foces-webv23) — kept in the repo for content
-  # tooling, but it's a standalone Yarn project, not part of the pnpm build.
-  # Blanket-ignore it so Dependabot's scheduled update job stops failing there
-  # (it was trying to bump transitive deps like vite in that stale lockfile).
-  - package-ecosystem: "npm"
-    directory: "/foces-webv23"
-    schedule:
-      interval: "weekly"
-    labels:
-      - "dependencies"
-      - "bot"
-    ignore:
-      - dependency-name: "*"
+    # No ignores: surface every bump as a PR for review.
 
   # Keep GitHub Actions themselves updated.
   - package-ecosystem: "github-actions"

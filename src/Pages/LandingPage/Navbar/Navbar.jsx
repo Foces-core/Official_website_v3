@@ -72,7 +72,9 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 767);
+      const mobile = window.innerWidth <= 767;
+      setIsMobile(mobile);
+      setShowItems(!mobile);
     };
 
     handleResize();
@@ -144,12 +146,7 @@ export default function Navbar() {
     }
   };
 
-  useEffect(() => {
-    setShowItems(!isMobile);
-  }, [isMobile]);
-
-  // While the mobile menu is open, lock the page behind it: no scrolling and
-  // no interaction with the content under the full-screen overlay.
+  // While the mobile menu is open, lock the page behind it: no scrolling and  // no interaction with the content under the full-screen overlay.
   useEffect(() => {
     if (!isMobile || !showItems) return;
     const prevOverflow = document.body.style.overflow;
