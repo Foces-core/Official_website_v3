@@ -43,7 +43,7 @@
     "vanta": "^0.5.24"
   },
   "devDependencies": {
-    "@commitlint/cli": "^19.8.0",
+    "@commitlint/cli": "^21.2.1",
     "@commitlint/config-conventional": "^21.2.0",
     "@types/react": "^18.2.15",
     "@types/react-dom": "^18.2.7",
