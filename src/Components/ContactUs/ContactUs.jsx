@@ -1,27 +1,27 @@
-import { useState } from "react";
-import { FaFacebookF } from "react-icons/fa6";
-import { FaInstagram } from "react-icons/fa6";
-import { FaXTwitter } from "react-icons/fa6";
-import { FaLinkedinIn } from "react-icons/fa";
-import { FaLocationDot } from "react-icons/fa6";
-import { FaPhoneAlt } from "react-icons/fa";
-import { IoSend } from "react-icons/io5";
-import { IoMail } from "react-icons/io5";
-import emailjs from "emailjs-com";
-import Contactus from "../../assets/Contact us.svg";
-import Title from "../../assets/title.svg";
-import Navbar from "../../Pages/LandingPage/Navbar/Navbar";
-import Footer from "../../Pages/LandingPage/Footer/Footer";
+import { useState } from 'react';
+import { FaFacebookF } from 'react-icons/fa6';
+import { FaInstagram } from 'react-icons/fa6';
+import { FaXTwitter } from 'react-icons/fa6';
+import { FaLinkedinIn } from 'react-icons/fa';
+import { FaLocationDot } from 'react-icons/fa6';
+import { FaPhoneAlt } from 'react-icons/fa';
+import { IoSend } from 'react-icons/io5';
+import { IoMail } from 'react-icons/io5';
+import emailjs from 'emailjs-com';
+import Contactus from '../../assets/Contact us.svg';
+import Title from '../../assets/title.svg';
+import Navbar from '../../Pages/LandingPage/Navbar/Navbar';
+import Footer from '../../Pages/LandingPage/Footer/Footer';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import '../ContactUs/notification.css'
+import '../ContactUs/notification.css';
 
 function ContactUs() {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    subject: "",
-    message: "",
+    name: '',
+    email: '',
+    subject: '',
+    message: '',
   });
 
   const validateForm = () => {
@@ -35,70 +35,56 @@ function ContactUs() {
   const sendEmail = (e) => {
     e.preventDefault();
 
-
     if (!validateForm()) {
-      toast.error("Please fill in all fields.", {
+      toast.error('Please fill in all fields.', {
         autoClose: 2000,
         className: 'toast-custom',
         style: {
           borderRadius: '10px',
-        }
+        },
       });
       return;
     }
-  
-    toast.info("Sending...", { 
-      autoClose: 2000, 
+
+    toast.info('Sending...', {
+      autoClose: 2000,
       className: 'toast-custom ',
-      style:
-      {
-        borderRadius:'10px',
-      } 
+      style: {
+        borderRadius: '10px',
+      },
     });
 
-    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID || "***REMOVED***";
-    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || "***REMOVED***";
-    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || "***REMOVED***";
+    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID || '***REMOVED***';
+    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || '***REMOVED***';
+    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || '***REMOVED***';
 
     emailjs
-      .sendForm(
-        serviceId,
-        templateId,
-        e.target,
-        publicKey
-      )
+      .sendForm(serviceId, templateId, e.target, publicKey)
       .then((res) => {
         console.log(res);
-        setFormData({ name: "", email: "", subject: "", message: "" });
+        setFormData({ name: '', email: '', subject: '', message: '' });
         e.target.reset();
-        toast.dismiss(); 
-        toast.success("Sent successfully!",
-          {
-            autoClose: 2000, 
-            className: 'toast-custom ',
-            style:
-            {
-              borderRadius:'10px',
-            }
-          }
-        ); 
+        toast.dismiss();
+        toast.success('Sent successfully!', {
+          autoClose: 2000,
+          className: 'toast-custom ',
+          style: {
+            borderRadius: '10px',
+          },
+        });
       })
       .catch((err) => {
         console.log(err);
         toast.dismiss();
-        toast.error("Failed to send message.",
-          {
-            autoClose: 2000, 
-            className: 'toast-custom ',
-            style:
-            {
-              borderRadius:'10px',
-            }
-          }
-        ); 
+        toast.error('Failed to send message.', {
+          autoClose: 2000,
+          className: 'toast-custom ',
+          style: {
+            borderRadius: '10px',
+          },
+        });
       });
   };
-  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -106,7 +92,7 @@ function ContactUs() {
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       e.preventDefault();
       const formInputs = e.target.form.elements;
       const currentInputIndex = Array.from(formInputs).indexOf(e.target);
@@ -118,7 +104,10 @@ function ContactUs() {
   };
 
   return (
-    <div className="contact-container bg-[#101011] flex flex-col min-h-screen justify-between scroll-mt-24" id="contact">
+    <div
+      className="contact-container bg-[#101011] flex flex-col min-h-screen justify-between scroll-mt-24"
+      id="contact"
+    >
       <Navbar />
 
       <div className="font-Grotesk flex-grow flex flex-col justify-center py-10 max-[767px]:pt-[15vh]">
@@ -157,11 +146,7 @@ function ContactUs() {
               </div>
               <div className="flex text-lg flex-col space-y-4 m-4 sm:ml-[0px]">
                 <div className="mb-4 flex  ">
-                  <img
-                    className="pt-2 w-44 h-[25px] "
-                    src={Title}
-                    alt="We're here"
-                  />
+                  <img className="pt-2 w-44 h-[25px] " src={Title} alt="We're here" />
                 </div>
                 <div className="mb-4  flex flex-row items-baseline">
                   <FaLocationDot />
@@ -229,15 +214,9 @@ function ContactUs() {
                 <div className="font-semibold">SHARE WITH US!</div>
               </div>
               <div className="p-4">
-                <form
-                  className="flex flex-col space-y-1 text-black"
-                  onSubmit={sendEmail}
-                >
+                <form className="flex flex-col space-y-1 text-black" onSubmit={sendEmail}>
                   <div>
-                    <label
-                      htmlFor="name"
-                      className="text-sm text-white"
-                    >
+                    <label htmlFor="name" className="text-sm text-white">
                       Name
                     </label>
                   </div>
@@ -253,10 +232,7 @@ function ContactUs() {
                     />
                   </div>
                   <div>
-                    <label
-                      htmlFor="email"
-                      className="text-sm text-white"
-                    >
+                    <label htmlFor="email" className="text-sm text-white">
                       Email
                     </label>
                   </div>
@@ -268,12 +244,11 @@ function ContactUs() {
                       value={formData.email}
                       onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
-                      className="w-full rounded-lg px-4 py-2 mt-2"/>
+                      className="w-full rounded-lg px-4 py-2 mt-2"
+                    />
                   </div>
                   <div>
-                    <label
-                      htmlFor="subject"
-                      className="text-sm text-white">
+                    <label htmlFor="subject" className="text-sm text-white">
                       Subject
                     </label>
                   </div>
@@ -285,12 +260,11 @@ function ContactUs() {
                       value={formData.subject}
                       onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
-                      className="w-full rounded-lg px-4 py-2 mt-2"/>
+                      className="w-full rounded-lg px-4 py-2 mt-2"
+                    />
                   </div>
                   <div>
-                    <label
-                      htmlFor="message"
-                      className="text-sm text-white">
+                    <label htmlFor="message" className="text-sm text-white">
                       Tell us more about your idea here !!
                     </label>
                   </div>
@@ -303,11 +277,14 @@ function ContactUs() {
                       value={formData.message}
                       onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
-                      className="w-full rounded-lg px-4 py-2 mt-2"/>
-                     <div className="flex justify-end mt-4">
+                      className="w-full rounded-lg px-4 py-2 mt-2"
+                    />
+                    <div className="flex justify-end mt-4">
                       <button
                         type="submit"
-                        className="flex items-center text-black bg-white px-4 py-2 rounded-md hover:bg-gray-100 ">Send
+                        className="flex items-center text-black bg-white px-4 py-2 rounded-md hover:bg-gray-100 "
+                      >
+                        Send
                         <IoSend className="ml-2" />
                       </button>
                     </div>
@@ -318,9 +295,9 @@ function ContactUs() {
             </div>
           </div>
         </div>
-      </div>   
+      </div>
       <Footer />
-      <ToastContainer/> 
+      <ToastContainer />
     </div>
   );
 }

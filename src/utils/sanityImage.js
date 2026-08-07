@@ -10,6 +10,4 @@
  * @returns {string}  The optimized URL (or the original if it's not Sanity)
  */
 export const sanityImg = (url, w = 1000) =>
-  url && url.includes('cdn.sanity.io')
-    ? `${url.split('?')[0]}?w=${w}&auto=format&q=72`
-    : url;
+  url && url.includes('cdn.sanity.io') ? `${url.split('?')[0]}?w=${w}&auto=format&q=72` : url;

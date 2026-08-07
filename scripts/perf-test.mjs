@@ -27,8 +27,21 @@ const PROFILES = [
     label: 'Desktop / fast wifi / motion on',
     flags: {
       formFactor: 'desktop',
-      screenEmulation: { mobile: false, width: 1440, height: 900, deviceScaleFactor: 1, disabled: false },
-      throttling: { rttMs: 40, throughputKbps: 10240, cpuSlowdownMultiplier: 1, requestLatencyMs: 0, downloadThroughputKbps: 0, uploadThroughputKbps: 0 },
+      screenEmulation: {
+        mobile: false,
+        width: 1440,
+        height: 900,
+        deviceScaleFactor: 1,
+        disabled: false,
+      },
+      throttling: {
+        rttMs: 40,
+        throughputKbps: 10240,
+        cpuSlowdownMultiplier: 1,
+        requestLatencyMs: 0,
+        downloadThroughputKbps: 0,
+        uploadThroughputKbps: 0,
+      },
     },
     rmFlag: false,
   },
@@ -37,8 +50,21 @@ const PROFILES = [
     label: 'Mobile / 4G throttled / motion on',
     flags: {
       formFactor: 'mobile',
-      screenEmulation: { mobile: true, width: 390, height: 844, deviceScaleFactor: 2.625, disabled: false },
-      throttling: { rttMs: 150, throughputKbps: 1638, cpuSlowdownMultiplier: 4, requestLatencyMs: 0, downloadThroughputKbps: 0, uploadThroughputKbps: 0 },
+      screenEmulation: {
+        mobile: true,
+        width: 390,
+        height: 844,
+        deviceScaleFactor: 2.625,
+        disabled: false,
+      },
+      throttling: {
+        rttMs: 150,
+        throughputKbps: 1638,
+        cpuSlowdownMultiplier: 4,
+        requestLatencyMs: 0,
+        downloadThroughputKbps: 0,
+        uploadThroughputKbps: 0,
+      },
     },
     rmFlag: false,
   },
@@ -47,8 +73,21 @@ const PROFILES = [
     label: 'Mobile / 4G throttled / prefers-reduced-motion',
     flags: {
       formFactor: 'mobile',
-      screenEmulation: { mobile: true, width: 390, height: 844, deviceScaleFactor: 2.625, disabled: false },
-      throttling: { rttMs: 150, throughputKbps: 1638, cpuSlowdownMultiplier: 4, requestLatencyMs: 0, downloadThroughputKbps: 0, uploadThroughputKbps: 0 },
+      screenEmulation: {
+        mobile: true,
+        width: 390,
+        height: 844,
+        deviceScaleFactor: 2.625,
+        disabled: false,
+      },
+      throttling: {
+        rttMs: 150,
+        throughputKbps: 1638,
+        cpuSlowdownMultiplier: 4,
+        requestLatencyMs: 0,
+        downloadThroughputKbps: 0,
+        uploadThroughputKbps: 0,
+      },
     },
     rmFlag: true,
   },
@@ -57,8 +96,21 @@ const PROFILES = [
     label: 'Mobile / 3G (simulated) / motion on',
     flags: {
       formFactor: 'mobile',
-      screenEmulation: { mobile: true, width: 390, height: 844, deviceScaleFactor: 2.625, disabled: false },
-      throttling: { rttMs: 300, throughputKbps: 770, cpuSlowdownMultiplier: 4, requestLatencyMs: 0, downloadThroughputKbps: 0, uploadThroughputKbps: 0 },
+      screenEmulation: {
+        mobile: true,
+        width: 390,
+        height: 844,
+        deviceScaleFactor: 2.625,
+        disabled: false,
+      },
+      throttling: {
+        rttMs: 300,
+        throughputKbps: 770,
+        cpuSlowdownMultiplier: 4,
+        requestLatencyMs: 0,
+        downloadThroughputKbps: 0,
+        uploadThroughputKbps: 0,
+      },
     },
     rmFlag: false,
   },
@@ -67,8 +119,21 @@ const PROFILES = [
     label: 'Mobile / 2G (simulated) / motion on',
     flags: {
       formFactor: 'mobile',
-      screenEmulation: { mobile: true, width: 390, height: 844, deviceScaleFactor: 2.625, disabled: false },
-      throttling: { rttMs: 800, throughputKbps: 250, cpuSlowdownMultiplier: 4, requestLatencyMs: 0, downloadThroughputKbps: 0, uploadThroughputKbps: 0 },
+      screenEmulation: {
+        mobile: true,
+        width: 390,
+        height: 844,
+        deviceScaleFactor: 2.625,
+        disabled: false,
+      },
+      throttling: {
+        rttMs: 800,
+        throughputKbps: 250,
+        cpuSlowdownMultiplier: 4,
+        requestLatencyMs: 0,
+        downloadThroughputKbps: 0,
+        uploadThroughputKbps: 0,
+      },
     },
     rmFlag: false,
   },
@@ -77,8 +142,21 @@ const PROFILES = [
     label: 'Mobile / 4G / 6x CPU slowdown',
     flags: {
       formFactor: 'mobile',
-      screenEmulation: { mobile: true, width: 390, height: 844, deviceScaleFactor: 2.625, disabled: false },
-      throttling: { rttMs: 150, throughputKbps: 1638, cpuSlowdownMultiplier: 6, requestLatencyMs: 0, downloadThroughputKbps: 0, uploadThroughputKbps: 0 },
+      screenEmulation: {
+        mobile: true,
+        width: 390,
+        height: 844,
+        deviceScaleFactor: 2.625,
+        disabled: false,
+      },
+      throttling: {
+        rttMs: 150,
+        throughputKbps: 1638,
+        cpuSlowdownMultiplier: 6,
+        requestLatencyMs: 0,
+        downloadThroughputKbps: 0,
+        uploadThroughputKbps: 0,
+      },
     },
     rmFlag: false,
   },
@@ -87,8 +165,21 @@ const PROFILES = [
     label: 'Mobile / 4G / 7x CPU slowdown',
     flags: {
       formFactor: 'mobile',
-      screenEmulation: { mobile: true, width: 390, height: 844, deviceScaleFactor: 2.625, disabled: false },
-      throttling: { rttMs: 150, throughputKbps: 1638, cpuSlowdownMultiplier: 7, requestLatencyMs: 0, downloadThroughputKbps: 0, uploadThroughputKbps: 0 },
+      screenEmulation: {
+        mobile: true,
+        width: 390,
+        height: 844,
+        deviceScaleFactor: 2.625,
+        disabled: false,
+      },
+      throttling: {
+        rttMs: 150,
+        throughputKbps: 1638,
+        cpuSlowdownMultiplier: 7,
+        requestLatencyMs: 0,
+        downloadThroughputKbps: 0,
+        uploadThroughputKbps: 0,
+      },
     },
     rmFlag: false,
   },
@@ -97,8 +188,21 @@ const PROFILES = [
     label: 'Mobile / 4G / 20x CPU slowdown',
     flags: {
       formFactor: 'mobile',
-      screenEmulation: { mobile: true, width: 390, height: 844, deviceScaleFactor: 2.625, disabled: false },
-      throttling: { rttMs: 150, throughputKbps: 1638, cpuSlowdownMultiplier: 20, requestLatencyMs: 0, downloadThroughputKbps: 0, uploadThroughputKbps: 0 },
+      screenEmulation: {
+        mobile: true,
+        width: 390,
+        height: 844,
+        deviceScaleFactor: 2.625,
+        disabled: false,
+      },
+      throttling: {
+        rttMs: 150,
+        throughputKbps: 1638,
+        cpuSlowdownMultiplier: 20,
+        requestLatencyMs: 0,
+        downloadThroughputKbps: 0,
+        uploadThroughputKbps: 0,
+      },
     },
     rmFlag: false,
   },
@@ -130,14 +234,18 @@ async function runProfile(profile) {
     });
     return result;
   } finally {
-    try { await chrome.kill(); } catch { /* Chrome may still hold handles on Windows */ }
+    try {
+      await chrome.kill();
+    } catch {
+      /* Chrome may still hold handles on Windows */
+    }
   }
 }
 
 function summarize(result) {
   const lhr = result.lhr;
   const a = (id) => lhr.audits[id] || {};
-  const score = (id) => lhr.categories[id] ? lhr.categories[id].score : null;
+  const score = (id) => (lhr.categories[id] ? lhr.categories[id].score : null);
   const core = {
     fcp: a('first-contentful-paint').numericValue,
     lcp: a('largest-contentful-paint').numericValue,
@@ -146,17 +254,31 @@ function summarize(result) {
     si: a('speed-index').numericValue,
   };
   const opps = Object.values(lhr.audits)
-    .filter((x) => x.details && x.details.type === 'opportunity' && typeof x.details.overallSavingsMs === 'number')
+    .filter(
+      (x) =>
+        x.details &&
+        x.details.type === 'opportunity' &&
+        typeof x.details.overallSavingsMs === 'number',
+    )
     .sort((x, y) => y.details.overallSavingsMs - x.details.overallSavingsMs)
     .slice(0, 6)
     .map((x) => ({ title: x.title, ms: Math.round(x.details.overallSavingsMs) }));
-  const transferBytes = Object.values(lhr.audits['network-requests'] && lhr.audits['network-requests'].details
-    ? lhr.audits['network-requests'].details.items : [])
-    .reduce((sum, r) => sum + (r.transferSize || 0), 0);
+  const transferBytes = Object.values(
+    lhr.audits['network-requests'] && lhr.audits['network-requests'].details
+      ? lhr.audits['network-requests'].details.items
+      : [],
+  ).reduce((sum, r) => sum + (r.transferSize || 0), 0);
   return {
-    perf: score('performance'), a11y: score('accessibility'), bp: score('best-practices'),
-    fcp: core.fcp, lcp: core.lcp, tbt: core.tbt, cls: core.cls, si: core.si,
-    transferKB: Math.round(transferBytes / 1024), opps,
+    perf: score('performance'),
+    a11y: score('accessibility'),
+    bp: score('best-practices'),
+    fcp: core.fcp,
+    lcp: core.lcp,
+    tbt: core.tbt,
+    cls: core.cls,
+    si: core.si,
+    transferKB: Math.round(transferBytes / 1024),
+    opps,
   };
 }
 
@@ -170,8 +292,12 @@ async function main() {
     try {
       const r = summarize(await runProfile(p));
       rows.push({ id: p.id, ...r });
-      console.log(`  Performance ${fmt(r.perf * 100, 0)}/100  A11y ${fmt(r.a11y * 100, 0)}/100  BestPractices ${fmt(r.bp * 100, 0)}/100`);
-      console.log(`  LCP ${fmt(r.lcp, 0)}ms  TBT ${fmt(r.tbt, 0)}ms  CLS ${fmt(r.cls)}  FCP ${fmt(r.fcp, 0)}ms  SI ${fmt(r.si, 0)}ms`);
+      console.log(
+        `  Performance ${fmt(r.perf * 100, 0)}/100  A11y ${fmt(r.a11y * 100, 0)}/100  BestPractices ${fmt(r.bp * 100, 0)}/100`,
+      );
+      console.log(
+        `  LCP ${fmt(r.lcp, 0)}ms  TBT ${fmt(r.tbt, 0)}ms  CLS ${fmt(r.cls)}  FCP ${fmt(r.fcp, 0)}ms  SI ${fmt(r.si, 0)}ms`,
+      );
       console.log(`  Total transfer ~${r.transferKB}KB`);
       console.log('  Top issues (potential savings):');
       if (r.opps.length) r.opps.forEach((o) => console.log(`   - ${o.title} (~${o.ms}ms)`));
@@ -187,4 +313,7 @@ async function main() {
   console.log(`\nJSON report: ${out}`);
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

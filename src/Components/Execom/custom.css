@@ -1,57 +1,57 @@
 .slick-slide > div {
-  margin: 0 8px;
+    margin: 0 8px;
 }
 
 .meet-the-team-title {
-  width: 250px;
+    width: 250px;
 }
 
 .container-execom {
-  border-radius: 24px;
-  height: 380px;
-  width: 100%;
-  overflow: hidden; 
-  display: flex;
-  justify-content: center;
-  align-items: center; 
-  box-sizing: border-box;
-  position: relative;
+    border-radius: 24px;
+    height: 380px;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    position: relative;
 }
 
 .slick-slide {
-  transition: transform 0.3s ease-in-out; 
+    transition: transform 0.3s ease-in-out;
 }
 
 .card-hover {
-  transition: transform 0.3s ease-in-out;
+    transition: transform 0.3s ease-in-out;
 }
 
 .card-hover:hover {
-  transform: scale(1.05);
+    transform: scale(1.05);
 }
 
 .border-box {
-  border: 2px solid #3a3a3c;
-  box-sizing: border-box;
-  border-radius: 24px;
+    border: 2px solid #3a3a3c;
+    box-sizing: border-box;
+    border-radius: 24px;
 }
 
 @media (max-width: 640px) {
-  .container-execom {
-    height: 390px;
-  }
-  .execom-cube-swiper {
-    touch-action: pan-y;
-    perspective: 1200px;
-  }
+    .container-execom {
+        height: 390px;
+    }
+    .execom-cube-swiper {
+        touch-action: pan-y;
+        perspective: 1200px;
+    }
 }
 
 /* GPU-friendly compositing for the 3D cube (smoother swipes on low-end devices) */
 .execom-cube-swiper .swiper-slide {
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
 }
 
 .execom-cube-swiper .swiper-wrapper {
-  will-change: transform;
+    will-change: transform;
 }

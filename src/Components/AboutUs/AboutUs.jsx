@@ -2,7 +2,13 @@ import { useEffect, useRef, useCallback } from 'react';
 import Aboutus from '../../assets/about us.svg';
 import '../AboutUs/AboutUs.css';
 import useDeviceProfile from '../../hooks/useLowPower.js';
-import { setCubeKeyboardActive } from '../../utils/keyboardLock.js';
+import {
+  registerWidget,
+  markInteracted,
+  getArrowOwner,
+  isControlFocused,
+  rectIsOnScreen,
+} from '../../utils/keyboardLock.js';
 
 // Easter egg: if the user spins the cube 20 times in RAPID succession (via
 // keyboard arrows or a fast horizontal drag), a celebration fires. A spin =
@@ -22,7 +28,16 @@ const MAX_WIND_SPEED = 12; // deg/frame cap so a release never explodes
 const MIN_WIND_SPEED = 0.02; // deg/frame — below this the cube snaps to a face
 const SNAP_MS = 650; // how long the settle-to-face animation takes
 
-const PARTICLE_COLORS = ['#22d3ee', '#a855f7', '#f472b6', '#facc15', '#4ade80', '#ffffff', '#fb7185', '#38bdf8'];
+const PARTICLE_COLORS = [
+  '#22d3ee',
+  '#a855f7',
+  '#f472b6',
+  '#facc15',
+  '#4ade80',
+  '#ffffff',
+  '#fb7185',
+  '#38bdf8',
+];
 const PARTICLE_EMOJIS = ['✨', '🎉', '⭐', '🔥', '💥', '🚀'];
 const EASTER_MESSAGES = [
   'DARE to spin! 🎉',
@@ -151,7 +166,7 @@ function AboutUs() {
         registerSpin();
       }
     },
-    [registerSpin]
+    [registerSpin],
   );
 
   // Settle the cube onto the nearest 90° face with a smooth, slow transition.
@@ -242,7 +257,7 @@ function AboutUs() {
           visible = entry.isIntersecting;
           if (visible && animFrame == null) animFrame = requestAnimationFrame(animate);
         },
-        { rootMargin: '100px' }
+        { rootMargin: '100px' },
       );
       observer.observe(boxRef.current);
     } else {
@@ -263,16 +278,13 @@ function AboutUs() {
     if (slowNetwork) return; // cube isn't rendered on slow networks
     const onKey = (e) => {
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-      // Yield the arrows when a control has focus (nav links, buttons,
-      // inputs): that control owns the keys (e.g. navbar roving tabindex).
-      const focused = document.activeElement;
-      if (focused && focused !== document.body && focused !== document.documentElement) return;
+      // Yield when a control has focus, or another on-screen widget owns the
+      // arrows (last-interacted wins — see utils/keyboardLock.js).
+      if (isControlFocused()) return;
+      if (getArrowOwner() !== 'cube') return;
       const el = boxRef.current;
       if (!el) return;
-      const rect = el.getBoundingClientRect();
-      if (rect.bottom < 0 || rect.top > window.innerHeight) return;
 
-      setCubeKeyboardActive(true);
       e.preventDefault();
       stopWindDown();
       el.style.transition = 'transform 0.4s ease-out';
@@ -280,6 +292,7 @@ function AboutUs() {
       rotYRef.current += e.key === 'ArrowRight' ? -90 : 90;
       applyTransform();
       manualUntilRef.current = Date.now() + 3000;
+      markInteracted('cube'); // arrow use keeps the cube's arrow ownership
       registerSpin();
     };
 
@@ -287,35 +300,20 @@ function AboutUs() {
     return () => window.removeEventListener('keydown', onKey);
   }, [applyTransform, registerSpin, slowNetwork, stopWindDown]);
 
-  // Keyboard arbitration: while the cube is on screen, the arrow keys belong
-  // to it — the Featuring carousel's keyboard is disabled (keyboardLock.js).
-  // On tall screens both sections can be visible at once; this makes sure a
-  // single keypress never drives two widgets.
+  // Arrow-key arbitration (see utils/keyboardLock.js): register the cube as a
+  // widget ("on screen" = the cube box is in the viewport) and mark it as the
+  // last-interacted widget whenever the user presses/grabs it, so it claims
+  // the arrow keys over any on-screen carousel.
   useEffect(() => {
-    if (slowNetwork) {
-      setCubeKeyboardActive(false); // cube isn't rendered on slow networks
-      return;
-    }
-    const el = boxRef.current;
-    if (!el) {
-      setCubeKeyboardActive(false);
-      return;
-    }
-    if (typeof IntersectionObserver === 'function') {
-      const io = new IntersectionObserver(
-        ([entry]) => setCubeKeyboardActive(entry.isIntersecting),
-        { rootMargin: '0px' }
-      );
-      io.observe(el);
-      return () => {
-        io.disconnect();
-        setCubeKeyboardActive(false);
-      };
-    }
-    // No IntersectionObserver (ancient browsers only): the keydown handler
-    // still grabs the lock while the cube is pressed. The lock then stays on
-    // until unmount — accepted, since every evergreen browser has IO.
-    return () => setCubeKeyboardActive(false);
+    if (slowNetwork) return; // cube isn't rendered on slow networks
+    const unregister = registerWidget('cube', () => rectIsOnScreen(boxRef.current, 40));
+    const wrap = document.getElementById('mainDiv-about');
+    const mark = () => markInteracted('cube');
+    wrap?.addEventListener('pointerdown', mark, true);
+    return () => {
+      unregister();
+      wrap?.removeEventListener('pointerdown', mark, true);
+    };
   }, [slowNetwork]);
 
   // Cancel any wind-down rAF on unmount.
@@ -323,7 +321,7 @@ function AboutUs() {
     () => () => {
       if (windRaf.current != null) cancelAnimationFrame(windRaf.current);
     },
-    []
+    [],
   );
 
   // ---- Shared drag helpers (touch + mouse) ----
@@ -357,7 +355,7 @@ function AboutUs() {
       rotYRef.current = ny;
       applyTransform();
     },
-    [accumulateAngle, applyTransform]
+    [accumulateAngle, applyTransform],
   );
 
   const endDrag = useCallback(() => {
@@ -412,22 +410,39 @@ function AboutUs() {
         window.removeEventListener('mouseup', mouseHandlersRef.current.up);
       }
     },
-    []
+    [],
   );
 
   return (
-    <div className='mx-6 mt-14 lg:mx-1 flex flex-col justify-center text-white lg:px-44 scroll-mt-24' id='about'>
-      <div className='md:text-xl lg:text-2xl mb-4 md:mb-6 lg:mb-8 flex items-center'>
-        <div className='inline-block w-5 h-16 bg-[#4f4f54] relative' data-aos="flip-up"></div>
-        <img className='absolute w-44 h-[25px] pl-2.5' data-aos="flip-up" data-aos-duration="750" src={Aboutus} alt="" />
+    <div
+      className="mx-6 mt-14 lg:mx-1 flex flex-col justify-center text-white lg:px-44 scroll-mt-24"
+      id="about"
+    >
+      <div className="md:text-xl lg:text-2xl mb-4 md:mb-6 lg:mb-8 flex items-center">
+        <div className="inline-block w-5 h-16 bg-[#4f4f54] relative" data-aos="flip-up"></div>
+        <img
+          className="absolute w-44 h-[25px] pl-2.5"
+          data-aos="flip-up"
+          data-aos-duration="750"
+          src={Aboutus}
+          alt=""
+        />
       </div>
 
-      <div className='flex flex-col items-center justify-center container-about'>
-        <div className="sm:text-[14px] md:text-[17px] text-center" data-aos="zoom-in" data-aos-duration="1000">
-          <p className='font-about'>
-            The Forum of Computer Engineering Students (FOCES) at the College of Engineering Chengannur aims to uplift the skills of the student community.
-            Guided by the visionary ethos of &quot;DARE, DEVELOP, and DOMINATE,&quot; the forum offers opportunities for students to help each other achieve excellence and reach the pinnacle of success.
-            Through various workshops, hackathons, and seminars, FOCES provides a platform for students to enhance their technical skills and knowledge. The forum encourages collaboration and innovation, fostering a spirit of teamwork and creativity.
+      <div className="flex flex-col items-center justify-center container-about">
+        <div
+          className="sm:text-[14px] md:text-[17px] text-center"
+          data-aos="zoom-in"
+          data-aos-duration="1000"
+        >
+          <p className="font-about">
+            The Forum of Computer Engineering Students (FOCES) at the College of Engineering
+            Chengannur aims to uplift the skills of the student community. Guided by the visionary
+            ethos of &quot;DARE, DEVELOP, and DOMINATE,&quot; the forum offers opportunities for
+            students to help each other achieve excellence and reach the pinnacle of success.
+            Through various workshops, hackathons, and seminars, FOCES provides a platform for
+            students to enhance their technical skills and knowledge. The forum encourages
+            collaboration and innovation, fostering a spirit of teamwork and creativity.
           </p>
         </div>
 
@@ -444,12 +459,24 @@ function AboutUs() {
               role="group"
               aria-label="FOCES values cube, spin it left or right with the arrow keys or by dragging horizontally"
             >
-              <div id="front-about" className='font-about text-shadow-white'>DARE</div>
-              <div id="back-about" className='font-about text-shadow-white'>DEVELOP</div>
-              <div id="left-about" className='font-about text-shadow-white'>DOMINATE</div>
-              <div id="right-about" className='font-about text-shadow-white'>FOCES</div>
-              <div id="top-about" className='font-about text-shadow-white'>ICFOSS</div>
-              <div id="bottom-about" className='font-about text-shadow-white'>CEC</div>
+              <div id="front-about" className="font-about text-shadow-white">
+                DARE
+              </div>
+              <div id="back-about" className="font-about text-shadow-white">
+                DEVELOP
+              </div>
+              <div id="left-about" className="font-about text-shadow-white">
+                DOMINATE
+              </div>
+              <div id="right-about" className="font-about text-shadow-white">
+                FOCES
+              </div>
+              <div id="top-about" className="font-about text-shadow-white">
+                ICFOSS
+              </div>
+              <div id="bottom-about" className="font-about text-shadow-white">
+                CEC
+              </div>
 
               <div className="shadow-about"></div>
             </div>

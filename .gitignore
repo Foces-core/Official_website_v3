@@ -18,6 +18,9 @@ dist-ssr
 # Vercel CLI local link data (contains org/project ids)
 .vercel
 
+# Husky generated hook shims (recreated on pnpm install -> prepare)
+.husky/_
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

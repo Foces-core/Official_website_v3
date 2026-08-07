@@ -1,27 +1,59 @@
-// Cross-widget keyboard arbitration: only one keyboard-driven widget reacts
-// to the arrow keys at a time.
-//  - The About cube owns the arrows while it is on screen; carousels disable
-//    their Swiper keyboard during that window (Featuring.jsx, Execom.jsx).
-//  - While focus sits on an interactive control (nav links, buttons, inputs)
-//    that control owns the keys: the cube ignores those presses and the
-//    carousels disable their keyboard too (tracked via focusin/focusout).
+// Arrow-key arbitration for every keyboard-driven widget on the page
+// (About cube + the Featuring/Execom carousels). Rules, in priority order:
+//   1. While a focusable control (nav link / button / input) has focus, it
+//      owns the keys — no widget reacts.
+//   2. Among the widgets currently ON SCREEN, the one the user interacted
+//      with most recently owns the keys. Pointer use (drag/click) or
+//      arrow-key use marks a widget; autoplay and programmatic slides never
+//      mark.
+//   3. Tie-break (nothing interacted yet): the first-registered on-screen
+//      widget wins — registration order is page order, so the cube by default.
 // Tiny module-level store — no React state, no re-renders.
-let cubeActive = false;
-let controlFocused = false;
+
+const widgets = new Map(); // id -> { isOnScreen: () => boolean }
+const interactedAt = new Map(); // id -> timestamp
 const listeners = new Set();
+let controlFocused = false;
+let notifyRaf = null;
 
 function notify() {
-  listeners.forEach((fn) => fn(null));
+  listeners.forEach((fn) => fn());
 }
 
-export function setCubeKeyboardActive(active) {
-  if (cubeActive === active) return;
-  cubeActive = active;
+// Register a widget that competes for the arrow keys. `isOnScreen` is called
+// lazily on every ownership query. Returns an unregister function.
+export function registerWidget(id, isOnScreen) {
+  widgets.set(id, { isOnScreen });
+  notify();
+  return () => {
+    widgets.delete(id);
+    interactedAt.delete(id);
+    notify();
+  };
+}
+
+// Mark a widget as the one the user just interacted with. It keeps ownership
+// of the arrow keys as long as it stays on screen.
+export function markInteracted(id) {
+  interactedAt.set(id, Date.now());
   notify();
 }
 
-export function isCubeKeyboardActive() {
-  return cubeActive;
+// Which widget currently owns the arrow keys, or null (a control has focus,
+// or nothing is on screen).
+export function getArrowOwner() {
+  if (controlFocused) return null;
+  let best = null;
+  let bestT = -1;
+  for (const [id, w] of widgets) {
+    if (!w.isOnScreen()) continue;
+    const t = interactedAt.get(id) ?? 0;
+    if (t > bestT) {
+      best = id;
+      bestT = t;
+    }
+  }
+  return best;
 }
 
 // True while focus is on an interactive control (link/button/input/...).
@@ -35,24 +67,41 @@ export function subscribeKeyboardArbitration(fn) {
   return () => listeners.delete(fn);
 }
 
-// Shared rule for carousels: yield the arrow keys while the cube is on
-// screen or a control (nav link/button/input) has focus. Both carousels
-// (Featuring, Execom) call this so a rule change can't drift between them.
-export function syncCarouselKeyboard(swiper) {
+// Carousels call this whenever ownership may have changed (focus, scroll,
+// interaction) to enable/disable their Swiper keyboard.
+export function syncCarouselKeyboard(swiper, ownId) {
   if (!swiper?.keyboard) return;
-  if (isCubeKeyboardActive() || isControlFocused()) swiper.keyboard.disable();
-  else swiper.keyboard.enable();
+  if (getArrowOwner() === ownId) swiper.keyboard.enable();
+  else swiper.keyboard.disable();
 }
 
-// Keep `controlFocused` in sync with the real focus target. Attached once at
-// module load (browser only); the initial call covers browser-restored focus.
+// True when an element's box intersects the viewport (with an optional
+// margin). Used as the "on screen" check for registered widgets.
+export function rectIsOnScreen(el, margin = 0) {
+  if (!el) return false;
+  const r = el.getBoundingClientRect();
+  const vw = window.innerWidth || document.documentElement.clientWidth;
+  const vh = window.innerHeight || document.documentElement.clientHeight;
+  return r.bottom > -margin && r.top < vh + margin && r.right > -margin && r.left < vw + margin;
+}
+
+// Keep `controlFocused` in sync, and re-evaluate ownership on scroll so
+// carousels enable/disable as widgets enter/leave the viewport.
 if (typeof window !== 'undefined') {
-  const sync = () => {
+  const syncFocus = () => {
     const el = document.activeElement;
     controlFocused = !!(el && el !== document.body && el !== document.documentElement);
     notify();
   };
-  window.addEventListener('focusin', sync);
-  window.addEventListener('focusout', sync);
-  sync();
+  const scheduleNotify = () => {
+    if (notifyRaf != null) return;
+    notifyRaf = requestAnimationFrame(() => {
+      notifyRaf = null;
+      notify();
+    });
+  };
+  window.addEventListener('focusin', syncFocus);
+  window.addEventListener('focusout', syncFocus);
+  window.addEventListener('scroll', scheduleNotify, { passive: true });
+  syncFocus();
 }

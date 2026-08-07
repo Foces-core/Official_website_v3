@@ -2,15 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-
 html,
 body {
     overflow-x: hidden; /* Prevent horizontal scrolling on very small screens */
     overflow-wrap: break-word; /* Break long words so text wraps instead of overflowing */
 }
 
-body{
-
+body {
     background: #101011;
 }
 
@@ -42,5 +40,3 @@ body{
 .skip-link:focus-visible {
     top: 0;
 }
-
-

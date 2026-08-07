@@ -1,43 +1,42 @@
 /* Space Grotesk is loaded via <link> in index.html (faster than CSS @import) */
 
-.container-about
-{   padding:40px 20px;
+.container-about {
+    padding: 40px 20px;
     border-radius: 20px;
     background-color: rgba(20, 20, 22, 0.92);
     border: 1px solid rgba(255, 255, 255, 0.15);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
-.font-about
-{
-    font-family: "Space Grotesk Variable", sans-serif;
+.font-about {
+    font-family: 'Space Grotesk Variable', sans-serif;
     font-optical-sizing: auto;
     font-weight: 400;
     font-style: normal;
     word-spacing: 4px;
     line-height: 1.9;
-    opacity: 0.85; 
+    opacity: 0.85;
     font-size: clamp(1.05rem, 1.7vw, 1.4rem);
 }
-  #mainDiv-about {
-    width: 200px; 
-    height: 200px; 
+#mainDiv-about {
+    width: 200px;
+    height: 200px;
     margin: 70px auto;
     perspective: 800px;
     position: relative;
-  }
+}
 
 #boxDiv-about {
-    width: 200px; 
-    height: 200px; 
-    transform-style: preserve-3d; 
+    width: 200px;
+    height: 200px;
+    transform-style: preserve-3d;
     touch-action: pan-y; /* vertical swipes scroll the page; only horizontal drags rotate */
     cursor: grab;
 }
 
 #boxDiv-about div {
     position: absolute;
-    width: 200px; 
-    height: 200px; 
+    width: 200px;
+    height: 200px;
     opacity: 0.9;
     color: white;
     display: flex;
@@ -46,12 +45,12 @@
 }
 
 #front-about {
-    transform: translateZ(100px); 
+    transform: translateZ(100px);
     background: #101010;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: 250px; 
-    border: 0.25px solid rgb(75, 75, 75); 
+    background-size: 250px;
+    border: 0.25px solid rgb(75, 75, 75);
 }
 
 #back-about {
@@ -59,22 +58,22 @@
     background: #101010;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: 250px; 
-    border: 0.025px solid rgb(75, 75, 75); 
+    background-size: 250px;
+    border: 0.025px solid rgb(75, 75, 75);
 }
 
 #left-about {
-    transform: rotateY(-90deg) translateX(-100px); 
+    transform: rotateY(-90deg) translateX(-100px);
     transform-origin: left;
     background: #101010;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: 250px; 
-    border:0.025px solid rgb(75, 75, 75); 
+    background-size: 250px;
+    border: 0.025px solid rgb(75, 75, 75);
 }
 
 #right-about {
-    transform: rotateY(90deg) translateX(100px); 
+    transform: rotateY(90deg) translateX(100px);
     transform-origin: right;
     background: #101010;
     background-position: center;
@@ -84,30 +83,30 @@
 }
 
 #top-about {
-    transform: rotateX(-90deg) translateY(-100px); 
+    transform: rotateX(-90deg) translateY(-100px);
     transform-origin: top;
     background: #101010;
     background-position: center;
     background-repeat: no-repeat;
-    background-size: 250px; 
-    border: 0.025px groove rgb(75, 75, 75); 
+    background-size: 250px;
+    border: 0.025px groove rgb(75, 75, 75);
 }
 
 #bottom-about {
-    transform: rotateX(90deg) translateY(100px); 
+    transform: rotateX(90deg) translateY(100px);
     transform-origin: bottom;
     background: #101010;
     background-position: center;
     background-repeat: no-repeat;
     background-size: 250px;
-    border: 0.025px solid rgb(75, 75, 75); 
+    border: 0.025px solid rgb(75, 75, 75);
 }
 
 .shadow-about {
-    width: 200px; 
+    width: 200px;
     height: 200px;
-    background: rgba(0,0,0,0.5);
-    box-shadow: 0 0 50px 50px rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 50px 50px rgba(0, 0, 0, 0.5);
     -webkit-transform: rotateX(90deg) translateZ(-125px) rotateY(180deg) translateX(0px); /* Adjusted translateZ to half of the new size */
 }
 
@@ -146,15 +145,32 @@
 }
 
 @keyframes about-pop {
-    0% { opacity: 1; transform: translate(-50%, -50%) scale(0.3); }
-    60% { opacity: 1; }
-    100% { opacity: 0; transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1); }
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.3);
+    }
+    60% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1);
+    }
 }
 
 @keyframes about-pop-emoji {
-    0% { opacity: 1; transform: translate(-50%, -50%) scale(0.3) rotate(0deg); }
-    60% { opacity: 1; }
-    100% { opacity: 0; transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.4) rotate(360deg); }
+    0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.3) rotate(0deg);
+    }
+    60% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.4)
+            rotate(360deg);
+    }
 }
 
 .about-wobble {
@@ -162,12 +178,25 @@
 }
 
 @keyframes about-wobble {
-    0%, 100% { transform: scale(1) rotate(0deg); }
-    15% { transform: scale(1.12) rotate(-6deg); }
-    35% { transform: scale(0.94) rotate(5deg); }
-    55% { transform: scale(1.08) rotate(-4deg); }
-    75% { transform: scale(0.98) rotate(3deg); }
-    90% { transform: scale(1.04) rotate(-1deg); }
+    0%,
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
+    15% {
+        transform: scale(1.12) rotate(-6deg);
+    }
+    35% {
+        transform: scale(0.94) rotate(5deg);
+    }
+    55% {
+        transform: scale(1.08) rotate(-4deg);
+    }
+    75% {
+        transform: scale(0.98) rotate(3deg);
+    }
+    90% {
+        transform: scale(1.04) rotate(-1deg);
+    }
 }
 
 /* Easter-egg toast stack: anchored just above the cube, grows upward.
@@ -193,7 +222,7 @@
     border-radius: 999px;
     font-size: clamp(0.7rem, 1.4vw, 0.9rem);
     font-weight: 600;
-    font-family: "Space Grotesk Variable", sans-serif;
+    font-family: 'Space Grotesk Variable', sans-serif;
     white-space: nowrap;
     backdrop-filter: blur(6px);
     box-shadow: 0 0 20px rgba(34, 211, 238, 0.25);
@@ -201,77 +230,83 @@
 }
 
 @keyframes about-toast {
-    0% { opacity: 0; transform: translateY(10px) scale(0.9); }
-    15% { opacity: 1; transform: translateY(0) scale(1); }
-    80% { opacity: 1; transform: translateY(0) scale(1); }
-    100% { opacity: 0; transform: translateY(-8px) scale(0.95); }
+    0% {
+        opacity: 0;
+        transform: translateY(10px) scale(0.9);
+    }
+    15% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    80% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.95);
+    }
 }
 
-@media (max-width:500px)
-{
-    .font-about
-    {
+@media (max-width: 500px) {
+    .font-about {
         word-spacing: 1px;
         font-size: clamp(0.95rem, 4.6vw, 1.1rem);
     }
 }
-@media (max-width:500px)
-{
-  
-#mainDiv-about {
-    width: 150px; /* Reduced width */
-    height: 150px; /* Reduced height */
-}
+@media (max-width: 500px) {
+    #mainDiv-about {
+        width: 150px; /* Reduced width */
+        height: 150px; /* Reduced height */
+    }
 
-#boxDiv-about {
-    width: 150px; /* Reduced width */
-    height: 150px; /* Reduced height */
-    animation: none; /* Disable 3D rotation on mobile; rotation is controlled by drag */
-    touch-action: pan-y; /* Horizontal drags rotate; vertical swipes scroll the page */
-    cursor: grab;
-}
+    #boxDiv-about {
+        width: 150px; /* Reduced width */
+        height: 150px; /* Reduced height */
+        animation: none; /* Disable 3D rotation on mobile; rotation is controlled by drag */
+        touch-action: pan-y; /* Horizontal drags rotate; vertical swipes scroll the page */
+        cursor: grab;
+    }
 
-#boxDiv-about div {
-    position: absolute;
-    width: 150px; /* Reduced width */
-    height: 150px; /* Reduced height */
-}
+    #boxDiv-about div {
+        position: absolute;
+        width: 150px; /* Reduced width */
+        height: 150px; /* Reduced height */
+    }
 
-#front-about {
-    transform: translateZ(75px); /* Adjusted translateZ to half of the new size */
-    background-size: 200px; /* Adjusted background size */
-}
+    #front-about {
+        transform: translateZ(75px); /* Adjusted translateZ to half of the new size */
+        background-size: 200px; /* Adjusted background size */
+    }
 
-#back-about {
-    transform: rotateY(180deg) translateZ(75px); /* Adjusted translateZ to half of the new size */
-    background-size: 200px; /* Adjusted background size */
-}
+    #back-about {
+        transform: rotateY(180deg) translateZ(75px); /* Adjusted translateZ to half of the new size */
+        background-size: 200px; /* Adjusted background size */
+    }
 
-#left-about {
-    transform: rotateY(-90deg) translateX(-75px); /* Adjusted translateX to half of the new size */
-    background-size: 200px; /* Adjusted background size */
-}
+    #left-about {
+        transform: rotateY(-90deg) translateX(-75px); /* Adjusted translateX to half of the new size */
+        background-size: 200px; /* Adjusted background size */
+    }
 
-#right-about {
-    transform: rotateY(90deg) translateX(75px); /* Adjusted translateX to half of the new size */
-    background-size: 200px; /* Adjusted background size */
-}
+    #right-about {
+        transform: rotateY(90deg) translateX(75px); /* Adjusted translateX to half of the new size */
+        background-size: 200px; /* Adjusted background size */
+    }
 
-#top-about {
-    transform: rotateX(-90deg) translateY(-75px); /* Adjusted translateY to half of the new size */
-    background-size: 200px; /* Adjusted background size */
-}
+    #top-about {
+        transform: rotateX(-90deg) translateY(-75px); /* Adjusted translateY to half of the new size */
+        background-size: 200px; /* Adjusted background size */
+    }
 
-#bottom-about {
-    transform: rotateX(90deg) translateY(75px); /* Adjusted translateY to half of the new size */
-    background-size: 200px; /* Adjusted background size */
-}
+    #bottom-about {
+        transform: rotateX(90deg) translateY(75px); /* Adjusted translateY to half of the new size */
+        background-size: 200px; /* Adjusted background size */
+    }
 
-.shadow-about {
-    width: 150px; /* Reduced width */
-    height: 150px; /* Reduced height */
-    -webkit-transform: rotateX(90deg) translateZ(-100px) rotateY(180deg) translateX(0px); /* Adjusted translateZ to half of the new size */
-}
-
-
+    .shadow-about {
+        width: 150px; /* Reduced width */
+        height: 150px; /* Reduced height */
+        -webkit-transform: rotateX(90deg) translateZ(-100px) rotateY(180deg) translateX(0px); /* Adjusted translateZ to half of the new size */
+    }
 }

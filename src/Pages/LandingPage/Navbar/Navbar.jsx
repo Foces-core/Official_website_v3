@@ -1,21 +1,21 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { createPortal } from "react-dom";
-import { AiOutlineClose } from "react-icons/ai";
-import toggleW from "../../../assets/ButtonW.svg";
-import toggleB from "../../../assets/ButtonB.svg";
-import LogoWhite from "../../../assets/FOCES White.svg";
-import LogoGrey from "../../../assets/FOCES Black.svg";
-import useDeviceProfile from "../../../hooks/useLowPower.js";
-import "./Navbar.css";
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { createPortal } from 'react-dom';
+import { AiOutlineClose } from 'react-icons/ai';
+import toggleW from '../../../assets/ButtonW.svg';
+import toggleB from '../../../assets/ButtonB.svg';
+import LogoWhite from '../../../assets/FOCES White.svg';
+import LogoGrey from '../../../assets/FOCES Black.svg';
+import useDeviceProfile from '../../../hooks/useLowPower.js';
+import './Navbar.css';
 
 const navItems = [
-  { id: "home", name: "HOME" },
-  { id: "about", name: "ABOUT" },
-  { id: "featuring", name: "FEATURING" },
-  { id: "events", name: "EVENTS" },
-  { id: "execom", name: "MEET THE TEAM" },
-  { id: "contact", name: "CONTACT" },
+  { id: 'home', name: 'HOME' },
+  { id: 'about', name: 'ABOUT' },
+  { id: 'featuring', name: 'FEATURING' },
+  { id: 'events', name: 'EVENTS' },
+  { id: 'execom', name: 'MEET THE TEAM' },
+  { id: 'contact', name: 'CONTACT' },
 ];
 
 export default function Navbar() {
@@ -23,10 +23,10 @@ export default function Navbar() {
   // Read the viewport synchronously on first render so phones never flash the
   // desktop menu open for a frame before the resize effect kicks in.
   const [isMobile, setIsMobile] = useState(
-    () => typeof window !== 'undefined' && window.innerWidth <= 767
+    () => typeof window !== 'undefined' && window.innerWidth <= 767,
   );
   const [showItems, setShowItems] = useState(
-    () => typeof window !== 'undefined' && window.innerWidth > 767
+    () => typeof window !== 'undefined' && window.innerWidth > 767,
   );
   const [joinPressed, setJoinPressed] = useState(false);
   const joinTimer = useRef(null);
@@ -43,7 +43,7 @@ export default function Navbar() {
   useEffect(() => {
     const sectionIds = navItems
       .map((item) => item.id)
-      .filter((id) => id !== "contact" && document.getElementById(id));
+      .filter((id) => id !== 'contact' && document.getElementById(id));
     const pick = () => {
       // Reference line ~35% down the viewport: the section whose top edge has
       // crossed that line is "current". This guarantees the link unselects as
@@ -58,11 +58,11 @@ export default function Navbar() {
       setCurrentItem(current);
     };
     pick();
-    window.addEventListener("scroll", pick, { passive: true });
-    window.addEventListener("resize", pick);
+    window.addEventListener('scroll', pick, { passive: true });
+    window.addEventListener('resize', pick);
     return () => {
-      window.removeEventListener("scroll", pick);
-      window.removeEventListener("resize", pick);
+      window.removeEventListener('scroll', pick);
+      window.removeEventListener('resize', pick);
     };
   }, []);
 
@@ -83,17 +83,17 @@ export default function Navbar() {
         setIsScrolled(false);
       }
     };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", handleResize, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleResize, { passive: true });
 
     return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
   const handleItemClick = (id, e) => {
-    if (id === "contact") {
+    if (id === 'contact') {
       // Contact is a real route, not a same-page anchor.
       e.preventDefault();
       if (isMobile) {
@@ -102,13 +102,13 @@ export default function Navbar() {
       navigate('/contact');
       return;
     }
-    if (id === "events" && window.location.pathname !== "/") {
+    if (id === 'events' && window.location.pathname !== '/') {
       // Not on the home page: navigate home, then scroll to the #events section.
       e.preventDefault();
       if (isMobile) {
         setShowItems(false);
       }
-      navigate("/", { state: { id: "events" } });
+      navigate('/', { state: { id: 'events' } });
       return;
     }
     setCurrentItem(id);
@@ -122,13 +122,13 @@ export default function Navbar() {
           const toggle = document.getElementById('nav-toggle');
           if (toggle) toggle.focus();
           const element = document.getElementById(id);
-          if (element) element.scrollIntoView({ behavior: "smooth" });
+          if (element) element.scrollIntoView({ behavior: 'smooth' });
         });
       });
     } else {
       const element = document.getElementById(id);
       if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
+        element.scrollIntoView({ behavior: 'smooth' });
       }
     }
   };
@@ -140,7 +140,7 @@ export default function Navbar() {
     if (window.location.pathname !== '/') {
       navigate('/');
     } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -153,7 +153,7 @@ export default function Navbar() {
   useEffect(() => {
     if (!isMobile || !showItems) return;
     const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    document.body.style.overflow = 'hidden';
     return () => {
       document.body.style.overflow = prevOverflow;
     };
@@ -186,13 +186,19 @@ export default function Navbar() {
         }
         return;
       }
-      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+      if (
+        e.key !== 'ArrowLeft' &&
+        e.key !== 'ArrowRight' &&
+        e.key !== 'ArrowUp' &&
+        e.key !== 'ArrowDown'
+      )
+        return;
       const links = Array.from(document.querySelectorAll('#nav-items a, #nav-items-mobile a'));
       if (!links.length) return;
       const focused = document.activeElement;
       const idx = links.indexOf(focused);
       if (idx === -1) return;
-      const dir = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? 1 : -1;
+      const dir = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : -1;
       e.preventDefault();
       const next = links[(idx + dir + links.length) % links.length];
       const nextId = next.getAttribute('data-foresight');
@@ -216,7 +222,7 @@ export default function Navbar() {
 
     // Open in a new tab so the current page isn't hijacked
     try {
-      window.open("https://www.instagram.com/foces_cec/", "_blank", "noopener,noreferrer");
+      window.open('https://www.instagram.com/foces_cec/', '_blank', 'noopener,noreferrer');
     } catch {
       // popup blocked — the visual flip above still shows the click happened
     }
@@ -232,7 +238,7 @@ export default function Navbar() {
         import('../../../Components/ContactUs/ContactUs.jsx').catch(() => {});
       }
     },
-    [slowNetwork]
+    [slowNetwork],
   );
 
   // ForesightJS: predict intent from mouse trajectory / touch / keyboard and
@@ -281,7 +287,7 @@ export default function Navbar() {
   // navbar sits on the dark #0b0b0c page background and needs white styling.
   const isDark =
     currentItem === null ||
-    ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem);
+    ['home', 'featuring', 'events', 'contact', 'execom', 'about'].includes(currentItem);
   const rovingIndex = rovingId ?? currentItem ?? navItems[0].id;
 
   // One shared links list: inline in the navbar on desktop, full-screen
@@ -289,18 +295,18 @@ export default function Navbar() {
   // button, so when the menu closes the X goes off screen with it.
   const itemsEl = (
     <div
-      id={isMobile ? "nav-items-mobile" : "nav-items"}
+      id={isMobile ? 'nav-items-mobile' : 'nav-items'}
       className={
         isMobile
           ? `Items nav-overlay z-50 fixed inset-0 flex flex-col items-center [justify-content:safe_center] gap-8 pb-10 overflow-y-auto overscroll-contain backdrop-blur-md ${
-              isDark ? "nav-w bg-[#0b0b0c]/95" : "nav-b bg-[#F5F5F5]/95"
+              isDark ? 'nav-w bg-[#0b0b0c]/95' : 'nav-b bg-[#F5F5F5]/95'
             }`
           : `Items z-10 flex items-center justify-center gap-[clamp(0.75rem,2vw,2.25rem)] whitespace-nowrap min-[768px]:justify-self-center ${
-              isDark ? "bg-[#101011]" : "bg-[#F5F5F5]"
+              isDark ? 'bg-[#101011]' : 'bg-[#F5F5F5]'
             } min-[768px]:bg-transparent`
       }
-      role={isMobile ? "dialog" : undefined}
-      aria-modal={isMobile ? "true" : undefined}
+      role={isMobile ? 'dialog' : undefined}
+      aria-modal={isMobile ? 'true' : undefined}
     >
       {isMobile && (
         <button
@@ -310,22 +316,22 @@ export default function Navbar() {
           onClick={toggleItems}
           aria-label="Close menu"
         >
-          <AiOutlineClose size={24} color={isDark ? "#fff" : "#000"} />
+          <AiOutlineClose size={24} color={isDark ? '#fff' : '#000'} />
         </button>
       )}
       {navItems.map((item) => (
         <Link
-          to={item.id !== "contact" ? `/#${item.id}` : "/contact"}
+          to={item.id !== 'contact' ? `/#${item.id}` : '/contact'}
           key={item.id}
           data-foresight={item.id}
-          aria-current={currentItem === item.id ? "true" : undefined}
+          aria-current={currentItem === item.id ? 'true' : undefined}
           tabIndex={rovingIndex === item.id ? 0 : -1}
           className={`border-b-2 z-10 tracking-wider ${
             currentItem === item.id
-              ? "border-[#22d3ee] text-[#22d3ee]"
+              ? 'border-[#22d3ee] text-[#22d3ee]'
               : isDark
-                ? "border-transparent text-[#ffffff80]"
-                : "border-transparent text-[#000000b3]"
+                ? 'border-transparent text-[#ffffff80]'
+                : 'border-transparent text-[#000000b3]'
           } `}
           onMouseEnter={() => handlePrefetch(item.id)}
           onTouchStart={() => handlePrefetch(item.id)}
@@ -340,70 +346,70 @@ export default function Navbar() {
 
   return (
     <>
-    <div
-      className={`fixed z-10 left-0 top-0 w-full shadow ${
-        isDark ? "nav-w" : "nav-b"
-      } flex items-center px-5 pt-4 pb-2 font-semibold max-[767px]:pl-4 max-[767px]:py-2 cursor-none max-[767px]:h-auto max-[767px]:w-screen min-[768px]:grid min-[768px]:grid-cols-[1fr_auto_1fr] ${
-        isScrolled || currentItem === "contact"
-          ? "bg-[#101011e6] border-b border-[#ffffff1a]"
-          : "bg-transparent"
-      }`}
-    >
-      {/* Left: FOCES logo */}
-      <div className="min-[768px]:justify-self-start flex items-center">
-        <img
-          src={isDark ? LogoWhite : LogoGrey}
-          alt="FOCES"
-          className={`h-auto w-[clamp(88px,8vw,140px)] flex-none cursor-pointer ${isMobile ? "hidden" : ""}`}
-          onClick={handleLogoClick}
-        />
-        <img
-          src={isDark ? LogoWhite : LogoGrey}
-          alt="FOCES"
-          className={`h-auto w-[clamp(56px,19vw,84px)] cursor-pointer ${isMobile ? "" : "hidden"}`}
-          onClick={handleLogoClick}
-        />
-      </div>
+      <div
+        className={`fixed z-10 left-0 top-0 w-full shadow ${
+          isDark ? 'nav-w' : 'nav-b'
+        } flex items-center px-5 pt-4 pb-2 font-semibold max-[767px]:pl-4 max-[767px]:py-2 cursor-none max-[767px]:h-auto max-[767px]:w-screen min-[768px]:grid min-[768px]:grid-cols-[1fr_auto_1fr] ${
+          isScrolled || currentItem === 'contact'
+            ? 'bg-[#101011e6] border-b border-[#ffffff1a]'
+            : 'bg-transparent'
+        }`}
+      >
+        {/* Left: FOCES logo */}
+        <div className="min-[768px]:justify-self-start flex items-center">
+          <img
+            src={isDark ? LogoWhite : LogoGrey}
+            alt="FOCES"
+            className={`h-auto w-[clamp(88px,8vw,140px)] flex-none cursor-pointer ${isMobile ? 'hidden' : ''}`}
+            onClick={handleLogoClick}
+          />
+          <img
+            src={isDark ? LogoWhite : LogoGrey}
+            alt="FOCES"
+            className={`h-auto w-[clamp(56px,19vw,84px)] cursor-pointer ${isMobile ? '' : 'hidden'}`}
+            onClick={handleLogoClick}
+          />
+        </div>
 
-      {/* Center: nav links (desktop only — mobile renders as a full-screen overlay) */}
-      {!isMobile && itemsEl}
+        {/* Center: nav links (desktop only — mobile renders as a full-screen overlay) */}
+        {!isMobile && itemsEl}
 
-      {/* Right: Join CTA + mobile hamburger */}
-      <div className="min-[768px]:justify-self-end max-[767px]:ml-auto flex items-center gap-2">
-        <button
-          type="button"
-          className={`contact cursor-pointer px-[clamp(1.1em,1.6vw,1.7em)] h-[clamp(2em,2.4vh,2.3em)] text-[clamp(0.7rem,0.85vw,0.88rem)] ${
-            joinPressed
-              ? "bg-cyan-400 text-black"
-              : isDark
-                ? "bg-[#F5F5F5] text-[#101011]"
-                : "bg-black text-[#F5F5F5]"
-          } flex justify-center items-center rounded-3xl whitespace-nowrap select-none max-[767px]:w-auto max-[767px]:h-auto max-[767px]:px-4 max-[767px]:py-1.5 max-[767px]:text-[0.7rem] max-[767px]:font-medium max-[767px]:tracking-wide transition-colors duration-200 ${
-            showItems && isMobile ? "hidden" : ""
-          }`}
-          onClick={handleJoinFocesClick}
-        >
-          Join FOCES
-        </button>
-
-        {isMobile && (
+        {/* Right: Join CTA + mobile hamburger */}
+        <div className="min-[768px]:justify-self-end max-[767px]:ml-auto flex items-center gap-2">
           <button
             type="button"
-            id="nav-toggle"
-            className={`w-8 h-8 flex items-center justify-center cursor-none ${
-              showItems ? "hidden" : ""
+            className={`contact cursor-pointer px-[clamp(1.1em,1.6vw,1.7em)] h-[clamp(2em,2.4vh,2.3em)] text-[clamp(0.7rem,0.85vw,0.88rem)] ${
+              joinPressed
+                ? 'bg-cyan-400 text-black'
+                : isDark
+                  ? 'bg-[#F5F5F5] text-[#101011]'
+                  : 'bg-black text-[#F5F5F5]'
+            } flex justify-center items-center rounded-3xl whitespace-nowrap select-none max-[767px]:w-auto max-[767px]:h-auto max-[767px]:px-4 max-[767px]:py-1.5 max-[767px]:text-[0.7rem] max-[767px]:font-medium max-[767px]:tracking-wide transition-colors duration-200 ${
+              showItems && isMobile ? 'hidden' : ''
             }`}
-            onClick={toggleItems}
-            aria-expanded={showItems}
-            aria-controls="nav-items-mobile"
-            aria-label={showItems ? "Close menu" : "Open menu"}
+            onClick={handleJoinFocesClick}
           >
-            <img src={isDark ? toggleW : toggleB} alt="" />
+            Join FOCES
           </button>
-        )}
+
+          {isMobile && (
+            <button
+              type="button"
+              id="nav-toggle"
+              className={`w-8 h-8 flex items-center justify-center cursor-none ${
+                showItems ? 'hidden' : ''
+              }`}
+              onClick={toggleItems}
+              aria-expanded={showItems}
+              aria-controls="nav-items-mobile"
+              aria-label={showItems ? 'Close menu' : 'Open menu'}
+            >
+              <img src={isDark ? toggleW : toggleB} alt="" />
+            </button>
+          )}
+        </div>
       </div>
-    </div>
-    {isMobile && showItems && createPortal(itemsEl, document.body)}
+      {isMobile && showItems && createPortal(itemsEl, document.body)}
     </>
   );
 }

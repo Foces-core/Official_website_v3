@@ -19,10 +19,7 @@ function preloadFonts() {
     },
     transformIndexHtml(html) {
       const links = fontUrls
-        .map(
-          (u) =>
-            `<link rel="preload" as="font" type="font/woff2" crossorigin href="/${u}" />`
-        )
+        .map((u) => `<link rel="preload" as="font" type="font/woff2" crossorigin href="/${u}" />`)
         .join('\n    ');
       if (!links) return html;
       return html.replace('</head>', `    ${links}\n  </head>`);
@@ -31,6 +28,11 @@ function preloadFonts() {
 }
 
 export default defineConfig({
+  // DX: auto-open the dev server in the default browser.
+  server: {
+    open: true,
+    port: 5173,
+  },
   plugins: [
     react(),
     preloadFonts(),
@@ -43,15 +45,19 @@ export default defineConfig({
       webp: { quality: 75 },
       avif: { quality: 60 },
     }),
-    // PWA: caches the app shell + images so repeat visits are near-instant,
-    // even on very slow connections. No offline mode required.
+    // PWA: caches the APP SHELL only (js/css/html/svg/fonts). Images are NOT
+    // precached: Vercel already serves /assets/* with a year-long immutable
+    // Cache-Control, so they come from the browser cache on repeat visits.
+    // Precacheing the 2MB of photos as well was wasted download on first
+    // visit — the worst case for slow devices.
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['foces.svg', 'og-image.jpg', 'pwa-192.png', 'pwa-512.png'],
       manifest: {
         name: 'FOCES - Forum of Computer Engineering Students',
         short_name: 'FOCES',
-        description: 'Official website of FOCES (Forum of Computer Engineering Students) at College of Engineering Chengannur.',
+        description:
+          'Official website of FOCES (Forum of Computer Engineering Students) at College of Engineering Chengannur.',
         theme_color: '#101011',
         background_color: '#101011',
         display: 'standalone',
@@ -62,7 +68,8 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,jpg,jpeg,webp,avif,woff2}'],
+        // Shell only — photos ship via the immutable HTTP cache instead.
+        globPatterns: ['**/*.{js,css,html,svg,woff2}'],
         // Keep the precache lean: skip the 734KB three.js chunk (only the
         // desktop hero WebGL needs it, and only on good connections) and the
         // non-latin font subsets (the latin site never downloads them).
@@ -71,6 +78,9 @@ export default defineConfig({
           '**/inter-{latin-ext,cyrillic,cyrillic-ext,greek,greek-ext,vietnamese}-*.woff2',
           '**/space-grotesk-{latin-ext,vietnamese}-*.woff2',
         ],
+        // Nothing in the shell is larger than this; anything bigger was
+        // probably an image that slipped through the glob.
+        maximumFileSizeToCacheInBytes: 1024 * 1024,
         navigateFallback: '/index.html',
         cleanupOutdatedCaches: true,
       },

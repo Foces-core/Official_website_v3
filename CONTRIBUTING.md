@@ -7,13 +7,15 @@ decade and still feel at home.
 
 ## Development setup
 
-Prerequisites: **Node ≥ 18** and **pnpm** (version pinned in `package.json`
-via `packageManager`).
+Prerequisites: **Node ≥ 22.13** (pnpm 11.x requires it) and **pnpm** (version
+pinned in `package.json` via `packageManager`).
 
 ```sh
 pnpm install
 pnpm dev        # local dev server at http://localhost:5173
 pnpm lint       # ESLint over all js/jsx
+pnpm format     # one-time Prettier format of the whole repo
+pnpm format:check  # CI-only: verify formatting without writing
 pnpm build      # production build (image optimizer + PWA precache)
 ```
 
@@ -27,7 +29,11 @@ pnpm build      # production build (image optimizer + PWA precache)
    - `chore/` or `docs/` — maintenance, tooling, docs
 2. Make small, focused commits. We follow **Conventional Commits**:
    `feat:`, `fix:`, `perf:`, `a11y:`, `chore:`, `docs:` prefixes, ~50-char
-   subject, body only when it explains *why*.
+   subject, body only when it explains _why_. **Husky hooks enforce this**
+   locally: `lint-staged` lints _and formats_ your staged files (ESLint
+   `--fix` + Prettier) before every commit, and `commitlint` validates the
+   message (`a11y:` is allowed). CI runs the same commitlint check on every
+   PR. Emergency bypass: `git commit --no-verify` (don't make it a habit).
 3. Open a pull request against `main`. CI (lint + build) must pass, and
    CodeRabbit will review it automatically. Request a human review from a
    core member too.
@@ -37,6 +43,11 @@ pnpm build      # production build (image optimizer + PWA precache)
 - **React + Tailwind**: keep components small and focused. Tailwind utility
   classes are the norm; use dedicated CSS files (not inline `style={{}}`)
   for anything custom.
+- **Formatting**: Prettier (`.prettierrc.json`) is the single source of
+  truth — single quotes, 100-char width, 4-space CSS. Run `pnpm format`
+  after a big change; the pre-commit hook formats your staged files
+  automatically. If you must override, use an inline `// prettier-ignore`
+  (rare).
 - **Performance is a feature**: this site deliberately degrades on slow
   networks and low-end devices via `useDeviceProfile` (`slowNetwork`,
   `lowPower`, `lowCPU`). Never remove those guards, and test that gated

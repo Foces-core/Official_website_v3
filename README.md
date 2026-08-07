@@ -15,12 +15,15 @@ Official website for **FOCES** (Foundation of Computer Engineering Students), Co
 
 ## Scripts
 
-| Command | Purpose |
-| --- | --- |
-| `pnpm dev` | Local dev server (HMR) |
-| `pnpm build` | Production build to `dist/` (image optimizer + PWA precache) |
-| `pnpm preview` | Serve `dist/` locally |
-| `pnpm lint` | ESLint over all `js`/`jsx` files |
+| Command             | Purpose                                                              |
+| ------------------- | -------------------------------------------------------------------- |
+| `pnpm dev`          | Local dev server (HMR, auto-opens the browser)                       |
+| `pnpm dev:network`  | Dev server exposed on the LAN (test from your phone)                 |
+| `pnpm build`        | Production build to `dist/` (image optimizer + PWA precache)         |
+| `pnpm preview`      | Serve `dist/` locally                                                |
+| `pnpm lint`         | ESLint over all `js`/`jsx` files                                     |
+| `pnpm format`       | Prettier format the whole repo (single quotes, 100-col, 4-space CSS) |
+| `pnpm format:check` | Verify formatting (run by CI)                                        |
 
 ## Performance Tooling
 
@@ -28,6 +31,18 @@ Official website for **FOCES** (Foundation of Computer Engineering Students), Co
 (`desktop-fast`, `mobile-4g`, `mobile-3g`, `mobile-2g`, CPU-throttled variants).
 Results are stored in `.perf-report.json`. Run a single profile with
 `PERF_ONLY=profile node scripts/perf-test.mjs`.
+
+## Performance on low-end devices
+
+The site deliberately degrades on slow networks and low-end hardware (see
+`src/hooks/useLowPower.js`):
+
+- **slowNetwork** → the hero WebGL, cube, and grain overlay are skipped, the
+  boot splash is bypassed, and below-fold routes/images load lazily
+- **lowPower / reducedMotion** → heavy animations (idle cube spin, AOS reveals)
+  are disabled; content always stays visible
+- **PWA precache is app-shell only** — photos come from the immutable HTTP
+  cache, so first visits don't download the whole site
 
 ## Accessibility (WCAG 2.1/2.2 + ARIA APG)
 
@@ -63,9 +78,8 @@ meet.
 - **Dependabot** (`.github/dependabot.yml`) — weekly grouped dependency PRs
 - **CodeRabbit** (`.coderabbit.yaml`) — AI code review on every PR
 - **Stale bot** (`.github/workflows/stale.yml`) — closes abandoned issues/PRs
-- **PR preview deploys** (`.github/workflows/deploy-preview.yml`) — builds a
-  Vercel preview of every PR and comments the URL (requires the `VERCEL_TOKEN`,
-  `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` secrets)
+- **Deploys** — handled by the **native Vercel Git integration**: auto
+  production deploy on every push to `main`, auto preview deploy on every PR
 - **Security** — report vulnerabilities via [SECURITY.md](SECURITY.md)
 
 ## Deployment
