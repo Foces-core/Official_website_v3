@@ -21,5 +21,8 @@ module.exports = {
         'a11y',
       ],
     ],
+    // Dependabot PR bodies contain long URLs/commit links that regularly blow
+    // past 100 chars; rejecting them would block every bump PR.
+    'body-max-line-length': [0, 'always'],
   },
 };
