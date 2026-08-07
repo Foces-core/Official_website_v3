@@ -4,7 +4,7 @@ import HeroSection from './Pages/LandingPage/HeroSection/HeroSection';
 import Navbar from './Pages/LandingPage/Navbar/Navbar';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { aosDisabled } from './utils/aosGating.js';
 
 // Below-the-fold sections are code-split: the heavy Swiper chunk (used by

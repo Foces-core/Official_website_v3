@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import EventTitle from '../../assets/Event.svg';
 import { featuredEvents } from '../../data/events.js';
 

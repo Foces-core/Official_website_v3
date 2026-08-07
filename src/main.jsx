@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components -- entry file: no exports, fast-refresh irrelevant */
 import React, { lazy, Suspense, useState, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router';
 import DeferredAnalytics from './utils/DeferredAnalytics.jsx';
 import App from './App.jsx';
 import Loader from './Components/Loader/Loader.jsx';
