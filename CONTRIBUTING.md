@@ -34,9 +34,11 @@ pnpm build      # production build (image optimizer + PWA precache)
    `--fix` + Prettier) before every commit, and `commitlint` validates the
    message (`a11y:` is allowed). CI runs the same commitlint check on every
    PR. Emergency bypass: `git commit --no-verify` (don't make it a habit).
-3. Open a pull request against `main`. CI (lint + build) must pass, and
+3. Open a pull request against `main`. CI (lint + build + E2E) must pass, and
    CodeRabbit will review it automatically. Request a human review from a
    core member too.
+4. If your change makes a meaningful architecture decision, record it in
+   `docs/adr/` (see the index + template there).
 
 ## Code expectations
 
@@ -64,6 +66,8 @@ pnpm build      # production build (image optimizer + PWA precache)
 ## Testing
 
 - `pnpm lint` and `pnpm build` before every PR.
+- `pnpm test` runs the Playwright E2E suite (`tests/site.spec.js`). Run
+  targeted tests when your change is scoped: `pnpm exec playwright test -g "Carousel"`.
 - For UI changes, verify desktop + mobile viewports.
 - The repo has puppeteer **probes** in `scripts/` (`wcag-probe.mjs`,
   `mobile-probe.mjs`, `carousel-probe.mjs`, `img-probe.mjs`,

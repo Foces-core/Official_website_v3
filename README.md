@@ -4,11 +4,11 @@ Official website for **FOCES** (Foundation of Computer Engineering Students), Co
 
 ## Tech Stack
 
-- **React 18** + **Vite 5** (SWC plugin)
+- **React 19** + **Vite 8** (SWC plugin)
 - **Tailwind CSS** for styling
 - **Swiper** carousels (Featuring, event galleries, execom)
 - **Three.js / Vanta** hero background
-- **react-router-dom** for `/events` and `/contact` routes
+- **react-router** for `/events` and `/contact` routes
 - **PWA** (`vite-plugin-pwa`) with service-worker precaching
 - **Perf**: `js.foresight` (intent-based route chunk prefetch), manual chunk
   splitting, responsive `srcset` images, and build-time image optimization
@@ -24,13 +24,14 @@ Official website for **FOCES** (Foundation of Computer Engineering Students), Co
 | `pnpm lint`         | ESLint over all `js`/`jsx` files                                     |
 | `pnpm format`       | Prettier format the whole repo (single quotes, 100-col, 4-space CSS) |
 | `pnpm format:check` | Verify formatting (run by CI)                                        |
+| `pnpm test`         | Playwright E2E suite (17 tests, `tests/site.spec.js`)                |
+| `pnpm test:e2e:ui`  | Playwright UI mode (interactive debugger)                            |
 
 ## Performance Tooling
 
 `scripts/perf-test.mjs` runs Lighthouse across device/network profiles
 (`desktop-fast`, `mobile-4g`, `mobile-3g`, `mobile-2g`, CPU-throttled variants).
-Results are stored in `.perf-report.json`. Run a single profile with
-`PERF_ONLY=profile node scripts/perf-test.mjs`.
+Run a single profile with `PERF_ONLY=profile node scripts/perf-test.mjs`.
 
 ## Performance on low-end devices
 
@@ -74,7 +75,7 @@ meet.
 
 **Automation in this repo:**
 
-- **CI** (`.github/workflows/ci.yml`) — lint + build on every push/PR to `main`
+- **CI** (`.github/workflows/ci.yml`) — lint + format-check + build + Playwright E2E on every push/PR to `main`
 - **Dependabot** (`.github/dependabot.yml`) — weekly grouped dependency PRs
 - **CodeRabbit** (`.coderabbit.yaml`) — AI code review on every PR
 - **Stale bot** (`.github/workflows/stale.yml`) — closes abandoned issues/PRs
