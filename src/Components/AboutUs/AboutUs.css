@@ -130,8 +130,8 @@
     background: var(--c);
     border-radius: 50%;
     transform: translate(-50%, -50%);
-    animation: about-pop 1.4s ease-out forwards;
     box-shadow: 0 0 8px var(--c);
+    will-change: transform, opacity;
 }
 
 .about-particle--emoji {
@@ -141,35 +141,31 @@
     height: auto;
     font-size: var(--s);
     line-height: 1;
-    animation: about-pop-emoji 1.4s ease-out forwards;
+    will-change: transform, opacity;
 }
 
-@keyframes about-pop {
+/* Expanding shockwave ring, spawned at the cube's center. */
+.about-ring {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(168, 85, 247, 0.9);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    animation: about-ring 0.7s ease-out forwards;
+    will-change: transform, opacity;
+}
+
+@keyframes about-ring {
     0% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(0.3);
-    }
-    60% {
-        opacity: 1;
+        opacity: 0.9;
+        transform: translate(-50%, -50%) scale(0.15);
     }
     100% {
         opacity: 0;
-        transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1);
-    }
-}
-
-@keyframes about-pop-emoji {
-    0% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(0.3) rotate(0deg);
-    }
-    60% {
-        opacity: 1;
-    }
-    100% {
-        opacity: 0;
-        transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.4)
-            rotate(360deg);
+        transform: translate(-50%, -50%) scale(14);
     }
 }
 

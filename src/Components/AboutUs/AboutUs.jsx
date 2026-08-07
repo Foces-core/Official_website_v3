@@ -23,10 +23,10 @@ const MAX_TOASTS = 4; // cap concurrent toasts during a rapid-fire session
 
 // Drag + wind-down tuning
 const DRAG_SENS = 0.6;
-const WIND_FRICTION = 0.94; // per-frame velocity decay
-const MAX_WIND_SPEED = 12; // deg/frame cap so a release never explodes
-const MIN_WIND_SPEED = 0.02; // deg/frame — below this the cube snaps to a face
-const SNAP_MS = 650; // how long the settle-to-face animation takes
+const WIND_FRICTION = 0.92; // per-frame velocity decay — snappy stop
+const MAX_WIND_SPEED = 4; // deg/frame cap so a release glides, never explodes
+const MIN_WIND_SPEED = 0.05; // deg/frame — below this the cube snaps to a face
+const SNAP_MS = 400; // how long the settle-to-face animation takes
 
 const PARTICLE_COLORS = [
   '#22d3ee',
@@ -70,6 +70,7 @@ function AboutUs() {
   // Wind-down / auto-rotation
   const windingRef = useRef(false);
   const windRaf = useRef(null);
+  const confettiRaf = useRef(null);
   const manualUntilRef = useRef(0);
 
   // Easter-egg tracking
@@ -116,19 +117,34 @@ function AboutUs() {
     stack.appendChild(toast);
     setTimeout(() => toast.remove(), TOAST_MS);
 
-    if (reduceMotion && !lowPower) return; // reduced motion: skip particles entirely
+    // Confetti burst + shockwave ring, driven by a short rAF physics loop so
+    // the confetti arcs upward under gravity, then falls and fades. Skipped
+    // entirely for reduced-motion users (toast + wobble still fire).
+    if (reduceMotion) return;
+
+    const box = boxRef.current;
+    const wrapRect = wrap.getBoundingClientRect();
+    const boxRect = box ? box.getBoundingClientRect() : wrapRect;
+    const cx = boxRect.left + boxRect.width / 2 - wrapRect.left;
+    const cy = boxRect.top + boxRect.height / 2 - wrapRect.top;
 
     const burst = document.createElement('div');
     burst.className = 'about-burst';
-    const count = lowPower ? 8 : 24;
+    burst.style.left = `${cx}px`;
+    burst.style.top = `${cy}px`;
+    wrap.appendChild(burst);
+
+    // Expanding shockwave ring from the cube's center.
+    const ring = document.createElement('span');
+    ring.className = 'about-ring';
+    burst.appendChild(ring);
+
+    const count = lowPower ? 10 : 30;
+    const particles = [];
     const frag = document.createDocumentFragment();
     for (let i = 0; i < count; i++) {
       const p = document.createElement('span');
-      const angle = Math.random() * Math.PI * 2;
-      const dist = 70 + Math.random() * 110;
       const emoji = i % 3 === 0 && Math.random() < 0.5;
-      p.style.setProperty('--tx', `${Math.cos(angle) * dist}px`);
-      p.style.setProperty('--ty', `${Math.sin(angle) * dist}px`);
       if (emoji) {
         p.className = 'about-particle about-particle--emoji';
         p.textContent = PARTICLE_EMOJIS[Math.floor(Math.random() * PARTICLE_EMOJIS.length)];
@@ -138,12 +154,51 @@ function AboutUs() {
         p.style.setProperty('--c', PARTICLE_COLORS[i % PARTICLE_COLORS.length]);
         p.style.setProperty('--s', `${6 + Math.random() * 9}px`);
       }
-      p.style.animationDelay = `${Math.random() * 0.15}s`;
+      // Hidden until the first physics frame so nothing flashes at the origin.
+      p.style.opacity = '0';
+      p.style.transform = 'translate(-50%, -50%) scale(0.1)';
+      particles.push({
+        el: p,
+        x: 0,
+        y: 0,
+        vx: (Math.random() - 0.5) * 6,
+        vy: -(2.5 + Math.random() * 5),
+        rot: Math.random() * 360,
+        vr: (Math.random() - 0.5) * 22,
+        life: 1,
+        decay: 0.012 + Math.random() * 0.008,
+      });
       frag.appendChild(p);
     }
     burst.appendChild(frag);
-    wrap.appendChild(burst);
-    setTimeout(() => burst.remove(), 1800);
+
+    // 60fps loop: gravity pulls the confetti down while it drifts, spins and fades.
+    const step = () => {
+      let alive = false;
+      for (const p of particles) {
+        p.vy += 0.16;
+        p.vx *= 0.985;
+        p.vy *= 0.985;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vr;
+        p.life -= p.decay;
+        if (p.life <= 0) {
+          p.el.style.opacity = '0';
+          continue;
+        }
+        alive = true;
+        p.el.style.transform = `translate(-50%, -50%) translate(${p.x}px, ${p.y}px) rotate(${p.rot}deg) scale(${Math.max(0.2, p.life)})`;
+        p.el.style.opacity = String(Math.min(1, p.life * 1.4));
+      }
+      if (alive) {
+        confettiRaf.current = requestAnimationFrame(step);
+      } else {
+        burst.remove();
+        confettiRaf.current = null;
+      }
+    };
+    confettiRaf.current = requestAnimationFrame(step);
   }, [lowPower]);
 
   // Register one manual spin; fires the easter egg after SPIN_TARGET rapid spins.
@@ -316,10 +371,11 @@ function AboutUs() {
     };
   }, [slowNetwork]);
 
-  // Cancel any wind-down rAF on unmount.
+  // Cancel any wind-down / confetti rAF on unmount.
   useEffect(
     () => () => {
       if (windRaf.current != null) cancelAnimationFrame(windRaf.current);
+      if (confettiRaf.current != null) cancelAnimationFrame(confettiRaf.current);
     },
     [],
   );
@@ -346,7 +402,7 @@ function AboutUs() {
       const now = Date.now();
       // Horizontal movement only — vertical drags are ignored (left/right
       // spin). Dragging right turns the cube right, matching ArrowRight.
-      const ny = startRotY.current - (clientX - startX.current) * DRAG_SENS;
+      const ny = startRotY.current + (clientX - startX.current) * DRAG_SENS;
       const dt = Math.max(now - lastMove.current.t, 1);
       const k = 0.4;
       velY.current = velY.current * (1 - k) + ((ny - lastMove.current.y) / dt) * k;
@@ -365,7 +421,7 @@ function AboutUs() {
     // Convert release velocity from deg/ms to deg/frame, cap it, then wind down.
     const vy = velY.current * (1000 / 60);
     const speed = Math.abs(vy);
-    if (speed > 0.15) {
+    if (speed > 0.05) {
       const s = Math.min(speed, MAX_WIND_SPEED) / speed;
       velY.current = vy * s;
       startWindDown();
