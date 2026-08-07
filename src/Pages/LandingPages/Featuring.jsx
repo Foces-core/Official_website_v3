@@ -103,12 +103,13 @@ function Featuring() {
     const sync = () => syncCarouselKeyboard(swiperRef.current, id);
     const mark = () => markInteracted(id);
     sync(); // ownership may already be decided before this runs
-    carouselRef.current?.addEventListener('pointerdown', mark, true);
+    const carouselEl = carouselRef.current;
+    carouselEl?.addEventListener('pointerdown', mark, true);
     const unsub = subscribeKeyboardArbitration(sync);
     return () => {
       unregister();
       unsub();
-      carouselRef.current?.removeEventListener('pointerdown', mark, true);
+      carouselEl?.removeEventListener('pointerdown', mark, true);
     };
   }, []);
 
@@ -147,7 +148,7 @@ function Featuring() {
           spaceBetween={50}
           loop={true}
           scrollbar={{ draggable: true }}
-          keyboard={{ enabled: true, onlyInViewport: true }}
+          keyboard={{ enabled: true, onlyInViewport: false }}
           onSwiper={(swiper) => {
             swiperRef.current = swiper;
             syncCarouselKeyboard(swiper, 'featuring');
@@ -155,7 +156,7 @@ function Featuring() {
           pagination={{
             clickable: true,
           }}
-          className="feat-swiper bg-transparent px-14 pb-10 h-fit"
+          className="feat-swiper bg-transparent h-fit"
         >
           {echoSlides.map(({ image, imageSet, alt }, index) => (
             <SwiperSlide key={index} className="px-3 pt-9 pb-8 bg-transparent">

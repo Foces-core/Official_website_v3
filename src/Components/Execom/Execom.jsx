@@ -75,12 +75,13 @@ function Execom() {
     const sync = () => syncCarouselKeyboard(deskSwiperRef.current, id);
     const mark = () => markInteracted(id);
     sync();
-    carouselRef.current?.addEventListener('pointerdown', mark, true);
+    const carouselEl = carouselRef.current;
+    carouselEl?.addEventListener('pointerdown', mark, true);
     const unsub = subscribeKeyboardArbitration(sync);
     return () => {
       unregister();
       unsub();
-      carouselRef.current?.removeEventListener('pointerdown', mark, true);
+      carouselEl?.removeEventListener('pointerdown', mark, true);
     };
   }, []);
 
@@ -160,7 +161,7 @@ function Execom() {
             autoplay={lowPower ? false : { delay: 3500, disableOnInteraction: false }}
             pagination={{ clickable: true }}
             navigation={true}
-            keyboard={{ enabled: true, onlyInViewport: true }}
+            keyboard={{ enabled: true, onlyInViewport: false }}
             breakpoints={{
               640: { slidesPerView: 2, spaceBetween: 20 },
               1024: { slidesPerView: 3, spaceBetween: 24 },

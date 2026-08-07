@@ -1,8 +1,14 @@
 /* Featuring carousel — Swiper pagination theming (previously inline style on
    the <Swiper> element; now a dedicated class so the markup stays clean). */
 .feat-swiper {
+    /* Padding lives here, not Tailwind utilities: Swiper's `.swiper { padding: 0 }`
+       overrides utilities because of stylesheet order. The bottom padding gives the
+       pagination bullets room below the photos. */
+    padding-left: 3.5rem;
+    padding-right: 3.5rem;
+    padding-bottom: 2.5rem;
     --swiper-pagination-color: white;
     --swiper-pagination-bullet-inactive-opacity: 0.5;
     --swiper-pagination-bullet-inactive-color: white;
-    --swiper-pagination-top: 90%;
+    --swiper-pagination-bottom: 0px;
 }

@@ -13,9 +13,10 @@
     border-radius: 50%;
     background: radial-gradient(
         circle,
-        rgba(255, 255, 255, 0.45) 0%,
-        rgba(255, 255, 255, 0.2) 35%,
-        rgba(255, 255, 255, 0) 70%
+        rgba(255, 255, 255, 0.95) 0%,
+        rgba(255, 255, 255, 0.55) 30%,
+        rgba(255, 255, 255, 0.18) 60%,
+        rgba(255, 255, 255, 0) 82%
     );
     pointer-events: none;
     opacity: 0;

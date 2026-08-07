@@ -111,7 +111,7 @@ function Modal({ images, open, onClose }) {
           slidesPerView={1}
           spaceBetween={50}
           loop={true}
-          keyboard={{ enabled: true, onlyInViewport: true }}
+          keyboard={{ enabled: true, onlyInViewport: false }}
           navigation={{
             clickable: true,
           }}
@@ -124,7 +124,7 @@ function Modal({ images, open, onClose }) {
           {images.map((url, index) => (
             <SwiperSlide key={index} className="rounded-full flex justify-center items-center">
               <img
-                className="h-fit w-fit rounded-xl ease-in-out duration-200  bg-cover"
+                className="max-w-full max-h-full object-contain rounded-xl ease-in-out duration-200"
                 src={sanityImg(url, 1400)}
                 alt={`Slide ${index + 1}`}
               />

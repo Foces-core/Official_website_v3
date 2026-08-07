@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components -- entry file: no exports, fast-refresh irrelevant */
 import React, { lazy, Suspense, useState, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import DeferredAnalytics from './utils/DeferredAnalytics.jsx';
 import App from './App.jsx';
 import Loader from './Components/Loader/Loader.jsx';
@@ -12,6 +12,17 @@ import './index.css';
 
 const Eventpage = lazy(() => import('./Pages/EventPage/Eventpage'));
 const ContactUs = lazy(() => import('./Components/ContactUs/ContactUs.jsx'));
+
+// Cross-route scroll restoration: every navigation lands at the top unless a
+// state.id anchor was passed (App.jsx handles scrolling to that section).
+function ScrollToTop() {
+  const { pathname, state } = useLocation();
+  useEffect(() => {
+    if (state && state.id) return;
+    window.scrollTo(0, 0);
+  }, [pathname, state]);
+  return null;
+}
 
 /**
  * First-load branded loader: the coffee mug + FOCES logo covers the very
@@ -103,6 +114,7 @@ const root = createRoot(container);
 root.render(
   <React.StrictMode>
     <Router>
+      <ScrollToTop />
       <Root />
       <DeferredAnalytics />
     </Router>

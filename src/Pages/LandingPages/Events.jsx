@@ -50,7 +50,7 @@ function Events() {
                   alt={evt.name}
                   loading={index === 0 ? 'eager' : 'lazy'}
                   decoding="async"
-                  {...(index === 0 ? { fetchpriority: 'high' } : {})}
+                  fetchPriority={index === 0 ? 'high' : undefined}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#141416] via-transparent to-transparent opacity-90" />
