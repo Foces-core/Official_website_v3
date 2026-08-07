@@ -170,11 +170,22 @@
     90% { transform: scale(1.04) rotate(-1deg); }
 }
 
-.about-toast {
+/* Easter-egg toast stack: anchored just above the cube, grows upward.
+   Newest toast spawns at the bottom; older ones are pushed up above it. */
+.about-toasts {
     position: absolute;
     left: 50%;
-    top: -44px;
+    bottom: calc(100% + 14px);
     transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    z-index: 40;
+    pointer-events: none;
+}
+
+.about-toast {
     background: rgba(34, 211, 238, 0.12);
     border: 1px solid rgba(34, 211, 238, 0.5);
     color: #a5f3fc;
@@ -184,18 +195,16 @@
     font-weight: 600;
     font-family: "Space Grotesk Variable", sans-serif;
     white-space: nowrap;
-    z-index: 40;
-    pointer-events: none;
     backdrop-filter: blur(6px);
     box-shadow: 0 0 20px rgba(34, 211, 238, 0.25);
     animation: about-toast 1.6s ease forwards;
 }
 
 @keyframes about-toast {
-    0% { opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.9); }
-    15% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
-    80% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1); }
-    100% { opacity: 0; transform: translateX(-50%) translateY(-12px) scale(0.95); }
+    0% { opacity: 0; transform: translateY(10px) scale(0.9); }
+    15% { opacity: 1; transform: translateY(0) scale(1); }
+    80% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-8px) scale(0.95); }
 }
 
 @media (max-width:500px)

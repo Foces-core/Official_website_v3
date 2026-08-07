@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback } from 'react';
 import Aboutus from '../../assets/about us.svg';
 import '../AboutUs/AboutUs.css';
 import useDeviceProfile from '../../hooks/useLowPower.js';
+import { setCubeKeyboardActive } from '../../utils/keyboardLock.js';
 
 // Easter egg: if the user spins the cube 20 times in RAPID succession (via
 // keyboard arrows or a fast horizontal drag), a celebration fires. A spin =
@@ -11,6 +12,8 @@ import useDeviceProfile from '../../hooks/useLowPower.js';
 // user actively drives. Hard to earn on purpose.
 const RAPID_GAP = 800;
 const SPIN_TARGET = 20;
+const TOAST_MS = 1700; // must outlast the .about-toast animation (1.6s)
+const MAX_TOASTS = 4; // cap concurrent toasts during a rapid-fire session
 
 // Drag + wind-down tuning
 const DRAG_SENS = 0.6;
@@ -80,12 +83,23 @@ function AboutUs() {
       setTimeout(() => wrap.classList.remove('about-wobble'), 1000);
     }
 
-    // Toast message (always shown, cheap)
+    // Toast message (always shown, cheap). Toasts are appended to a
+    // bottom-anchored stack so rapid successes pile up vertically (newest
+    // spawns at the bottom, older ones are pushed up) instead of overlapping.
+    let stack = wrap.querySelector('.about-toasts');
+    if (!stack) {
+      stack = document.createElement('div');
+      stack.className = 'about-toasts';
+      wrap.appendChild(stack);
+    }
+    while (stack.children.length >= MAX_TOASTS) {
+      stack.firstChild.remove(); // drop the oldest first so the pile stays small
+    }
     const toast = document.createElement('div');
     toast.className = 'about-toast';
     toast.textContent = EASTER_MESSAGES[Math.floor(Math.random() * EASTER_MESSAGES.length)];
-    wrap.appendChild(toast);
-    setTimeout(() => toast.remove(), 1700);
+    stack.appendChild(toast);
+    setTimeout(() => toast.remove(), TOAST_MS);
 
     if (reduceMotion && !lowPower) return; // reduced motion: skip particles entirely
 
@@ -253,6 +267,7 @@ function AboutUs() {
       const rect = el.getBoundingClientRect();
       if (rect.bottom < 0 || rect.top > window.innerHeight) return;
 
+      setCubeKeyboardActive(true);
       e.preventDefault();
       stopWindDown();
       el.style.transition = 'transform 0.4s ease-out';
@@ -265,6 +280,37 @@ function AboutUs() {
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [applyTransform, registerSpin, slowNetwork, stopWindDown]);
+
+  // Keyboard arbitration: while the cube is on screen, the arrow keys belong
+  // to it — the Featuring carousel's keyboard is disabled (keyboardLock.js).
+  // On tall screens both sections can be visible at once; this makes sure a
+  // single keypress never drives two widgets.
+  useEffect(() => {
+    if (slowNetwork) {
+      setCubeKeyboardActive(false); // cube isn't rendered on slow networks
+      return;
+    }
+    const el = boxRef.current;
+    if (!el) {
+      setCubeKeyboardActive(false);
+      return;
+    }
+    if (typeof IntersectionObserver === 'function') {
+      const io = new IntersectionObserver(
+        ([entry]) => setCubeKeyboardActive(entry.isIntersecting),
+        { rootMargin: '0px' }
+      );
+      io.observe(el);
+      return () => {
+        io.disconnect();
+        setCubeKeyboardActive(false);
+      };
+    }
+    // No IntersectionObserver (ancient browsers only): the keydown handler
+    // still grabs the lock while the cube is pressed. The lock then stays on
+    // until unmount — accepted, since every evergreen browser has IO.
+    return () => setCubeKeyboardActive(false);
+  }, [slowNetwork]);
 
   // Cancel any wind-down rAF on unmount.
   useEffect(
