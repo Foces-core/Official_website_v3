@@ -1,0 +1,38 @@
+# CodeRabbit AI code review — https://coderabbit.ai
+# Config reference: https://docs.coderabbit.ai/configuration
+language: "en-US"
+early_access: false
+
+reviews:
+  profile: "assertive" # strict about correctness, security, and a11y
+  request_changes: true
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base: "main"
+  # Project-specific guidance so CodeRabbit reviews like a FOCES maintainer.
+  path_instructions:
+    - path: "src/**/*.jsx"
+      instructions: |
+        - React 18 + Tailwind CSS + Vite project; keep components small and focused.
+        - Prefer dedicated CSS files over inline `style={{}}` objects.
+        - Every performance guard matters: never remove `useDeviceProfile`
+          (slowNetwork/lowPower) checks — they are deliberate bandwidth/CPU
+          savings for low-end devices.
+        - Interactive elements must stay keyboard-accessible (role, tabIndex,
+          focus-visible styling) — this repo targets WCAG 2.1/2.2.
+        - Follow existing conventions: 2-space indent in JSX, single quotes.
+    - path: "src/data/*.js"
+      instructions: |
+        - Keep the events data minimal — remove fields nothing consumes.
+    - path: "vite.config.js"
+      instructions: |
+        - The PWA precache, image optimizer, and chunk splitting are tuned for
+          bandwidth; propose changes with data, not just preference.
+
+chat:
+  auto_reply: true

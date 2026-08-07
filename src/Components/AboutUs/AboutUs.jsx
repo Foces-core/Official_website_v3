@@ -222,8 +222,9 @@ function AboutUs() {
       ) {
         const el = boxRef.current;
         if (el) {
-          // Left/right spin only — no X-axis wobble.
-          rotYRef.current = (rotYRef.current + 0.5) % 360;
+          // Left/right spin only — no X-axis wobble. Turns the same way
+          // ArrowRight does (rightward) for consistency.
+          rotYRef.current = (rotYRef.current - 0.5 + 360) % 360;
           el.style.transition = 'none';
           el.style.transform = `rotateX(0deg) rotateY(${rotYRef.current}deg)`;
         }
@@ -262,6 +263,10 @@ function AboutUs() {
     if (slowNetwork) return; // cube isn't rendered on slow networks
     const onKey = (e) => {
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      // Yield the arrows when a control has focus (nav links, buttons,
+      // inputs): that control owns the keys (e.g. navbar roving tabindex).
+      const focused = document.activeElement;
+      if (focused && focused !== document.body && focused !== document.documentElement) return;
       const el = boxRef.current;
       if (!el) return;
       const rect = el.getBoundingClientRect();
@@ -271,7 +276,8 @@ function AboutUs() {
       e.preventDefault();
       stopWindDown();
       el.style.transition = 'transform 0.4s ease-out';
-      rotYRef.current += e.key === 'ArrowRight' ? 90 : -90;
+      // ArrowRight turns the cube to the right (negative Y rotation).
+      rotYRef.current += e.key === 'ArrowRight' ? -90 : 90;
       applyTransform();
       manualUntilRef.current = Date.now() + 3000;
       registerSpin();
@@ -340,8 +346,9 @@ function AboutUs() {
     (clientX) => {
       if (!isDraggingRef.current) return;
       const now = Date.now();
-      // Horizontal movement only — vertical drags are ignored (left/right spin).
-      const ny = startRotY.current + (clientX - startX.current) * DRAG_SENS;
+      // Horizontal movement only — vertical drags are ignored (left/right
+      // spin). Dragging right turns the cube right, matching ArrowRight.
+      const ny = startRotY.current - (clientX - startX.current) * DRAG_SENS;
       const dt = Math.max(now - lastMove.current.t, 1);
       const k = 0.4;
       velY.current = velY.current * (1 - k) + ((ny - lastMove.current.y) / dt) * k;

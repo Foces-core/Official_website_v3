@@ -1,0 +1,13 @@
+# CODEOWNERS — every pull request needs an approving review from the core
+# team. Replace the placeholder below with your real GitHub team, e.g.:
+#
+#   * @foces-official/core
+#
+# To let specific people (not just teams) own parts of the repo:
+#   * @alice @bob
+#   /src  @web-team
+#
+# Leaving every line commented keeps the file valid and inert until the
+# team/handles exist.
+
+# * @foces-official/core

@@ -18,7 +18,7 @@ import mentorReveal from '../../assets/Mentor_reveal.webp';
 import mentorReveal480 from '../../assets/Mentor_reveal-480.webp';
 import mentorReveal960 from '../../assets/Mentor_reveal-960.webp';
 import { srcset } from '../../utils/srcset.js';
-import { isCubeKeyboardActive, subscribeCubeKeyboard } from '../../utils/keyboardLock.js';
+import { syncCarouselKeyboard, subscribeKeyboardArbitration } from '../../utils/keyboardLock.js';
 import './Featuring.css';
 
 const echoSlides = [
@@ -54,17 +54,13 @@ function Featuring() {
     };
   }, []);
 
-  // Arrow-key arbitration: while the About cube is on screen, its arrow keys
-  // win and the carousel's keyboard is disabled (see utils/keyboardLock.js).
-  // One keypress never drives two widgets at once.
+  // Arrow-key arbitration (see utils/keyboardLock.js): while the About cube
+  // is on screen — or a nav link/button/input has focus — the carousel's
+  // keyboard is disabled. One keypress never drives two widgets at once.
   useEffect(() => {
-    const sync = (active) => {
-      if (!swiperRef.current?.keyboard) return;
-      if (active) swiperRef.current.keyboard.disable();
-      else swiperRef.current.keyboard.enable();
-    };
-    sync(isCubeKeyboardActive()); // cube may already be locked before this runs
-    return subscribeCubeKeyboard(sync);
+    const sync = () => syncCarouselKeyboard(swiperRef.current);
+    sync(); // cube may already be locked before this runs
+    return subscribeKeyboardArbitration(sync);
   }, []);
 
   return (
@@ -93,7 +89,7 @@ function Featuring() {
           keyboard={{ enabled: true, onlyInViewport: true }}
           onSwiper={(swiper) => {
             swiperRef.current = swiper;
-            if (isCubeKeyboardActive()) swiper.keyboard?.disable();
+            syncCarouselKeyboard(swiper);
           }}
           pagination={{
             clickable: true,
