@@ -16,8 +16,18 @@ import {
 // the counter, so casual rotating never triggers it — only deliberate rapid
 // spinning. Wind-down inertia deliberately does NOT count: only spins the
 // user actively drives. Hard to earn on purpose.
-const RAPID_GAP = 800;
-const SPIN_TARGET = 20;
+//
+// On touch-first (mobile) devices the gesture is physically harder — the
+// cube is small and every spin costs ~150px of finger travel — so the bar
+// is eased a bit there (fewer spins + a wider reset gap). Desktop is
+// unchanged. These constants are read once at module scope; the module is
+// only ever evaluated on the client, so `window` is safe here.
+const TOUCH_FIRST =
+  typeof window !== 'undefined' &&
+  window.matchMedia != null &&
+  window.matchMedia('(pointer: coarse)').matches;
+const RAPID_GAP = TOUCH_FIRST ? 1200 : 800;
+const SPIN_TARGET = TOUCH_FIRST ? 15 : 20;
 const TOAST_MS = 1700; // must outlast the .about-toast animation (1.6s)
 const MAX_TOASTS = 4; // cap concurrent toasts during a rapid-fire session
 
@@ -77,6 +87,7 @@ function AboutUs() {
   const spinCountRef = useRef(0);
   const lastSpinRef = useRef(0);
   const accumAngleRef = useRef(0);
+  const lastToastRef = useRef('');
 
   const applyTransform = useCallback(() => {
     if (!boxRef.current) return;
@@ -113,7 +124,13 @@ function AboutUs() {
     }
     const toast = document.createElement('div');
     toast.className = 'about-toast';
-    toast.textContent = EASTER_MESSAGES[Math.floor(Math.random() * EASTER_MESSAGES.length)];
+    // Never show the same message twice in a row (random, no repeat-until-different).
+    let msg;
+    do {
+      msg = EASTER_MESSAGES[Math.floor(Math.random() * EASTER_MESSAGES.length)];
+    } while (msg === lastToastRef.current && EASTER_MESSAGES.length > 1);
+    lastToastRef.current = msg;
+    toast.textContent = msg;
     stack.appendChild(toast);
     setTimeout(() => toast.remove(), TOAST_MS);
 
