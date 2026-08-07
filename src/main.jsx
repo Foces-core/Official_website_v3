@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import DeferredAnalytics from './utils/DeferredAnalytics.jsx';import App from './App.jsx';
 import Loader from './Components/Loader/Loader.jsx';
+import Grain from './Components/Grain/Grain.jsx';
 import './assets/fonts-latin.css';
 import './index.css';
 
@@ -49,6 +50,7 @@ function Root() {
           <Route path="/contact" element={<ContactUs />} />
         </Routes>
       </Suspense>
+      <Grain />
     </>
   );
 }

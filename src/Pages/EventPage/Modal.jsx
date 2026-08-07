@@ -6,6 +6,7 @@ import { Pagination, Navigation, Scrollbar, A11y, Keyboard } from 'swiper/module
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
+import './Modal.css';
 import { sanityImg } from '../../utils/sanityImage.js';
 
 // WCAG 2.1/2.2 + ARIA APG modal pattern:
@@ -118,14 +119,7 @@ function Modal({ images, open, onClose }) {
           pagination={{
             clickable: true,
           }}
-          style={{
-            "--swiper-navigation-color": "white",
-            "--swiper-navigation-size": "30px",
-            "--swiper-pagination-color": "white",
-            "--swiper-pagination-bullet-inactive-opacity": ".3",
-            "--swiper-pagination-bullet-inactive-color": "white",
-          }}
-          className="mySwiper h-full w-[120%] bg-black p-10 items-center flex justify-center"
+          className="modal-swiper h-full w-[120%] bg-black p-10 items-center flex justify-center"
         >
           {images.map((url, index) => (
             <SwiperSlide key={index} className='rounded-full flex justify-center items-center'>

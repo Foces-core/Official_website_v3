@@ -1,3 +1,10 @@
-* {
+/* Inter is the site-wide default. Scope it to inheriting elements instead of
+   `*` so form controls (which don't inherit fonts) are covered explicitly and
+   the universal selector isn't matching every element. */
+body,
+button,
+input,
+select,
+textarea {
     font-family: 'Inter Variable', sans-serif;
 }

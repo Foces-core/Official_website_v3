@@ -1,21 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
-import BlockContent from '@sanity/block-content-to-react';
 import Modal from './Modal';
 import { sanityImg } from '../../utils/sanityImage.js';
-import { aosDisabled } from '../../utils/aosGating.js';
 import useDeviceProfile from '../../hooks/useLowPower.js';
-import 'reactjs-popup/dist/index.css';
 
-function EventcardL({ Events, priority }) {
+function EventCardRight({ Events, priority }) {
   const { slowNetwork } = useDeviceProfile();
   const [Expanding, setExpanding] = useState(false);
-
-  useEffect(() => {
-    AOS.init({ duration: 1000, once: true, disable: aosDisabled });
-  }, []);
 
   const images = Events.images || [];
   const imageSets = Events.imageSets || [];
@@ -24,9 +15,9 @@ function EventcardL({ Events, priority }) {
 
   return (
     <div
-      className='w-[95%] max-w-6xl bg-[#161618]/80 backdrop-blur-md border border-white/10 rounded-3xl mt-10 p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 shadow-2xl hover:border-white/30 transition-all duration-300'
-      id='events'
+      className='w-[95%] max-w-6xl bg-[#161618]/80 backdrop-blur-md border border-white/10 rounded-3xl mt-10 p-6 md:p-8 flex flex-col md:flex-row-reverse items-center gap-8 shadow-2xl hover:border-white/30 transition-all duration-300'
       data-aos='fade-up'
+      data-aos-duration='1000'
     >
       {/* Poster / Image Section */}
       <div className='w-full md:w-1/2 flex flex-col gap-3'>
@@ -90,11 +81,7 @@ function EventcardL({ Events, priority }) {
             {Events.name}
           </h2>
           <div className='text-gray-300 text-base leading-relaxed mb-4'>
-            <BlockContent
-              blocks={Events.content}
-              projectId='n7hx0w67'
-              dataset='production'
-            />
+            <p>{Events.desc}</p>
           </div>            <div className='text-cyan-400 font-semibold text-sm'>
             📅 Date: {Events.date}
           </div>
@@ -104,19 +91,19 @@ function EventcardL({ Events, priority }) {
   );
 }
 
-EventcardL.propTypes = {
+EventCardRight.propTypes = {
   Events: PropTypes.shape({
     name: PropTypes.string,
     date: PropTypes.string,
     images: PropTypes.arrayOf(PropTypes.string),
     imageSets: PropTypes.arrayOf(PropTypes.string),
-    content: PropTypes.array,
+    desc: PropTypes.string,
   }).isRequired,
   priority: PropTypes.bool,
 };
 
-EventcardL.defaultProps = {
+EventCardRight.defaultProps = {
   priority: false,
 };
 
-export default EventcardL;
+export default EventCardRight;

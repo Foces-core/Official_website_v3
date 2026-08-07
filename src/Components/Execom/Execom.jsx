@@ -105,7 +105,7 @@ function Execom() {
       <div className='flex items-center h-36 pl-6 lg:pl-40 pt-6 pb-12 relative'>
         <div className='w-5 h-16 bg-[#4f4f54] relative'></div>
         <div className="absolute w-46 h-6 pl-2.5">
-          <img src={MeetTheTeam} alt="Meet The Team" style={{ width: 250 }} />
+          <img src={MeetTheTeam} alt="Meet The Team" className="meet-the-team-title" />
         </div>
       </div>
     
@@ -182,7 +182,7 @@ function Execom() {
               <SwiperSlide key={index}>
                 <div className='container-execom bg-[#161618] border-box relative rounded-3xl overflow-hidden'>
                   <img
-                    className={`object-cover ${d.imgPos || 'object-top'} w-full h-full`}
+                    className={`object-cover ${d.name === 'Sebin Mathew' ? 'object-center' : 'object-top'} w-full h-full`}
                     src={d.img}
                     alt={d.name}
                     loading={index < 2 ? 'eager' : 'lazy'}

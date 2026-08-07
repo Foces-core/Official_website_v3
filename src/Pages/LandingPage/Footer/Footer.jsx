@@ -1,6 +1,5 @@
 import { FaSquareFacebook, FaInstagram, FaXTwitter, FaLinkedin, FaHeart } from "react-icons/fa6";
 import FocesLogo from "../../../assets/FOCES White.svg";
-import "./Footer.css";
 
 function Footer() {
   return (
@@ -30,6 +29,7 @@ function Footer() {
         </p>
       </div>
 
+      {/* Spacer: balances the 20/60/20 desktop grid so the center column stays centered */}
       <div className="w-full md:w-[20%] hidden md:flex justify-end items-center">
       </div>
     </footer>

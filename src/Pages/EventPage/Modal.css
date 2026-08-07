@@ -1,0 +1,9 @@
+/* Event photo gallery modal — Swiper theming (previously inline style on the
+   <Swiper> element; now a dedicated class). */
+.modal-swiper {
+  --swiper-navigation-color: white;
+  --swiper-navigation-size: 30px;
+  --swiper-pagination-color: white;
+  --swiper-pagination-bullet-inactive-opacity: 0.3;
+  --swiper-pagination-bullet-inactive-color: white;
+}

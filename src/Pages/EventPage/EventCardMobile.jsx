@@ -1,20 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
-import BlockContent from '@sanity/block-content-to-react';
 import Modal from './Modal';
 import { sanityImg } from '../../utils/sanityImage.js';
-import { aosDisabled } from '../../utils/aosGating.js';
 import useDeviceProfile from '../../hooks/useLowPower.js';
 
 function EventCardMobile({ Events, priority }) {
   const { slowNetwork } = useDeviceProfile();
   const [Expanding, setExpanding] = useState(false);
-
-  useEffect(() => {
-    AOS.init({ duration: 1000, once: true, disable: aosDisabled });
-  }, []);
 
   const images = Events.images || [];
   const imageSets = Events.imageSets || [];
@@ -25,6 +17,7 @@ function EventCardMobile({ Events, priority }) {
     <div
       className='w-[92%] max-w-sm bg-[#161618]/90 border border-white/10 rounded-2xl my-6 p-5 flex flex-col gap-4 shadow-xl'
       data-aos='fade-up'
+      data-aos-duration='1000'
     >
       <div
         className='relative w-full rounded-xl overflow-hidden bg-[#0b0b0c] border border-white/10 shadow-md cursor-pointer group'
@@ -63,11 +56,7 @@ function EventCardMobile({ Events, priority }) {
           {Events.name}
         </h3>
         <div className='text-gray-300 text-sm leading-relaxed'>
-          <BlockContent
-            blocks={Events.content}
-            projectId='n7hx0w67'
-            dataset='production'
-          />
+          <p>{Events.desc}</p>
         </div>
         <div className='text-cyan-400 font-medium text-xs'>
           📅 {Events.date}
@@ -83,7 +72,7 @@ EventCardMobile.propTypes = {
     date: PropTypes.string,
     images: PropTypes.arrayOf(PropTypes.string),
     imageSets: PropTypes.arrayOf(PropTypes.string),
-    content: PropTypes.array,
+    desc: PropTypes.string,
   }).isRequired,
   priority: PropTypes.bool,
 };

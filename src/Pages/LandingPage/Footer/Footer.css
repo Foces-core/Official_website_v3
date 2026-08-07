@@ -1,23 +1,2 @@
-/* Fonts: Space Grotesk + Inter are loaded globally via index.html */
-
-@media (max-width: 767px) {
-    .map_overlay {
-        background-image: url(../../../assets/map_mask.webp);
-        background-size: cover;
-        background-repeat: no-repeat;
-        border-radius: 32px;
-    }
-    .gradient {
-        height: 102%;
-        width: 102%;
-        background-image: linear-gradient(
-            180deg,
-            rgba(0, 0, 0, 0.5) 0%,
-            #101011 100%
-        );
-        border-radius: 30px;
-    }
-    iframe, img, p {
-        transition: 1s ease-in-out;
-    }
-}
+/* DEAD FILE: .map_overlay / .gradient classes and the broad `iframe, img, p { transition }`
+   rule are never referenced by any component. No longer imported. Safe to delete this file. */

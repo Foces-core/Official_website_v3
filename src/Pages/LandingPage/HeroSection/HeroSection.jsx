@@ -30,7 +30,6 @@ function HeroSection() {
           import('vanta/dist/vanta.waves.min'),
         ]);
         const WAVES = vantaMod.default;
-        window.THREE = THREE;
         if (cancelled || !myRef.current) return;
         vantaEffect = WAVES({
           el: myRef.current,
