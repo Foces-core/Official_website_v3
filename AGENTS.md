@@ -20,6 +20,10 @@ Read this before touching anything.
   Use `sfw` for networked package/tool commands when available.
 - **Security:** never commit `.env`, tokens, or the Sanity studio auth.
   EmailJS keys are only referenced via `VITE_*` env vars.
+- **CodeRabbit reviews every PR** (`.coderabbit.yaml`). Wait for its review to
+  finish and address blocking comments before merging. Do not merge while a
+  CodeRabbit review is pending, and do not dismiss its findings without
+  reason.
 
 ## Map
 

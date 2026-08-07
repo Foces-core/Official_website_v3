@@ -1,38 +1,148 @@
 # CodeRabbit AI code review — https://coderabbit.ai
 # Config reference: https://docs.coderabbit.ai/configuration
 language: "en-US"
+tone_instructions: |
+  Be concise and specific. Lead each comment with a clear, actionable summary.
+  Reference the file path and line. Prefer offering a concrete fix over a
+  general guideline. Do not repeat findings other linters already report.
+  Respect repo conventions: Conventional Commits, pnpm, Tailwind utilities.
 early_access: false
+enable_free_tier: true
 
 reviews:
-  profile: "assertive" # strict about correctness, security, and a11y
-  request_changes: true
+  profile: "assertive" # strict about correctness, security, a11y, and perf
+  request_changes_workflow: true
   high_level_summary: true
+  high_level_summary_in_walkthrough: true
+  high_level_summary_instructions: |
+    Summarize the PR as concise release notes: a one-line subject, then a
+    bullet list grouped by Conventional Commit type (feat/fix/perf/a11y/chore/
+    docs/test/refactor/ci/build/style/revert). Note any perf or a11y impact.
   poem: false
   review_status: true
+  review_details: true
   collapse_walkthrough: false
+  sequence_diagrams: false
+  abort_on_close: true
+  disable_cache: false
+
   auto_review:
     enabled: true
     drafts: false
-    base: "main"
+    auto_incremental_review: true
+    auto_pause_after_reviewed_commits: 5
+    ignore_title_keywords:
+      - "wip"
+      - "draft"
+      - "release"
+    ignore_usernames: []
+    labels: []
+
+  # Files CodeRabbit should never review or clone into its workspace.
+  path_filters:
+    - "!foces-webv23/**" # archived Sanity studio — off-limits by repo rule
+    - "!dist/**"
+    - "!test-results/**"
+    - "!playwright-report/**"
+    - "!devserver*.log"
+    - "!*.log"
+    - "!.env"
+    - "!pnpm-lock.yaml"
+
   # Project-specific guidance so CodeRabbit reviews like a FOCES maintainer.
   path_instructions:
     - path: "src/**/*.jsx"
       instructions: |
-        - React 18 + Tailwind CSS + Vite project; keep components small and focused.
-        - Prefer dedicated CSS files over inline `style={{}}` objects.
-        - Every performance guard matters: never remove `useDeviceProfile`
-          (slowNetwork/lowPower) checks — they are deliberate bandwidth/CPU
-          savings for low-end devices.
-        - Interactive elements must stay keyboard-accessible (role, tabIndex,
-          focus-visible styling) — this repo targets WCAG 2.1/2.2.
-        - Follow existing conventions: 2-space indent in JSX, single quotes.
-    - path: "src/data/*.js"
+        - React 18 + Tailwind CSS + Vite; keep components small and focused.
+        - No inline `style={{}}` objects for custom visuals — use Tailwind
+          utility classes or a dedicated CSS file.
+        - Never remove `useDeviceProfile` (slowNetwork/lowPower) guards or the
+          AOS safety net — perf degradation is deliberate and non-negotiable.
+        - Interactive elements must be keyboard-accessible (role, tabIndex,
+          focus-visible styling) — target WCAG 2.1/2.2. Only one widget may
+          respond to arrow keys at a time (see src/utils/keyboardLock.js).
+        - Follow repo style: 2-space indent in JSX, single quotes, 100-col.
+    - path: "src/**/*.css"
       instructions: |
-        - Keep the events data minimal — remove fields nothing consumes.
+        - Prefer Tailwind utilities; when custom CSS is needed keep it
+          minimal and use 4-space indentation (Prettier is source of truth).
+        - Preserve reduced-motion and focus-visible rules.
+    - path: "src/data/**"
+      instructions: |
+        - src/data/events.js is the single source of truth for events — the
+          home section and /events share it. Keep fields minimal: remove
+          anything nothing consumes.
     - path: "vite.config.js"
       instructions: |
-        - The PWA precache, image optimizer, and chunk splitting are tuned for
-          bandwidth; propose changes with data, not just preference.
+        - The PWA precache is app-shell only. Photos must ship via the
+          immutable HTTP cache, NEVER through the service worker.
+        - Image optimizer, chunk splitting, and srcset config are tuned for
+          bandwidth; propose changes with data, not preference.
+    - path: ".github/workflows/**"
+      instructions: |
+        - CI runs root checks with pnpm only. Never run tooling against
+          foces-webv23/ (archived studio, pinned Sanity 3 / React 18 on purpose).
+    - path: "tests/**"
+      instructions: |
+        - Playwright E2E suite. Keep tests deterministic and resilient to
+          device profile (slowNetwork/lowPower) degradation.
+    - path: "scripts/**"
+      instructions: |
+        - Puppeteer probes + Lighthouse perf tests. Keep them dependency-light
+          and runnable against `pnpm preview`.
+    - path: "docs/**"
+      instructions: |
+        - Architecture decisions live in docs/adr/ following the template
+          there. Do not duplicate decisions in prose.
+
+  # Static analysis tools that add context to reviews.
+  tools:
+    eslint:
+      enabled: true
+      e18e:
+        enabled: true
+    markdownlint:
+      enabled: true
+    actionlint:
+      enabled: true
+    gitleaks:
+      enabled: true
+    trufflehog:
+      enabled: true
+    shellcheck:
+      enabled: true
+    yamllint:
+      enabled: true
 
 chat:
   auto_reply: true
+  art: false
+
+knowledge_base:
+  opt_out: false
+  web_search:
+    enabled: true
+  learnings:
+    scope: "local"
+    approval_delay: 0
+  issues:
+    scope: "local"
+  pull_requests:
+    scope: "local"
+
+pre_merge_checks:
+  title:
+    mode: "error"
+    requirements: |
+      Must follow Conventional Commits:
+      feat|fix|perf|a11y|chore|docs|test|refactor|ci|build|style|revert(scope):
+      subject. Keep the subject under ~72 characters, lowercase, no trailing
+      period. Example: 'feat(events): add 2026 lineup carousel'.
+  description:
+    mode: "warning"
+
+issue_enrichment:
+  auto_enrich:
+    enabled: true
+  planning:
+    enabled: true
