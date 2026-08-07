@@ -22,6 +22,7 @@ import Devadarsana from '../../assets/devadarsana.webp';
 
 import MeetTheTeam from '../../assets/MeetTheTeam.svg';
 import useDeviceProfile from '../../hooks/useLowPower.js';
+import { syncCarouselKeyboard, subscribeKeyboardArbitration } from '../../utils/keyboardLock.js';
 
 const cardData = [
   { name: 'Aleetta Mariya Sebastian', img: Aleetta, review: 'Chairperson' },
@@ -56,6 +57,15 @@ function Execom() {
   // Shadow planes + face gradients are the cube's #1 GPU cost — and on a
   // near-black site they read as a black smear, not a shadow. Keep them off.
   const cubeEffectConfig = { shadow: false, slideShadows: false };
+
+  // Arrow-key arbitration (see utils/keyboardLock.js): while the About cube
+  // is on screen — or a nav link/button/input has focus — the desktop
+  // carousel's keyboard is disabled. One keypress never drives two widgets.
+  React.useEffect(() => {
+    const sync = () => syncCarouselKeyboard(deskSwiperRef.current);
+    sync();
+    return subscribeKeyboardArbitration(sync);
+  }, []);
 
   // Only run autoplay while a carousel is actually on screen — at 20x CPU
   // throttle (or on low-end phones), a slider spinning in the background is
@@ -113,7 +123,10 @@ function Execom() {
         {/* Desktop / Tablet Swiper (Multi-card) */}
         <div ref={deskWrapRef} className="hidden sm:block">
           <Swiper
-            onSwiper={(swiper) => { deskSwiperRef.current = swiper; }}
+            onSwiper={(swiper) => {
+              deskSwiperRef.current = swiper;
+              syncCarouselKeyboard(swiper);
+            }}
             modules={[Autoplay, Pagination, Navigation, Keyboard]}
             spaceBetween={20}
             slidesPerView={1}

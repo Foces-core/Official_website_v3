@@ -9,9 +9,9 @@ Official website for **FOCES** (Foundation of Computer Engineering Students), Co
 - **Swiper** carousels (Featuring, event galleries, execom)
 - **Three.js / Vanta** hero background
 - **react-router-dom** for `/events` and `/contact` routes
-- **@sanity/block-content-to-react** for event descriptions
 - **PWA** (`vite-plugin-pwa`) with service-worker precaching
-- **Perf**: `quicklink` (viewport route prefetch) + `js.foresight` (intent-based route chunk prefetch)
+- **Perf**: `js.foresight` (intent-based route chunk prefetch), manual chunk
+  splitting, responsive `srcset` images, and build-time image optimization
 
 ## Scripts
 
@@ -50,6 +50,20 @@ Results are stored in `.perf-report.json`. Run a single profile with
 
 Probes expect a local preview server (e.g. `pnpm preview`); the URL is a
 constant at the top of each script.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) — setup, branch naming, Conventional
+Commits, PR workflow, and the performance/a11y expectations every change must
+meet.
+
+**Automation in this repo:**
+
+- **CI** (`.github/workflows/ci.yml`) — lint + build on every push/PR to `main`
+- **Dependabot** (`.github/dependabot.yml`) — weekly grouped dependency PRs
+- **CodeRabbit** (`.coderabbit.yaml`) — AI code review on every PR
+- **Stale bot** (`.github/workflows/stale.yml`) — closes abandoned issues/PRs
+- **Security** — report vulnerabilities via [SECURITY.md](SECURITY.md)
 
 ## Deployment
 
