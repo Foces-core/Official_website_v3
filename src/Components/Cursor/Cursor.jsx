@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import './cursor.css';
 
 // Matches Tailwind max-[767px]:hidden — no rAF on touch layouts where glow is CSS-hidden.
 const DESKTOP_MQ = '(min-width: 768px)';
@@ -125,8 +126,7 @@ function Cursor() {
   return (
     <div className='overflow-hidden z-10'>
       <div
-        className='cursor-outline max-[767px]:hidden h-[1px] w-[1px] bg-[#fff] shadow-[0_0_201px_80px_rgba(255,255,255,0.4)] fixed z-10 pointer-events-none rounded-[50%] left-0 top-0 opacity-0 transition-opacity duration-150 will-change-transform'
-        data-cursor-outline
+        className='cursor-glow max-[767px]:hidden'
         ref={cursorOutlineRef}
       />
     </div>

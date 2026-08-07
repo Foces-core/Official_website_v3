@@ -2,6 +2,13 @@
   font-family: "Inter Variable", sans-serif;
 }
 
+/* Full-screen mobile menu overlay. 100vh fallback, then 100dvh where
+   supported, so the collapsing URL bar doesn't leave a gap at the bottom. */
+.nav-overlay {
+  height: 100vh;
+  height: 100dvh;
+}
+
 .nav-w a, .nav-b a {
     padding: .5em .8em;
     position: relative;

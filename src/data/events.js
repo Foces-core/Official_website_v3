@@ -20,75 +20,41 @@ import { srcset } from '../utils/srcset.js';
 
 const set = (full, s800, s400) => srcset([[full, 1000], [s800, 800], [s400, 400]]);
 
-// Wrap a plain-text description as a Sanity portable-text block so the
-// EventPage cards (which render content via BlockContent) can display it.
-const toBlocks = (text, key) => [
-  {
-    _type: 'block',
-    _key: `${key}-b1`,
-    children: [{ _type: 'span', _key: `${key}-c1`, text }],
-  },
-];
-
 // Single source of truth for events. The home "Events" section and the
 // /events route both render from this list so they can never drift apart.
 export const featuredEvents = [
   {
     id: 1,
-    title: 'Agentic Coding Workshop',
     name: 'Agentic Coding Workshop',
     tag: 'Hands-on Workshop',
     date: '9th July 2026',
     image: agenticCodingPhoto,
     imageSet: set(agenticCodingPhoto, agenticCodingPhoto800, agenticCodingPhoto400),
-    poster: agenticCodingPoster,
-    posterSet: set(agenticCodingPoster, agenticCodingPoster800, agenticCodingPoster400),
     images: [agenticCodingPoster, agenticCodingPhoto],
     imageSets: [set(agenticCodingPoster, agenticCodingPoster800, agenticCodingPoster400), set(agenticCodingPhoto, agenticCodingPhoto800, agenticCodingPhoto400)],
     desc: 'Empowering developers to build autonomous AI agents using cutting-edge LLMs and agent frameworks.',
-    content: toBlocks(
-      'Empowering developers to build autonomous AI agents using cutting-edge LLMs and agent frameworks.',
-      'agentic'
-    ),
-    tickets: '#',
   },
   {
     id: 2,
-    title: 'Coding Arena 4.0',
     name: 'Coding Arena 4.0',
     tag: 'Bootcamp',
     date: '27th July - 5th Aug',
     image: codingArenaPoster,
     imageSet: set(codingArenaPoster, codingArenaPoster800, codingArenaPoster400),
-    poster: codingArenaPoster,
-    posterSet: set(codingArenaPoster, codingArenaPoster800, codingArenaPoster400),
     images: [codingArenaPoster, codingArenaPhoto, codingArenaPhoto2],
     imageSets: [set(codingArenaPoster, codingArenaPoster800, codingArenaPoster400), set(codingArenaPhoto, codingArenaPhoto800, codingArenaPhoto400), set(codingArenaPhoto2, codingArenaPhoto2_800, codingArenaPhoto2_400)],
     desc: 'The ultimate competitive programming and rapid prototyping battlefield at MCA Lab.',
-    content: toBlocks(
-      'The ultimate competitive programming and rapid prototyping battlefield at MCA Lab.',
-      'arena'
-    ),
-    tickets: '#',
   },
   {
     id: 3,
-    title: 'The Prompt Paradox 2.0',
     name: 'The Prompt Paradox 2.0',
     tag: 'AI & Prompt Engineering',
     date: '21st June 2026',
     image: promptParadoxPoster,
     imageSet: set(promptParadoxPoster, promptParadoxPoster800, promptParadoxPoster400),
-    poster: promptParadoxPoster,
-    posterSet: set(promptParadoxPoster, promptParadoxPoster800, promptParadoxPoster400),
     images: [promptParadoxPoster],
     imageSets: [set(promptParadoxPoster, promptParadoxPoster800, promptParadoxPoster400)],
     desc: 'Test your prompt engineering mastery, solve complex AI puzzles, and break through the digital maze.',
-    content: toBlocks(
-      'Test your prompt engineering mastery, solve complex AI puzzles, and break through the digital maze.',
-      'paradox'
-    ),
-    tickets: '#',
   },
 ];
 

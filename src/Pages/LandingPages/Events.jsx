@@ -1,21 +1,8 @@
-import { useEffect } from 'react';
-import AOS from "aos";
-import "aos/dist/aos.css";
 import { Link } from "react-router-dom";
 import EventTitle from '../../assets/Event.svg';
 import { featuredEvents } from '../../data/events.js';
-import { aosDisabled } from '../../utils/aosGating.js';
 
 function Events() {
-  useEffect(() => {
-    AOS.init({
-      duration: 400,
-      offset: 50,
-      once: true,
-      disable: aosDisabled,
-    });
-  }, []);
-
   return (
     <section className="bg-[#0b0b0c] text-white py-16 px-4 md:px-12 relative overflow-hidden scroll-mt-24" id="events">
       {/* Background Decorative Neon Glows */}
@@ -52,7 +39,7 @@ function Events() {
                   src={evt.image}
                   srcSet={evt.imageSet}
                   sizes="(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 90vw"
-                  alt={evt.title}
+                  alt={evt.name}
                   loading={index === 0 ? 'eager' : 'lazy'}
                   decoding="async"
                   {...(index === 0 ? { fetchpriority: 'high' } : {})}
@@ -69,7 +56,7 @@ function Events() {
                 <div>
                   <div className="text-xs text-gray-400 font-medium mb-1">{evt.date}</div>
                   <h3 className="text-xl font-bold text-white group-hover:text-cyan-300 transition-colors mb-2">
-                    {evt.title}
+                    {evt.name}
                   </h3>
                   <p className="text-gray-400 text-sm line-clamp-3 leading-relaxed mb-4">
                     {evt.desc}

@@ -1,0 +1,8 @@
+/* Featuring carousel — Swiper pagination theming (previously inline style on
+   the <Swiper> element; now a dedicated class so the markup stays clean). */
+.feat-swiper {
+  --swiper-pagination-color: white;
+  --swiper-pagination-bullet-inactive-opacity: 0.5;
+  --swiper-pagination-bullet-inactive-color: white;
+  --swiper-pagination-top: 90%;
+}

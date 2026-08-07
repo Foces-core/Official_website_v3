@@ -1,6 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import AOS from "aos";
-import "aos/dist/aos.css";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Scrollbar, A11y, Keyboard } from 'swiper/modules';
 import 'swiper/css';
@@ -19,8 +17,8 @@ import fourth960 from '../../assets/fourth-960.webp';
 import mentorReveal from '../../assets/Mentor_reveal.webp';
 import mentorReveal480 from '../../assets/Mentor_reveal-480.webp';
 import mentorReveal960 from '../../assets/Mentor_reveal-960.webp';
-import { aosDisabled } from '../../utils/aosGating.js';
 import { srcset } from '../../utils/srcset.js';
+import './Featuring.css';
 
 const echoSlides = [
   { image: episodeOne, imageSet: srcset([[episodeOne, 1280], [episodeOne960, 960], [episodeOne480, 480]]), alt: "ECHO - Episode 1" },
@@ -30,14 +28,6 @@ const echoSlides = [
 ];
 
 function Featuring() {
-  useEffect(() => {
-    AOS.init({
-      duration: 1000,
-      once: true,
-      disable: aosDisabled,
-    });
-  }, []);
-
   const [noSlides, setNoSlides] = useState(1);
   const swiperRef = useRef(null);
 
@@ -91,13 +81,7 @@ function Featuring() {
           pagination={{
             clickable: true,
           }}
-          style={{
-            "--swiper-pagination-color": "white",
-            "--swiper-pagination-bullet-inactive-opacity": ".5",
-            "--swiper-pagination-bullet-inactive-color": "white",
-            "--swiper-pagination-top": "90%",
-          }}
-          className="mySwiper bg-transparent px-14 pb-10 h-fit"
+          className="feat-swiper bg-transparent px-14 pb-10 h-fit"
         >
           {echoSlides.map(({ image, imageSet, alt }, index) => (
             <SwiperSlide key={index} className='px-3 pt-9 pb-8 bg-transparent'>
@@ -110,6 +94,7 @@ function Featuring() {
                 loading="lazy"
                 decoding="async"
                 data-aos="flip-right"
+                data-aos-duration="1000"
               />
             </SwiperSlide>
           ))}

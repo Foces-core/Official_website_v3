@@ -72,18 +72,6 @@
                 animation-delay: 2s;
               }
               
-              .transition-opacity {
-                transition: opacity 1s ease-in-out;
-              }
-              
-              .opacity-0 {
-                opacity: 0;
-              }
-              
-              .opacity-100 {
-                opacity: 1;
-              }
-              
 /* Reduced-motion users still see the coffee mug loading screen, but the steam
    bars stay static (no animation) — the mug is a loading indicator, not
    decorative motion. */

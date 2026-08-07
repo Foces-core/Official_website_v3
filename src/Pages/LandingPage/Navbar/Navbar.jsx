@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { createPortal } from "react-dom";
 import { AiOutlineClose } from "react-icons/ai";
 import toggleW from "../../../assets/ButtonW.svg";
 import toggleB from "../../../assets/ButtonB.svg";
@@ -112,12 +113,23 @@ export default function Navbar() {
     }
     setCurrentItem(id);
     setRovingId(id);
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
     if (isMobile) {
+      // Close the overlay first; the body scroll lock is released when it
+      // unmounts, so defer the section scroll by a frame pair.
       setShowItems(false);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const toggle = document.getElementById('nav-toggle');
+          if (toggle) toggle.focus();
+          const element = document.getElementById(id);
+          if (element) element.scrollIntoView({ behavior: "smooth" });
+        });
+      });
+    } else {
+      const element = document.getElementById(id);
+      if (element) {
+        element.scrollIntoView({ behavior: "smooth" });
+      }
     }
   };
 
@@ -136,6 +148,25 @@ export default function Navbar() {
     setShowItems(!isMobile);
   }, [isMobile]);
 
+  // While the mobile menu is open, lock the page behind it: no scrolling and
+  // no interaction with the content under the full-screen overlay.
+  useEffect(() => {
+    if (!isMobile || !showItems) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [isMobile, showItems]);
+
+  // Move focus into the overlay when the mobile menu opens so keyboard and
+  // screen-reader users land on the close control instead of <body>.
+  useEffect(() => {
+    if (!isMobile || !showItems) return;
+    const closeBtn = document.getElementById('nav-close');
+    if (closeBtn) closeBtn.focus();
+  }, [isMobile, showItems]);
+
   // Keyboard navigation: ArrowLeft/ArrowUp / ArrowRight/ArrowDown cycle focus
   // through the nav links, Enter/Space activates the focused link, Escape
   // closes the mobile menu.
@@ -145,13 +176,18 @@ export default function Navbar() {
         if (isMobile && showItems) {
           e.preventDefault();
           setShowItems(false);
-          const toggle = document.querySelector('#nav-toggle');
-          if (toggle) toggle.focus();
+          // Focus the toggle once it re-appears after the overlay unmounts.
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              const toggle = document.querySelector('#nav-toggle');
+              if (toggle) toggle.focus();
+            });
+          });
         }
         return;
       }
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight' && e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
-      const links = Array.from(document.querySelectorAll('#nav-items a'));
+      const links = Array.from(document.querySelectorAll('#nav-items a, #nav-items-mobile a'));
       if (!links.length) return;
       const focused = document.activeElement;
       const idx = links.indexOf(focused);
@@ -248,11 +284,66 @@ export default function Navbar() {
     ["home", "featuring", "events", "contact", "execom", "about"].includes(currentItem);
   const rovingIndex = rovingId ?? currentItem ?? navItems[0].id;
 
+  // One shared links list: inline in the navbar on desktop, full-screen
+  // overlay (portal to <body>) on mobile. The overlay owns the close (X)
+  // button, so when the menu closes the X goes off screen with it.
+  const itemsEl = (
+    <div
+      id={isMobile ? "nav-items-mobile" : "nav-items"}
+      className={
+        isMobile
+          ? `Items nav-overlay z-50 fixed inset-0 flex flex-col items-center [justify-content:safe_center] gap-8 pb-10 overflow-y-auto overscroll-contain backdrop-blur-md ${
+              isDark ? "nav-w bg-[#0b0b0c]/95" : "nav-b bg-[#F5F5F5]/95"
+            }`
+          : `Items z-10 flex items-center justify-center gap-[clamp(0.75rem,2vw,2.25rem)] whitespace-nowrap min-[768px]:justify-self-center ${
+              isDark ? "bg-[#101011]" : "bg-[#F5F5F5]"
+            } min-[768px]:bg-transparent`
+      }
+      role={isMobile ? "dialog" : undefined}
+      aria-modal={isMobile ? "true" : undefined}
+    >
+      {isMobile && (
+        <button
+          type="button"
+          id="nav-close"
+          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center cursor-none"
+          onClick={toggleItems}
+          aria-label="Close menu"
+        >
+          <AiOutlineClose size={24} color={isDark ? "#fff" : "#000"} />
+        </button>
+      )}
+      {navItems.map((item) => (
+        <Link
+          to={item.id !== "contact" ? `/#${item.id}` : "/contact"}
+          key={item.id}
+          data-foresight={item.id}
+          aria-current={currentItem === item.id ? "true" : undefined}
+          tabIndex={rovingIndex === item.id ? 0 : -1}
+          className={`border-b-2 z-10 tracking-wider ${
+            currentItem === item.id
+              ? "border-[#22d3ee] text-[#22d3ee]"
+              : isDark
+                ? "border-transparent text-[#ffffff80]"
+                : "border-transparent text-[#000000b3]"
+          } `}
+          onMouseEnter={() => handlePrefetch(item.id)}
+          onTouchStart={() => handlePrefetch(item.id)}
+          onFocus={() => handlePrefetch(item.id)}
+          onClick={(e) => handleItemClick(item.id, e)}
+        >
+          {item.name}
+        </Link>
+      ))}
+    </div>
+  );
+
   return (
+    <>
     <div
       className={`fixed z-10 left-0 top-0 w-full shadow ${
         isDark ? "nav-w" : "nav-b"
-      } flex items-center px-5 pt-4 pb-2 font-semibold max-[767px]:pl-4 max-[767px]:py-4 cursor-none max-[767px]:h-[12vh] max-[767px]:w-screen min-[768px]:grid min-[768px]:grid-cols-[1fr_auto_1fr] ${
+      } flex items-center px-5 pt-4 pb-2 font-semibold max-[767px]:pl-4 max-[767px]:py-2 cursor-none max-[767px]:h-auto max-[767px]:w-screen min-[768px]:grid min-[768px]:grid-cols-[1fr_auto_1fr] ${
         isScrolled || currentItem === "contact"
           ? "bg-[#101011e6] border-b border-[#ffffff1a]"
           : "bg-transparent"
@@ -274,38 +365,8 @@ export default function Navbar() {
         />
       </div>
 
-      {/* Center: nav links (perfectly centered between logo and CTA) */}
-      <div
-        id="nav-items"
-        className={`z-10 Items flex items-center justify-center gap-[clamp(0.75rem,2vw,2.25rem)] whitespace-nowrap min-[768px]:justify-self-center ${
-          isDark ? "bg-[#101011]" : "bg-[#F5F5F5]"
-        } min-[768px]:bg-transparent max-[767px]:h-[60vh] max-[767px]:flex-col max-[767px]:w-screen max-[767px]:-ml-4 max-[767px]:items-center max-[767px]:absolute max-[767px]:top-full max-[767px]:mt-10 max-[767px]:gap-7 max-[767px]:pb-10 ${
-          showItems ? "" : "hidden"
-        } ${isMobile && showItems ? "h-[80%]" : ""}`}
-      >
-        {navItems.map((item) => (
-          <Link
-            to={item.id !== "contact" ? `/#${item.id}` : "/contact"}
-            key={item.id}
-            data-foresight={item.id}
-            aria-current={currentItem === item.id ? "true" : undefined}
-            tabIndex={rovingIndex === item.id ? 0 : -1}
-            className={`border-b-2 z-10 tracking-wider ${
-              currentItem === item.id
-                ? "border-[#22d3ee] text-[#22d3ee]"
-                : isDark
-                  ? "border-transparent text-[#ffffff80]"
-                  : "border-transparent text-[#000000b3]"
-            } `}
-            onMouseEnter={() => handlePrefetch(item.id)}
-            onTouchStart={() => handlePrefetch(item.id)}
-            onFocus={() => handlePrefetch(item.id)}
-            onClick={(e) => handleItemClick(item.id, e)}
-          >
-            {item.name}
-          </Link>
-        ))}
-      </div>
+      {/* Center: nav links (desktop only — mobile renders as a full-screen overlay) */}
+      {!isMobile && itemsEl}
 
       {/* Right: Join CTA + mobile hamburger */}
       <div className="min-[768px]:justify-self-end max-[767px]:ml-auto flex items-center gap-2">
@@ -329,23 +390,20 @@ export default function Navbar() {
           <button
             type="button"
             id="nav-toggle"
-            className="w-[2rem] h-full flex items-center justify-center cursor-none"
+            className={`w-8 h-8 flex items-center justify-center cursor-none ${
+              showItems ? "hidden" : ""
+            }`}
             onClick={toggleItems}
             aria-expanded={showItems}
-            aria-controls="nav-items"
+            aria-controls="nav-items-mobile"
             aria-label={showItems ? "Close menu" : "Open menu"}
           >
-            {showItems ? (
-              <AiOutlineClose size={24} color={isDark ? "#fff" : "#000"} />
-            ) : (
-              <img
-                src={isDark ? toggleW : toggleB}
-                alt=""
-              />
-            )}
+            <img src={isDark ? toggleW : toggleB} alt="" />
           </button>
         )}
       </div>
     </div>
+    {isMobile && showItems && createPortal(itemsEl, document.body)}
+    </>
   );
 }
