@@ -1,0 +1,107 @@
+name: Deploy preview to Vercel
+
+# Deploys a live preview build of every pull request to Vercel and comments
+# the URL on the PR.
+#
+# NOTE: if this repo still has the Vercel Git integration enabled (auto-deploys
+# on push), Vercel ALREADY creates PR previews itself — this workflow would
+# produce a second, duplicate preview deployment per PR. Pick ONE:
+#   - Delete this workflow and keep the native Vercel integration, or
+#   - Keep this workflow and disable PR deployments in Vercel project
+#     settings (Settings → Git → turn off preview deployments), or
+#   - Keep both if you want Vercel-side AND CI-built previews (wastes build
+#     minutes — not recommended).
+#
+# Fork PRs: with `on: pull_request` GitHub does not expose secrets to PRs from
+# forks, so this workflow only works for same-repo PRs (it will fail on fork
+# PRs by design — do not switch to pull_request_target, that's a security trap).
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch: # manual "Run workflow" from the Actions tab
+
+concurrency:
+  group: vercel-preview-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write # to comment the preview URL on the PR
+
+jobs:
+  deploy-preview:
+    name: Build & deploy preview
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        # Reads the version from the "packageManager" field in package.json.
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Pinned to a major for reproducible builds; Dependabot bumps it.
+      - name: Install Vercel CLI
+        run: npm install --global vercel@58
+
+      # Link the repo to the Vercel project non-interactively (secrets → .vercel/project.json).
+      - name: Link Vercel project
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          mkdir -p .vercel
+          printf '{"orgId":"%s","projectId":"%s"}\n' "$VERCEL_ORG_ID" "$VERCEL_PROJECT_ID" > .vercel/project.json
+
+      - name: Pull preview environment
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel pull --yes --environment=preview --token="$VERCEL_TOKEN"
+
+      - name: Build artifacts
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: vercel build --yes --token="$VERCEL_TOKEN"
+
+      - name: Deploy to Vercel
+        id: deploy
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          URL="$(vercel deploy --prebuilt --yes --token="$VERCEL_TOKEN" | tail -n 1)"
+          echo "preview_url=$URL" >> "$GITHUB_OUTPUT"
+
+      # Comment (or update) the preview URL on the PR so reviewers can click it.
+      - name: Comment preview URL on the PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        env:
+          PREVIEW_URL: ${{ steps.deploy.outputs.preview_url }}
+        with:
+          script: |
+            const marker = '<!-- vercel-preview -->';
+            const body = `🚀 **Preview deployment ready** — [open preview](${process.env.PREVIEW_URL})\n\n${marker}`;
+            const { owner, repo } = context.repo;
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number: context.issue.number,
+              per_page: 100,
+            });
+            const existing = comments.find((c) => c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number: context.issue.number, body });
+            }
