@@ -1,16 +1,21 @@
 import './App.css';
-import { useEffect } from 'react';
-import Events from './Pages/LandingPages/Events';
-import Featuring from './Pages/LandingPages/Featuring';
+import { lazy, Suspense, useEffect } from 'react';
 import HeroSection from './Pages/LandingPage/HeroSection/HeroSection';
-import Footer from './Pages/LandingPage/Footer/Footer';
-import AboutUs from './Components/AboutUs/AboutUs';
-import Execom from './Components/Execom/Execom';
 import Navbar from './Pages/LandingPage/Navbar/Navbar';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { useLocation } from 'react-router-dom';
 import { aosDisabled } from './utils/aosGating.js';
+
+// Below-the-fold sections are code-split: the heavy Swiper chunk (used by
+// Featuring + Execom) and the cube logic only download once the user scrolls
+// to them, shrinking the first-load bundle. AOS picks up the newly-mounted
+// [data-aos] elements via its built-in MutationObserver.
+const AboutUs = lazy(() => import('./Components/AboutUs/AboutUs'));
+const Featuring = lazy(() => import('./Pages/LandingPages/Featuring'));
+const Events = lazy(() => import('./Pages/LandingPages/Events'));
+const Execom = lazy(() => import('./Components/Execom/Execom'));
+const Footer = lazy(() => import('./Pages/LandingPage/Footer/Footer'));
 
 // AOS hides [data-aos] elements (opacity/transform) until they scroll into
 // view. Init runs at module scope, before React renders, so when the animation
@@ -47,12 +52,16 @@ function App() {
       <Navbar />
       <main id="main-content" tabIndex={-1}>
         <HeroSection />
-        <AboutUs />
-        <Featuring />
-        <Events />
-        <Execom />
+        <Suspense fallback={null}>
+          <AboutUs />
+          <Featuring />
+          <Events />
+          <Execom />
+        </Suspense>
       </main>
-      <Footer />
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
     </div>
   );
 }

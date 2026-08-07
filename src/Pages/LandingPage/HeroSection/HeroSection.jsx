@@ -71,12 +71,15 @@ function HeroSection() {
         <img
           src={ddd}
           alt="DDD"
+          loading="eager"
+          fetchPriority="high"
           decoding="async"
           className={`h-[50%] w-[36%] relative top-[40vh] left-[10vw] max-[767px]:w-[80%] max-[767px]:top-[38vh] `}
         />
         <img
           src={focespng}
           alt="FOCES"
+          loading="eager"
           fetchPriority="high"
           decoding="async"
           className={`h-[50%] w-[38%] relative top-[45vh] left-[10vw] max-[767px]:w-[80%] max-[767px]:top-[40vh] `}
@@ -84,6 +87,8 @@ function HeroSection() {
         <img
           src={foces1}
           alt=""
+          loading="eager"
+          fetchPriority="high"
           decoding="async"
           className={`h-[50%] w-[38%] relative top-[50vh] left-[10vw] max-[767px]:w-[80%] max-[767px]:top-[41vh] `}
         />
