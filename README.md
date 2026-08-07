@@ -63,6 +63,9 @@ meet.
 - **Dependabot** (`.github/dependabot.yml`) — weekly grouped dependency PRs
 - **CodeRabbit** (`.coderabbit.yaml`) — AI code review on every PR
 - **Stale bot** (`.github/workflows/stale.yml`) — closes abandoned issues/PRs
+- **PR preview deploys** (`.github/workflows/deploy-preview.yml`) — builds a
+  Vercel preview of every PR and comments the URL (requires the `VERCEL_TOKEN`,
+  `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` secrets)
 - **Security** — report vulnerabilities via [SECURITY.md](SECURITY.md)
 
 ## Deployment
