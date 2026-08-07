@@ -12,6 +12,13 @@ updates:
       timezone: "Asia/Kolkata"
     versioning-strategy: "auto"
     open-pull-requests-limit: 10
+    # foces-webv23/ is the archived Sanity studio (previous site generation,
+    # pinned to Sanity 3 / React 18 on purpose). It is deprecated and will not
+    # be touched — never scan or open bump PRs for it. Note: this stops
+    # version-update PRs; GitHub security alerts for that directory still
+    # appear (silence those via auto-triage rules in repo Settings).
+    exclude-paths:
+      - "foces-webv23/**"
     labels:
       - "dependencies"
       - "bot"
