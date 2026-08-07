@@ -1,5 +1,6 @@
 dist
 node_modules
+test-results
 foces-webv23
 pnpm-lock.yaml
 yarn.lock
