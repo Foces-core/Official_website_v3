@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components -- entry file: no exports, fast-refresh irrelevant */
-import React, { lazy, Suspense, useState, useEffect, useRef } from 'react';
+import React, { Suspense, useState, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router';
 import * as Sentry from '@sentry/react';
@@ -7,6 +7,8 @@ import DeferredAnalytics from './utils/DeferredAnalytics.jsx';
 import App from './App.jsx';
 import Loader from './Components/Loader/Loader.jsx';
 import Grain from './Components/Grain/Grain.jsx';
+import ErrorFallback from './Components/ErrorFallback/ErrorFallback.jsx';
+import { lazyWithRetry } from './utils/lazyWithRetry.js';
 import useDeviceProfile from './hooks/useLowPower.js';
 import './assets/fonts-latin.css';
 import './index.css';
@@ -27,8 +29,8 @@ if (import.meta.env.VITE_SENTRY_DSN) {
   });
 }
 
-const Eventpage = lazy(() => import('./Pages/EventPage/Eventpage'));
-const ContactUs = lazy(() => import('./Components/ContactUs/ContactUs.jsx'));
+const Eventpage = lazyWithRetry(() => import('./Pages/EventPage/Eventpage'));
+const ContactUs = lazyWithRetry(() => import('./Components/ContactUs/ContactUs.jsx'));
 
 // Cross-route scroll restoration: every navigation lands at the top unless a
 // state.id anchor was passed (App.jsx handles scrolling to that section).
@@ -106,11 +108,9 @@ function Root() {
       {/* Lazy routes: gated users get a plain dark frame while the chunk
           loads — no branded intro animation for them. */}
       <Sentry.ErrorBoundary
-        fallback={
-          <div className="min-h-screen bg-[#101011] text-white flex items-center justify-center">
-            Something went wrong.
-          </div>
-        }
+        fallback={({ error, resetError }) => (
+          <ErrorFallback error={error} resetError={resetError} />
+        )}
       >
         <Suspense
           fallback={
