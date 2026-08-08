@@ -347,7 +347,6 @@ function AboutUs() {
 
   // Keyboard navigation — left/right arrows only (no vertical spin).
   useEffect(() => {
-    if (slowNetwork) return; // cube isn't rendered on slow networks
     const onKey = (e) => {
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
       // Yield when a control has focus, or another on-screen widget owns the
@@ -370,14 +369,13 @@ function AboutUs() {
 
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [applyTransform, registerSpin, slowNetwork, stopWindDown]);
+  }, [applyTransform, registerSpin, stopWindDown]);
 
   // Arrow-key arbitration (see utils/keyboardLock.js): register the cube as a
   // widget ("on screen" = the cube box is in the viewport) and mark it as the
   // last-interacted widget whenever the user presses/grabs it, so it claims
   // the arrow keys over any on-screen carousel.
   useEffect(() => {
-    if (slowNetwork) return; // cube isn't rendered on slow networks
     const unregister = registerWidget('cube', () => rectIsOnScreen(boxRef.current, 40));
     const wrap = document.getElementById('mainDiv-about');
     const mark = () => markInteracted('cube');
@@ -386,7 +384,7 @@ function AboutUs() {
       unregister();
       wrap?.removeEventListener('pointerdown', mark, true);
     };
-  }, [slowNetwork]);
+  }, []);
 
   // Cancel any wind-down / confetti rAF on unmount.
   useEffect(
@@ -499,6 +497,8 @@ function AboutUs() {
           data-aos-duration="750"
           src={Aboutus}
           alt=""
+          loading="lazy"
+          decoding="async"
         />
       </div>
 
@@ -519,42 +519,40 @@ function AboutUs() {
           </p>
         </div>
 
-        {!slowNetwork && (
-          <div id="mainDiv-about" className="select-none cursor-grab active:cursor-grabbing">
-            <div
-              id="boxDiv-about"
-              ref={boxRef}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-              onTouchCancel={handleTouchEnd}
-              onMouseDown={handleMouseDown}
-              role="group"
-              aria-label="FOCES values cube, spin it left or right with the arrow keys or by dragging horizontally"
-            >
-              <div id="front-about" className="font-about text-shadow-white">
-                DARE
-              </div>
-              <div id="back-about" className="font-about text-shadow-white">
-                DEVELOP
-              </div>
-              <div id="left-about" className="font-about text-shadow-white">
-                DOMINATE
-              </div>
-              <div id="right-about" className="font-about text-shadow-white">
-                FOCES
-              </div>
-              <div id="top-about" className="font-about text-shadow-white">
-                ICFOSS
-              </div>
-              <div id="bottom-about" className="font-about text-shadow-white">
-                CEC
-              </div>
-
-              <div className="shadow-about"></div>
+        <div id="mainDiv-about" className="select-none cursor-grab active:cursor-grabbing">
+          <div
+            id="boxDiv-about"
+            ref={boxRef}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onTouchCancel={handleTouchEnd}
+            onMouseDown={handleMouseDown}
+            role="group"
+            aria-label="FOCES values cube, spin it left or right with the arrow keys or by dragging horizontally"
+          >
+            <div id="front-about" className="font-about text-shadow-white">
+              DARE
             </div>
+            <div id="back-about" className="font-about text-shadow-white">
+              DEVELOP
+            </div>
+            <div id="left-about" className="font-about text-shadow-white">
+              DOMINATE
+            </div>
+            <div id="right-about" className="font-about text-shadow-white">
+              FOCES
+            </div>
+            <div id="top-about" className="font-about text-shadow-white">
+              ICFOSS
+            </div>
+            <div id="bottom-about" className="font-about text-shadow-white">
+              CEC
+            </div>
+
+            <div className="shadow-about"></div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

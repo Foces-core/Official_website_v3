@@ -8,6 +8,8 @@ function Footer() {
         <img
           src={FocesLogo}
           alt="FOCES Logo"
+          loading="lazy"
+          decoding="async"
           className="h-8 w-auto opacity-90 hover:opacity-100 transition-opacity"
         />
       </div>

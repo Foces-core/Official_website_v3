@@ -110,16 +110,16 @@ function Modal({ images, open, onClose }) {
           modules={[Navigation, Pagination, Scrollbar, A11y, Keyboard]}
           slidesPerView={1}
           spaceBetween={50}
-          loop={true}
+          loop={images.length > 1}
           keyboard={{ enabled: true, onlyInViewport: false }}
           navigation={{
             clickable: true,
           }}
-          scrollbar={{ draggable: true }}
+          scrollbar={{ draggable: images.length > 1 }}
           pagination={{
             clickable: true,
           }}
-          className="modal-swiper h-full w-[120%] bg-black p-10 items-center flex justify-center"
+          className={`modal-swiper h-full ${images.length === 1 ? 'w-full' : 'w-[120%]'} bg-black p-10 items-center flex justify-center`}
         >
           {images.map((url, index) => (
             <SwiperSlide key={index} className="rounded-full flex justify-center items-center">
@@ -127,6 +127,8 @@ function Modal({ images, open, onClose }) {
                 className="max-w-full max-h-full object-contain rounded-xl ease-in-out duration-200"
                 src={sanityImg(url, 1400)}
                 alt={`Slide ${index + 1}`}
+                loading="eager"
+                decoding="async"
               />
             </SwiperSlide>
           ))}

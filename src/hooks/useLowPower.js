@@ -27,6 +27,15 @@ function detectProfile() {
   let lowCPU = false;
 
   try {
+    // Modern API: navigator.userAgentData (Chrome, Edge, Opera)
+    const uaData = navigator.userAgentData;
+    if (uaData && typeof uaData.getHighEntropyValues === 'function') {
+      // Synchronous hint: if platform is "Android" or "iOS", treat as mobile
+      if (uaData.platform === 'Android' || uaData.platform === 'iOS') {
+        lowCPU = true;
+      }
+    }
+
     const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
     if (conn) {
       // Network-side constraints: Data Saver, 2G-class, or very low bandwidth
@@ -47,6 +56,12 @@ function detectProfile() {
       navigator.deviceMemory <= 4;
     const fewCores = typeof cores !== 'number' || cores <= 4;
     if (lowRam && fewCores) lowCPU = true;
+
+    // Screen-size heuristic: small screens (phones) are almost always low-power
+    // even if they report high core counts (thermal throttling, battery).
+    if (window.screen.width < 768 || window.screen.height < 768) {
+      lowCPU = true;
+    }
   } catch {
     // ignore — default to not-constrained
   }

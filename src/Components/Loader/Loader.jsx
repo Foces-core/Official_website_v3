@@ -19,7 +19,7 @@ const Loader = () => {
           <div></div>
         </div>
         <div className="absolute top-0 left-0 right-0 bottom-0 p-2">
-          <img className="w-full h-full" src={logo} alt="FOCES" />
+          <img className="w-full h-full" src={logo} alt="FOCES" loading="eager" decoding="async" />
         </div>
       </div>
 

@@ -5,6 +5,9 @@ import focespng from '../../../assets/foces.png';
 import foces1 from '../../../assets/foces1.svg';
 import useDeviceProfile from '../../../hooks/useLowPower.js';
 
+// Skip Vanta on small screens — it looks bad on phones/tablets and wastes GPU.
+const MIN_VANTA_WIDTH = 1024;
+
 function HeroSection() {
   const myRef = useRef(null);
   const { lowPower } = useDeviceProfile();
@@ -13,17 +16,13 @@ function HeroSection() {
     let vantaEffect = null;
     let cancelled = false;
 
-    // Skip the WebGL waves on low-end phones (it stutters there) and on
-    // prefers-reduced-motion (a11y). The plain #0a0a0c backdrop remains.
+    // Skip on low-end devices, reduced-motion, or small screens.
     if (lowPower) return;
+    if (window.innerWidth < MIN_VANTA_WIDTH) return;
 
-    // three.js + vanta are ~700KB combined, so they're loaded on demand as a
-    // separate chunk. Low-end devices never download them; capable machines
-    // fetch them once here (after the shell is interactive).
+    // three.js + vanta are ~700KB combined, loaded on demand as a separate chunk.
     (async () => {
       try {
-        // three's ESM entry has no default export — the namespace object IS the
-        // THREE api vanta expects. Vanta's UMD default is on `mod.default`.
         const [THREE, vantaMod] = await Promise.all([
           import('three'),
           import('vanta/dist/vanta.waves.min'),

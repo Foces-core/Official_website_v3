@@ -25,6 +25,8 @@ function Events() {
             className="w-72 h-[45%] pl-2.5"
             data-aos="flip-up"
             data-aos-duration="750"
+            loading="lazy"
+            decoding="async"
           />
           <p className="text-gray-400 text-sm md:text-base max-w-xl font-light tracking-wide mt-2">
             Participate in our flagship hackathons, technical workshops, and competitive coding

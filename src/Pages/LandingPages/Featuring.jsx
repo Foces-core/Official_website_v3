@@ -126,6 +126,8 @@ function Featuring() {
             data-aos-duration="750"
             src={featuring}
             alt=""
+            loading="lazy"
+            decoding="async"
           />
         </div>
       </div>

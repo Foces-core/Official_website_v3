@@ -357,12 +357,16 @@ export default function Navbar() {
           <img
             src={isDark ? LogoWhite : LogoGrey}
             alt="FOCES"
+            loading="eager"
+            decoding="async"
             className={`h-auto w-[clamp(88px,8vw,140px)] flex-none cursor-pointer ${isMobile ? 'hidden' : ''}`}
             onClick={handleLogoClick}
           />
           <img
             src={isDark ? LogoWhite : LogoGrey}
             alt="FOCES"
+            loading="eager"
+            decoding="async"
             className={`h-auto w-[clamp(56px,19vw,84px)] cursor-pointer ${isMobile ? '' : 'hidden'}`}
             onClick={handleLogoClick}
           />
@@ -399,7 +403,7 @@ export default function Navbar() {
               aria-controls="nav-items-mobile"
               aria-label={showItems ? 'Close menu' : 'Open menu'}
             >
-              <img src={isDark ? toggleW : toggleB} alt="" />
+              <img src={isDark ? toggleW : toggleB} alt="" loading="eager" decoding="async" />
             </button>
           )}
         </div>

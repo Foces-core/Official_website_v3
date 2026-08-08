@@ -34,6 +34,8 @@ function Eventpage() {
       src={EventTitle}
       alt="Events"
       className="w-72 h-[45%] pl-2.5 mb-2 filter drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]"
+      loading="eager"
+      decoding="async"
     />
   );
 

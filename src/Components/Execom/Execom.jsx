@@ -142,7 +142,13 @@ function Execom() {
       <div className="flex items-center h-36 pl-6 lg:pl-40 pt-6 pb-12 relative">
         <div className="w-5 h-16 bg-[#4f4f54] relative"></div>
         <div className="absolute w-46 h-6 pl-2.5">
-          <img src={MeetTheTeam} alt="Meet The Team" className="meet-the-team-title" />
+          <img
+            src={MeetTheTeam}
+            alt="Meet The Team"
+            className="meet-the-team-title"
+            loading="lazy"
+            decoding="async"
+          />
         </div>
       </div>
 

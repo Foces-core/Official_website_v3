@@ -129,6 +129,8 @@ function ContactUs() {
               data-aos-duration="750"
               src={Contactus}
               alt=""
+              loading="eager"
+              decoding="async"
             />
           </div>
         </div>
@@ -149,13 +151,21 @@ function ContactUs() {
                       data-aos-duration="750"
                       src={Contactus}
                       alt=""
+                      loading="eager"
+                      decoding="async"
                     />
                   </div>
                 </div>
               </div>
               <div className="flex text-lg flex-col space-y-4 m-4 sm:ml-[0px]">
                 <div className="mb-4 flex  ">
-                  <img className="pt-2 w-44 h-[25px] " src={Title} alt="We're here" />
+                  <img
+                    className="pt-2 w-44 h-[25px] "
+                    src={Title}
+                    alt="We're here"
+                    loading="eager"
+                    decoding="async"
+                  />
                 </div>
                 <div className="mb-4  flex flex-row items-baseline">
                   <FaLocationDot />
@@ -176,7 +186,7 @@ function ContactUs() {
                   <span>mail.foces@gmail.com</span>
                 </div>
               </div>
-              <div className="flex space-x-3  sm:space-x-2 text-lg space-y-16 items-center">
+              <div className="flex space-x-3 sm:space-x-2 text-lg space-y-16 items-center">
                 <div></div>
                 <a
                   href="https://www.facebook.com/focescec?mibextid=JRoKGi"
@@ -211,7 +221,7 @@ function ContactUs() {
                   rel="noopener noreferrer"
                   className="bg-white text-black p-1 rounded-md hover:opacity-80 transition-opacity"
                 >
-                  <FaLinkedinIn className="mx-2" />
+                  <FaLinkedinIn size={20} className="mx-2" />
                 </a>
               </div>
             </div>
