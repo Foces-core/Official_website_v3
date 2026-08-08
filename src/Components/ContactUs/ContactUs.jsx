@@ -64,12 +64,24 @@ function ContactUs() {
     const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
     const triggerMailtoFallback = () => {
-      const mailtoUrl = `mailto:Sebinmathew543@gmail.com?subject=${encodeURIComponent(
-        formData.subject,
-      )}&body=${encodeURIComponent(
+      const subjectEncoded = encodeURIComponent(formData.subject);
+      const bodyEncoded = encodeURIComponent(
         `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`,
-      )}`;
-      window.location.href = mailtoUrl;
+      );
+      const mailtoUrl = `mailto:Sebinmathew543@gmail.com?subject=${subjectEncoded}&body=${bodyEncoded}`;
+
+      // Dispatch explicit anchor click to launch native mail app (iOS / Android / Windows)
+      const link = document.createElement('a');
+      link.href = mailtoUrl;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Webmail fallback for Windows 11 / browsers without registered local mail client
+      setTimeout(() => {
+        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=Sebinmathew543@gmail.com&su=${subjectEncoded}&body=${bodyEncoded}`;
+        window.open(gmailUrl, '_blank', 'noopener,noreferrer');
+      }, 400);
     };
 
     if (!navigator.onLine || !serviceId || !templateId || !publicKey) {
