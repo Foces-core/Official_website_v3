@@ -33,9 +33,9 @@ import codingArenaAction from '../assets/events/coding_arena_action.webp';
 import codingArenaAction400 from '../assets/events/coding_arena_action-400.webp';
 import codingArenaAction800 from '../assets/events/coding_arena_action-800.webp';
 
-import promptParadoxSession from '../assets/events/prompt_paradox_session.webp';
-import promptParadoxSession400 from '../assets/events/prompt_paradox_session-400.webp';
-import promptParadoxSession800 from '../assets/events/prompt_paradox_session-800.webp';
+import promptParadoxWinners from '../assets/events/prompt_paradox_winners.webp';
+import promptParadoxWinners400 from '../assets/events/prompt_paradox_winners-400.webp';
+import promptParadoxWinners800 from '../assets/events/prompt_paradox_winners-800.webp';
 
 import studentSeminar from '../assets/events/student_seminar_presentation.webp';
 import studentSeminar400 from '../assets/events/student_seminar_presentation-400.webp';
@@ -62,10 +62,10 @@ export const featuredEvents = [
     date: '21st June 2026',
     image: promptParadoxPoster,
     imageSet: set(promptParadoxPoster, promptParadoxPoster800, promptParadoxPoster400),
-    images: [promptParadoxPoster, promptParadoxSession, studentSeminar],
+    images: [promptParadoxPoster, promptParadoxWinners, studentSeminar],
     imageSets: [
       set(promptParadoxPoster, promptParadoxPoster800, promptParadoxPoster400),
-      set(promptParadoxSession, promptParadoxSession800, promptParadoxSession400),
+      set(promptParadoxWinners, promptParadoxWinners800, promptParadoxWinners400),
       set(studentSeminar, studentSeminar800, studentSeminar400),
     ],
     desc: 'Test your prompt engineering mastery, solve complex AI puzzles, and break through the digital maze.',
@@ -78,11 +78,20 @@ export const featuredEvents = [
     date: '9th July 2026',
     image: agenticMentor,
     imageSet: set(agenticMentor, agenticMentor800, agenticMentor400),
-    images: [agenticCodingPoster, agenticMentor, agenticStudents, agenticCodingPhoto],
+    images: [
+      agenticCodingPoster,
+      agenticMentor,
+      agenticStudents,
+      codingArenaWide,
+      codingArenaAction,
+      agenticCodingPhoto,
+    ],
     imageSets: [
       set(agenticCodingPoster, agenticCodingPoster800, agenticCodingPoster400),
       set(agenticMentor, agenticMentor800, agenticMentor400),
       set(agenticStudents, agenticStudents800, agenticStudents400),
+      set(codingArenaWide, codingArenaWide800, codingArenaWide400),
+      set(codingArenaAction, codingArenaAction800, codingArenaAction400),
       set(agenticCodingPhoto, agenticCodingPhoto800, agenticCodingPhoto400),
     ],
     desc: 'Empowering developers to build autonomous AI agents using cutting-edge LLMs and agent frameworks.',
@@ -92,15 +101,13 @@ export const featuredEvents = [
     name: 'Coding Arena 4.0',
     tag: 'Bootcamp',
     date: '27th July - 5th Aug',
-    image: codingArenaWide,
-    imageSet: set(codingArenaWide, codingArenaWide800, codingArenaWide400),
-    images: [codingArenaPoster, codingArenaWide, codingArenaAction, javaLecture, codingArenaPhoto],
+    image: codingArenaPoster,
+    imageSet: set(codingArenaPoster, codingArenaPoster800, codingArenaPoster400),
+    images: [codingArenaPoster, codingArenaPhoto, javaLecture],
     imageSets: [
       set(codingArenaPoster, codingArenaPoster800, codingArenaPoster400),
-      set(codingArenaWide, codingArenaWide800, codingArenaWide400),
-      set(codingArenaAction, codingArenaAction800, codingArenaAction400),
-      set(javaLecture, javaLecture800, javaLecture400),
       set(codingArenaPhoto, codingArenaPhoto800, codingArenaPhoto400),
+      set(javaLecture, javaLecture800, javaLecture400),
     ],
     desc: 'The ultimate competitive programming and rapid prototyping battlefield at MCA Lab.',
   },
