@@ -1,15 +1,15 @@
 /* Hero cursor glow — a radial-gradient texture instead of a giant box-shadow
    blur. The gradient is rasterized once and only translated per frame, which
    is far cheaper to paint than the previous 280px box-shadow (re-blurred on
-   every mousemove). The 560px disc is centered on the pointer via negative
-   margins; the JS only ever updates `transform`. */
+   every mousemove). The disc is centered on the pointer via negative margins;
+   the JS only ever updates `transform`. */
 .cursor-glow {
     position: fixed;
     left: 0;
     top: 0;
-    width: 560px;
-    height: 560px;
-    margin: -280px 0 0 -280px;
+    width: 300px;
+    height: 300px;
+    margin: -150px 0 0 -150px;
     border-radius: 50%;
     background: radial-gradient(
         circle,

@@ -237,7 +237,7 @@ function ContactUs() {
                       value={formData.name}
                       onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
-                      className="w-full rounded-lg px-4 py-2 mt-2"
+                      className="w-full rounded-lg px-4 py-2 mt-2 bg-white text-black"
                     />
                   </div>
                   <div>
@@ -253,7 +253,7 @@ function ContactUs() {
                       value={formData.email}
                       onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
-                      className="w-full rounded-lg px-4 py-2 mt-2"
+                      className="w-full rounded-lg px-4 py-2 mt-2 bg-white text-black"
                     />
                   </div>
                   <div>
@@ -269,7 +269,7 @@ function ContactUs() {
                       value={formData.subject}
                       onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
-                      className="w-full rounded-lg px-4 py-2 mt-2"
+                      className="w-full rounded-lg px-4 py-2 mt-2 bg-white text-black"
                     />
                   </div>
                   <div>
@@ -286,7 +286,7 @@ function ContactUs() {
                       value={formData.message}
                       onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
-                      className="w-full rounded-lg px-4 py-2 mt-2"
+                      className="w-full rounded-lg px-4 py-2 mt-2 bg-white text-black"
                     />
                     <div className="flex justify-end mt-4">
                       <button
