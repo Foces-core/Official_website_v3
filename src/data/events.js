@@ -16,7 +16,7 @@ import promptParadoxPoster from '../assets/the_prompt_paradox_2_0_insta.webp';
 import promptParadoxPoster400 from '../assets/the_prompt_paradox_2_0_insta-400.webp';
 import promptParadoxPoster800 from '../assets/the_prompt_paradox_2_0_insta-800.webp';
 
-// New high resolution event photos & video frame extractions
+// High resolution event photos & video frame extractions
 import agenticMentor from '../assets/events/agentic_workshop_mentor.webp';
 import agenticMentor400 from '../assets/events/agentic_workshop_mentor-400.webp';
 import agenticMentor800 from '../assets/events/agentic_workshop_mentor-800.webp';
@@ -57,6 +57,22 @@ const set = (full, s800, s400) =>
 export const featuredEvents = [
   {
     id: 1,
+    name: 'The Prompt Paradox 2.0',
+    tag: 'AI & Prompt Engineering',
+    date: '21st June 2026',
+    image: promptParadoxPoster,
+    imageSet: set(promptParadoxPoster, promptParadoxPoster800, promptParadoxPoster400),
+    images: [promptParadoxPoster, promptParadoxSession, studentSeminar],
+    imageSets: [
+      set(promptParadoxPoster, promptParadoxPoster800, promptParadoxPoster400),
+      set(promptParadoxSession, promptParadoxSession800, promptParadoxSession400),
+      set(studentSeminar, studentSeminar800, studentSeminar400),
+    ],
+    desc: 'Test your prompt engineering mastery, solve complex AI puzzles, and break through the digital maze.',
+    websiteUrl: 'https://thepromptparadox.tech',
+  },
+  {
+    id: 2,
     name: 'Agentic Coding Workshop',
     tag: 'Hands-on Workshop',
     date: '9th July 2026',
@@ -72,7 +88,7 @@ export const featuredEvents = [
     desc: 'Empowering developers to build autonomous AI agents using cutting-edge LLMs and agent frameworks.',
   },
   {
-    id: 2,
+    id: 3,
     name: 'Coding Arena 4.0',
     tag: 'Bootcamp',
     date: '27th July - 5th Aug',
@@ -87,21 +103,6 @@ export const featuredEvents = [
       set(codingArenaPhoto, codingArenaPhoto800, codingArenaPhoto400),
     ],
     desc: 'The ultimate competitive programming and rapid prototyping battlefield at MCA Lab.',
-  },
-  {
-    id: 3,
-    name: 'The Prompt Paradox 2.0',
-    tag: 'AI & Prompt Engineering',
-    date: '21st June 2026',
-    image: promptParadoxPoster,
-    imageSet: set(promptParadoxPoster, promptParadoxPoster800, promptParadoxPoster400),
-    images: [promptParadoxPoster, promptParadoxSession, studentSeminar],
-    imageSets: [
-      set(promptParadoxPoster, promptParadoxPoster800, promptParadoxPoster400),
-      set(promptParadoxSession, promptParadoxSession800, promptParadoxSession400),
-      set(studentSeminar, studentSeminar800, studentSeminar400),
-    ],
-    desc: 'Test your prompt engineering mastery, solve complex AI puzzles, and break through the digital maze.',
   },
 ];
 

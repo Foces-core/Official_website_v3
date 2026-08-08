@@ -56,7 +56,19 @@ function EventCardMobile({ Events, priority }) {
         <div className="text-gray-300 text-sm leading-relaxed">
           <p>{Events.desc}</p>
         </div>
-        <div className="text-cyan-400 font-medium text-xs">📅 {Events.date}</div>
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+          <div className="text-cyan-400 font-medium text-xs">📅 {Events.date}</div>
+          {Events.websiteUrl && (
+            <a
+              href={Events.websiteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-cyan-400 hover:text-cyan-300 underline underline-offset-2"
+            >
+              <span>Visit Site 🌐</span>
+            </a>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -66,6 +78,7 @@ EventCardMobile.propTypes = {
   Events: PropTypes.shape({
     name: PropTypes.string,
     date: PropTypes.string,
+    websiteUrl: PropTypes.string,
     images: PropTypes.arrayOf(PropTypes.string),
     imageSets: PropTypes.arrayOf(PropTypes.string),
     desc: PropTypes.string,

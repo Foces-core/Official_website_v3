@@ -90,8 +90,28 @@ function EventCardRight({ Events, priority }) {
           </h2>
           <div className="text-gray-300 text-base leading-relaxed mb-4">
             <p>{Events.desc}</p>
-          </div>{' '}
-          <div className="text-cyan-400 font-semibold text-sm">📅 Date: {Events.date}</div>
+          </div>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="text-cyan-400 font-semibold text-sm">📅 Date: {Events.date}</div>
+            {Events.websiteUrl && (
+              <a
+                href={Events.websiteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-xl text-sm font-semibold transition-all duration-200"
+              >
+                <span>🌐 Visit Past Event Site</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                  />
+                </svg>
+              </a>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -102,6 +122,7 @@ EventCardRight.propTypes = {
   Events: PropTypes.shape({
     name: PropTypes.string,
     date: PropTypes.string,
+    websiteUrl: PropTypes.string,
     images: PropTypes.arrayOf(PropTypes.string),
     imageSets: PropTypes.arrayOf(PropTypes.string),
     desc: PropTypes.string,

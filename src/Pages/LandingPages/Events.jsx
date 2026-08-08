@@ -71,6 +71,16 @@ function Events() {
                   <p className="text-gray-400 text-sm line-clamp-3 leading-relaxed mb-4">
                     {evt.desc}
                   </p>
+                  {evt.websiteUrl && (
+                    <a
+                      href={evt.websiteUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-400 hover:text-cyan-300 underline decoration-cyan-400/50 underline-offset-4 transition-colors"
+                    >
+                      <span>Visit Past Event Site 🌐</span>
+                    </a>
+                  )}
                 </div>
               </div>
             </div>
