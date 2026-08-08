@@ -7,7 +7,7 @@ const IDLE_EPS = 0.1;
 
 function Cursor() {
   const cursorOutlineRef = useRef(null);
-  const posRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
+  const posRef = useRef({ x: -9999, y: -9999, targetX: -9999, targetY: -9999 });
   const rafId = useRef(null);
   const heroRef = useRef(null);
 

@@ -1,6 +1,5 @@
 import './HeroSection.css';
 import { useEffect, useRef } from 'react';
-import Cursor from '../../../Components/Cursor/Cursor';
 import ddd from '../../../assets/ddd.svg';
 import focespng from '../../../assets/foces.png';
 import foces1 from '../../../assets/foces1.svg';
@@ -61,13 +60,12 @@ function HeroSection() {
 
   return (
     <div
-      className="HeroSection relative bg-[#0a0a0c] overflow-hidden h-screen cursor-none"
+      className="HeroSection relative bg-[#0a0a0c] overflow-hidden h-screen"
       id="home"
       tabIndex={-1}
       ref={myRef}
     >
       <div className="hero">
-        <Cursor />
         <img
           src={ddd}
           alt="DDD"

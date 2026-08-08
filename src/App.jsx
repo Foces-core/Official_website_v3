@@ -37,10 +37,22 @@ function App() {
 
   useEffect(() => {
     if (location.state && location.state.id) {
-      const element = document.getElementById(location.state.id);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-      }
+      const id = location.state.id;
+      // The target section may be lazy-loaded behind <Suspense>. Poll briefly
+      // so we don't miss the window between Suspense resolve and the first paint.
+      let attempts = 0;
+      const tryScroll = () => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+          return;
+        }
+        if (attempts < 20) {
+          attempts += 1;
+          requestAnimationFrame(tryScroll);
+        }
+      };
+      tryScroll();
     }
   }, [location]);
 

@@ -104,13 +104,13 @@ export default function Navbar() {
       navigate('/contact');
       return;
     }
-    if (id === 'events' && window.location.pathname !== '/') {
-      // Not on the home page: navigate home, then scroll to the #events section.
+    if (window.location.pathname !== '/') {
+      // Not on the home page: navigate home, then scroll to the target section.
       e.preventDefault();
       if (isMobile) {
         setShowItems(false);
       }
-      navigate('/', { state: { id: 'events' } });
+      navigate('/', { state: { id } });
       return;
     }
     setCurrentItem(id);
@@ -309,7 +309,7 @@ export default function Navbar() {
         <button
           type="button"
           id="nav-close"
-          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center cursor-none"
+          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center"
           onClick={toggleItems}
           aria-label="Close menu"
         >
@@ -346,7 +346,7 @@ export default function Navbar() {
       <div
         className={`fixed z-10 left-0 top-0 w-full shadow ${
           isDark ? 'nav-w' : 'nav-b'
-        } flex items-center px-5 pt-4 pb-2 font-semibold max-[767px]:pl-4 max-[767px]:py-2 cursor-none max-[767px]:h-auto max-[767px]:w-screen min-[768px]:grid min-[768px]:grid-cols-[1fr_auto_1fr] ${
+        } flex items-center px-5 pt-4 pb-2 font-semibold max-[767px]:pl-4 max-[767px]:py-2 max-[767px]:h-auto max-[767px]:w-screen min-[768px]:grid min-[768px]:grid-cols-[1fr_auto_1fr] ${
           isScrolled || currentItem === 'contact'
             ? 'bg-[#101011e6] border-b border-[#ffffff1a]'
             : 'bg-transparent'
@@ -393,9 +393,7 @@ export default function Navbar() {
             <button
               type="button"
               id="nav-toggle"
-              className={`w-8 h-8 flex items-center justify-center cursor-none ${
-                showItems ? 'hidden' : ''
-              }`}
+              className={`w-8 h-8 flex items-center justify-center ${showItems ? 'hidden' : ''}`}
               onClick={toggleItems}
               aria-expanded={showItems}
               aria-controls="nav-items-mobile"

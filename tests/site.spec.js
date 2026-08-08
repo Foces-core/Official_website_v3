@@ -209,6 +209,34 @@ test.describe('Contact', () => {
     await expect(page.locator('form')).toBeVisible();
     expect(await page.locator('form input, form textarea').count()).toBeGreaterThan(0);
   });
+
+  test('form inputs have white background', async ({ page }) => {
+    await page.goto('/contact', { waitUntil: 'networkidle' });
+    const inputs = page.locator('form input, form textarea');
+    const count = await inputs.count();
+    for (let i = 0; i < count; i++) {
+      const bg = await inputs.nth(i).evaluate((el) => getComputedStyle(el).backgroundColor);
+      expect(bg).toBe('rgb(255, 255, 255)');
+    }
+  });
+
+  test('all four social links are present', async ({ page }) => {
+    await page.goto('/contact', { waitUntil: 'networkidle' });
+    await expect(page.locator('a[href*="facebook.com"]').first()).toBeVisible();
+    await expect(page.locator('a[href*="x.com"]').first()).toBeVisible();
+    await expect(page.locator('a[href*="instagram.com"]').first()).toBeVisible();
+    await expect(page.locator('a[href*="linkedin.com"]').first()).toBeVisible();
+  });
+
+  test('LinkedIn icon has explicit size', async ({ page }) => {
+    await page.goto('/contact', { waitUntil: 'networkidle' });
+    const linkedinIcon = page.locator('a[href*="linkedin.com"] svg').first();
+    await expect(linkedinIcon).toBeVisible();
+    const width = await linkedinIcon.evaluate(
+      (el) => el.getAttribute('width') || el.getBoundingClientRect().width,
+    );
+    expect(Number(width)).toBeGreaterThan(0);
+  });
 });
 
 test.describe('Reduced motion', () => {
@@ -222,6 +250,58 @@ test.describe('Reduced motion', () => {
       return el ? getComputedStyle(el).opacity === '1' : true;
     });
     expect(visible).toBe(true);
+  });
+});
+
+test.describe('Cross-route navigation', () => {
+  test('clicking Execom from /contact navigates home and scrolls to execom section', async ({
+    page,
+  }) => {
+    await page.goto('/contact', { waitUntil: 'networkidle' });
+    // Verify the link exists and what href it has
+    const link = page.locator('a[href="/#execom"]');
+    await expect(link).toBeVisible();
+    // Click and wait for navigation
+    await Promise.all([page.waitForURL('**/', { timeout: 10000 }), link.click()]);
+    // Wait for lazy-loaded sections to mount
+    await page.waitForSelector('#execom', { timeout: 10000 });
+    await page.waitForTimeout(3000);
+    const scrollY = await page.evaluate(() => window.scrollY);
+    const execomTop = await page.evaluate(() => {
+      const el = document.getElementById('execom');
+      return el ? el.getBoundingClientRect().top : Infinity;
+    });
+    // The page should have scrolled (scrollY > 0) and execom should be near viewport
+    expect(scrollY).toBeGreaterThan(0);
+    expect(execomTop).toBeLessThan(1000);
+  });
+
+  test('clicking About from /events navigates home and scrolls to about section', async ({
+    page,
+  }) => {
+    await page.goto('/events', { waitUntil: 'networkidle' });
+    await page.locator('a[href="/#about"]').click();
+    await page.waitForURL('**/');
+    await page.waitForTimeout(2500);
+    const aboutTop = await page.evaluate(() => {
+      const el = document.getElementById('about');
+      return el ? el.getBoundingClientRect().top : Infinity;
+    });
+    expect(aboutTop).toBeLessThan(800);
+  });
+
+  test('clicking Contact from /events navigates to /contact', async ({ page }) => {
+    await page.goto('/events', { waitUntil: 'networkidle' });
+    await page.locator('a[href="/contact"]').first().click();
+    await page.waitForURL('**/contact');
+    await expect(page.locator('form')).toBeVisible();
+  });
+
+  test('logo click from /contact returns to home', async ({ page }) => {
+    await page.goto('/contact', { waitUntil: 'networkidle' });
+    await page.locator('img[alt="FOCES"]').first().click();
+    await page.waitForURL('**/');
+    await expect(page.locator('#home')).toBeVisible();
   });
 });
 
