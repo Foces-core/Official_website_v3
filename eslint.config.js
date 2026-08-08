@@ -38,4 +38,10 @@ export default [
       'no-empty': 'off',
     },
   },
+  {
+    files: ['vite.config.js'],
+    languageOptions: {
+      globals: { ...globals.node },
+    },
+  },
 ];

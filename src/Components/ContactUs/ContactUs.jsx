@@ -54,9 +54,18 @@ function ContactUs() {
       },
     });
 
-    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID || '***REMOVED***';
-    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || '***REMOVED***';
-    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || '***REMOVED***';
+    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
+
+    if (!serviceId || !templateId || !publicKey) {
+      toast.error('Email service is not configured. Please contact us directly.', {
+        autoClose: 3000,
+        className: 'toast-custom',
+        style: { borderRadius: '10px' },
+      });
+      return;
+    }
 
     emailjs
       .sendForm(serviceId, templateId, e.target, publicKey)

@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 import { VitePWA } from 'vite-plugin-pwa';
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 
 // Preloads the two self-hosted woff2 fonts in the HTML so the browser starts
 // the fetch as soon as the document is parsed — instead of waiting for the
@@ -35,6 +36,17 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    // Sentry: upload source maps in CI/release builds so stack traces are
+    // readable. The DSN is read from VITE_SENTRY_DSN env var at runtime.
+    ...(process.env.VITE_SENTRY_DSN
+      ? [
+          sentryVitePlugin({
+            org: process.env.SENTRY_ORG,
+            project: process.env.SENTRY_PROJECT,
+            authToken: process.env.SENTRY_AUTH_TOKEN,
+          }),
+        ]
+      : []),
     preloadFonts(),
     // Compress every image at build time (smaller payloads for everyone,
     // especially low-end devices on slow connections)

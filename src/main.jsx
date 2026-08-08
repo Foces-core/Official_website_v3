@@ -2,6 +2,7 @@
 import React, { lazy, Suspense, useState, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router';
+import * as Sentry from '@sentry/react';
 import DeferredAnalytics from './utils/DeferredAnalytics.jsx';
 import App from './App.jsx';
 import Loader from './Components/Loader/Loader.jsx';
@@ -9,6 +10,22 @@ import Grain from './Components/Grain/Grain.jsx';
 import useDeviceProfile from './hooks/useLowPower.js';
 import './assets/fonts-latin.css';
 import './index.css';
+
+// Sentry: initialize only when a DSN is configured (production).
+// In dev, errors stay in the console — no external service needed.
+if (import.meta.env.VITE_SENTRY_DSN) {
+  Sentry.init({
+    dsn: import.meta.env.VITE_SENTRY_DSN,
+    environment: import.meta.env.MODE,
+    integrations: [
+      Sentry.browserTracingIntegration(),
+      Sentry.replayIntegration({ maskAllText: true, blockAllMedia: true }),
+    ],
+    tracesSampleRate: 0.2,
+    replaysSessionSampleRate: 0,
+    replaysOnErrorSampleRate: 1.0,
+  });
+}
 
 const Eventpage = lazy(() => import('./Pages/EventPage/Eventpage'));
 const ContactUs = lazy(() => import('./Components/ContactUs/ContactUs.jsx'));
@@ -88,21 +105,29 @@ function Root() {
       )}
       {/* Lazy routes: gated users get a plain dark frame while the chunk
           loads — no branded intro animation for them. */}
-      <Suspense
+      <Sentry.ErrorBoundary
         fallback={
-          slowNetwork || lowPower ? (
-            <div className="fixed inset-0 bg-[#101011]" aria-hidden="true" />
-          ) : (
-            <Loader />
-          )
+          <div className="min-h-screen bg-[#101011] text-white flex items-center justify-center">
+            Something went wrong.
+          </div>
         }
       >
-        <Routes>
-          <Route path="/" element={<App />} />
-          <Route path="/events" element={<Eventpage />} />
-          <Route path="/contact" element={<ContactUs />} />
-        </Routes>
-      </Suspense>
+        <Suspense
+          fallback={
+            slowNetwork || lowPower ? (
+              <div className="fixed inset-0 bg-[#101011]" aria-hidden="true" />
+            ) : (
+              <Loader />
+            )
+          }
+        >
+          <Routes>
+            <Route path="/" element={<App />} />
+            <Route path="/events" element={<Eventpage />} />
+            <Route path="/contact" element={<ContactUs />} />
+          </Routes>
+        </Suspense>
+      </Sentry.ErrorBoundary>
       <Grain />
     </>
   );
