@@ -45,10 +45,6 @@ import promptParadoxLeaderboard from '../assets/events/prompt_paradox_leaderboar
 import promptParadoxLeaderboard400 from '../assets/events/prompt_paradox_leaderboard-400.webp';
 import promptParadoxLeaderboard800 from '../assets/events/prompt_paradox_leaderboard-800.webp';
 
-import studentSeminar from '../assets/events/student_seminar_presentation.webp';
-import studentSeminar400 from '../assets/events/student_seminar_presentation-400.webp';
-import studentSeminar800 from '../assets/events/student_seminar_presentation-800.webp';
-
 import javaLecture from '../assets/events/java_algorithm_lecture.webp';
 import javaLecture400 from '../assets/events/java_algorithm_lecture-400.webp';
 import javaLecture800 from '../assets/events/java_algorithm_lecture-800.webp';
@@ -70,12 +66,11 @@ export const featuredEvents = [
     date: '21st June 2026',
     image: promptParadoxPoster,
     imageSet: set(promptParadoxPoster, promptParadoxPoster800, promptParadoxPoster400),
-    images: [promptParadoxPoster, promptParadoxWinners, promptParadoxLeaderboard, studentSeminar],
+    images: [promptParadoxPoster, promptParadoxWinners, promptParadoxLeaderboard],
     imageSets: [
       set(promptParadoxPoster, promptParadoxPoster800, promptParadoxPoster400),
       set(promptParadoxWinners, promptParadoxWinners800, promptParadoxWinners400),
       set(promptParadoxLeaderboard, promptParadoxLeaderboard800, promptParadoxLeaderboard400),
-      set(studentSeminar, studentSeminar800, studentSeminar400),
     ],
     desc: 'Test your prompt engineering mastery, solve complex AI puzzles, and break through the digital maze.',
     websiteUrl: 'https://foces-core.github.io/prompt-paradox-2/',
