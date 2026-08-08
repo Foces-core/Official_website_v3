@@ -1,16 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
+import { prioritizeAssetFetch } from '../../utils/priorityScheduler.js';
 
 /**
  * BlurImage — lazy-loads an image with a blur-up placeholder.
- *
- * For Sanity images: pass `blurSrc` from `sanityBlurUrl()`.
- * For local images: pass `blurSrc` as a tiny base64 data URL (from vite-imagetools ?lqip).
- * If no `blurSrc` is provided, the image loads normally (no blur effect).
- *
- * The blur placeholder is shown until the full image finishes loading,
- * then cross-fades to the sharp version. The placeholder element is
- * removed from the DOM after the transition to avoid extra nodes.
+ * Automatically elevates fetchPriority to 'high' upon direct user interaction.
  */
 export default function BlurImage({
   src,
@@ -26,6 +20,9 @@ export default function BlurImage({
   const [loaded, setLoaded] = useState(false);
   const [removed, setRemoved] = useState(!blurSrc);
   const [prevSrc, setPrevSrc] = useState(src);
+  const [priorityAttr, setPriorityAttr] = useState(() =>
+    loading === 'eager' ? 'high' : undefined,
+  );
   const imgRef = useRef(null);
   const timerRef = useRef(null);
 
@@ -33,6 +30,7 @@ export default function BlurImage({
     setPrevSrc(src);
     setLoaded(false);
     setRemoved(!blurSrc);
+    setPriorityAttr(loading === 'eager' ? 'high' : undefined);
   }
 
   useEffect(() => {
@@ -50,6 +48,13 @@ export default function BlurImage({
     }
   }, [src, blurSrc]);
 
+  const handleInteraction = () => {
+    if (!priorityAttr) {
+      setPriorityAttr('high');
+      prioritizeAssetFetch(src);
+    }
+  };
+
   const handleLoad = () => {
     setLoaded(true);
     // Remove the placeholder from DOM after the cross-fade completes
@@ -65,7 +70,13 @@ export default function BlurImage({
   const showBlur = blurSrc && !removed;
 
   return (
-    <div className={`relative overflow-hidden ${className}`} style={{ width, height }}>
+    <div
+      className={`relative overflow-hidden ${className}`}
+      style={{ width, height }}
+      onMouseEnter={handleInteraction}
+      onTouchStart={handleInteraction}
+      onFocus={handleInteraction}
+    >
       {/* Blur placeholder — sits behind the full image */}
       {showBlur && (
         <img
@@ -84,6 +95,7 @@ export default function BlurImage({
         alt={alt}
         loading={loading}
         decoding={decoding}
+        fetchPriority={priorityAttr}
         onLoad={handleLoad}
         onError={handleError}
         className={`transition-opacity duration-500 ${showBlur && !loaded ? 'opacity-0' : 'opacity-100'} ${className}`}

@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Modal from './Modal';
 import { sanityImg } from '../../utils/sanityImage.js';
 import { preloadImages } from '../../utils/imageCacheManager.js';
+import { prioritizeAssetFetch } from '../../utils/priorityScheduler.js';
 import useDeviceProfile from '../../hooks/useLowPower.js';
 
 function EventCardLeft({ Events, priority }) {
@@ -20,12 +21,21 @@ function EventCardLeft({ Events, priority }) {
     }
   }, [images]);
 
+  const handleInteraction = () => {
+    if (images.length > 0) {
+      images.map((url) => sanityImg(url, 1400)).forEach((u) => prioritizeAssetFetch(u));
+    }
+  };
+
   return (
     <div
       className="w-[95%] max-w-6xl bg-[#161618]/80 backdrop-blur-md border border-white/10 rounded-3xl mt-10 p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 shadow-2xl hover:border-white/30 transition-all duration-300"
       id="events"
       data-aos="fade-up"
       data-aos-duration="1000"
+      onMouseEnter={handleInteraction}
+      onTouchStart={handleInteraction}
+      onFocus={handleInteraction}
     >
       {/* Poster / Image Section */}
       <div className="w-full md:w-1/2 flex flex-col gap-3">

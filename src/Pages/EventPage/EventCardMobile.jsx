@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Modal from './Modal';
 import { sanityImg } from '../../utils/sanityImage.js';
 import { preloadImages } from '../../utils/imageCacheManager.js';
+import { prioritizeAssetFetch } from '../../utils/priorityScheduler.js';
 import useDeviceProfile from '../../hooks/useLowPower.js';
 
 function EventCardMobile({ Events, priority }) {
@@ -20,11 +21,20 @@ function EventCardMobile({ Events, priority }) {
     }
   }, [images]);
 
+  const handleInteraction = () => {
+    if (images.length > 0) {
+      images.map((url) => sanityImg(url, 1400)).forEach((u) => prioritizeAssetFetch(u));
+    }
+  };
+
   return (
     <div
       className="w-[92%] max-w-sm bg-[#161618]/90 border border-white/10 rounded-2xl my-6 p-5 flex flex-col gap-4 shadow-xl"
       data-aos="fade-up"
       data-aos-duration="1000"
+      onMouseEnter={handleInteraction}
+      onTouchStart={handleInteraction}
+      onFocus={handleInteraction}
     >
       <div
         className="relative w-full rounded-xl overflow-hidden bg-[#0b0b0c] border border-white/10 shadow-md cursor-pointer group"
