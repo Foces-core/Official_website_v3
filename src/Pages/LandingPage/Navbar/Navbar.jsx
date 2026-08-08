@@ -11,7 +11,7 @@ import './Navbar.css';
 
 const navItems = [
   { id: 'home', name: 'HOME' },
-  { id: 'about', name: 'ABOUT' },
+  { id: 'about', name: 'WHY FOCES?' },
   { id: 'featuring', name: 'FEATURING' },
   { id: 'events', name: 'EVENTS' },
   { id: 'execom', name: 'MEET THE TEAM' },
