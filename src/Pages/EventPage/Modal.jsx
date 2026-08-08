@@ -1,5 +1,4 @@
 import Lightbox from 'yet-another-react-lightbox';
-import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import Counter from 'yet-another-react-lightbox/plugins/counter';
 import 'yet-another-react-lightbox/styles.css';
 import 'yet-another-react-lightbox/plugins/counter.css';
@@ -18,7 +17,7 @@ function Modal({ images, open, onClose }) {
       open={open}
       close={onClose}
       slides={slides}
-      plugins={[Zoom, Counter]}
+      plugins={[Counter]}
       controller={{ closeOnBackdropClick: true }}
       carousel={{ finite: slides.length <= 1 }}
       animation={{ fade: 200 }}
