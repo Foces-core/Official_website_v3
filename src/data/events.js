@@ -18,10 +18,6 @@ import agenticMentor from '../assets/events/agentic_workshop_mentor.webp';
 import agenticMentor400 from '../assets/events/agentic_workshop_mentor-400.webp';
 import agenticMentor800 from '../assets/events/agentic_workshop_mentor-800.webp';
 
-import agenticSdpkRoom from '../assets/events/agentic_sdpk_room.webp';
-import agenticSdpkRoom400 from '../assets/events/agentic_sdpk_room-400.webp';
-import agenticSdpkRoom800 from '../assets/events/agentic_sdpk_room-800.webp';
-
 import agenticStudents from '../assets/events/agentic_workshop_students.webp';
 import agenticStudents400 from '../assets/events/agentic_workshop_students-400.webp';
 import agenticStudents800 from '../assets/events/agentic_workshop_students-800.webp';
@@ -71,11 +67,10 @@ export const featuredEvents = [
     date: '9th July 2026',
     image: agenticMentor,
     imageSet: set(agenticMentor, agenticMentor800, agenticMentor400),
-    images: [agenticCodingPoster, agenticMentor, agenticSdpkRoom, agenticStudents],
+    images: [agenticCodingPoster, agenticMentor, agenticStudents],
     imageSets: [
       set(agenticCodingPoster, agenticCodingPoster800, agenticCodingPoster400),
       set(agenticMentor, agenticMentor800, agenticMentor400),
-      set(agenticSdpkRoom, agenticSdpkRoom800, agenticSdpkRoom400),
       set(agenticStudents, agenticStudents800, agenticStudents400),
     ],
     desc: 'Empowering developers to build autonomous AI agents using cutting-edge LLMs and agent frameworks.',
