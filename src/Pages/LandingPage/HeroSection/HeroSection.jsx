@@ -4,6 +4,7 @@ import ddd from '../../../assets/ddd.svg';
 import focespng from '../../../assets/foces.png';
 import foces1 from '../../../assets/foces1.svg';
 import useDeviceProfile from '../../../hooks/useLowPower.js';
+import { scheduleBackgroundTask } from '../../../utils/priorityScheduler.js';
 
 // Skip Vanta on small screens — it looks bad on phones/tablets and wastes GPU.
 const MIN_VANTA_WIDTH = 1024;
@@ -20,8 +21,9 @@ function HeroSection() {
     if (lowPower) return;
     if (window.innerWidth < MIN_VANTA_WIDTH) return;
 
-    // three.js + vanta are ~700KB combined, loaded on demand as a separate chunk.
-    (async () => {
+    // Defer the ~700KB 3D WebGL library to the lowest background load priority
+    // so critical page assets, fonts, and interactive elements load first.
+    scheduleBackgroundTask(async () => {
       try {
         const [THREE, vantaMod] = await Promise.all([
           import('three'),
@@ -52,7 +54,7 @@ function HeroSection() {
       } catch (err) {
         console.warn('Vanta Waves init warning:', err);
       }
-    })();
+    });
 
     return () => {
       cancelled = true;
