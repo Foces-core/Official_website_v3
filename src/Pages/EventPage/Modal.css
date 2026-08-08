@@ -1,9 +1,65 @@
-/* Event photo gallery modal — Swiper theming (previously inline style on the
-   <Swiper> element; now a dedicated class). */
+/* Event photo gallery modal — Swiper theming and vertical/horizontal centering */
 .modal-swiper {
     --swiper-navigation-color: white;
     --swiper-navigation-size: 30px;
     --swiper-pagination-color: white;
     --swiper-pagination-bullet-inactive-opacity: 0.3;
     --swiper-pagination-bullet-inactive-color: white;
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding-top: 0.5rem !important;
+    padding-bottom: 2.5rem !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    box-sizing: border-box !important;
+}
+
+.modal-swiper .swiper-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 100% !important;
+    width: 100% !important;
+}
+
+.modal-swiper .swiper-slide {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0.25rem !important;
+    box-sizing: border-box !important;
+}
+
+.modal-swiper .swiper-slide img {
+    max-width: 100% !important;
+    max-height: 100% !important;
+    width: auto !important;
+    height: auto !important;
+    object-fit: contain !important;
+    margin: auto !important;
+    display: block !important;
+    border-radius: 0.75rem !important;
+}
+
+/* Ensure navigation arrows are vertically centered */
+.modal-swiper .swiper-button-prev,
+.modal-swiper .swiper-button-next {
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    margin-top: 0 !important;
+}
+
+/* Pagination bullets centered at bottom */
+.modal-swiper .swiper-pagination {
+    bottom: 0.75rem !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: auto !important;
 }

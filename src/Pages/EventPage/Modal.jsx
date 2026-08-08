@@ -94,13 +94,13 @@ function Modal({ images, open, onClose }) {
       />
       <div
         ref={dialogRef}
-        className="w-[92vw] max-w-5xl h-[85vh] flex items-center justify-center fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#0d0d0e] border border-white/10 rounded-2xl p-2 z-50 shadow-2xl"
+        className="w-[94vw] max-w-5xl h-[85vh] max-h-[850px] flex items-center justify-center fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#0d0d0e] border border-white/10 rounded-2xl p-2 sm:p-4 z-50 shadow-2xl overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           ref={closeBtnRef}
           type="button"
-          className="absolute top-4 right-4 z-30 w-10 h-10 flex items-center justify-center rounded-full bg-black/60 hover:bg-black/90 text-white text-xl transition-colors duration-200 border border-white/20 backdrop-blur-md"
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 z-30 w-10 h-10 flex items-center justify-center rounded-full bg-black/70 hover:bg-black/90 text-white text-xl transition-colors duration-200 border border-white/20 backdrop-blur-md cursor-pointer"
           onClick={onClose}
           aria-label="Close gallery"
         >
@@ -119,12 +119,11 @@ function Modal({ images, open, onClose }) {
           pagination={{
             clickable: true,
           }}
-          className="modal-swiper h-full w-full bg-transparent p-4 sm:p-8 flex items-center justify-center"
+          className="modal-swiper"
         >
           {images.map((url, index) => (
-            <SwiperSlide key={index} className="flex justify-center items-center h-full w-full">
+            <SwiperSlide key={index}>
               <img
-                className="max-w-full max-h-[75vh] object-contain rounded-xl m-auto"
                 src={sanityImg(url, 1400)}
                 alt={`Slide ${index + 1}`}
                 loading="eager"
