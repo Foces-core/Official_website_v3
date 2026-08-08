@@ -59,7 +59,7 @@ function ContactUs() {
     const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
     const triggerMailtoFallback = () => {
-      const mailtoUrl = `mailto:mail.foces@gmail.com?subject=${encodeURIComponent(
+      const mailtoUrl = `mailto:Sebinmathew543@gmail.com?subject=${encodeURIComponent(
         formData.subject,
       )}&body=${encodeURIComponent(
         `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`,
@@ -201,9 +201,14 @@ function ContactUs() {
                   <FaPhoneAlt />
                   <span>+91-479-2454125</span>
                 </div>
-                <div className="mb-4   text-lg  inline-flex space-x-2 items-center">
+                <div className="mb-4 text-lg inline-flex space-x-2 items-center">
                   <IoMail />
-                  <span>mail.foces@gmail.com</span>
+                  <a
+                    href="mailto:Sebinmathew543@gmail.com"
+                    className="hover:underline hover:text-cyan-400 transition-colors"
+                  >
+                    Sebinmathew543@gmail.com
+                  </a>
                 </div>
               </div>
               <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 text-lg mt-4">
