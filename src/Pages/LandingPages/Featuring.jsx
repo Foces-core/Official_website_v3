@@ -68,8 +68,8 @@ const echoSlides = [
 ];
 
 function Featuring() {
-  const { lowPower, reducedMotion } = useDeviceProfile();
-  const disableAutoplay = lowPower || reducedMotion;
+  const { reducedMotion } = useDeviceProfile();
+  const disableAutoplay = reducedMotion;
   const [noSlides, setNoSlides] = useState(1);
   const swiperRef = useRef(null);
   const carouselRef = useRef(null);
