@@ -67,7 +67,8 @@ const cardData = [
 const cubeSlides = [...cardData, ...cardData, ...cardData];
 
 function Execom() {
-  const { lowPower } = useDeviceProfile();
+  const { lowPower, reducedMotion } = useDeviceProfile();
+  const disableAutoplay = lowPower || reducedMotion;
   const flatCube = lowPower;
   const [activeCube, setActiveCube] = React.useState(0);
   const cubeRef = React.useRef(null);
@@ -76,11 +77,23 @@ function Execom() {
   const cubeVisibleRef = React.useRef(true);
   const deskSwiperRef = React.useRef(null);
   const deskWrapRef = React.useRef(null);
-  const lastWrap = React.useRef(0);
 
   // Shadow planes + face gradients are the cube's #1 GPU cost — and on a
   // near-black site they read as a black smear, not a shadow. Keep them off.
   const cubeEffectConfig = { shadow: false, slideShadows: false };
+
+  const handleCubeWrap = React.useCallback((swiper) => {
+    if (!swiper) return;
+    const total = cardData.length;
+    const idx = swiper.activeIndex;
+    setActiveCube(idx % total);
+
+    if (idx >= total * 2) {
+      swiper.slideTo(idx - total, 0);
+    } else if (idx < total) {
+      swiper.slideTo(idx + total, 0);
+    }
+  }, []);
 
   // Arrow-key arbitration (see utils/keyboardLock.js): register the desktop
   // carousel as a widget (only counts while it is actually rendered/visible)
@@ -116,7 +129,7 @@ function Execom() {
             cubeVisibleRef.current = entry.isIntersecting;
             if (!cubeRef.current) return;
             if (entry.isIntersecting) {
-              if (!lowPower) cubeRef.current.autoplay?.start();
+              if (!disableAutoplay) cubeRef.current.autoplay?.start();
             } else {
               cubeRef.current.autoplay?.stop();
             }
@@ -134,7 +147,7 @@ function Execom() {
           ([entry]) => {
             if (!deskSwiperRef.current) return;
             if (entry.isIntersecting) {
-              if (!lowPower) deskSwiperRef.current.autoplay?.start();
+              if (!disableAutoplay) deskSwiperRef.current.autoplay?.start();
             } else {
               deskSwiperRef.current.autoplay?.stop();
             }
@@ -148,7 +161,7 @@ function Execom() {
       if (ioCube) ioCube.disconnect();
       if (ioDesk) ioDesk.disconnect();
     };
-  }, [lowPower]);
+  }, [disableAutoplay]);
 
   return (
     <section
@@ -181,7 +194,7 @@ function Execom() {
             spaceBetween={20}
             slidesPerView={1}
             loop={true}
-            autoplay={lowPower ? false : { delay: 3500, disableOnInteraction: false }}
+            autoplay={disableAutoplay ? false : { delay: 3500, disableOnInteraction: false }}
             pagination={{ clickable: true }}
             navigation={true}
             keyboard={{ enabled: true, onlyInViewport: false }}
@@ -225,23 +238,15 @@ function Execom() {
             cubeEffect={cubeEffectConfig}
             loop={false}
             initialSlide={cardData.length}
-            autoplay={{ delay: 2500, disableOnInteraction: false, stopOnLastSlide: false }}
+            autoplay={
+              disableAutoplay
+                ? false
+                : { delay: 2500, disableOnInteraction: false, stopOnLastSlide: false }
+            }
             modules={[EffectCube, Pagination, Autoplay]}
-            onSlideChange={(swiper) => setActiveCube(swiper.activeIndex % cardData.length)}
-            onTransitionEnd={(swiper) => {
-              // Seamless infinite wrap: at either edge, jump 0ms to the matching slide copy
-              const now = Date.now();
-              if (now - lastWrap.current < 120) return;
-              if (swiper.activeIndex >= cardData.length * 3 - 1) {
-                lastWrap.current = now;
-                swiper.slideTo(cardData.length, 0);
-                if (swiper.autoplay) swiper.autoplay.start();
-              } else if (swiper.activeIndex <= 0) {
-                lastWrap.current = now;
-                swiper.slideTo(cardData.length, 0);
-                if (swiper.autoplay) swiper.autoplay.start();
-              }
-            }}
+            onSlideChange={handleCubeWrap}
+            onTouchEnd={handleCubeWrap}
+            onTransitionEnd={handleCubeWrap}
             className="execom-cube-swiper"
           >
             {cubeSlides.map((d, index) => (
