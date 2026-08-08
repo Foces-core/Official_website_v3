@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import Lightbox from 'yet-another-react-lightbox';
 import Counter from 'yet-another-react-lightbox/plugins/counter';
 import 'yet-another-react-lightbox/styles.css';
@@ -6,9 +7,18 @@ import PropTypes from 'prop-types';
 import { sanityImg } from '../../utils/sanityImage.js';
 
 function Modal({ images, open, onClose }) {
-  if (!open) return null;
+  useEffect(() => {
+    if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [open]);
 
-  const slides = (images || []).map((url) => ({
+  if (!open || !images || images.length === 0) return null;
+
+  const slides = images.map((url) => ({
     src: sanityImg(url, 1400),
   }));
 

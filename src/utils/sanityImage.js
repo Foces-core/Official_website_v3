@@ -10,7 +10,9 @@
  * @returns {string}  The optimized URL (or the original if it's not Sanity)
  */
 export const sanityImg = (url, w = 1000) =>
-  url && url.includes('cdn.sanity.io') ? `${url.split('?')[0]}?w=${w}&auto=format&q=72` : url;
+  typeof url === 'string' && url.includes('cdn.sanity.io')
+    ? `${url.split('?')[0]}?w=${w}&auto=format&q=72`
+    : url;
 
 /**
  * Generate a tiny blurred placeholder for Sanity images (LQIP).
@@ -21,6 +23,6 @@ export const sanityImg = (url, w = 1000) =>
  * @returns {string|undefined}  Blurred placeholder URL or undefined
  */
 export const sanityBlurUrl = (url) =>
-  url && url.includes('cdn.sanity.io')
+  typeof url === 'string' && url.includes('cdn.sanity.io')
     ? `${url.split('?')[0]}?w=20&blur=20&auto=format&q=30`
     : undefined;
