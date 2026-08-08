@@ -35,11 +35,11 @@ const ContactUs = lazyWithRetry(() => import('./Components/ContactUs/ContactUs.j
 // Cross-route scroll restoration: every navigation lands at the top unless a
 // state.id anchor was passed (App.jsx handles scrolling to that section).
 function ScrollToTop() {
-  const { pathname, state } = useLocation();
+  const { pathname, state, hash } = useLocation();
   useEffect(() => {
-    if (state && state.id) return;
+    if ((state && state.id) || hash) return;
     window.scrollTo(0, 0);
-  }, [pathname, state]);
+  }, [pathname, state, hash]);
   return null;
 }
 

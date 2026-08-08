@@ -36,24 +36,48 @@ function App() {
   const location = useLocation();
 
   useEffect(() => {
-    if (location.state && location.state.id) {
-      const id = location.state.id;
-      // The target section may be lazy-loaded behind <Suspense>. Poll briefly
-      // so we don't miss the window between Suspense resolve and the first paint.
-      let attempts = 0;
-      const tryScroll = () => {
-        const element = document.getElementById(id);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-          return;
-        }
-        if (attempts < 20) {
-          attempts += 1;
-          requestAnimationFrame(tryScroll);
-        }
-      };
-      tryScroll();
-    }
+    const targetId = location.state?.id || (location.hash ? location.hash.replace('#', '') : null);
+    if (!targetId) return;
+
+    let cancelled = false;
+    let observer = null;
+
+    const scrollToTarget = () => {
+      const el = document.getElementById(targetId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+        return true;
+      }
+      return false;
+    };
+
+    // 1. Try scrolling immediately if component is already mounted
+    if (scrollToTarget()) return;
+
+    // 2. Observe DOM mutations when lazy-loaded Suspense chunks mount
+    const mainContainer = document.getElementById('main-content') || document.body;
+    observer = new MutationObserver(() => {
+      if (scrollToTarget() && observer) {
+        observer.disconnect();
+      }
+    });
+    observer.observe(mainContainer, { childList: true, subtree: true });
+
+    // 3. Failsafe polling for up to 5 seconds across slow network chunk downloads
+    const startTime = Date.now();
+    const pollInterval = setInterval(() => {
+      if (cancelled) return;
+      if (scrollToTarget() || Date.now() - startTime > 5000) {
+        clearInterval(pollInterval);
+        if (observer) observer.disconnect();
+      }
+    }, 100);
+
+    return () => {
+      cancelled = true;
+      clearInterval(pollInterval);
+      if (observer) observer.disconnect();
+    };
   }, [location]);
 
   return (
