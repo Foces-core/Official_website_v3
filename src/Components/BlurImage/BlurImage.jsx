@@ -36,6 +36,13 @@ export default function BlurImage({
   const [loaded, setLoaded] = useState(false);
   const [removed, setRemoved] = useState(!blurSrc);
   const imgRef = useRef(null);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (!blurSrc) return;
@@ -50,7 +57,7 @@ export default function BlurImage({
   const handleLoad = () => {
     setLoaded(true);
     // Remove the placeholder from DOM after the cross-fade completes
-    setTimeout(() => setRemoved(true), 500);
+    timerRef.current = setTimeout(() => setRemoved(true), 500);
   };
 
   const showBlur = blurSrc && !removed;

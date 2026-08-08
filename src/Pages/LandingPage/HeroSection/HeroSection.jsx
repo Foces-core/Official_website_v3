@@ -44,6 +44,11 @@ function HeroSection() {
           waveSpeed: 0.75,
           zoom: 0.85,
         });
+        if (cancelled) {
+          if (vantaEffect && typeof vantaEffect.destroy === 'function') {
+            vantaEffect.destroy();
+          }
+        }
       } catch (err) {
         console.warn('Vanta Waves init warning:', err);
       }

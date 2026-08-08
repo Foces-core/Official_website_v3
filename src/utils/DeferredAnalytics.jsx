@@ -13,14 +13,15 @@ export default function DeferredAnalytics() {
 
   useEffect(() => {
     let done = false;
+    let idleId = null;
     const arm = () => {
       if (done) return;
       done = true;
       cleanup();
       if (typeof requestIdleCallback === 'function') {
-        requestIdleCallback(() => setReady(true), { timeout: 3000 });
+        idleId = requestIdleCallback(() => setReady(true), { timeout: 3000 });
       } else {
-        setTimeout(() => setReady(true), 2000);
+        idleId = setTimeout(() => setReady(true), 2000);
       }
     };
     const events = ['pointerdown', 'keydown', 'scroll', 'touchstart'];
@@ -29,6 +30,13 @@ export default function DeferredAnalytics() {
 
     function cleanup() {
       clearTimeout(idleTimeout);
+      if (idleId) {
+        if (typeof cancelIdleCallback === 'function') {
+          cancelIdleCallback(idleId);
+        } else {
+          clearTimeout(idleId);
+        }
+      }
       events.forEach((e) => window.removeEventListener(e, arm));
     }
     return cleanup;

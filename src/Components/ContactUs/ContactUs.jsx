@@ -23,6 +23,7 @@ function ContactUs() {
     subject: '',
     message: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateForm = () => {
     const { name, email, subject, message } = formData;
@@ -35,6 +36,8 @@ function ContactUs() {
   const sendEmail = (e) => {
     e.preventDefault();
 
+    if (isSubmitting) return;
+
     if (!validateForm()) {
       toast.error('Please fill in all fields.', {
         autoClose: 2000,
@@ -45,6 +48,8 @@ function ContactUs() {
       });
       return;
     }
+
+    setIsSubmitting(true);
 
     toast.info('Sending...', {
       autoClose: 2000,
@@ -75,6 +80,7 @@ function ContactUs() {
         className: 'toast-custom',
         style: { borderRadius: '10px' },
       });
+      setIsSubmitting(false);
       return;
     }
 
@@ -112,6 +118,9 @@ function ContactUs() {
             borderRadius: '10px',
           },
         });
+      })
+      .finally(() => {
+        setIsSubmitting(false);
       });
   };
 
@@ -329,9 +338,12 @@ function ContactUs() {
                     <div className="flex justify-end mt-4">
                       <button
                         type="submit"
-                        className="flex items-center text-black bg-white px-4 py-2 rounded-md hover:bg-gray-100 "
+                        disabled={isSubmitting}
+                        className={`flex items-center text-black bg-white px-4 py-2 rounded-md hover:bg-gray-100 transition-opacity ${
+                          isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
                       >
-                        Send
+                        {isSubmitting ? 'Sending...' : 'Send'}
                         <IoSend className="ml-2" />
                       </button>
                     </div>

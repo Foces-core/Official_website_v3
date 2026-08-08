@@ -135,7 +135,7 @@ function Modal({ images, open, onClose }) {
         </Swiper>
       </div>
     </>,
-    document.getElementById('portal'),
+    document.getElementById('portal') || document.body,
   );
 }
 
