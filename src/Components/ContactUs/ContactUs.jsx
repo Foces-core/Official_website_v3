@@ -72,14 +72,19 @@ function ContactUs() {
       window.location.href = mailtoUrl;
     };
 
-    if (!serviceId || !templateId || !publicKey) {
+    if (!navigator.onLine || !serviceId || !templateId || !publicKey) {
       toast.dismiss();
       triggerMailtoFallback();
-      toast.info('Opening your email app to send message...', {
-        autoClose: 3000,
-        className: 'toast-custom',
-        style: { borderRadius: '10px' },
-      });
+      toast.info(
+        !navigator.onLine
+          ? 'You are offline. Opening email app...'
+          : 'Opening your email app to send message...',
+        {
+          autoClose: 3000,
+          className: 'toast-custom',
+          style: { borderRadius: '10px' },
+        },
+      );
       setIsSubmitting(false);
       return;
     }

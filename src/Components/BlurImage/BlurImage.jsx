@@ -45,19 +45,26 @@ export default function BlurImage({
   }, []);
 
   useEffect(() => {
-    if (!blurSrc) return;
+    setLoaded(false);
+    setRemoved(!blurSrc);
     const img = imgRef.current;
     if (!img) return;
 
     if (img.complete && img.naturalWidth > 0) {
       setLoaded(true);
     }
-  }, [blurSrc]);
+  }, [src, blurSrc]);
 
   const handleLoad = () => {
     setLoaded(true);
     // Remove the placeholder from DOM after the cross-fade completes
     timerRef.current = setTimeout(() => setRemoved(true), 500);
+  };
+
+  const handleError = () => {
+    // Reveal image element on error so broken image / alt text renders instead of invisible node
+    setLoaded(true);
+    setRemoved(true);
   };
 
   const showBlur = blurSrc && !removed;
@@ -83,6 +90,7 @@ export default function BlurImage({
         loading={loading}
         decoding={decoding}
         onLoad={handleLoad}
+        onError={handleError}
         className={`transition-opacity duration-500 ${showBlur && !loaded ? 'opacity-0' : 'opacity-100'} ${className}`}
         width={width}
         height={height}

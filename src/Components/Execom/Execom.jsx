@@ -116,9 +116,9 @@ function Execom() {
             cubeVisibleRef.current = entry.isIntersecting;
             if (!cubeRef.current) return;
             if (entry.isIntersecting) {
-              if (!lowPower) cubeRef.current.autoplay.start();
+              if (!lowPower) cubeRef.current.autoplay?.start();
             } else {
-              cubeRef.current.autoplay.stop();
+              cubeRef.current.autoplay?.stop();
             }
           },
           { threshold: 0.1 },
@@ -134,9 +134,9 @@ function Execom() {
           ([entry]) => {
             if (!deskSwiperRef.current) return;
             if (entry.isIntersecting) {
-              if (!lowPower) deskSwiperRef.current.autoplay.start();
+              if (!lowPower) deskSwiperRef.current.autoplay?.start();
             } else {
-              deskSwiperRef.current.autoplay.stop();
+              deskSwiperRef.current.autoplay?.stop();
             }
           },
           { threshold: 0.1 },
