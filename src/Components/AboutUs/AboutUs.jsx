@@ -34,8 +34,11 @@ const MAX_TOASTS = 4; // cap concurrent toasts during a rapid-fire session
 
 // Drag + wind-down tuning
 const DRAG_SENS = 0.6;
-const WIND_FRICTION = 0.92; // per-frame velocity decay — snappy stop
-const MAX_WIND_SPEED = 4; // deg/frame cap so a release glides, never explodes
+const NORMAL_WIND_FRICTION = 0.92; // per-frame velocity decay for normal spins — snappy stop
+const RAPID_WIND_FRICTION = 0.975; // slower velocity decay for rapid spins — smooth long glide
+const RAPID_SPEED_THRESHOLD = 2.5; // release speed (deg/frame) threshold to trigger rapid wind-down
+const NORMAL_MAX_WIND_SPEED = 4; // deg/frame cap for normal spins
+const RAPID_MAX_WIND_SPEED = 9; // deg/frame cap for rapid spins
 const MIN_WIND_SPEED = 0.05; // deg/frame — below this the cube snaps to a face
 const SNAP_MS = 400; // how long the settle-to-face animation takes
 
@@ -266,26 +269,29 @@ function AboutUs() {
   }, [applyTransform]);
 
   // Release "inertia": keep rotating with the release velocity, decaying, until
-  // it's slow enough to settle onto a face.
-  const startWindDown = useCallback(() => {
-    windingRef.current = true;
-    manualUntilRef.current = Date.now() + 6000;
-    if (windRaf.current != null) cancelAnimationFrame(windRaf.current);
-    const step = () => {
-      // Y-axis only — spin decays on the horizontal plane. Inertia spins do
-      // NOT count toward the easter egg; only deliberate drags/keys do.
-      rotYRef.current += velY.current;
-      velY.current *= WIND_FRICTION;
-      const speed = Math.abs(velY.current);
-      if (speed < MIN_WIND_SPEED) {
-        snapToFace();
-        return;
-      }
-      applyTransform();
+  // it's slow enough to settle onto a face. Rapid spins decay slower for a longer glide.
+  const startWindDown = useCallback(
+    (friction = NORMAL_WIND_FRICTION) => {
+      windingRef.current = true;
+      manualUntilRef.current = Date.now() + 10000;
+      if (windRaf.current != null) cancelAnimationFrame(windRaf.current);
+      const step = () => {
+        // Y-axis only — spin decays on the horizontal plane. Inertia spins do
+        // NOT count toward the easter egg; only deliberate drags/keys do.
+        rotYRef.current += velY.current;
+        velY.current *= friction;
+        const speed = Math.abs(velY.current);
+        if (speed < MIN_WIND_SPEED) {
+          snapToFace();
+          return;
+        }
+        applyTransform();
+        windRaf.current = requestAnimationFrame(step);
+      };
       windRaf.current = requestAnimationFrame(step);
-    };
-    windRaf.current = requestAnimationFrame(step);
-  }, [applyTransform, snapToFace]);
+    },
+    [applyTransform, snapToFace],
+  );
 
   const stopWindDown = useCallback(() => {
     windingRef.current = false;
@@ -437,12 +443,16 @@ function AboutUs() {
     isDraggingRef.current = false;
 
     // Convert release velocity from deg/ms to deg/frame, cap it, then wind down.
+    // Rapid spins use a higher speed cap and a slower decay (friction) for an elegant long glide.
     const vy = velY.current * (1000 / 60);
     const speed = Math.abs(vy);
     if (speed > 0.05) {
-      const s = Math.min(speed, MAX_WIND_SPEED) / speed;
+      const isRapid = speed >= RAPID_SPEED_THRESHOLD;
+      const maxSpeed = isRapid ? RAPID_MAX_WIND_SPEED : NORMAL_MAX_WIND_SPEED;
+      const friction = isRapid ? RAPID_WIND_FRICTION : NORMAL_WIND_FRICTION;
+      const s = Math.min(speed, maxSpeed) / speed;
       velY.current = vy * s;
-      startWindDown();
+      startWindDown(friction);
     } else {
       snapToFace();
     }
