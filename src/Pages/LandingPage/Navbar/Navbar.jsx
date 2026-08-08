@@ -156,12 +156,36 @@ export default function Navbar() {
     };
   }, [isMobile, showItems]);
 
-  // Move focus into the overlay when the mobile menu opens so keyboard and
-  // screen-reader users land on the close control instead of <body>.
+  // Move focus into the overlay when the mobile menu opens and trap Tab focus
+  // so keyboard/screen-reader users cycle inside the drawer until closed.
   useEffect(() => {
     if (!isMobile || !showItems) return;
     const closeBtn = document.getElementById('nav-close');
     if (closeBtn) closeBtn.focus();
+
+    const handleTabTrap = (e) => {
+      if (e.key !== 'Tab') return;
+      const overlay = document.getElementById('nav-items-mobile');
+      if (!overlay) return;
+      const focusables = Array.from(
+        overlay.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])'),
+      ).filter((el) => !el.hasAttribute('disabled') && el.offsetParent !== null);
+      if (!focusables.length) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey) {
+        if (active === first || !overlay.contains(active)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (active === last || !overlay.contains(active)) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener('keydown', handleTabTrap);
+    return () => window.removeEventListener('keydown', handleTabTrap);
   }, [isMobile, showItems]);
 
   // Keyboard navigation: ArrowLeft/ArrowUp / ArrowRight/ArrowDown cycle focus

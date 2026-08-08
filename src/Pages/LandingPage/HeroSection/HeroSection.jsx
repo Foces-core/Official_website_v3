@@ -84,6 +84,7 @@ function HeroSection() {
         <img
           src={foces1}
           alt=""
+          aria-hidden="true"
           loading="eager"
           fetchPriority="high"
           decoding="async"

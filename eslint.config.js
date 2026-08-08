@@ -27,7 +27,7 @@ export default [
     },
   },
   {
-    files: ['scripts/**/*.mjs', '*.cjs'],
+    files: ['scripts/**/*.mjs', '**/*.cjs'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',

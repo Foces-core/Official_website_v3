@@ -8,10 +8,32 @@ html,
 body {
     overflow-x: hidden; /* Prevent horizontal scrolling on very small screens */
     overflow-wrap: break-word; /* Break long words so text wraps instead of overflowing */
+    -webkit-font-smoothing: antialiased; /* Consistent font rendering across engines */
+    -moz-osx-font-smoothing: grayscale; /* Firefox equivalent */
 }
 
 body {
     background: #101011;
+    -webkit-tap-highlight-color: transparent; /* Safari/WebKit: remove blue flash on tap */
+    -webkit-text-size-adjust: none; /* Prevent font inflation on mobile Safari/Chrome */
+}
+
+/* Gecko (Firefox): thinner scrollbar to match the dark aesthetic */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #4f4f54 transparent;
+}
+
+/* WebKit (Safari/Chrome): thin scrollbar via pseudo-elements */
+::-webkit-scrollbar {
+    width: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #4f4f54;
+    border-radius: 3px;
 }
 
 /* Keyboard focus visibility (accessibility): cyan ring on whatever is

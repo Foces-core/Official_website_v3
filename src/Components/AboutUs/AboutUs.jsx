@@ -496,7 +496,7 @@ function AboutUs() {
           data-aos="flip-up"
           data-aos-duration="750"
           src={Aboutus}
-          alt=""
+          alt="About Us"
           loading="lazy"
           decoding="async"
         />

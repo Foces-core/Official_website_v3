@@ -125,7 +125,7 @@ function Featuring() {
             data-aos="flip-up"
             data-aos-duration="750"
             src={featuring}
-            alt=""
+            alt="Featuring"
             loading="lazy"
             decoding="async"
           />

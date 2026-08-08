@@ -101,7 +101,7 @@ function ContactUs() {
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
       e.preventDefault();
       const formInputs = e.target.form.elements;
       const currentInputIndex = Array.from(formInputs).indexOf(e.target);
@@ -128,7 +128,7 @@ function ContactUs() {
               data-aos="flip-up"
               data-aos-duration="750"
               src={Contactus}
-              alt=""
+              alt="Contact Us"
               loading="eager"
               decoding="async"
             />
@@ -150,7 +150,7 @@ function ContactUs() {
                       data-aos="flip-up"
                       data-aos-duration="750"
                       src={Contactus}
-                      alt=""
+                      alt="Contact Us"
                       loading="eager"
                       decoding="async"
                     />
@@ -192,6 +192,7 @@ function ContactUs() {
                   href="https://www.facebook.com/focescec?mibextid=JRoKGi"
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Visit FOCES Facebook page"
                   className="bg-white text-black p-1 rounded-md hover:opacity-80 transition-opacity"
                 >
                   <FaFacebookF className="mx-2" />
@@ -201,6 +202,7 @@ function ContactUs() {
                   href="https://x.com/foces_cec?t=e__UXOl9tQFznh7JG8kqzQ&s=08"
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Visit FOCES X (Twitter) profile"
                   className="bg-white text-black p-1 rounded-md hover:opacity-80 transition-opacity"
                 >
                   <FaXTwitter className="mx-2" />
@@ -210,6 +212,7 @@ function ContactUs() {
                   href="https://www.instagram.com/foces_cec?igsh=b2E3bjNpbGgzdG03"
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Visit FOCES Instagram page"
                   className="bg-white text-black p-1 rounded-md hover:opacity-80 transition-opacity"
                 >
                   <FaInstagram className="mx-2" />
@@ -219,6 +222,7 @@ function ContactUs() {
                   href="https://www.linkedin.com/in/foces-cec-423176229/"
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Visit FOCES LinkedIn profile"
                   className="bg-white text-black p-1 rounded-md hover:opacity-80 transition-opacity"
                 >
                   <FaLinkedinIn size={20} className="mx-2" />

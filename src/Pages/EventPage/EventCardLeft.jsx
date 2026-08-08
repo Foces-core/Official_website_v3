@@ -62,11 +62,19 @@ function EventCardLeft({ Events, priority }) {
                 src={sanityImg(img, slowNetwork ? 160 : 240)}
                 srcSet={imageSets[idx + 1]}
                 sizes="80px"
-                alt=""
+                alt={`${Events.name} gallery photo ${idx + 2}`}
                 loading="lazy"
                 decoding="async"
+                role="button"
+                tabIndex={0}
                 className="w-20 h-16 object-cover rounded-xl border border-white/10 cursor-pointer hover:opacity-80 transition-opacity"
                 onClick={() => setExpanding(true)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setExpanding(true);
+                  }
+                }}
               />
             ))}
           </div>

@@ -9,19 +9,31 @@ import 'swiper/css/navigation';
 import '../Execom/custom.css';
 
 import Aleetta from '../../assets/aleeta.webp';
+import AleettaBlur from '../../assets/aleeta.webp?blur&w=20';
 import Lisha from '../../assets/lisha1.webp';
+import LishaBlur from '../../assets/lisha1.webp?blur&w=20';
 import Steve from '../../assets/steve.webp';
+import SteveBlur from '../../assets/steve.webp?blur&w=20';
 import AnnaRachel from '../../assets/anna_rachel.webp';
+import AnnaRachelBlur from '../../assets/anna_rachel.webp?blur&w=20';
 import Amanul from '../../assets/amanul.webp';
+import AmanulBlur from '../../assets/amanul.webp?blur&w=20';
 import Abel from '../../assets/abel.webp';
+import AbelBlur from '../../assets/abel.webp?blur&w=20';
 import Saniya from '../../assets/saniya.webp';
+import SaniyaBlur from '../../assets/saniya.webp?blur&w=20';
 import Sebin from '../../assets/sebin.webp';
+import SebinBlur from '../../assets/sebin.webp?blur&w=20';
 import Anjitha from '../../assets/anjitha.webp';
+import AnjithaBlur from '../../assets/anjitha.webp?blur&w=20';
 import Abhirami from '../../assets/abhirami_p.webp';
+import AbhiramiBlur from '../../assets/abhirami_p.webp?blur&w=20';
 import Devadarsana from '../../assets/devadarsana.webp';
+import DevadarsanaBlur from '../../assets/devadarsana.webp?blur&w=20';
 
 import MeetTheTeam from '../../assets/MeetTheTeam.svg';
 import useDeviceProfile from '../../hooks/useLowPower.js';
+import BlurImage from '../BlurImage/BlurImage';
 import {
   syncCarouselKeyboard,
   subscribeKeyboardArbitration,
@@ -31,17 +43,22 @@ import {
 } from '../../utils/keyboardLock.js';
 
 const cardData = [
-  { name: 'Aleetta Mariya Sebastian', img: Aleetta, review: 'Chairperson' },
-  { name: 'Lisha Jins', img: Lisha, review: 'Vice Chairperson' },
-  { name: 'Steve Jose', img: Steve, review: 'Secretary' },
-  { name: 'Anna Rachel Mathew', img: AnnaRachel, review: 'Joint Secretary' },
-  { name: 'Amanul Farhan K S', img: Amanul, review: 'Treasurer' },
-  { name: 'Abel S Mathew', img: Abel, review: 'Research & Development Lead' },
-  { name: 'Saniya K Shibu', img: Saniya, review: 'Program Outreach Coordinator' },
-  { name: 'Sebin Mathew', img: Sebin, review: 'Project Coordinator' },
-  { name: 'Anjitha Aravind', img: Anjitha, review: 'Operations Lead' },
-  { name: 'Abhirami P', img: Abhirami, review: 'Design Lead' },
-  { name: 'Devadarsana R', img: Devadarsana, review: 'Public Relations Lead' },
+  { name: 'Aleetta Mariya Sebastian', img: Aleetta, blur: AleettaBlur, review: 'Chairperson' },
+  { name: 'Lisha Jins', img: Lisha, blur: LishaBlur, review: 'Vice Chairperson' },
+  { name: 'Steve Jose', img: Steve, blur: SteveBlur, review: 'Secretary' },
+  { name: 'Anna Rachel Mathew', img: AnnaRachel, blur: AnnaRachelBlur, review: 'Joint Secretary' },
+  { name: 'Amanul Farhan K S', img: Amanul, blur: AmanulBlur, review: 'Treasurer' },
+  { name: 'Abel S Mathew', img: Abel, blur: AbelBlur, review: 'Research & Development Lead' },
+  { name: 'Saniya K Shibu', img: Saniya, blur: SaniyaBlur, review: 'Program Outreach Coordinator' },
+  { name: 'Sebin Mathew', img: Sebin, blur: SebinBlur, review: 'Project Coordinator' },
+  { name: 'Anjitha Aravind', img: Anjitha, blur: AnjithaBlur, review: 'Operations Lead' },
+  { name: 'Abhirami P', img: Abhirami, blur: AbhiramiBlur, review: 'Design Lead' },
+  {
+    name: 'Devadarsana R',
+    img: Devadarsana,
+    blur: DevadarsanaBlur,
+    review: 'Public Relations Lead',
+  },
 ];
 
 // The cube rotates 90° per face, so Swiper's loop mode can't be used.
@@ -178,9 +195,10 @@ function Execom() {
             {cardData.map((d, index) => (
               <SwiperSlide key={index}>
                 <div className="container-execom bg-[#161618] border-box relative rounded-3xl overflow-hidden group">
-                  <img
+                  <BlurImage
                     className={`object-cover ${d.name === 'Sebin Mathew' ? 'object-center' : 'object-top'} w-full h-full card-hover grayscale group-hover:filter-none transition-all duration-300`}
                     src={d.img}
+                    blurSrc={d.blur}
                     alt={d.name}
                     loading={index < 4 ? 'eager' : 'lazy'}
                     decoding="async"
@@ -229,9 +247,10 @@ function Execom() {
             {cubeSlides.map((d, index) => (
               <SwiperSlide key={index}>
                 <div className="container-execom bg-[#161618] border-box relative rounded-3xl overflow-hidden">
-                  <img
+                  <BlurImage
                     className={`object-cover ${d.name === 'Sebin Mathew' ? 'object-center' : 'object-top'} w-full h-full`}
                     src={d.img}
+                    blurSrc={d.blur}
                     alt={d.name}
                     loading={index < 2 ? 'eager' : 'lazy'}
                     decoding="async"
