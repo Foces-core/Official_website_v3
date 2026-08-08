@@ -206,46 +206,45 @@ function ContactUs() {
                   <span>mail.foces@gmail.com</span>
                 </div>
               </div>
-              <div className="flex space-x-3 sm:space-x-2 text-lg space-y-16 items-center">
-                <div></div>
+              <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 text-lg mt-4">
                 <a
                   href="https://www.facebook.com/focescec?mibextid=JRoKGi"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Visit FOCES Facebook page"
-                  className="bg-white text-black p-1 rounded-md hover:opacity-80 transition-opacity"
+                  className="bg-white text-black p-2 rounded-md hover:bg-cyan-400 hover:text-black transition-all duration-200"
                 >
-                  <FaFacebookF className="mx-2" />
+                  <FaFacebookF className="w-4 h-4" />
                 </a>
-                <div className="border-r-2 border-white h-6"></div>
+                <div className="border-r border-white/40 h-5" />
                 <a
                   href="https://x.com/foces_cec?t=e__UXOl9tQFznh7JG8kqzQ&s=08"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Visit FOCES X (Twitter) profile"
-                  className="bg-white text-black p-1 rounded-md hover:opacity-80 transition-opacity"
+                  className="bg-white text-black p-2 rounded-md hover:bg-cyan-400 hover:text-black transition-all duration-200"
                 >
-                  <FaXTwitter className="mx-2" />
+                  <FaXTwitter className="w-4 h-4" />
                 </a>
-                <div className="border-r-2 border-white h-6"></div>
+                <div className="border-r border-white/40 h-5" />
                 <a
                   href="https://www.instagram.com/foces_cec?igsh=b2E3bjNpbGgzdG03"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Visit FOCES Instagram page"
-                  className="bg-white text-black p-1 rounded-md hover:opacity-80 transition-opacity"
+                  className="bg-white text-black p-2 rounded-md hover:bg-cyan-400 hover:text-black transition-all duration-200"
                 >
-                  <FaInstagram className="mx-2" />
+                  <FaInstagram className="w-4 h-4" />
                 </a>
-                <div className="border-r-2 border-white h-6"></div>
+                <div className="border-r border-white/40 h-5" />
                 <a
                   href="https://www.linkedin.com/in/foces-cec-423176229/"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Visit FOCES LinkedIn profile"
-                  className="bg-white text-black p-1 rounded-md hover:opacity-80 transition-opacity"
+                  className="bg-white text-black p-2 rounded-md hover:bg-cyan-400 hover:text-black transition-all duration-200"
                 >
-                  <FaLinkedinIn size={20} className="mx-2" />
+                  <FaLinkedinIn className="w-4 h-4" />
                 </a>
               </div>
             </div>
