@@ -65,8 +65,8 @@ export const featuredEvents = [
     name: 'Agentic Coding Workshop',
     tag: 'Hands-on Workshop',
     date: '9th July 2026',
-    image: agenticMentor,
-    imageSet: set(agenticMentor, agenticMentor800, agenticMentor400),
+    image: agenticCodingPoster,
+    imageSet: set(agenticCodingPoster, agenticCodingPoster800, agenticCodingPoster400),
     images: [agenticCodingPoster, agenticMentor, agenticStudents],
     imageSets: [
       set(agenticCodingPoster, agenticCodingPoster800, agenticCodingPoster400),
