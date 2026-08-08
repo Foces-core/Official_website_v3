@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Pagination, Scrollbar, A11y, Keyboard } from 'swiper/modules';
+import { Autoplay, Pagination, Scrollbar, A11y, Keyboard } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
+import useDeviceProfile from '../../hooks/useLowPower.js';
 import featuring from '../../assets/featuring.svg';
 import episodeOne from '../../assets/episode-1.webp';
 import episodeOne480 from '../../assets/episode-1-480.webp';
@@ -67,6 +68,8 @@ const echoSlides = [
 ];
 
 function Featuring() {
+  const { lowPower, reducedMotion } = useDeviceProfile();
+  const disableAutoplay = lowPower || reducedMotion;
   const [noSlides, setNoSlides] = useState(1);
   const swiperRef = useRef(null);
   const carouselRef = useRef(null);
@@ -113,6 +116,24 @@ function Featuring() {
     };
   }, []);
 
+  // IntersectionObserver: start/stop autoplay only when on screen
+  useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined' || !carouselRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!swiperRef.current) return;
+        if (entry.isIntersecting) {
+          if (!disableAutoplay) swiperRef.current.autoplay?.start();
+        } else {
+          swiperRef.current.autoplay?.stop();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    observer.observe(carouselRef.current);
+    return () => observer.disconnect();
+  }, [disableAutoplay]);
+
   return (
     <div
       className="bg-[#101011] h-fit w-full flex flex-col pt-32 overflow-x-hidden pb-20 scroll-mt-24"
@@ -145,10 +166,11 @@ function Featuring() {
           <FaChevronLeft />
         </button>
         <Swiper
-          modules={[Pagination, Scrollbar, A11y, Keyboard]}
+          modules={[Autoplay, Pagination, Scrollbar, A11y, Keyboard]}
           slidesPerView={noSlides}
           spaceBetween={50}
           loop={true}
+          autoplay={disableAutoplay ? false : { delay: 3500, disableOnInteraction: false }}
           scrollbar={{ draggable: true }}
           keyboard={{ enabled: true, onlyInViewport: false }}
           onSwiper={(swiper) => {

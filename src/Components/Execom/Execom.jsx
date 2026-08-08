@@ -183,29 +183,44 @@ function Execom() {
       </div>
 
       <div ref={carouselRef} className="m-auto w-[90%] sm:w-5/6 md:w-4/5 px-2 relative">
-        {/* Desktop / Tablet Swiper (Multi-card) */}
-        <div ref={deskWrapRef} className="hidden sm:block">
+        {/* Desktop / Tablet Swiper — 3D Cube on capable devices, flat slider on low-power */}
+        <div
+          ref={deskWrapRef}
+          className={`hidden sm:block ${flatCube ? '' : 'max-w-[360px] mx-auto py-4'}`}
+        >
           <Swiper
             onSwiper={(swiper) => {
               deskSwiperRef.current = swiper;
               syncCarouselKeyboard(swiper, 'execom');
             }}
-            modules={[Autoplay, Pagination, Navigation, Keyboard]}
-            spaceBetween={20}
+            modules={[Autoplay, Pagination, Navigation, EffectCube, Keyboard]}
+            effect={flatCube ? 'slide' : 'cube'}
+            speed={flatCube ? 250 : 400}
+            cubeEffect={cubeEffectConfig}
+            grabCursor={!flatCube}
+            spaceBetween={flatCube ? 20 : 0}
             slidesPerView={1}
-            loop={true}
+            loop={flatCube}
+            initialSlide={flatCube ? undefined : cardData.length}
             autoplay={disableAutoplay ? false : { delay: 3500, disableOnInteraction: false }}
-            pagination={{ clickable: true }}
-            navigation={true}
+            pagination={flatCube ? { clickable: true } : false}
+            navigation={flatCube}
             keyboard={{ enabled: true, onlyInViewport: false }}
-            breakpoints={{
-              640: { slidesPerView: 2, spaceBetween: 20 },
-              1024: { slidesPerView: 3, spaceBetween: 24 },
-              1280: { slidesPerView: 4, spaceBetween: 24 },
-            }}
+            onSlideChange={flatCube ? undefined : handleCubeWrap}
+            onTouchEnd={flatCube ? undefined : handleCubeWrap}
+            onTransitionEnd={flatCube ? undefined : handleCubeWrap}
+            breakpoints={
+              flatCube
+                ? {
+                    640: { slidesPerView: 2, spaceBetween: 20 },
+                    1024: { slidesPerView: 3, spaceBetween: 24 },
+                    1280: { slidesPerView: 4, spaceBetween: 24 },
+                  }
+                : undefined
+            }
             className="execom-swiper pb-12"
           >
-            {cardData.map((d, index) => (
+            {(flatCube ? cardData : cubeSlides).map((d, index) => (
               <SwiperSlide key={index}>
                 <div className="container-execom bg-[#161618] border-box relative rounded-3xl overflow-hidden group">
                   <BlurImage
@@ -224,6 +239,26 @@ function Execom() {
               </SwiperSlide>
             ))}
           </Swiper>
+
+          {/* Custom 11-dot indicator for desktop cube mode */}
+          {!flatCube && (
+            <div className="flex justify-center gap-2 mt-2 pb-1">
+              {cardData.map((d, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  aria-label={`Go to ${d.name}`}
+                  onClick={() => {
+                    const sw = deskSwiperRef.current;
+                    if (!sw) return;
+                    const copy = Math.floor(sw.activeIndex / cardData.length);
+                    sw.slideTo(copy * cardData.length + i, 350);
+                  }}
+                  className={`h-2 rounded-full transition-all duration-300 ${activeCube === i ? 'w-6 bg-[#007aff]' : 'w-2 bg-[#4f4f54]'}`}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Mobile 3D Cube Swiper — seamless infinite wrap (swipe any direction, forever) */}
