@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate, Link } from 'react-router';
+import { useNavigate, useLocation, Link } from 'react-router';
 import { createPortal } from 'react-dom';
 import { AiOutlineClose } from 'react-icons/ai';
 import toggleW from '../../../assets/ButtonW.svg';
@@ -37,34 +37,73 @@ export default function Navbar() {
   // null = fall back to the scrollspy-current item (or the first link).
   const [rovingId, setRovingId] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => () => clearTimeout(joinTimer.current), []);
 
   useEffect(() => {
-    const sectionIds = navItems
-      .map((item) => item.id)
-      .filter((id) => id !== 'contact' && document.getElementById(id));
-    const pick = () => {
-      // Reference line ~35% down the viewport: the section whose top edge has
-      // crossed that line is "current". This guarantees the link unselects as
-      // soon as you scroll into the next section (unlike a zero-height band).
+    const pickActiveSection = () => {
+      if (location.pathname === '/contact') {
+        setCurrentItem('contact');
+        return;
+      }
+      if (location.pathname !== '/') {
+        setCurrentItem(null);
+        return;
+      }
+
+      const sectionIds = navItems.map((item) => item.id).filter((id) => id !== 'contact');
+
+      // Reference line at ~35% down the viewport
       const refY = window.innerHeight * 0.35;
       let current = null;
+
+      // Check if user is scrolled near the bottom of the page
+      const isNearBottom =
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 50;
+
       for (const id of sectionIds) {
-        const top = document.getElementById(id).getBoundingClientRect().top;
-        if (top <= refY) current = id;
+        const el = document.getElementById(id);
+        if (el) {
+          const top = el.getBoundingClientRect().top;
+          if (top <= refY) {
+            current = id;
+          }
+        }
       }
-      if (!current && sectionIds.length > 0) current = sectionIds[0];
+
+      if (isNearBottom) {
+        // Find last visible section in DOM
+        for (let i = sectionIds.length - 1; i >= 0; i--) {
+          if (document.getElementById(sectionIds[i])) {
+            current = sectionIds[i];
+            break;
+          }
+        }
+      }
+
+      if (!current) current = 'home';
       setCurrentItem(current);
     };
-    pick();
-    window.addEventListener('scroll', pick, { passive: true });
-    window.addEventListener('resize', pick);
+
+    pickActiveSection();
+
+    window.addEventListener('scroll', pickActiveSection, { passive: true });
+    window.addEventListener('resize', pickActiveSection, { passive: true });
+
+    // Observe DOM mutations to pick up lazy-loaded Suspense section elements as they mount
+    const observer = new MutationObserver(pickActiveSection);
+    const mainEl = document.getElementById('main-content') || document.body;
+    if (mainEl) {
+      observer.observe(mainEl, { childList: true, subtree: true });
+    }
+
     return () => {
-      window.removeEventListener('scroll', pick);
-      window.removeEventListener('resize', pick);
+      window.removeEventListener('scroll', pickActiveSection);
+      window.removeEventListener('resize', pickActiveSection);
+      observer.disconnect();
     };
-  }, []);
+  }, [location.pathname]);
 
   const toggleItems = () => {
     setShowItems(!showItems);
