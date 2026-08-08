@@ -58,8 +58,19 @@ function ContactUs() {
     const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
     const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
+    const triggerMailtoFallback = () => {
+      const mailtoUrl = `mailto:mail.foces@gmail.com?subject=${encodeURIComponent(
+        formData.subject,
+      )}&body=${encodeURIComponent(
+        `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`,
+      )}`;
+      window.location.href = mailtoUrl;
+    };
+
     if (!serviceId || !templateId || !publicKey) {
-      toast.error('Email service is not configured. Please contact us directly.', {
+      toast.dismiss();
+      triggerMailtoFallback();
+      toast.info('Opening your email app to send message...', {
         autoClose: 3000,
         className: 'toast-custom',
         style: { borderRadius: '10px' },
@@ -67,27 +78,36 @@ function ContactUs() {
       return;
     }
 
+    const templateParams = {
+      name: formData.name,
+      from_name: formData.name,
+      email: formData.email,
+      from_email: formData.email,
+      reply_to: formData.email,
+      subject: formData.subject,
+      message: formData.message,
+    };
+
     emailjs
-      .sendForm(serviceId, templateId, e.target, publicKey)
-      .then((res) => {
-        console.log(res);
+      .send(serviceId, templateId, templateParams, publicKey)
+      .then(() => {
         setFormData({ name: '', email: '', subject: '', message: '' });
-        e.target.reset();
         toast.dismiss();
-        toast.success('Sent successfully!', {
+        toast.success('Message sent successfully!', {
           autoClose: 2000,
-          className: 'toast-custom ',
+          className: 'toast-custom',
           style: {
             borderRadius: '10px',
           },
         });
       })
       .catch((err) => {
-        console.log(err);
+        console.error('EmailJS send error:', err);
         toast.dismiss();
-        toast.error('Failed to send message.', {
-          autoClose: 2000,
-          className: 'toast-custom ',
+        triggerMailtoFallback();
+        toast.info('Opening your email app to send message...', {
+          autoClose: 3000,
+          className: 'toast-custom',
           style: {
             borderRadius: '10px',
           },
