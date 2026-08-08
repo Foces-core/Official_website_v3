@@ -7,7 +7,7 @@ import { FaLocationDot } from 'react-icons/fa6';
 import { FaPhoneAlt } from 'react-icons/fa';
 import { IoSend } from 'react-icons/io5';
 import { IoMail } from 'react-icons/io5';
-import emailjs from 'emailjs-com';
+import emailjs from '@emailjs/browser';
 import Contactus from '../../assets/Contact us.svg';
 import Title from '../../assets/title.svg';
 import Navbar from '../../Pages/LandingPage/Navbar/Navbar';
