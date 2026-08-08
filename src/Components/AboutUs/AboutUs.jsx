@@ -1,4 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react';
+import FocesLogo from '../../assets/FOCES White.svg';
 import '../AboutUs/AboutUs.css';
 import useDeviceProfile from '../../hooks/useLowPower.js';
 import { scheduleBackgroundTask } from '../../utils/priorityScheduler.js';
@@ -504,15 +505,22 @@ function AboutUs() {
       <div className="md:text-xl lg:text-2xl mb-4 md:mb-6 lg:mb-8 flex items-center relative">
         <div className="inline-block w-5 h-16 bg-[#4f4f54] relative" data-aos="flip-up"></div>
         <h2
-          className="absolute pl-3.5 flex items-center gap-2 select-none"
+          className="absolute pl-3.5 flex items-center gap-2 sm:gap-3 select-none"
           data-aos="flip-up"
           data-aos-duration="750"
         >
           <span className="text-white font-extrabold text-2xl sm:text-3xl md:text-4xl tracking-wider uppercase">
             WHY
           </span>
-          <span className="font-black text-2xl sm:text-3xl md:text-4xl tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-white via-[#22d3ee] to-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.4)]">
-            FOCES?
+          <img
+            src={FocesLogo}
+            alt="FOCES"
+            loading="lazy"
+            decoding="async"
+            className="h-6 sm:h-8 md:h-9 w-auto inline-block filter drop-shadow-[0_0_12px_rgba(255,255,255,0.3)]"
+          />
+          <span className="text-white font-extrabold text-2xl sm:text-3xl md:text-4xl tracking-wider">
+            ?
           </span>
         </h2>
       </div>
