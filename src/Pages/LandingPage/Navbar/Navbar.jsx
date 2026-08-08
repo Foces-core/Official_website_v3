@@ -249,18 +249,23 @@ export default function Navbar() {
     }
   };
 
-  // Foresight.js / Quicklink intelligent route chunk prefetching
-  const handlePrefetch = useCallback(
-    (id) => {
-      if (slowNetwork) return; // don't waste slow bandwidth on speculative fetches
-      if (id === 'events') {
-        import('../../EventPage/Eventpage.jsx').catch(() => {});
-      } else if (id === 'contact') {
-        import('../../../Components/ContactUs/ContactUs.jsx').catch(() => {});
-      }
-    },
-    [slowNetwork],
-  );
+  // Intelligent route chunk prefetching for instant 0ms navigation
+  const handlePrefetch = useCallback((id) => {
+    if (id === 'events') {
+      import('../../EventPage/Eventpage.jsx').catch(() => {});
+    } else if (id === 'contact') {
+      import('../../../Components/ContactUs/ContactUs.jsx').catch(() => {});
+    }
+  }, []);
+
+  // Preload route chunks during browser idle time so nav clicks load instantly
+  useEffect(() => {
+    const idleTimer = setTimeout(() => {
+      import('../../EventPage/Eventpage.jsx').catch(() => {});
+      import('../../../Components/ContactUs/ContactUs.jsx').catch(() => {});
+    }, 1200);
+    return () => clearTimeout(idleTimer);
+  }, []);
 
   // ForesightJS: predict intent from mouse trajectory / touch / keyboard and
   // prefetch the matching route chunk a beat BEFORE the user actually hovers.
@@ -356,6 +361,7 @@ export default function Navbar() {
           } `}
           onMouseEnter={() => handlePrefetch(item.id)}
           onTouchStart={() => handlePrefetch(item.id)}
+          onPointerDown={() => handlePrefetch(item.id)}
           onFocus={() => handlePrefetch(item.id)}
           onClick={(e) => handleItemClick(item.id, e)}
         >
