@@ -1,5 +1,6 @@
 import './App.css';
 import { lazy, Suspense, useEffect } from 'react';
+import SectionSkeleton from './Components/SectionSkeleton/SectionSkeleton';
 import HeroSection from './Pages/LandingPage/HeroSection/HeroSection';
 import Navbar from './Pages/LandingPage/Navbar/Navbar';
 import AOS from 'aos';
@@ -88,14 +89,14 @@ function App() {
       <Navbar />
       <main id="main-content" tabIndex={-1}>
         <HeroSection />
-        <Suspense fallback={null}>
+        <Suspense fallback={<SectionSkeleton height="200vh" label="Loading sections" />}>
           <AboutUs />
           <Featuring />
           <Events />
           <Execom />
         </Suspense>
       </main>
-      <Suspense fallback={null}>
+      <Suspense fallback={<SectionSkeleton height="30vh" label="Loading footer" />}>
         <Footer />
       </Suspense>
     </div>

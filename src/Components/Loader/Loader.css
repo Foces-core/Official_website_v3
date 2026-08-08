@@ -88,8 +88,68 @@
     .coffee {
         animation: none !important;
     }
+    .steam-dot {
+        animation: none !important;
+        opacity: 0;
+    }
 }
 
 .break-lines {
     white-space: pre-line;
+}
+
+/* ─── Steam particles — tiny translucent dots floating above the mug ─── */
+@keyframes steam-float {
+    0% {
+        opacity: 0;
+        transform: translateY(0) scale(0.6);
+    }
+    20% {
+        opacity: 0.5;
+    }
+    80% {
+        opacity: 0.15;
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-38px) scale(1);
+    }
+}
+
+.steam-container {
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 48px;
+    height: 40px;
+    pointer-events: none;
+}
+
+.steam-dot {
+    position: absolute;
+    bottom: 0;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.35);
+    opacity: 0;
+    animation: steam-float 2.8s ease-out infinite;
+}
+
+.steam-dot:nth-child(1) {
+    left: 8px;
+    animation-delay: 0s;
+}
+.steam-dot:nth-child(2) {
+    left: 22px;
+    animation-delay: 0.7s;
+}
+.steam-dot:nth-child(3) {
+    left: 36px;
+    animation-delay: 1.4s;
+}
+.steam-dot:nth-child(4) {
+    left: 15px;
+    animation-delay: 2.1s;
 }

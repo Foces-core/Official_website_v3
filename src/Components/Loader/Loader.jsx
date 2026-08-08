@@ -16,6 +16,12 @@ const Loader = () => {
       aria-label="Loading content"
     >
       <div className="relative">
+        <div className="steam-container" aria-hidden="true">
+          <span className="steam-dot" />
+          <span className="steam-dot" />
+          <span className="steam-dot" />
+          <span className="steam-dot" />
+        </div>
         <div className="coffee">
           <div></div>
           <div></div>

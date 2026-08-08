@@ -70,21 +70,24 @@ function Root() {
     };
 
     // The loader lasts only as long as the boot genuinely needs:
-    //  1. hero fonts are ready AND the first page paint has landed, or
-    //  2. the whole page finished loading (window 'load'), or
+    //  1. hero fonts + first paint landed AND a minimum 2.5s branding delay, or
+    //  2. the whole page finished loading (window 'load') AND the min delay, or
     //  3. a failsafe at 6s so a stalled resource can never block the page
     const paint = () =>
       new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     const fonts = document.fonts ? document.fonts.ready : Promise.resolve();
-    Promise.all([fonts, paint()]).then(hide);
+    const minDelay = new Promise((resolve) => setTimeout(resolve, 2500));
+    Promise.all([fonts, paint(), minDelay]).then(hide);
 
-    window.addEventListener('load', hide, { once: true });
+    // window 'load' also gated behind the minimum delay
+    const onLoad = () => minDelay.then(hide);
+    window.addEventListener('load', onLoad, { once: true });
     const failsafe = setTimeout(hide, 6000);
 
     return () => {
       disposed = true;
       clearTimeout(failsafe);
-      window.removeEventListener('load', hide);
+      window.removeEventListener('load', onLoad);
     };
   }, [slowNetwork]);
 
