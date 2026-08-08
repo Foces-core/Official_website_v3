@@ -94,13 +94,13 @@ function Modal({ images, open, onClose }) {
       />
       <div
         ref={dialogRef}
-        className="w-full h-[50%] min-[700px]:w-[90vh] min-[700px]:h-[80vh] flex items-center justify-center fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black rounded-xl p-1 z-50 shadow-black/50 drop-shadow-lg shadow-2xl"
+        className="w-[92vw] max-w-5xl h-[85vh] flex items-center justify-center fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-[#0d0d0e] border border-white/10 rounded-2xl p-2 z-50 shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           ref={closeBtnRef}
           type="button"
-          className="absolute top-4 right-4 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white text-xl transition-colors duration-200"
+          className="absolute top-4 right-4 z-30 w-10 h-10 flex items-center justify-center rounded-full bg-black/60 hover:bg-black/90 text-white text-xl transition-colors duration-200 border border-white/20 backdrop-blur-md"
           onClick={onClose}
           aria-label="Close gallery"
         >
@@ -109,7 +109,7 @@ function Modal({ images, open, onClose }) {
         <Swiper
           modules={[Navigation, Pagination, Scrollbar, A11y, Keyboard]}
           slidesPerView={1}
-          spaceBetween={50}
+          spaceBetween={30}
           loop={images.length > 1}
           keyboard={{ enabled: true, onlyInViewport: false }}
           navigation={{
@@ -119,12 +119,12 @@ function Modal({ images, open, onClose }) {
           pagination={{
             clickable: true,
           }}
-          className={`modal-swiper h-full ${images.length === 1 ? 'w-full' : 'w-[120%]'} bg-black p-10 items-center flex justify-center`}
+          className="modal-swiper h-full w-full bg-transparent p-4 sm:p-8 flex items-center justify-center"
         >
           {images.map((url, index) => (
-            <SwiperSlide key={index} className="rounded-full flex justify-center items-center">
+            <SwiperSlide key={index} className="flex justify-center items-center h-full w-full">
               <img
-                className="max-w-full max-h-full object-contain rounded-xl ease-in-out duration-200"
+                className="max-w-full max-h-[75vh] object-contain rounded-xl m-auto"
                 src={sanityImg(url, 1400)}
                 alt={`Slide ${index + 1}`}
                 loading="eager"
