@@ -361,7 +361,7 @@ function ContactUs() {
         </div>
       </div>
       <Footer />
-      <ToastContainer />
+      <ToastContainer position="top-right" autoClose={2500} theme="dark" />
     </div>
   );
 }

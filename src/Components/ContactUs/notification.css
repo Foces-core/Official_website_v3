@@ -1,14 +1,14 @@
-/* customToastStyles.css */
-
 .toast-custom {
-    background-color: #333;
-    color: #fff;
-    top: 30px;
+    background-color: #1a1a1e;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
 }
+
 @media (max-width: 480px) {
     .toast-custom {
-        border-radius: 40px;
-        left: 140px;
-        width: 60vw;
+        border-radius: 12px;
+        width: calc(100% - 24px);
+        margin: 0 12px;
     }
 }
