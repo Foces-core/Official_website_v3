@@ -219,7 +219,7 @@ function ContactUs() {
                   aria-label="Visit FOCES Facebook page"
                   className="bg-white text-black p-2 rounded-md hover:bg-cyan-400 hover:text-black transition-all duration-200"
                 >
-                  <FaFacebookF className="w-4 h-4" />
+                  <FaFacebookF size={18} className="w-4.5 h-4.5" />
                 </a>
                 <div className="border-r border-white/40 h-5" />
                 <a
@@ -229,7 +229,7 @@ function ContactUs() {
                   aria-label="Visit FOCES X (Twitter) profile"
                   className="bg-white text-black p-2 rounded-md hover:bg-cyan-400 hover:text-black transition-all duration-200"
                 >
-                  <FaXTwitter className="w-4 h-4" />
+                  <FaXTwitter size={18} className="w-4.5 h-4.5" />
                 </a>
                 <div className="border-r border-white/40 h-5" />
                 <a
@@ -239,7 +239,7 @@ function ContactUs() {
                   aria-label="Visit FOCES Instagram page"
                   className="bg-white text-black p-2 rounded-md hover:bg-cyan-400 hover:text-black transition-all duration-200"
                 >
-                  <FaInstagram className="w-4 h-4" />
+                  <FaInstagram size={18} className="w-4.5 h-4.5" />
                 </a>
                 <div className="border-r border-white/40 h-5" />
                 <a
@@ -249,7 +249,7 @@ function ContactUs() {
                   aria-label="Visit FOCES LinkedIn profile"
                   className="bg-white text-black p-2 rounded-md hover:bg-cyan-400 hover:text-black transition-all duration-200"
                 >
-                  <FaLinkedinIn className="w-4 h-4" />
+                  <FaLinkedinIn size={18} className="w-4.5 h-4.5" />
                 </a>
               </div>
             </div>
