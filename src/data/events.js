@@ -82,11 +82,11 @@ export const featuredEvents = [
     date: '27th July - 5th Aug',
     image: codingArenaPoster,
     imageSet: set(codingArenaPoster, codingArenaPoster800, codingArenaPoster400),
-    images: [codingArenaPoster, codingArenaPhoto, javaLecture],
+    images: [codingArenaPoster, javaLecture, codingArenaPhoto],
     imageSets: [
       set(codingArenaPoster, codingArenaPoster800, codingArenaPoster400),
-      set(codingArenaPhoto, codingArenaPhoto800, codingArenaPhoto400),
       set(javaLecture, javaLecture800, javaLecture400),
+      set(codingArenaPhoto, codingArenaPhoto800, codingArenaPhoto400),
     ],
     desc: 'The ultimate competitive programming and rapid prototyping battlefield at MCA Lab.',
   },
