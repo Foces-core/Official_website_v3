@@ -1,9 +1,6 @@
 import agenticCodingPoster from '../assets/agentic_coding_instagram.webp';
 import agenticCodingPoster400 from '../assets/agentic_coding_instagram-400.webp';
 import agenticCodingPoster800 from '../assets/agentic_coding_instagram-800.webp';
-import agenticCodingPhoto from '../assets/agentic_coding.webp';
-import agenticCodingPhoto400 from '../assets/agentic_coding-400.webp';
-import agenticCodingPhoto800 from '../assets/agentic_coding-800.webp';
 
 import codingArenaPoster from '../assets/coding_arena_4_0_insta.webp';
 import codingArenaPoster400 from '../assets/coding_arena_4_0_insta-400.webp';
@@ -28,14 +25,6 @@ import agenticSdpkRoom800 from '../assets/events/agentic_sdpk_room-800.webp';
 import agenticStudents from '../assets/events/agentic_workshop_students.webp';
 import agenticStudents400 from '../assets/events/agentic_workshop_students-400.webp';
 import agenticStudents800 from '../assets/events/agentic_workshop_students-800.webp';
-
-import codingArenaWide from '../assets/events/coding_arena_lab_wide.webp';
-import codingArenaWide400 from '../assets/events/coding_arena_lab_wide-400.webp';
-import codingArenaWide800 from '../assets/events/coding_arena_lab_wide-800.webp';
-
-import codingArenaAction from '../assets/events/coding_arena_action.webp';
-import codingArenaAction400 from '../assets/events/coding_arena_action-400.webp';
-import codingArenaAction800 from '../assets/events/coding_arena_action-800.webp';
 
 import promptParadoxWinners from '../assets/events/prompt_paradox_winners.webp';
 import promptParadoxWinners400 from '../assets/events/prompt_paradox_winners-400.webp';
@@ -82,23 +71,12 @@ export const featuredEvents = [
     date: '9th July 2026',
     image: agenticMentor,
     imageSet: set(agenticMentor, agenticMentor800, agenticMentor400),
-    images: [
-      agenticCodingPoster,
-      agenticMentor,
-      agenticSdpkRoom,
-      agenticStudents,
-      codingArenaWide,
-      codingArenaAction,
-      agenticCodingPhoto,
-    ],
+    images: [agenticCodingPoster, agenticMentor, agenticSdpkRoom, agenticStudents],
     imageSets: [
       set(agenticCodingPoster, agenticCodingPoster800, agenticCodingPoster400),
       set(agenticMentor, agenticMentor800, agenticMentor400),
       set(agenticSdpkRoom, agenticSdpkRoom800, agenticSdpkRoom400),
       set(agenticStudents, agenticStudents800, agenticStudents400),
-      set(codingArenaWide, codingArenaWide800, codingArenaWide400),
-      set(codingArenaAction, codingArenaAction800, codingArenaAction400),
-      set(agenticCodingPhoto, agenticCodingPhoto800, agenticCodingPhoto400),
     ],
     desc: 'Empowering developers to build autonomous AI agents using cutting-edge LLMs and agent frameworks.',
   },
