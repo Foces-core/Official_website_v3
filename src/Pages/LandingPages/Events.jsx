@@ -1,6 +1,8 @@
 import { Link } from 'react-router';
 import EventTitle from '../../assets/Event.svg';
 import { featuredEvents } from '../../data/events.js';
+import BlurImage from '../../Components/BlurImage/BlurImage';
+import { sanityBlurUrl } from '../../utils/sanityImage.js';
 
 function Events() {
   return (
@@ -45,18 +47,18 @@ function Events() {
             >
               {/* Image Banner */}
               <div className="relative h-64 w-full overflow-hidden bg-gray-900">
-                <img
+                <BlurImage
                   src={evt.image}
+                  blurSrc={sanityBlurUrl(evt.image)}
                   srcSet={evt.imageSet}
                   sizes="(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 90vw"
                   alt={evt.name}
                   loading={index === 0 ? 'eager' : 'lazy'}
                   decoding="async"
-                  fetchPriority={index === 0 ? 'high' : undefined}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#141416] via-transparent to-transparent opacity-90" />
-                <span className="absolute top-4 left-4 bg-black/70 backdrop-blur-md text-cyan-400 text-xs font-semibold px-3 py-1 rounded-full border border-cyan-500/30">
+                <div className="absolute inset-0 bg-gradient-to-t from-[#141416] via-transparent to-transparent opacity-90 z-10 pointer-events-none" />
+                <span className="absolute top-4 left-4 bg-black/70 backdrop-blur-md text-cyan-400 text-xs font-semibold px-3 py-1 rounded-full border border-cyan-500/30 z-20">
                   {evt.tag}
                 </span>
               </div>

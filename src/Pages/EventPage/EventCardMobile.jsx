@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Modal from './Modal';
-import { sanityImg } from '../../utils/sanityImage.js';
+import { sanityImg, sanityBlurUrl } from '../../utils/sanityImage.js';
 import { preloadImages } from '../../utils/imageCacheManager.js';
 import { prioritizeAssetFetch } from '../../utils/priorityScheduler.js';
 import useDeviceProfile from '../../hooks/useLowPower.js';
+import BlurImage from '../../Components/BlurImage/BlurImage';
 
 function EventCardMobile({ Events, priority }) {
   const { slowNetwork } = useDeviceProfile();
@@ -51,8 +52,9 @@ function EventCardMobile({ Events, priority }) {
         }}
       >
         {primaryImage && (
-          <img
+          <BlurImage
             src={sanityImg(primaryImage, slowNetwork ? 640 : 1000)}
+            blurSrc={sanityBlurUrl(primaryImage)}
             srcSet={primarySet}
             sizes="(max-width: 767px) 92vw, 400px"
             alt={Events.name}
@@ -61,7 +63,7 @@ function EventCardMobile({ Events, priority }) {
             className="w-full h-auto object-contain bg-[#0b0b0c]"
           />
         )}
-        <div className="absolute bottom-2 right-2 bg-cyan-600/90 text-white text-xs font-semibold px-2.5 py-1 rounded-full backdrop-blur-sm">
+        <div className="absolute bottom-2 right-2 bg-cyan-600/90 text-white text-xs font-semibold px-2.5 py-1 rounded-full backdrop-blur-sm z-10">
           {images.length} Photos
         </div>
       </div>

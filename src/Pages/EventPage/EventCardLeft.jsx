@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Modal from './Modal';
-import { sanityImg } from '../../utils/sanityImage.js';
+import { sanityImg, sanityBlurUrl } from '../../utils/sanityImage.js';
 import { preloadImages } from '../../utils/imageCacheManager.js';
 import { prioritizeAssetFetch } from '../../utils/priorityScheduler.js';
 import useDeviceProfile from '../../hooks/useLowPower.js';
+import BlurImage from '../../Components/BlurImage/BlurImage';
 
 function EventCardLeft({ Events, priority }) {
   const { slowNetwork } = useDeviceProfile();
@@ -54,8 +55,9 @@ function EventCardLeft({ Events, priority }) {
           }}
         >
           {primaryImage && (
-            <img
+            <BlurImage
               src={sanityImg(primaryImage, slowNetwork ? 640 : 1000)}
+              blurSrc={sanityBlurUrl(primaryImage)}
               srcSet={primarySet}
               sizes="(min-width: 768px) 50vw, 92vw"
               alt={Events.name}
@@ -64,7 +66,7 @@ function EventCardLeft({ Events, priority }) {
               className="w-full h-auto object-contain bg-[#0b0b0c]"
             />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4 z-10">
             <span className="text-white text-sm font-medium bg-cyan-600/80 px-3 py-1.5 rounded-full backdrop-blur-sm">
               🔍 Click to View Gallery ({images.length} Photos)
             </span>
@@ -74,17 +76,12 @@ function EventCardLeft({ Events, priority }) {
         {images.length > 1 && (
           <div className="flex gap-2 overflow-x-auto pb-1">
             {images.slice(1, 4).map((img, idx) => (
-              <img
+              <div
                 key={idx}
-                src={sanityImg(img, slowNetwork ? 160 : 240)}
-                srcSet={imageSets[idx + 1]}
-                sizes="80px"
-                alt={`${Events.name} gallery photo ${idx + 2}`}
-                loading="lazy"
-                decoding="async"
                 role="button"
                 tabIndex={0}
-                className="w-20 h-16 object-cover rounded-xl border border-white/10 cursor-pointer hover:opacity-80 transition-opacity"
+                aria-label={`View photo ${idx + 2}`}
+                className="w-20 h-16 rounded-xl overflow-hidden border border-white/10 cursor-pointer hover:opacity-80 transition-opacity flex-none"
                 onClick={() => setExpanding(true)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
@@ -92,7 +89,18 @@ function EventCardLeft({ Events, priority }) {
                     setExpanding(true);
                   }
                 }}
-              />
+              >
+                <BlurImage
+                  src={sanityImg(img, slowNetwork ? 160 : 240)}
+                  blurSrc={sanityBlurUrl(img)}
+                  srcSet={imageSets[idx + 1]}
+                  sizes="80px"
+                  alt={`${Events.name} gallery photo ${idx + 2}`}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover"
+                />
+              </div>
             ))}
           </div>
         )}

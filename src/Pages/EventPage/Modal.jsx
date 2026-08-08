@@ -20,6 +20,14 @@ function Modal({ images, open, onClose }) {
 
   const slides = images.map((url) => ({
     src: sanityImg(url, 1400),
+    srcSet:
+      typeof url === 'string' && url.includes('cdn.sanity.io')
+        ? [
+            { src: sanityImg(url, 640), width: 640 },
+            { src: sanityImg(url, 1000), width: 1000 },
+            { src: sanityImg(url, 1400), width: 1400 },
+          ]
+        : undefined,
   }));
 
   return (
