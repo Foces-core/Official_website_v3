@@ -21,6 +21,10 @@ import agenticMentor from '../assets/events/agentic_workshop_mentor.webp';
 import agenticMentor400 from '../assets/events/agentic_workshop_mentor-400.webp';
 import agenticMentor800 from '../assets/events/agentic_workshop_mentor-800.webp';
 
+import agenticSdpkRoom from '../assets/events/agentic_sdpk_room.webp';
+import agenticSdpkRoom400 from '../assets/events/agentic_sdpk_room-400.webp';
+import agenticSdpkRoom800 from '../assets/events/agentic_sdpk_room-800.webp';
+
 import agenticStudents from '../assets/events/agentic_workshop_students.webp';
 import agenticStudents400 from '../assets/events/agentic_workshop_students-400.webp';
 import agenticStudents800 from '../assets/events/agentic_workshop_students-800.webp';
@@ -36,6 +40,10 @@ import codingArenaAction800 from '../assets/events/coding_arena_action-800.webp'
 import promptParadoxWinners from '../assets/events/prompt_paradox_winners.webp';
 import promptParadoxWinners400 from '../assets/events/prompt_paradox_winners-400.webp';
 import promptParadoxWinners800 from '../assets/events/prompt_paradox_winners-800.webp';
+
+import promptParadoxLeaderboard from '../assets/events/prompt_paradox_leaderboard.webp';
+import promptParadoxLeaderboard400 from '../assets/events/prompt_paradox_leaderboard-400.webp';
+import promptParadoxLeaderboard800 from '../assets/events/prompt_paradox_leaderboard-800.webp';
 
 import studentSeminar from '../assets/events/student_seminar_presentation.webp';
 import studentSeminar400 from '../assets/events/student_seminar_presentation-400.webp';
@@ -62,10 +70,11 @@ export const featuredEvents = [
     date: '21st June 2026',
     image: promptParadoxPoster,
     imageSet: set(promptParadoxPoster, promptParadoxPoster800, promptParadoxPoster400),
-    images: [promptParadoxPoster, promptParadoxWinners, studentSeminar],
+    images: [promptParadoxPoster, promptParadoxWinners, promptParadoxLeaderboard, studentSeminar],
     imageSets: [
       set(promptParadoxPoster, promptParadoxPoster800, promptParadoxPoster400),
       set(promptParadoxWinners, promptParadoxWinners800, promptParadoxWinners400),
+      set(promptParadoxLeaderboard, promptParadoxLeaderboard800, promptParadoxLeaderboard400),
       set(studentSeminar, studentSeminar800, studentSeminar400),
     ],
     desc: 'Test your prompt engineering mastery, solve complex AI puzzles, and break through the digital maze.',
@@ -81,6 +90,7 @@ export const featuredEvents = [
     images: [
       agenticCodingPoster,
       agenticMentor,
+      agenticSdpkRoom,
       agenticStudents,
       codingArenaWide,
       codingArenaAction,
@@ -89,6 +99,7 @@ export const featuredEvents = [
     imageSets: [
       set(agenticCodingPoster, agenticCodingPoster800, agenticCodingPoster400),
       set(agenticMentor, agenticMentor800, agenticMentor400),
+      set(agenticSdpkRoom, agenticSdpkRoom800, agenticSdpkRoom400),
       set(agenticStudents, agenticStudents800, agenticStudents400),
       set(codingArenaWide, codingArenaWide800, codingArenaWide400),
       set(codingArenaAction, codingArenaAction800, codingArenaAction400),
