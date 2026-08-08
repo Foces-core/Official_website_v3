@@ -99,6 +99,23 @@ export default defineConfig({
         maximumFileSizeToCacheInBytes: 1024 * 1024,
         navigateFallback: '/index.html',
         cleanupOutdatedCaches: true,
+        runtimeCaching: [
+          {
+            // CacheFirst strategy for all images so loaded/viewed images never die when offline
+            urlPattern: /\.(?:png|jpg|jpeg|svg|webp|avif)$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images-cache',
+              expiration: {
+                maxEntries: 120,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 Days
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+        ],
       },
     }),
   ],
