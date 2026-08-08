@@ -78,7 +78,7 @@ export const featuredEvents = [
       set(studentSeminar, studentSeminar800, studentSeminar400),
     ],
     desc: 'Test your prompt engineering mastery, solve complex AI puzzles, and break through the digital maze.',
-    websiteUrl: 'https://thepromptparadox.tech',
+    websiteUrl: 'https://foces-core.github.io/prompt-paradox-2/',
   },
   {
     id: 2,
