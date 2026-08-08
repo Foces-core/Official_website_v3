@@ -82,11 +82,11 @@
    decorative motion. */
 @media (prefers-reduced-motion: reduce) {
     .coffee div {
-        animation: none;
+        animation: none !important;
         opacity: 0.6;
     }
     .coffee {
-        animation: none;
+        animation: none !important;
     }
 }
 

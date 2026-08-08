@@ -101,14 +101,31 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
-            // CacheFirst strategy for all images so loaded/viewed images never die when offline
-            urlPattern: /\.(?:png|jpg|jpeg|svg|webp|avif)$/i,
+            // Sanity CDN and proxy image assets
+            urlPattern: /^(?:https:\/\/cdn\.sanity\.io\/images\/|\/sanity\/images\/)/i,
             handler: 'CacheFirst',
             options: {
-              cacheName: 'images-cache',
+              cacheName: 'sanity-images-cache-v2',
               expiration: {
-                maxEntries: 120,
-                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 Days
+                maxEntries: 1000,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 365 Days (1 Year)
+                purgeOnQuotaError: false,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
+            // CacheFirst strategy for all static images (handling query params like ?w=1000 or asset hashes)
+            urlPattern: /\.(?:png|jpg|jpeg|svg|webp|avif)(?:\?.*)?$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images-cache-v2',
+              expiration: {
+                maxEntries: 1000,
+                maxAgeSeconds: 60 * 60 * 24 * 365, // 365 Days (1 Year)
+                purgeOnQuotaError: false,
               },
               cacheableResponse: {
                 statuses: [0, 200],

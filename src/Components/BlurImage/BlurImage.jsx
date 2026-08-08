@@ -11,16 +11,6 @@ import PropTypes from 'prop-types';
  * The blur placeholder is shown until the full image finishes loading,
  * then cross-fades to the sharp version. The placeholder element is
  * removed from the DOM after the transition to avoid extra nodes.
- *
- * @param {object} props
- * @param {string} props.src - Full image URL
- * @param {string} [props.blurSrc] - Tiny blurred placeholder URL/data-URL
- * @param {string} [props.alt] - Alt text
- * @param {string} [props.className] - CSS classes
- * @param {number} [props.width]
- * @param {number} [props.height]
- * @param {string} [props.loading="lazy"] - Native loading attr
- * @param {string} [props.decoding="async"] - Native decoding attr
  */
 export default function BlurImage({
   src,

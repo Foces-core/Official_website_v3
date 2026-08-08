@@ -9,9 +9,14 @@ const Loader = () => {
     : "1st Rule Of Programming: If A Code Works, Don't Touch It.";
 
   return (
-    <div className=" flex flex-col items-center justify-center  h-screen">
+    <div
+      className="flex flex-col items-center justify-center h-screen bg-[#101011]"
+      role="status"
+      aria-live="polite"
+      aria-label="Loading content"
+    >
       <div className="relative">
-        <div className="coffee ">
+        <div className="coffee">
           <div></div>
           <div></div>
           <div></div>
@@ -23,9 +28,16 @@ const Loader = () => {
         </div>
       </div>
 
-      <span className={`text-white p-5 font-Grotesk ${isSmallScreen ? 'break-lines' : ''}`}>
-        {textContent}
-      </span>
+      <div className="mt-4 flex flex-col items-center text-center">
+        <span className="text-cyan-400 font-semibold text-xs tracking-widest uppercase mb-1">
+          Loading...
+        </span>
+        <span
+          className={`text-gray-300 p-3 text-sm font-Grotesk ${isSmallScreen ? 'break-lines' : ''}`}
+        >
+          {textContent}
+        </span>
+      </div>
     </div>
   );
 };

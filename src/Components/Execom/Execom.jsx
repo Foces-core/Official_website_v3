@@ -28,8 +28,8 @@ import Anjitha from '../../assets/anjitha.webp';
 import AnjithaBlur from '../../assets/anjitha.webp?blur&w=20';
 import Abhirami from '../../assets/abhirami_p.webp';
 import AbhiramiBlur from '../../assets/abhirami_p.webp?blur&w=20';
-import Devadarsana from '../../assets/devadarsana.webp';
-import DevadarsanaBlur from '../../assets/devadarsana.webp?blur&w=20';
+import Devadarsana from '../../assets/devadarsana.webp?v=3';
+import DevadarsanaBlur from '../../assets/devadarsana.webp?blur&w=20&v=3';
 
 import MeetTheTeam from '../../assets/MeetTheTeam.svg';
 import useDeviceProfile from '../../hooks/useLowPower.js';

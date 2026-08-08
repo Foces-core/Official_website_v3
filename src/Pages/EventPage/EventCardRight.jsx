@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Modal from './Modal';
 import { sanityImg } from '../../utils/sanityImage.js';
+import { preloadImages } from '../../utils/imageCacheManager.js';
 import useDeviceProfile from '../../hooks/useLowPower.js';
 
 function EventCardRight({ Events, priority }) {
@@ -12,6 +13,12 @@ function EventCardRight({ Events, priority }) {
   const imageSets = Events.imageSets || [];
   const primaryImage = images[0];
   const primarySet = imageSets[0];
+
+  useEffect(() => {
+    if (images.length > 0) {
+      preloadImages(images.map((url) => sanityImg(url, 1400)));
+    }
+  }, [images]);
 
   return (
     <div

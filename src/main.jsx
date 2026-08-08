@@ -50,20 +50,16 @@ function ScrollToTop() {
  * exactly as long as the boot needs: no fixed duration.
  */
 function Root() {
-  // On genuinely slow/low-end devices, skip the branded splash entirely — an
-  // intro animation is wasted time there; showing the page immediately
-  // matters more. Everyone else gets the coffee-mug splash (reduced-motion
-  // users get a static mug, handled in Loader.css).
-  const { slowNetwork, lowPower } = useDeviceProfile();
+  // First-load loader info screen: displayed for all users (including reduced motion)
+  // Reduced-motion users get a static mug & loading text (handled in Loader.css).
+  const { slowNetwork } = useDeviceProfile();
   const [loaderPhase, setLoaderPhase] = useState(
-    () => (slowNetwork || lowPower ? 'gone' : 'show'), // 'show' -> 'fade' -> 'gone'
+    () => (slowNetwork ? 'gone' : 'show'), // 'show' -> 'fade' -> 'gone'
   );
-  // Pre-seeded from the gated state so a profile change later (e.g. network
-  // upgrade) can never make the splash flash back on for a skipped user.
-  const hiddenRef = useRef(slowNetwork || lowPower);
+  const hiddenRef = useRef(slowNetwork);
 
   useEffect(() => {
-    if (slowNetwork || lowPower) return; // gated users get no splash at all
+    if (slowNetwork) return;
 
     let disposed = false;
     const hide = () => {
@@ -73,11 +69,10 @@ function Root() {
       setTimeout(() => setLoaderPhase('gone'), 700); // matches duration-700
     };
 
-    // The mug lasts only as long as the boot genuinely needs:
+    // The loader lasts only as long as the boot genuinely needs:
     //  1. hero fonts are ready AND the first page paint has landed, or
     //  2. the whole page finished loading (window 'load'), or
     //  3. a failsafe at 6s so a stalled resource can never block the page
-    //     indefinitely (a hang guard — not a fixed splash duration).
     const paint = () =>
       new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     const fonts = document.fonts ? document.fonts.ready : Promise.resolve();
@@ -91,7 +86,7 @@ function Root() {
       clearTimeout(failsafe);
       window.removeEventListener('load', hide);
     };
-  }, [slowNetwork, lowPower]);
+  }, [slowNetwork]);
 
   return (
     <>
@@ -105,22 +100,12 @@ function Root() {
           <Loader />
         </div>
       )}
-      {/* Lazy routes: gated users get a plain dark frame while the chunk
-          loads — no branded intro animation for them. */}
       <Sentry.ErrorBoundary
         fallback={({ error, resetError }) => (
           <ErrorFallback error={error} resetError={resetError} />
         )}
       >
-        <Suspense
-          fallback={
-            slowNetwork || lowPower ? (
-              <div className="fixed inset-0 bg-[#101011]" aria-hidden="true" />
-            ) : (
-              <Loader />
-            )
-          }
-        >
+        <Suspense fallback={<Loader />}>
           <Routes>
             <Route path="/" element={<App />} />
             <Route path="/events" element={<Eventpage />} />
