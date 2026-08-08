@@ -35,8 +35,15 @@ export default function BlurImage({
 }) {
   const [loaded, setLoaded] = useState(false);
   const [removed, setRemoved] = useState(!blurSrc);
+  const [prevSrc, setPrevSrc] = useState(src);
   const imgRef = useRef(null);
   const timerRef = useRef(null);
+
+  if (src !== prevSrc) {
+    setPrevSrc(src);
+    setLoaded(false);
+    setRemoved(!blurSrc);
+  }
 
   useEffect(() => {
     return () => {
@@ -45,8 +52,6 @@ export default function BlurImage({
   }, []);
 
   useEffect(() => {
-    setLoaded(false);
-    setRemoved(!blurSrc);
     const img = imgRef.current;
     if (!img) return;
 

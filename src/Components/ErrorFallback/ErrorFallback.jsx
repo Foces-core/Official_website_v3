@@ -35,7 +35,7 @@ export function ErrorFallback({ error, resetError }) {
           home.
         </p>
 
-        {process.env.NODE_ENV !== 'production' && error?.message && (
+        {import.meta.env.DEV && error?.message && (
           <div className="mb-6 p-3 bg-red-950/40 border border-red-800/40 rounded-xl text-left text-xs font-mono text-red-300 overflow-x-auto max-h-32">
             {error.message}
           </div>
