@@ -20,16 +20,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install pnpm
-        # Reads the version from the "packageManager" field in package.json.
-        uses: pnpm/action-setup@v4
-
-      # Node 24, not 20: pnpm 11.x (see packageManager) requires Node >= 22.13,
-      # and Node 20 is deprecated on GitHub runners.
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '22'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.3.0
+
+      - name: Cache pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
           cache: pnpm
 
       - name: Install dependencies
@@ -59,13 +63,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '22'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.3.0
+
+      - name: Cache pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
           cache: pnpm
 
       - name: Install dependencies
@@ -97,15 +108,20 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-
-      # Node 24, not 20: pnpm 11.x (see packageManager) requires Node >= 22.13,
-      # and Node 20 is deprecated on GitHub runners.
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '22'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.3.0
+
+      - name: Cache pnpm
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
           cache: pnpm
 
       - name: Install dependencies
