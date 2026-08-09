@@ -6,6 +6,7 @@ import { createHarness } from './harness.jsx';
 // Analytics is best-effort: when the vendor chunk fails to load, the page
 // must keep working with nothing mounted and no unhandled rejection.
 vi.mock('@vercel/speed-insights/react', () => Promise.reject(new Error('offline')));
+vi.mock('@vercel/analytics/react', () => Promise.reject(new Error('offline')));
 
 let harness;
 let idleCb;

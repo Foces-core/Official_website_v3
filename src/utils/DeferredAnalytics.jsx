@@ -2,18 +2,20 @@ import { useEffect, useState } from 'react';
 
 /**
  * Analytics must never compete with the real page for network or CPU on first
- * load. This keeps <SpeedInsights /> unmounted until the browser is idle AND
- * the user has interacted (or scrolled), so on 2G/3G the FOCES content wins
- * every time. If the tab is idle for a long time it still boots once the user
- * touches the page.
+ * load. This keeps <SpeedInsights /> and <Analytics /> unmounted until the
+ * browser is idle AND the user has interacted (or scrolled), so on 2G/3G the
+ * FOCES content wins every time. If the tab is idle for a long time it still
+ * boots once the user touches the page.
  *
- * The @vercel/speed-insights/react module itself is also dynamically imported
- * here (only once `ready` flips) rather than statically, so its code + React
- * share never ship in the initial JS bundle.
+ * The @vercel/speed-insights/react and @vercel/analytics/react modules are
+ * also dynamically imported here (only once `ready` flips) rather than
+ * statically, so their code + React share never ship in the initial JS
+ * bundle.
  */
 export default function DeferredAnalytics() {
   const [ready, setReady] = useState(false);
   const [Insights, setInsights] = useState(null);
+  const [Analytics, setAnalytics] = useState(null);
 
   useEffect(() => {
     let done = false;
@@ -47,18 +49,25 @@ export default function DeferredAnalytics() {
   }, []);
 
   useEffect(() => {
-    if (!ready || Insights) return;
+    if (!ready || (Insights && Analytics)) return;
     let cancelled = false;
-    import('@vercel/speed-insights/react')
-      .then((m) => {
-        if (!cancelled) setInsights(() => m.SpeedInsights);
+    Promise.all([import('@vercel/speed-insights/react'), import('@vercel/analytics/react')])
+      .then(([speedMod, analyticsMod]) => {
+        if (cancelled) return;
+        setInsights(() => speedMod.SpeedInsights);
+        setAnalytics(() => analyticsMod.Analytics);
       })
       .catch(() => {}); // analytics is best-effort — never break the app
     return () => {
       cancelled = true;
     };
-  }, [ready, Insights]);
+  }, [ready, Insights, Analytics]);
 
-  if (!ready || !Insights) return null;
-  return <Insights />;
+  if (!ready || !Insights || !Analytics) return null;
+  return (
+    <>
+      <Analytics />
+      <Insights />
+    </>
+  );
 }
