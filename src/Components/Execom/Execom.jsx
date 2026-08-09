@@ -4,7 +4,6 @@ import { Autoplay, Pagination, Navigation, EffectCube, Keyboard } from 'swiper/m
 
 import 'swiper/css';
 import 'swiper/css/effect-cube';
-import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import '../Execom/custom.css';
 
@@ -30,6 +29,8 @@ import Abhirami from '../../assets/abhirami_p.webp';
 import AbhiramiBlur from '../../assets/abhirami_p.webp?blur&w=20';
 import Devadarsana from '../../assets/devadarsana.webp?v=3';
 import DevadarsanaBlur from '../../assets/devadarsana.webp?blur&w=20&v=3';
+import Gopakumar from '../../assets/gopakumar.webp';
+import GopakumarBlur from '../../assets/gopakumar.webp?blur&w=20';
 
 import MeetTheTeam from '../../assets/MeetTheTeam.svg';
 import useDeviceProfile from '../../hooks/useLowPower.js';
@@ -43,6 +44,7 @@ import {
 } from '../../utils/keyboardLock.js';
 
 const cardData = [
+  { name: 'Gopakumar G', img: Gopakumar, blur: GopakumarBlur, review: 'Advisor' },
   { name: 'Aleetta Mariya Sebastian', img: Aleetta, blur: AleettaBlur, review: 'Chairperson' },
   { name: 'Lisha Jins', img: Lisha, blur: LishaBlur, review: 'Vice Chairperson' },
   { name: 'Steve Jose', img: Steve, blur: SteveBlur, review: 'Secretary' },
@@ -61,9 +63,14 @@ const cardData = [
   },
 ];
 
-// The cube rotates 90° per face, so Swiper's loop mode can't be used.
-// Render 3 invisible copies: indices 0 and 32 share the same cube orientation
+// The cube rotates 90° per face, so Swiper's loop mode can't be used. Render
+// 3 invisible copies: indices 0 and 32 share the same cube orientation
 // (32 × 90° = 2880° ≡ 0°), so a 0ms jump between them wraps seamlessly.
+//
+// The flat (low-power) slider uses the same copies instead of loop mode —
+// Swiper's loop with only ~3× slidesPerView jams at its append boundary
+// (autoplay/keyboard advance a few times, then freeze), which the cube's
+// wrap handler avoids.
 const cubeSlides = [...cardData, ...cardData, ...cardData];
 
 function Execom() {
@@ -90,26 +97,48 @@ function Execom() {
 
     if (idx >= total * 2) {
       swiper.slideTo(idx - total, 0);
+      // The 0ms jump fires no DOM transitionend, so Swiper autoplay's
+      // transition-wait would stay paused forever — nudge it back on.
+      swiper.autoplay?.resume();
     } else if (idx < total) {
       swiper.slideTo(idx + total, 0);
+      swiper.autoplay?.resume();
     }
   }, []);
 
   // Arrow-key arbitration (see utils/keyboardLock.js): register the desktop
-  // carousel as a widget (only counts while it is actually rendered/visible)
-  // and enable its keyboard only while it owns the arrows (on screen + last
-  // interacted). Pointer use on the carousel area marks it.
+  // and mobile carousels as separate widgets — each counts as "on screen"
+  // only while its swiper is actually rendered/visible (the other is hidden
+  // via CSS, which rectIsOnScreen now detects). Each enables its keyboard
+  // only while it owns the arrows (on screen + last interacted). Pointer use
+  // on the carousel area marks both.
   React.useEffect(() => {
-    const id = 'execom';
-    const unregister = registerWidget(id, () => rectIsOnScreen(deskSwiperRef.current?.el, 60));
-    const sync = () => syncCarouselKeyboard(deskSwiperRef.current, id);
-    const mark = () => markInteracted(id);
+    const unregs = [
+      registerWidget(
+        'execom-desk',
+        () => rectIsOnScreen(deskSwiperRef.current?.el, 60),
+        carouselRef.current,
+      ),
+      registerWidget(
+        'execom-mobile',
+        () => rectIsOnScreen(cubeRef.current?.el, 60),
+        carouselRef.current,
+      ),
+    ];
+    const sync = () => {
+      syncCarouselKeyboard(deskSwiperRef.current, 'execom-desk');
+      syncCarouselKeyboard(cubeRef.current, 'execom-mobile');
+    };
+    const mark = () => {
+      markInteracted('execom-desk');
+      markInteracted('execom-mobile');
+    };
     sync();
     const carouselEl = carouselRef.current;
     carouselEl?.addEventListener('pointerdown', mark, true);
     const unsub = subscribeKeyboardArbitration(sync);
     return () => {
-      unregister();
+      unregs.forEach((unregister) => unregister());
       unsub();
       carouselEl?.removeEventListener('pointerdown', mark, true);
     };
@@ -191,24 +220,23 @@ function Execom() {
           <Swiper
             onSwiper={(swiper) => {
               deskSwiperRef.current = swiper;
-              syncCarouselKeyboard(swiper, 'execom');
+              syncCarouselKeyboard(swiper, 'execom-desk');
             }}
-            modules={[Autoplay, Pagination, Navigation, EffectCube, Keyboard]}
+            modules={[Autoplay, Navigation, EffectCube, Keyboard]}
             effect={flatCube ? 'slide' : 'cube'}
             speed={flatCube ? 250 : 400}
             cubeEffect={cubeEffectConfig}
             grabCursor={!flatCube}
             spaceBetween={flatCube ? 20 : 0}
             slidesPerView={1}
-            loop={flatCube}
-            initialSlide={flatCube ? undefined : cardData.length}
+            initialSlide={cardData.length}
             autoplay={disableAutoplay ? false : { delay: 3500, disableOnInteraction: false }}
-            pagination={flatCube ? { clickable: true } : false}
             navigation={flatCube}
             keyboard={{ enabled: true, onlyInViewport: false }}
-            onSlideChange={flatCube ? undefined : handleCubeWrap}
-            onTouchEnd={flatCube ? undefined : handleCubeWrap}
-            onTransitionEnd={flatCube ? undefined : handleCubeWrap}
+            // Wrap on transition END (not slideChange): the 0ms wrap jump emits
+            // no transitionend, which would leave Swiper autoplay paused forever.
+            onTouchEnd={handleCubeWrap}
+            onTransitionEnd={handleCubeWrap}
             breakpoints={
               flatCube
                 ? {
@@ -220,7 +248,7 @@ function Execom() {
             }
             className="execom-swiper pb-12"
           >
-            {(flatCube ? cardData : cubeSlides).map((d, index) => (
+            {cubeSlides.map((d, index) => (
               <SwiperSlide key={index}>
                 <div className="container-execom bg-[#161618] border-box relative rounded-3xl overflow-hidden group">
                   <BlurImage
@@ -240,25 +268,25 @@ function Execom() {
             ))}
           </Swiper>
 
-          {/* Custom 11-dot indicator for desktop cube mode */}
-          {!flatCube && (
-            <div className="flex justify-center gap-2 mt-2 pb-1">
-              {cardData.map((d, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  aria-label={`Go to ${d.name}`}
-                  onClick={() => {
-                    const sw = deskSwiperRef.current;
-                    if (!sw) return;
-                    const copy = Math.floor(sw.activeIndex / cardData.length);
-                    sw.slideTo(copy * cardData.length + i, 350);
-                  }}
-                  className={`h-2 rounded-full transition-all duration-300 ${activeCube === i ? 'w-6 bg-[#007aff]' : 'w-2 bg-[#4f4f54]'}`}
-                />
-              ))}
-            </div>
-          )}
+          {/* Custom 11-dot indicator for both modes — Swiper's loop was
+              replaced with duplicated slides, so its pagination (which would
+              render 33 bullets) can't be used. */}
+          <div className="flex justify-center gap-2 mt-2 pb-1">
+            {cardData.map((d, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`Go to ${d.name}`}
+                onClick={() => {
+                  const sw = deskSwiperRef.current;
+                  if (!sw) return;
+                  const copy = Math.floor(sw.activeIndex / cardData.length);
+                  sw.slideTo(copy * cardData.length + i, 350);
+                }}
+                className={`h-2 rounded-full transition-all duration-300 ${activeCube === i ? 'w-6 bg-[#007aff]' : 'w-2 bg-[#4f4f54]'}`}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Mobile 3D Cube Swiper — seamless infinite wrap (swipe any direction, forever) */}
@@ -266,6 +294,7 @@ function Execom() {
           <Swiper
             onSwiper={(swiper) => {
               cubeRef.current = swiper;
+              syncCarouselKeyboard(swiper, 'execom-mobile');
             }}
             effect={flatCube ? 'slide' : 'cube'}
             grabCursor={true}
@@ -278,8 +307,10 @@ function Execom() {
                 ? false
                 : { delay: 2500, disableOnInteraction: false, stopOnLastSlide: false }
             }
-            modules={[EffectCube, Pagination, Autoplay]}
-            onSlideChange={handleCubeWrap}
+            modules={[EffectCube, Autoplay, Keyboard]}
+            keyboard={{ enabled: true, onlyInViewport: false }}
+            // Wrap on transition END (not slideChange): the 0ms wrap jump emits
+            // no transitionend, which would leave Swiper autoplay paused forever.
             onTouchEnd={handleCubeWrap}
             onTransitionEnd={handleCubeWrap}
             className="execom-cube-swiper"

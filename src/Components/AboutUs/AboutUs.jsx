@@ -552,6 +552,7 @@ function AboutUs() {
             onTouchCancel={handleTouchEnd}
             onMouseDown={handleMouseDown}
             role="group"
+            tabIndex={0}
             aria-label="FOCES values cube, spin it left or right with the arrow keys or by dragging horizontally"
           >
             <div id="front-about" className="font-about text-shadow-white">

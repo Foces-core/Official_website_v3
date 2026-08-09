@@ -282,7 +282,11 @@ export default function Navbar() {
 
     // Open in a new tab so the current page isn't hijacked
     try {
-      window.open('https://www.instagram.com/foces_cec/', '_blank', 'noopener,noreferrer');
+      window.open(
+        'https://chat.whatsapp.com/BcZphXaaz9iKzyyVmuRm2a?s=cl&p=a&ilr=1',
+        '_blank',
+        'noopener,noreferrer',
+      );
     } catch {
       // popup blocked — the visual flip above still shows the click happened
     }

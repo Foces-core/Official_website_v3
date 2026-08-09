@@ -5,10 +5,10 @@ import { test, expect } from '@playwright/test';
 // events grid + lightbox, cross-route scroll behavior, contact page, and
 // asset/rendering hygiene. Prefer structural assertions over timing.
 
-async function gotoHome(page) {
-  await page.goto('/', { waitUntil: 'networkidle' });
-  // The branded loader is gated off for low-end/reduced-motion; on capable
-  // machines it fades after fonts+paint. Make sure it's gone before interacting.
+// The branded loader is gated off for low-end/reduced-motion; on capable
+// machines it fades after fonts+paint (min 2.5s). Make sure it's gone before
+// clicking — while it's up, its z-100 overlay swallows every click.
+async function waitForLoaderGone(page) {
   await expect
     .poll(async () => {
       const phase = await page.evaluate(() => {
@@ -20,6 +20,11 @@ async function gotoHome(page) {
     .not.toBe('1')
     .catch(() => {});
   await page.waitForTimeout(300);
+}
+
+async function gotoHome(page) {
+  await page.goto('/', { waitUntil: 'networkidle' });
+  await waitForLoaderGone(page);
 }
 
 test.describe('Home page structure', () => {
@@ -97,8 +102,9 @@ test.describe('Featuring carousel', () => {
   });
 
   test('keyboard arrows navigate when carousel owns focus', async ({ page }) => {
-    // Click inside the carousel so it claims arrow ownership.
-    await page.locator('.feat-swiper .swiper-slide').first().click({ force: true });
+    // Click the visible slide so it claims arrow ownership (the carousel
+    // starts mid-way through duplicated copies; earlier slides are off-screen).
+    await page.locator('.feat-swiper .swiper-slide-active').click({ force: true });
     await page.waitForTimeout(300);
     const before = await activeIndex(page);
     await page.keyboard.press('ArrowRight');
@@ -110,7 +116,7 @@ test.describe('Featuring carousel', () => {
   test('pagination dots sit below the images', async ({ page }) => {
     const ok = await page.evaluate(() => {
       const img = document.querySelector('.feat-swiper .swiper-slide img');
-      const pag = document.querySelector('.feat-swiper .swiper-pagination');
+      const pag = document.querySelector('.feat-dots');
       return pag.getBoundingClientRect().top >= img.getBoundingClientRect().bottom;
     });
     expect(ok).toBe(true);
@@ -131,17 +137,20 @@ test.describe('Execom / Meet the team carousel', () => {
       ),
     );
 
-  test('navigation arrows work on desktop', async ({ page }) => {
-    const next = page.locator('.execom-swiper .swiper-button-next');
+  test('dot indicator navigates the team carousel', async ({ page }) => {
+    // Both cube and flat modes render the custom 11-dot indicator (Swiper's
+    // loop + pagination were replaced by duplicated slides + wrap).
     const before = await activeIndex(page);
-    await next.click();
+    await page.locator('.execom-swiper + div button[aria-label]').nth(2).click();
     await page.waitForTimeout(600);
     const after = await activeIndex(page);
     expect(after).not.toBe(before);
   });
 
   test('keyboard arrows navigate the team carousel', async ({ page }) => {
-    await page.locator('.execom-swiper .swiper-slide').first().click({ force: true });
+    // Click the visible slide so it claims arrow ownership (the swiper starts
+    // mid-way through duplicated copies; earlier slides are off-screen).
+    await page.locator('.execom-swiper .swiper-slide-active').click({ force: true });
     await page.waitForTimeout(300);
     const before = await activeIndex(page);
     await page.keyboard.press('ArrowRight');
@@ -150,11 +159,14 @@ test.describe('Execom / Meet the team carousel', () => {
     expect(after).not.toBe(before);
   });
 
-  test('pagination dots sit below the member cards', async ({ page }) => {
+  test('dots sit below the member cards', async ({ page }) => {
     const ok = await page.evaluate(() => {
       const card = document.querySelector('.execom-swiper .swiper-slide .container-execom');
+      const dots = document.querySelector('.execom-swiper + div');
       const pag = document.querySelector('.execom-swiper .swiper-pagination');
-      return pag.getBoundingClientRect().top >= card.getBoundingClientRect().bottom;
+      const target = dots || pag;
+      if (!card || !target) return false;
+      return target.getBoundingClientRect().top >= card.getBoundingClientRect().bottom;
     });
     expect(ok).toBe(true);
   });
@@ -258,6 +270,7 @@ test.describe('Cross-route navigation', () => {
     page,
   }) => {
     await page.goto('/contact', { waitUntil: 'networkidle' });
+    await waitForLoaderGone(page);
     // Verify the link exists and what href it has
     const link = page.locator('a[href="/#execom"]');
     await expect(link).toBeVisible();
@@ -280,6 +293,7 @@ test.describe('Cross-route navigation', () => {
     page,
   }) => {
     await page.goto('/events', { waitUntil: 'networkidle' });
+    await waitForLoaderGone(page);
     await page.locator('a[href="/#about"]').click();
     await page.waitForURL('**/');
     await page.waitForTimeout(2500);
@@ -292,6 +306,7 @@ test.describe('Cross-route navigation', () => {
 
   test('clicking Contact from /events navigates to /contact', async ({ page }) => {
     await page.goto('/events', { waitUntil: 'networkidle' });
+    await waitForLoaderGone(page);
     await page.locator('a[href="/contact"]').first().click();
     await page.waitForURL('**/contact');
     await expect(page.locator('form')).toBeVisible();
@@ -299,6 +314,9 @@ test.describe('Cross-route navigation', () => {
 
   test('logo click from /contact returns to home', async ({ page }) => {
     await page.goto('/contact', { waitUntil: 'networkidle' });
+    await waitForLoaderGone(page);
+    // The loader also renders an img[alt="FOCES"]; once the loader is gone this
+    // is the navbar logo.
     await page.locator('img[alt="FOCES"]').first().click();
     await page.waitForURL('**/');
     await expect(page.locator('#home')).toBeVisible();

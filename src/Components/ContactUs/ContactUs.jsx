@@ -76,12 +76,6 @@ function ContactUs() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-
-      // Webmail fallback for Windows 11 / browsers without registered local mail client
-      setTimeout(() => {
-        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=Sebinmathew543@gmail.com&su=${subjectEncoded}&body=${bodyEncoded}`;
-        window.open(gmailUrl, '_blank', 'noopener,noreferrer');
-      }, 400);
     };
 
     if (!navigator.onLine || !serviceId || !templateId || !publicKey) {

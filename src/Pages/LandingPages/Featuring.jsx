@@ -1,8 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Pagination, Scrollbar, A11y, Keyboard } from 'swiper/modules';
+import { Autoplay, Scrollbar, A11y, Keyboard } from 'swiper/modules';
 import 'swiper/css';
-import 'swiper/css/pagination';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 import useDeviceProfile from '../../hooks/useLowPower.js';
 import featuring from '../../assets/featuring.svg';
@@ -67,12 +66,41 @@ const echoSlides = [
   },
 ];
 
+// Swiper's loop mode jams at its append boundary when there are only slightly
+// more slides than slidesPerView (4 slides / up to 3 per view): autoplay and
+// keyboard both advance once and then freeze (the loopFix re-targets the same
+// slide). So — like the Execom cube — we render 3 copies of the 4 slides and
+// wrap with a 0ms jump between copies (indices 4 and 8 show the same content
+// as index 0), with no loop mode at all.
+const carouselSlides = [...echoSlides, ...echoSlides, ...echoSlides];
+
 function Featuring() {
   const { reducedMotion } = useDeviceProfile();
   const disableAutoplay = reducedMotion;
   const [noSlides, setNoSlides] = useState(1);
+  const [activeSlide, setActiveSlide] = useState(0);
   const swiperRef = useRef(null);
   const carouselRef = useRef(null);
+  const sectionRef = useRef(null);
+
+  // Seamless infinite wrap: as soon as a copy boundary is crossed, jump 0ms
+  // to the equivalent slide in the adjacent copy (same content → invisible).
+  const handleWrap = useCallback((swiper) => {
+    if (!swiper) return;
+    const total = echoSlides.length;
+    const idx = swiper.activeIndex;
+    setActiveSlide(idx % total);
+
+    if (idx >= total * 2) {
+      swiper.slideTo(idx - total, 0);
+      // The 0ms jump fires no DOM transitionend, so Swiper autoplay's
+      // transition-wait would stay paused forever — nudge it back on.
+      swiper.autoplay?.resume();
+    } else if (idx < total) {
+      swiper.slideTo(idx + total, 0);
+      swiper.autoplay?.resume();
+    }
+  }, []);
 
   useEffect(() => {
     const handleResize = () => {
@@ -99,10 +127,14 @@ function Featuring() {
   // Arrow-key arbitration (see utils/keyboardLock.js): register the carousel
   // as a widget and enable its keyboard only while it owns the arrows (on
   // screen + last interacted). Pointer use on the carousel area (slides,
-  // arrows, pagination) marks it — not clicks on the section heading.
+  // arrows, dots) marks it — not clicks on the section heading.
   useEffect(() => {
     const id = 'featuring';
-    const unregister = registerWidget(id, () => rectIsOnScreen(swiperRef.current?.el, 60));
+    const unregister = registerWidget(
+      id,
+      () => rectIsOnScreen(swiperRef.current?.el, 60),
+      sectionRef.current, // section wrapper includes the arrows AND the dot indicator
+    );
     const sync = () => syncCarouselKeyboard(swiperRef.current, id);
     const mark = () => markInteracted(id);
     sync(); // ownership may already be decided before this runs
@@ -136,6 +168,7 @@ function Featuring() {
 
   return (
     <div
+      ref={sectionRef}
       className="bg-[#101011] h-fit w-full flex flex-col pt-32 overflow-x-hidden pb-20 scroll-mt-24"
       id="featuring"
     >
@@ -166,23 +199,32 @@ function Featuring() {
           <FaChevronLeft />
         </button>
         <Swiper
-          modules={[Autoplay, Pagination, Scrollbar, A11y, Keyboard]}
+          modules={[Autoplay, Scrollbar, A11y, Keyboard]}
           slidesPerView={noSlides}
           spaceBetween={50}
-          loop={true}
+          initialSlide={echoSlides.length}
           autoplay={disableAutoplay ? false : { delay: 3500, disableOnInteraction: false }}
           scrollbar={{ draggable: true }}
           keyboard={{ enabled: true, onlyInViewport: false }}
           onSwiper={(swiper) => {
             swiperRef.current = swiper;
             syncCarouselKeyboard(swiper, 'featuring');
+            // The seamless loop renders 3 copies of 4 slides; tell screen
+            // readers the real count instead of "N / 12".
+            swiper.slides.forEach((el, i) =>
+              el.setAttribute(
+                'aria-label',
+                `${(i % echoSlides.length) + 1} / ${echoSlides.length}`,
+              ),
+            );
           }}
-          pagination={{
-            clickable: true,
-          }}
+          // Wrap on transition END (not slideChange): the 0ms wrap jump emits
+          // no transitionend, which would leave Swiper autoplay paused forever.
+          onTouchEnd={handleWrap}
+          onTransitionEnd={handleWrap}
           className="feat-swiper bg-transparent h-fit"
         >
-          {echoSlides.map(({ image, imageSet, alt }, index) => (
+          {carouselSlides.map(({ image, imageSet, alt }, index) => (
             <SwiperSlide key={index} className="px-3 pt-9 pb-8 bg-transparent">
               <img
                 className="h-full w-full rounded-2xl object-cover transition-all duration-300 shadow-xl hover:scale-105 hover:ring-2 hover:ring-white/50 hover:shadow-[0_0_25px_6px_rgba(255,255,255,0.25)]"
@@ -206,6 +248,26 @@ function Featuring() {
         >
           <FaChevronRight />
         </button>
+      </div>
+      {/* Custom 4-dot indicator — Swiper's loop mode was replaced with duplicated
+          slides, so its pagination (which would render 12 bullets) can't be used. */}
+      <div className="flex justify-center gap-2 mt-2 feat-dots">
+        {echoSlides.map((slide, i) => (
+          <button
+            key={i}
+            type="button"
+            aria-label={`Go to ${slide.alt}`}
+            onClick={() => {
+              const sw = swiperRef.current;
+              if (!sw) return;
+              const copy = Math.floor(sw.activeIndex / echoSlides.length);
+              sw.slideTo(copy * echoSlides.length + i, 350);
+            }}
+            className={`h-2 rounded-full transition-all duration-300 ${
+              activeSlide === i ? 'w-6 bg-white' : 'w-2 bg-white/50 hover:bg-white/80'
+            }`}
+          />
+        ))}
       </div>
     </div>
   );

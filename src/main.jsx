@@ -66,7 +66,9 @@ function Root() {
       if (disposed || hiddenRef.current) return;
       hiddenRef.current = true; // idempotent — many triggers, one fade-out
       setLoaderPhase('fade');
-      setTimeout(() => setLoaderPhase('gone'), 700); // matches duration-700
+      setTimeout(() => {
+        if (!disposed) setLoaderPhase('gone');
+      }, 700); // matches duration-700
     };
 
     // The loader lasts only as long as the boot genuinely needs:
