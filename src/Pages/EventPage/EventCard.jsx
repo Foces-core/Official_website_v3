@@ -7,7 +7,16 @@ import { prioritizeAssetFetch } from '../../utils/priorityScheduler.js';
 import useDeviceProfile from '../../hooks/useLowPower.js';
 import BlurImage from '../../Components/BlurImage/BlurImage';
 
-function EventCardLeft({ Events, priority }) {
+/**
+ * EventCard — one responsive card for every breakpoint.
+ *
+ * Previously there were three near-duplicate components (EventCardLeft /
+ * EventCardRight / EventCardMobile) differing only in flex direction and a
+ * handful of mobile-vs-desktop classes. This single card covers all sizes via
+ * Tailwind responsive variants, so Eventpage no longer tracks window width
+ * (and its per-resize re-render is gone with it).
+ */
+function EventCard({ Events, priority, reverse }) {
   const { slowNetwork } = useDeviceProfile();
   const [Expanding, setExpanding] = useState(false);
 
@@ -30,7 +39,9 @@ function EventCardLeft({ Events, priority }) {
 
   return (
     <div
-      className="w-[95%] max-w-6xl bg-[#161618]/80 backdrop-blur-md border border-white/10 rounded-3xl mt-10 p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 shadow-2xl hover:border-white/30 transition-all duration-300"
+      className={`w-[92%] md:w-[95%] max-w-sm md:max-w-6xl bg-[#161618]/90 md:bg-[#161618]/80 backdrop-blur-md border border-white/10 rounded-2xl md:rounded-3xl my-6 md:mt-10 p-5 md:p-8 flex flex-col md:flex-row ${
+        reverse ? 'md:flex-row-reverse' : ''
+      } items-center gap-8 shadow-xl md:shadow-2xl hover:border-white/30 transition-all duration-300`}
       data-aos="fade-up"
       data-aos-duration="1000"
       onMouseEnter={handleInteraction}
@@ -40,7 +51,7 @@ function EventCardLeft({ Events, priority }) {
       {/* Poster / Image Section */}
       <div className="w-full md:w-1/2 flex flex-col gap-3">
         <div
-          className="relative w-full rounded-2xl overflow-hidden bg-[#0b0b0c] border border-white/10 shadow-xl cursor-pointer group"
+          className="relative w-full rounded-xl md:rounded-2xl overflow-hidden bg-[#0b0b0c] border border-white/10 shadow-md md:shadow-xl cursor-pointer group"
           role="button"
           tabIndex={0}
           aria-haspopup="dialog"
@@ -65,7 +76,12 @@ function EventCardLeft({ Events, priority }) {
               className="w-full h-auto object-contain bg-[#0b0b0c]"
             />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4 z-10">
+          {/* Mobile-only photo count badge */}
+          <div className="absolute bottom-2 right-2 bg-cyan-600/90 text-white text-xs font-semibold px-2.5 py-1 rounded-full backdrop-blur-sm z-10 md:hidden">
+            {images.length} Photos
+          </div>
+          {/* Desktop-only hover gallery prompt */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:flex items-end p-4 z-10">
             <span className="text-white text-sm font-medium bg-cyan-600/80 px-3 py-1.5 rounded-full backdrop-blur-sm">
               🔍 Click to View Gallery ({images.length} Photos)
             </span>
@@ -73,7 +89,7 @@ function EventCardLeft({ Events, priority }) {
         </div>
 
         {images.length > 1 && (
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className="hidden md:flex gap-2 overflow-x-auto pb-1">
             {images.slice(1, 4).map((img, idx) => (
               <div
                 key={idx}
@@ -108,16 +124,18 @@ function EventCardLeft({ Events, priority }) {
       <Modal images={images} open={Expanding} onClose={() => setExpanding(false)} />
 
       {/* Details Section */}
-      <div className="w-full md:w-1/2 flex flex-col justify-between text-white space-y-4">
+      <div className="w-full md:w-1/2 flex flex-col justify-between text-white space-y-3 md:space-y-4">
         <div>
-          <h2 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight mb-2">
+          <h2 className="text-2xl md:text-4xl font-bold md:font-extrabold tracking-tight mb-2">
             {Events.name}
           </h2>
-          <div className="text-gray-300 text-base leading-relaxed mb-4">
+          <div className="text-gray-300 text-sm md:text-base leading-relaxed mb-4">
             <p>{Events.desc}</p>
           </div>
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="text-cyan-400 font-semibold text-sm">📅 Date: {Events.date}</div>
+          <div className="flex flex-wrap items-center justify-between md:justify-start gap-4">
+            <div className="text-cyan-400 font-semibold text-xs md:text-sm">
+              📅 Date: {Events.date}
+            </div>
             {Events.websiteUrl && (
               <a
                 href={Events.websiteUrl}
@@ -143,7 +161,7 @@ function EventCardLeft({ Events, priority }) {
   );
 }
 
-EventCardLeft.propTypes = {
+EventCard.propTypes = {
   Events: PropTypes.shape({
     name: PropTypes.string,
     date: PropTypes.string,
@@ -153,10 +171,12 @@ EventCardLeft.propTypes = {
     desc: PropTypes.string,
   }).isRequired,
   priority: PropTypes.bool,
+  reverse: PropTypes.bool,
 };
 
-EventCardLeft.defaultProps = {
+EventCard.defaultProps = {
   priority: false,
+  reverse: false,
 };
 
-export default EventCardLeft;
+export default EventCard;

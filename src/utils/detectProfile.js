@@ -28,18 +28,16 @@ function matches(query) {
   }
 }
 
-function getPerfOverride() {
+function getOverride(param, storageKey) {
   try {
-    const param = new URLSearchParams(window.location.search).get('perf');
-    if (param === 'slow') return 'slow';
-    if (param === 'high') return 'high';
+    const urlValue = new URLSearchParams(window.location.search).get(param);
+    if (urlValue) return urlValue;
   } catch {
     // ignore — SSR or security error
   }
 
   try {
-    const stored = window.localStorage.getItem('perfOverride');
-    if (stored === 'slow' || stored === 'high') return stored;
+    return window.localStorage.getItem(storageKey);
   } catch {
     // ignore
   }
@@ -47,23 +45,14 @@ function getPerfOverride() {
   return null;
 }
 
+function getPerfOverride() {
+  const stored = getOverride('perf', 'perfOverride');
+  return stored === 'slow' || stored === 'high' ? stored : null;
+}
+
 function getMotionOverride() {
-  try {
-    const param = new URLSearchParams(window.location.search).get('motion');
-    if (param === 'off') return 'off';
-    if (param === 'on') return 'on';
-  } catch {
-    // ignore
-  }
-
-  try {
-    const stored = window.localStorage.getItem('motionOverride');
-    if (stored === 'off' || stored === 'on') return stored;
-  } catch {
-    // ignore
-  }
-
-  return null;
+  const stored = getOverride('motion', 'motionOverride');
+  return stored === 'off' || stored === 'on' ? stored : null;
 }
 
 function detectNetwork() {
@@ -83,6 +72,19 @@ function detectNetwork() {
   return false;
 }
 
+// Shared "does this device look underpowered?" heuristic. Both the
+// userAgentData path and the generic fallback apply exactly the same test
+// (few cores AND low RAM), so it lives here instead of being copy-pasted.
+function detectLowSpec() {
+  const cores = navigator.hardwareConcurrency;
+  const lowRam =
+    typeof navigator.deviceMemory === 'number' &&
+    navigator.deviceMemory > 0 &&
+    navigator.deviceMemory <= 4;
+  const fewCores = typeof cores !== 'number' || cores <= 4;
+  return lowRam && fewCores;
+}
+
 function detectCPU() {
   try {
     // Screen-size heuristic via matchMedia — avoids the foldable/tablet
@@ -96,14 +98,7 @@ function detectCPU() {
       if (uaData.platform === 'Android' || uaData.platform === 'iOS') {
         // Mobile platform — but don't immediately mark lowCPU.
         // High-end phones with 8+ cores and 6+ GB RAM are fine.
-        // Only flag if cores or RAM also suggest constraint.
-        const cores = navigator.hardwareConcurrency;
-        const lowRam =
-          typeof navigator.deviceMemory === 'number' &&
-          navigator.deviceMemory > 0 &&
-          navigator.deviceMemory <= 4;
-        const fewCores = typeof cores !== 'number' || cores <= 4;
-        if (lowRam && fewCores) return true;
+        return detectLowSpec();
       }
       // Desktop platform from userAgentData — not low CPU
       return false;
@@ -111,13 +106,7 @@ function detectCPU() {
 
     // Fallback: require BOTH low memory AND few cores.
     // High-end phones often report 4GB to Chrome but have 8+ cores.
-    const cores = navigator.hardwareConcurrency;
-    const lowRam =
-      typeof navigator.deviceMemory === 'number' &&
-      navigator.deviceMemory > 0 &&
-      navigator.deviceMemory <= 4;
-    const fewCores = typeof cores !== 'number' || cores <= 4;
-    if (lowRam && fewCores) return true;
+    return detectLowSpec();
   } catch {
     // ignore
   }
