@@ -82,24 +82,30 @@ import { PREVIEW_URL, DEV_URL, resolveChrome } from './constants.mjs';
 
 One-off generators and asset preparation scripts. These are **not** part of the regular build pipeline — they're run manually when needed.
 
-| Script                                 | Purpose                                              |
-| -------------------------------------- | ---------------------------------------------------- |
-| `create-assets.cjs`                    | Generate optimized assets from source                |
-| `create-og.cjs` / `create-og-full.cjs` | Generate Open Graph images                           |
-| `generate-og-image.mjs`                | Generate OG image for social sharing                 |
-| `generate-public-assets.mjs`           | Generate public assets                               |
-| `prepare-event-assets.mjs`             | Prepare event images (resize, optimize, srcset)      |
-| `prepare-new-found-media.mjs`          | Process newly found media assets                     |
-| `prepare-winners-asset.mjs`            | Prepare winner showcase assets                       |
-| `extract-frames.mjs`                   | Extract frames from video                            |
-| `check-orphan-assets.mjs`              | Fail CI when a file in `src/assets/` is unreferenced |
-| `empty.js`                             | Placeholder                                          |
+| Script                                 | Purpose                                                         |
+| -------------------------------------- | --------------------------------------------------------------- |
+| `create-assets.cjs`                    | Generate optimized assets from source                           |
+| `create-og.cjs` / `create-og-full.cjs` | Generate Open Graph images                                      |
+| `generate-og-image.mjs`                | Generate OG image for social sharing                            |
+| `generate-public-assets.mjs`           | Generate public assets                                          |
+| `prepare-event-assets.mjs`             | Prepare event images (resize, optimize, srcset)                 |
+| `prepare-new-found-media.mjs`          | Process newly found media assets                                |
+| `prepare-winners-asset.mjs`            | Prepare winner showcase assets                                  |
+| `extract-frames.mjs`                   | Extract frames from video                                       |
+| `check-orphan-assets.mjs`              | Fail CI when a file in `src/assets/` is unreferenced            |
+| `check-sw-precache.mjs`                | Fail CI when the built SW precaches forbidden chunks (three.js) |
+| `empty.js`                             | Placeholder                                                     |
 
 > **`check-orphan-assets.mjs`** is the repo's guard against dead assets
 > (knip only checks code, not `src/assets/`). Run it locally with
 > `pnpm check:assets`; CI runs it in the lint-and-build job. It ignores
 > references from `scripts/maintenance/` on purpose — those scripts may name
 > assets they generate that the app never consumes.
+>
+> **`check-sw-precache.mjs`** guards the app-shell precache (run with
+> `pnpm check:sw` after a build; CI runs it too). It fails if the built
+> `dist/sw.js` precaches the lazy three.js hero chunk — `globIgnores` in
+> `vite.config.js` excludes it, and this verifies the exclusion held.
 
 ### Running Maintenance Scripts
 

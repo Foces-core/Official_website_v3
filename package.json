@@ -30,6 +30,7 @@
     "test:install": "playwright install chromium",
     "knip": "knip",
     "check:assets": "node scripts/maintenance/check-orphan-assets.mjs",
+    "check:sw": "node scripts/maintenance/check-sw-precache.mjs",
     "probe:carousel": "node scripts/probes/carousel-probe.mjs",
     "probe:mobile": "node scripts/probes/mobile-probe.mjs",
     "probe:wcag": "node scripts/probes/wcag-probe.mjs",
