@@ -6,7 +6,9 @@
     background-color: #1a1a1e;
     color: #ffffff;
     border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 12px;
+    /* 10px matches the inline style the toasts used to hard-code before the
+       useContactForm extraction moved styling into CSS. */
+    border-radius: 10px;
 }
 
 @media (max-width: 480px) {

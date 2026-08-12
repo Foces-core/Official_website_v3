@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { FaFacebookF } from 'react-icons/fa6';
 import { FaInstagram } from 'react-icons/fa6';
 import { FaXTwitter } from 'react-icons/fa6';
@@ -7,139 +6,17 @@ import { FaLocationDot } from 'react-icons/fa6';
 import { FaPhoneAlt } from 'react-icons/fa';
 import { IoSend } from 'react-icons/io5';
 import { IoMail } from 'react-icons/io5';
-import emailjs from '@emailjs/browser';
 import Contactus from '../../assets/Contact us.svg';
 import Title from '../../assets/title.svg';
 import Navbar from '../../Pages/LandingPage/Navbar/Navbar';
 import Footer from '../../Pages/LandingPage/Footer/Footer';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../ContactUs/notification.css';
-import { validateContactForm } from '../../utils/validateContactForm.js';
+import useContactForm, { CONTACT_EMAIL } from '../../hooks/useContactForm.js';
 
 function ContactUs() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: '',
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const sendEmail = (e) => {
-    e.preventDefault();
-
-    if (isSubmitting) return;
-
-    const validationError = validateContactForm(formData);
-    if (validationError) {
-      toast.error(validationError, {
-        autoClose: 2000,
-        className: 'toast-custom',
-        style: {
-          borderRadius: '10px',
-        },
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    toast.info('Sending...', {
-      autoClose: 2000,
-      className: 'toast-custom ',
-      style: {
-        borderRadius: '10px',
-      },
-    });
-
-    const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-    const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
-    const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
-
-    const triggerMailtoFallback = () => {
-      const subjectEncoded = encodeURIComponent(formData.subject);
-      const bodyEncoded = encodeURIComponent(
-        `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`,
-      );
-      const mailtoUrl = `mailto:Sebinmathew543@gmail.com?subject=${subjectEncoded}&body=${bodyEncoded}`;
-
-      // Dispatch explicit anchor click to launch native mail app (iOS / Android / Windows)
-      const link = document.createElement('a');
-      link.href = mailtoUrl;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    };
-
-    if (!navigator.onLine || !serviceId || !templateId || !publicKey) {
-      toast.dismiss();
-      triggerMailtoFallback();
-      toast.info(
-        !navigator.onLine
-          ? 'You are offline. Opening email app...'
-          : 'Opening your email app to send message...',
-        {
-          autoClose: 3000,
-          className: 'toast-custom',
-          style: { borderRadius: '10px' },
-        },
-      );
-      setIsSubmitting(false);
-      return;
-    }
-
-    const templateParams = {
-      name: formData.name,
-      from_name: formData.name,
-      email: formData.email,
-      from_email: formData.email,
-      reply_to: formData.email,
-      subject: formData.subject,
-      message: formData.message,
-    };
-
-    emailjs
-      .send(serviceId, templateId, templateParams, publicKey)
-      .then(() => {
-        setFormData({ name: '', email: '', subject: '', message: '' });
-        toast.dismiss();
-        toast.success('Message sent successfully!', {
-          autoClose: 2000,
-          className: 'toast-custom',
-          style: {
-            borderRadius: '10px',
-          },
-        });
-      })
-      .catch((err) => {
-        console.error('EmailJS send error:', err);
-        toast.dismiss();
-        triggerMailtoFallback();
-        toast.info('Opening your email app to send message...', {
-          autoClose: 3000,
-          className: 'toast-custom',
-          style: {
-            borderRadius: '10px',
-          },
-        });
-      })
-      .finally(() => {
-        setIsSubmitting(false);
-      });
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({ ...prevData, [name]: value }));
-  };
-
-  // NOTE: no Enter-to-advance keydown interception here anymore — it called
-  // preventDefault() on Enter in every single-line input, which blocked the
-  // native form submission entirely: a keyboard user could never submit with
-  // Enter (only Tab-to-button + Enter). Diagnosed by probe; restored the
-  // standard expectation that Enter in a text input submits the form. The
-  // textarea keeps its native newline behavior (no handler attached).
+  const { values, setField, submit, isSubmitting } = useContactForm();
 
   return (
     <div
@@ -214,10 +91,10 @@ function ContactUs() {
                 <div className="mb-4 text-lg inline-flex space-x-2 items-center">
                   <IoMail />
                   <a
-                    href="mailto:Sebinmathew543@gmail.com"
+                    href={`mailto:${CONTACT_EMAIL}`}
                     className="hover:underline hover:text-cyan-400 transition-colors"
                   >
-                    Sebinmathew543@gmail.com
+                    {CONTACT_EMAIL}
                   </a>
                 </div>
               </div>
@@ -273,12 +150,8 @@ function ContactUs() {
               <div className="p-4">
                 {/* noValidate: type=email triggers native browser validation on
                     submit, which would swallow our custom toast + messaging.
-                    Validation lives in validateForm() (JS) instead. */}
-                <form
-                  className="flex flex-col space-y-1 text-black"
-                  onSubmit={sendEmail}
-                  noValidate
-                >
+                    Validation + submission live in useContactForm (JS). */}
+                <form className="flex flex-col space-y-1 text-black" onSubmit={submit} noValidate>
                   <div>
                     <label htmlFor="name" className="text-sm text-white">
                       Name
@@ -289,8 +162,8 @@ function ContactUs() {
                       type="text"
                       name="name"
                       id="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
+                      value={values.name}
+                      onChange={setField}
                       className="w-full rounded-lg px-4 py-2 mt-2 bg-white text-black"
                     />
                   </div>
@@ -304,8 +177,8 @@ function ContactUs() {
                       type="email"
                       name="email"
                       id="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
+                      value={values.email}
+                      onChange={setField}
                       className="w-full rounded-lg px-4 py-2 mt-2 bg-white text-black"
                     />
                   </div>
@@ -319,8 +192,8 @@ function ContactUs() {
                       type="text"
                       name="subject"
                       id="subject"
-                      value={formData.subject}
-                      onChange={handleInputChange}
+                      value={values.subject}
+                      onChange={setField}
                       className="w-full rounded-lg px-4 py-2 mt-2 bg-white text-black"
                     />
                   </div>
@@ -334,8 +207,8 @@ function ContactUs() {
                       name="message"
                       id="message"
                       placeholder=""
-                      value={formData.message}
-                      onChange={handleInputChange}
+                      value={values.message}
+                      onChange={setField}
                       className="w-full rounded-lg px-4 py-2 mt-2 bg-white text-black"
                     />
                     <div className="flex justify-end mt-4">
@@ -351,7 +224,6 @@ function ContactUs() {
                       </button>
                     </div>
                   </div>
-                  <div></div>
                 </form>
               </div>
             </div>
