@@ -6,6 +6,7 @@ import DeferredAnalytics from './utils/DeferredAnalytics.jsx';
 import App from './App.jsx';
 import Loader from './Components/Loader/Loader.jsx';
 import Grain from './Components/Grain/Grain.jsx';
+import InstallPrompt from './Components/InstallPrompt/InstallPrompt.jsx';
 import ErrorBoundary from './Components/ErrorBoundary/ErrorBoundary.jsx';
 import { lazyWithRetry } from './utils/lazyWithRetry.js';
 import useDeviceProfile from './hooks/useLowPower.js';
@@ -41,6 +42,7 @@ if (import.meta.env.VITE_SENTRY_DSN) {
 
 const Eventpage = lazyWithRetry(() => import('./Pages/EventPage/Eventpage'));
 const ContactUs = lazyWithRetry(() => import('./Components/ContactUs/ContactUs.jsx'));
+const NotFoundLazy = lazyWithRetry(() => import('./Pages/NotFound/NotFound.jsx'));
 
 // Cross-route scroll restoration: every navigation lands at the top unless a
 // state.id anchor was passed (App.jsx handles scrolling to that section).
@@ -118,6 +120,7 @@ function Root() {
             <Route path="/" element={<App />} />
             <Route path="/events" element={<Eventpage />} />
             <Route path="/contact" element={<ContactUs />} />
+            <Route path="*" element={<NotFoundLazy />} />
           </Routes>
         </Suspense>
       </ErrorBoundary>
@@ -135,6 +138,7 @@ root.render(
       <ScrollToTop />
       <Root />
       <DeferredAnalytics />
+      <InstallPrompt />
     </Router>
   </React.StrictMode>,
 );

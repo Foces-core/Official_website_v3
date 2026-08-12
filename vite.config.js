@@ -95,6 +95,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['foces.svg', 'og-image.jpg', 'pwa-192.png', 'pwa-512.png'],
       manifest: {
+        id: '/',
         name: 'FOCES - Forum of Computer Engineering Students',
         short_name: 'FOCES',
         description:
@@ -102,10 +103,23 @@ export default defineConfig({
         theme_color: '#101011',
         background_color: '#101011',
         display: 'standalone',
+        display_override: ['window-controls-overlay', 'standalone', 'minimal-ui'],
+        orientation: 'portrait',
+        scope: '/',
         start_url: '/',
+        lang: 'en',
+        categories: ['education', 'technology'],
         icons: [
           { src: '/pwa-192.png', sizes: '192x192', type: 'image/png' },
           { src: '/pwa-512.png', sizes: '512x512', type: 'image/png' },
+          // Dedicated maskable variant: artwork scaled into the 80% safe zone
+          // on a theme background, so launcher masks never crop the logo.
+          {
+            src: '/pwa-maskable-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
         ],
       },
       workbox: {

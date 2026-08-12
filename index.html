@@ -21,7 +21,15 @@
       content="FOCES, CEC, Computer Engineering, College of Engineering Chengannur, Tech Club, Engineering Students, FOSS, Workshops, Events"
     />
     <meta name="theme-color" content="#101011" />
-    <link rel="apple-touch-icon" href="/pwa-192.png" />
+
+    <!-- iOS / mobile web app (PWA) meta tags: standalone full-screen launch,
+         dark status bar to match the theme, and a proper 180px home-screen icon.
+         apple-touch-icon is what iOS uses when "Add to Home Screen" is tapped. -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="FOCES" />
+    <link rel="apple-touch-icon" href="/pwa-180.png" />
     <link rel="icon" type="image/svg+xml" href="/foces.svg" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="mask-icon" href="/foces.svg" color="#101011" />
