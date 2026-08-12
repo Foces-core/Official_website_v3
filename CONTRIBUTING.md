@@ -70,6 +70,9 @@ pnpm build      # production build (image optimizer + PWA precache)
   by page/section so failing scenarios run in isolation. Run targeted tests
   when your change is scoped: `pnpm exec playwright test -g "Carousel"` or
   `pnpm exec playwright test tests/contact.spec.js`.
+- `pnpm test:unit` runs the fast Vitest suite in `tests/unit/` (jsdom):
+  `detectProfile` overrides/heuristics, `keyboardLock` arrow-key arbitration,
+  and `srcset`. CI runs it in the lint-and-build job; E2E never imports it.
 - For UI changes, verify desktop + mobile viewports.
 - The repo has puppeteer **probes** in `scripts/probes/` (`wcag-probe.mjs`,
   `mobile-probe.mjs`, `carousel-probe.mjs`, `img-probe.mjs`,

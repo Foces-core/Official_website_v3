@@ -52,6 +52,9 @@ jobs:
       - name: Orphan asset check
         run: pnpm check:assets
 
+      - name: Unit tests (Vitest)
+        run: pnpm test:unit
+
       - name: Build
         run: pnpm build
 

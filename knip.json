@@ -6,7 +6,9 @@
     "playwright.config.js",
     "scripts/probes/**/*.mjs",
     "scripts/maintenance/**/*.{cjs,mjs}",
-    "tests/**/*.js"
+    "tests/**/*.js",
+    "tests/unit/**/*.spec.js",
+    "vitest.config.js"
   ],
   "project": ["src/**/*.{js,jsx}", "!src/main.jsx"],
   "ignore": ["foces-webv23/**", "dist/**", "node_modules/**", ".git/**"],

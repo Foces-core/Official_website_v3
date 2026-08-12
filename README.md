@@ -45,6 +45,7 @@ See `.env.example` for the full list of available variables and their expected v
 | `pnpm knip`         | Dead-code / unused-dependency guard                                      |
 | `pnpm clean`        | Remove generated artifacts (`dist`, `test-results`, `playwright-report`) |
 | `pnpm test`         | Playwright E2E suite (split across `tests/*.spec.js`)                    |
+| `pnpm test:unit`    | Vitest unit suite (`tests/unit/`: detectProfile, keyboardLock, srcset)   |
 | `pnpm test:e2e:ui`  | Playwright UI mode (interactive debugger)                                |
 
 ## Performance Tooling
