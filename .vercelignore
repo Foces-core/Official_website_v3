@@ -1,3 +1,6 @@
 foces-webv23
 node_modules
 dist
+.env
+.env.local
+.env.*.local

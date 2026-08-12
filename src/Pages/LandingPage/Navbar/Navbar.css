@@ -15,6 +15,7 @@
     position: relative;
     text-decoration: none;
     font-size: clamp(0.78rem, 1vw, 1.02rem);
+    cursor: pointer;
 }
 
 .nav-w *,
@@ -28,6 +29,11 @@
         background-color 0.2s ease,
         border-color 0.2s ease,
         opacity 0.2s ease;
+}
+
+.nav-w button,
+.nav-b button {
+    cursor: pointer;
 }
 
 .nav-w a::before,

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import Lightbox from 'yet-another-react-lightbox';
 import Counter from 'yet-another-react-lightbox/plugins/counter';
 import 'yet-another-react-lightbox/styles.css';
@@ -7,6 +7,8 @@ import PropTypes from 'prop-types';
 import { sanityImg } from '../../utils/sanityImage.js';
 
 function Modal({ images, open, onClose }) {
+  const lightboxRef = useRef(null);
+
   useEffect(() => {
     if (!open) return;
     const prevOverflow = document.body.style.overflow;
@@ -15,6 +17,20 @@ function Modal({ images, open, onClose }) {
       document.body.style.overflow = prevOverflow;
     };
   }, [open]);
+
+  useEffect(() => {
+    if (!open || !lightboxRef.current) return;
+    const handleFocus = () => {
+      const focused = document.activeElement;
+      if (focused && focused !== lightboxRef.current?.firstChild) {
+        const firstSlide = lightboxRef.current.querySelector('.layertype-image');
+        if (firstSlide && !firstSlide.contains(focused)) {
+          firstSlide.focus();
+        }
+      }
+    };
+    requestAnimationFrame(handleFocus);
+  }, [open, lightboxRef]);
 
   if (!open || !images || images.length === 0) return null;
 
@@ -32,6 +48,7 @@ function Modal({ images, open, onClose }) {
 
   return (
     <Lightbox
+      ref={lightboxRef}
       open={open}
       close={onClose}
       slides={slides}
@@ -41,7 +58,14 @@ function Modal({ images, open, onClose }) {
       animation={{ fade: 200 }}
       styles={{
         container: { backgroundColor: 'rgba(5, 5, 6, 0.92)', backdropFilter: 'blur(10px)' },
-        slide: { display: 'flex', alignItems: 'center', justifyContent: 'center' },
+        slide: {
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          maxWidth: '100vw',
+          maxHeight: '100vh',
+        },
+        image: { maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' },
       }}
     />
   );

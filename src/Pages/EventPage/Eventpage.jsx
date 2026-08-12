@@ -29,15 +29,7 @@ function Eventpage() {
     </a>
   );
 
-  const heading = (
-    <img
-      src={EventTitle}
-      alt="Events"
-      className="w-72 h-[45%] pl-2.5 mb-2 filter drop-shadow-[0_0_15px_rgba(255,255,255,0.4)]"
-      loading="eager"
-      decoding="async"
-    />
-  );
+  const heading = <h1 className="sr-only">FOCES Events</h1>;
 
   if (windowWidth > 1000) {
     return (

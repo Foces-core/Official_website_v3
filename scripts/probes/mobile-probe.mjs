@@ -1,4 +1,6 @@
 import puppeteer from 'puppeteer-core';
+import { PREVIEW_URL } from './constants.mjs';
+
 const b = await puppeteer.launch({
   executablePath: 'C:/Users/sebin/AppData/Local/Chromium/Application/chrome.exe',
   headless: 'new',
@@ -8,7 +10,7 @@ const b = await puppeteer.launch({
 // MOBILE /events page
 const p = await b.newPage();
 await p.setViewport({ width: 390, height: 844 });
-await p.goto('http://localhost:4177/events', { waitUntil: 'networkidle0', timeout: 60000 });
+await p.goto(`${PREVIEW_URL}/events`, { waitUntil: 'networkidle0', timeout: 60000 });
 await new Promise((r) => setTimeout(r, 1800));
 const info = await p.evaluate(() => {
   const nav = document.querySelector('.nav-w, .nav-b');
@@ -55,7 +57,7 @@ console.log('MOBILE modal:', JSON.stringify(mmodal));
 // cursor blob: mouse move should update cursor-outline position with clientX
 const home = await b.newPage();
 await home.setViewport({ width: 1280, height: 800 });
-await home.goto('http://localhost:4176/', { waitUntil: 'networkidle0', timeout: 60000 });
+await home.goto(`${PREVIEW_URL}/`, { waitUntil: 'networkidle0', timeout: 60000 });
 await new Promise((r) => setTimeout(r, 1500));
 const cursorInfo = await home.evaluate(() => {
   const el = document.querySelector('.cursor-outline, [class*="cursor-outline"]');

@@ -75,7 +75,7 @@ const cubeSlides = [...cardData, ...cardData, ...cardData];
 function Execom() {
   const { lowPower, reducedMotion } = useDeviceProfile();
   const disableAutoplay = reducedMotion;
-  const flatCube = lowPower;
+  const flatCube = lowPower || reducedMotion;
   const [activeCube, setActiveCube] = React.useState(0);
   const cubeRef = React.useRef(null);
   const cubeWrapRef = React.useRef(null);

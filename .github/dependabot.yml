@@ -35,8 +35,6 @@ updates:
         patterns:
           - "swiper"
           - "aos"
-          - "three"
-          - "vanta"
       dev-tooling:
         patterns:
           - "vite"
@@ -46,6 +44,8 @@ updates:
           - "postcss*"
           - "autoprefixer"
           - "vite-plugin-*"
+          - "three"
+          - "vanta"
     # No ignores: surface every bump as a PR for review.
 
   # Keep GitHub Actions themselves updated.

@@ -12,6 +12,23 @@ Official website for **FOCES** (Foundation of Computer Engineering Students), Co
 - **PWA** (`vite-plugin-pwa`) with service-worker precaching
 - **Perf**: `js.foresight` (intent-based route chunk prefetch), manual chunk
   splitting, responsive `srcset` images, and build-time image optimization
+- **Sentry** (optional) — error tracking via `@sentry/react` + `@sentry/vite-plugin`;
+  see `.env.example` for required env vars (`VITE_SENTRY_DSN`, `SENTRY_ORG`,
+  `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`)
+
+## .env
+
+The following environment variables are required for the project to function
+correctly. Create a `.env` file in the root directory based on `.env.example`:
+
+| Variable                   | Description                                                       |
+| -------------------------- | ----------------------------------------------------------------- |
+| `VITE_SENTRY_DSN`          | Sentry DSN for error tracking (optional, set in Vercel dashboard) |
+| `VITE_EMAILJS_SERVICE_ID`  | EmailJS service ID for contact form                               |
+| `VITE_EMAILJS_TEMPLATE_ID` | EmailJS template ID for contact form                              |
+| `VITE_EMAILJS_PUBLIC_KEY`  | EmailJS public key for contact form                               |
+
+See `.env.example` for the full list of available variables and their expected values.
 
 ## Scripts
 
@@ -29,9 +46,11 @@ Official website for **FOCES** (Foundation of Computer Engineering Students), Co
 
 ## Performance Tooling
 
-`scripts/perf-test.mjs` runs Lighthouse across device/network profiles
+`scripts/probes/perf-test.mjs` runs Lighthouse across device/network profiles
 (`desktop-fast`, `mobile-4g`, `mobile-3g`, `mobile-2g`, CPU-throttled variants).
-Run a single profile with `PERF_ONLY=profile node scripts/perf-test.mjs`.
+Run a single profile with `PERF_ONLY=profile node scripts/probes/perf-test.mjs`.
+
+See [scripts/README.md](scripts/README.md) for all available probes and maintenance scripts.
 
 ## Performance on low-end devices
 

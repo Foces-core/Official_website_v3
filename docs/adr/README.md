@@ -5,12 +5,13 @@ Status conventions: **Accepted** (settled), **Proposed** (under review),
 
 ## Index
 
-| #                                       | Title                                                 | Status   |
-| --------------------------------------- | ----------------------------------------------------- | -------- |
-| [0001](0001-perf-is-a-feature.md)       | Performance is a feature: device-profile degradation  | Accepted |
-| [0002](0002-pwa-shell-only-precache.md) | PWA precache is app-shell only                        | Accepted |
-| [0003](0003-static-events-data.md)      | Events come from static data, not the Sanity CMS      | Accepted |
-| [0004](0004-foces-webv23-studio.md)     | Keep the foces-webv23 Sanity studio in-repo, untooled | Accepted |
+| #                                       | Title                                                  | Status   |
+| --------------------------------------- | ------------------------------------------------------ | -------- |
+| [0001](0001-perf-is-a-feature.md)       | Performance is a feature: device-profile degradation   | Accepted |
+| [0002](0002-pwa-shell-only-precache.md) | PWA precache is app-shell only                         | Accepted |
+| [0003](0003-static-events-data.md)      | Events come from static data, not the Sanity CMS       | Accepted |
+| [0004](0004-foces-webv23-studio.md)     | Keep the foces-webv23 Sanity studio in-repo, untooled  | Accepted |
+| [0005](0005-inline-boot-splash.md)      | Static inline boot splash for near-instant first paint | Accepted |
 
 ## Adding a new ADR
 

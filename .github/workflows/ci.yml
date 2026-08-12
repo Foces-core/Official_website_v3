@@ -40,6 +40,15 @@ jobs:
       - name: Format check (Prettier)
         run: pnpm format:check
 
+      - name: Check git diff
+        run: git diff --check
+
+      - name: pnpm audit
+        run: pnpm audit
+
+      - name: Dead code check (knip)
+        run: pnpm exec knip
+
       - name: Build
         run: pnpm build
 

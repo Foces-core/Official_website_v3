@@ -376,6 +376,7 @@ export default function Navbar() {
       }
       role={isMobile ? 'dialog' : undefined}
       aria-modal={isMobile ? 'true' : undefined}
+      aria-label="Main navigation menu"
     >
       {isMobile && (
         <button

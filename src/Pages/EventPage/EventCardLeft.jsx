@@ -31,7 +31,6 @@ function EventCardLeft({ Events, priority }) {
   return (
     <div
       className="w-[95%] max-w-6xl bg-[#161618]/80 backdrop-blur-md border border-white/10 rounded-3xl mt-10 p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 shadow-2xl hover:border-white/30 transition-all duration-300"
-      id="events"
       data-aos="fade-up"
       data-aos-duration="1000"
       onMouseEnter={handleInteraction}

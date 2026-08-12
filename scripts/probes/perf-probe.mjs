@@ -1,6 +1,7 @@
 import puppeteer from 'puppeteer-core';
+import { PREVIEW_URL } from './constants.mjs';
 
-const URL = process.argv[2] || 'http://localhost:4180/';
+const URL = process.argv[2] || PREVIEW_URL;
 const NAME = process.argv[3] || 'SITE';
 const THROTTLE = parseFloat(process.argv[4] || '4');
 

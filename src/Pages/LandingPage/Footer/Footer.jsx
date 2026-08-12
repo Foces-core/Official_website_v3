@@ -22,7 +22,10 @@ function Footer() {
             rel="noreferrer"
             aria-label="Facebook"
           >
-            <FaSquareFacebook className="h-5 w-5 text-[#D9D9D9] hover:text-white hover:scale-125 duration-300" />
+            <FaSquareFacebook
+              className="h-5 w-5 text-[#D9D9D9] hover:text-white hover:scale-125 duration-300"
+              aria-hidden="true"
+            />
           </a>
           <a
             href="https://www.instagram.com/foces_cec?igsh=b2E3bjNpbGgzdG03"
@@ -30,15 +33,21 @@ function Footer() {
             rel="noreferrer"
             aria-label="Instagram"
           >
-            <FaInstagram className="h-5 w-5 text-[#D9D9D9] hover:text-white hover:scale-125 duration-300" />
+            <FaInstagram
+              className="h-5 w-5 text-[#D9D9D9] hover:text-white hover:scale-125 duration-300"
+              aria-hidden="true"
+            />
           </a>
           <a
             href="https://x.com/foces_cec?t=e__UXOl9tQFznh7JG8kqzQ&s=08"
             target="_blank"
             rel="noreferrer"
-            aria-label="Twitter"
+            aria-label="X (Twitter)"
           >
-            <FaXTwitter className="h-5 w-5 text-[#D9D9D9] hover:text-white hover:scale-125 duration-300" />
+            <FaXTwitter
+              className="h-5 w-5 text-[#D9D9D9] hover:text-white hover:scale-125 duration-300"
+              aria-hidden="true"
+            />
           </a>
           <a
             href="https://www.linkedin.com/in/foces-cec-423176229/"
@@ -46,7 +55,10 @@ function Footer() {
             rel="noreferrer"
             aria-label="LinkedIn"
           >
-            <FaLinkedin className="h-5 w-5 text-[#D9D9D9] hover:text-white hover:scale-125 duration-300" />
+            <FaLinkedin
+              className="h-5 w-5 text-[#D9D9D9] hover:text-white hover:scale-125 duration-300"
+              aria-hidden="true"
+            />
           </a>
         </div>
         <p className="text-center text-[#D9D9D9] text-xs md:text-sm">

@@ -1,4 +1,5 @@
 import puppeteer from 'puppeteer-core';
+import { PREVIEW_URL } from './constants.mjs';
 
 const FF = 'C:/Program Files/Waterfox/waterfox.exe';
 let browser;
@@ -34,7 +35,7 @@ try {
 
 console.log('UA:', (await browser.version()).slice(0, 40));
 await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
-await page.goto('http://localhost:4173/', { waitUntil: 'domcontentloaded' });
+await page.goto(`${PREVIEW_URL}/`, { waitUntil: 'domcontentloaded' });
 
 // Splash visible (Gecko + reduced-motion handling)
 const splash = await page.evaluate(() => ({
@@ -61,7 +62,7 @@ console.log('gecko home:', JSON.stringify(out));
 console.log('console errors:', errors.length ? errors.slice(0, 5) : 'none');
 
 // /events route
-await page.goto('http://localhost:4173/events', { waitUntil: 'networkidle2' });
+await page.goto(`${PREVIEW_URL}/events`, { waitUntil: 'networkidle2' });
 await new Promise((r) => setTimeout(r, 1500));
 const ev = await page.evaluate(() => ({
   h2s: [...document.querySelectorAll('h2')].map((h) => h.textContent),

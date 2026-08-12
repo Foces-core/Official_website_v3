@@ -6,6 +6,7 @@ import Navbar from './Pages/LandingPage/Navbar/Navbar';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { useLocation } from 'react-router';
+import { useDeviceProfile } from './hooks/useLowPower.js';
 import { aosDisabled } from './utils/aosGating.js';
 
 // Below-the-fold sections are code-split: the heavy Swiper chunk (used by
@@ -35,18 +36,25 @@ AOS.init({
 
 function App() {
   const location = useLocation();
+  const [found, setFound] = React.useState(false);
+
+  const pageH1 = <h1 className="sr-only">FOCES - Forum of Computer Engineering Students</h1>;
 
   useEffect(() => {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const targetId = location.state?.id || (location.hash ? location.hash.replace('#', '') : null);
     if (!targetId) return;
 
     let cancelled = false;
     let observer = null;
+    let intervalRef = null;
+    const startTime = Date.now();
 
     const scrollToTarget = () => {
       const el = document.getElementById(targetId);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
+      if (el && !found) {
+        el.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' });
+        setFound(true);
         return true;
       }
       return false;
@@ -65,18 +73,17 @@ function App() {
     observer.observe(mainContainer, { childList: true, subtree: true });
 
     // 3. Failsafe polling for up to 5 seconds across slow network chunk downloads
-    const startTime = Date.now();
-    const pollInterval = setInterval(() => {
+    intervalRef = setInterval(() => {
       if (cancelled) return;
       if (scrollToTarget() || Date.now() - startTime > 5000) {
-        clearInterval(pollInterval);
+        clearInterval(intervalRef);
         if (observer) observer.disconnect();
       }
     }, 100);
 
     return () => {
       cancelled = true;
-      clearInterval(pollInterval);
+      clearInterval(intervalRef);
       if (observer) observer.disconnect();
     };
   }, [location]);
@@ -88,6 +95,7 @@ function App() {
       </a>
       <Navbar />
       <main id="main-content" tabIndex={-1}>
+        {pageH1}
         <HeroSection />
         <Suspense fallback={<SectionSkeleton height="200vh" label="Loading sections" />}>
           <AboutUs />

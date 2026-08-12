@@ -1,6 +1,6 @@
 import puppeteer from 'puppeteer-core';
+import { PREVIEW_URL } from './constants.mjs';
 
-const BASE = 'http://localhost:4177';
 const CHROME = 'C:/Users/sebin/AppData/Local/Chromium/Application/chrome.exe';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -27,7 +27,7 @@ try {
     if (m.type() === 'error') errors.push('console: ' + m.text());
   });
 
-  await page.goto(BASE + '/', { waitUntil: 'networkidle0', timeout: 60000 });
+  await page.goto(`${PREVIEW_URL}/`, { waitUntil: 'networkidle0', timeout: 60000 });
   await sleep(1500);
 
   // skip link
@@ -82,7 +82,7 @@ try {
   // ---------- EVENTS PAGE: white navbar + skip link ----------
   const page2 = await browser.newPage();
   await page2.setViewport({ width: 1280, height: 800 });
-  await page2.goto(BASE + '/events', { waitUntil: 'networkidle0', timeout: 60000 });
+  await page2.goto(`${PREVIEW_URL}/events`, { waitUntil: 'networkidle0', timeout: 60000 });
   await sleep(1500);
 
   const navColor = await page2.evaluate(() => {

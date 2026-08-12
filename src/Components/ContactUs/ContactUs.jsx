@@ -25,6 +25,8 @@ function ContactUs() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const h1 = <h1 className="sr-only">Contact FOCES</h1>;
+
   const validateForm = () => {
     const { name, email, subject, message } = formData;
     if (!name || !email || !subject || !message) {
@@ -141,7 +143,8 @@ function ContactUs() {
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+    if (e.key === 'Enter') {
+      if (e.target.tagName === 'TEXTAREA') return;
       e.preventDefault();
       const formInputs = e.target.form.elements;
       const currentInputIndex = Array.from(formInputs).indexOf(e.target);
@@ -158,6 +161,7 @@ function ContactUs() {
       id="contact"
     >
       <Navbar />
+      <h1 className="sr-only">Contact FOCES</h1>
 
       <div className="font-Grotesk flex-grow flex flex-col justify-center py-10 max-[767px]:pt-[15vh]">
         <div className="flex items-center md:hidden">
@@ -239,7 +243,7 @@ function ContactUs() {
                   aria-label="Visit FOCES Facebook page"
                   className="bg-white text-black p-2 rounded-md hover:bg-cyan-400 hover:text-black transition-all duration-200"
                 >
-                  <FaFacebookF size={18} className="w-4.5 h-4.5" />
+                  <FaFacebookF size={18} className="w-4.5 h-4.5" aria-hidden="true" />
                 </a>
                 <div className="border-r border-white/40 h-5" />
                 <a
@@ -249,7 +253,7 @@ function ContactUs() {
                   aria-label="Visit FOCES X (Twitter) profile"
                   className="bg-white text-black p-2 rounded-md hover:bg-cyan-400 hover:text-black transition-all duration-200"
                 >
-                  <FaXTwitter size={18} className="w-4.5 h-4.5" />
+                  <FaXTwitter size={18} className="w-4.5 h-4.5" aria-hidden="true" />
                 </a>
                 <div className="border-r border-white/40 h-5" />
                 <a
@@ -259,7 +263,7 @@ function ContactUs() {
                   aria-label="Visit FOCES Instagram page"
                   className="bg-white text-black p-2 rounded-md hover:bg-cyan-400 hover:text-black transition-all duration-200"
                 >
-                  <FaInstagram size={18} className="w-4.5 h-4.5" />
+                  <FaInstagram size={18} className="w-4.5 h-4.5" aria-hidden="true" />
                 </a>
                 <div className="border-r border-white/40 h-5" />
                 <a
@@ -269,7 +273,7 @@ function ContactUs() {
                   aria-label="Visit FOCES LinkedIn profile"
                   className="bg-white text-black p-2 rounded-md hover:bg-cyan-400 hover:text-black transition-all duration-200"
                 >
-                  <FaLinkedinIn size={18} className="w-4.5 h-4.5" />
+                  <FaLinkedinIn size={18} className="w-4.5 h-4.5" aria-hidden="true" />
                 </a>
               </div>
             </div>
@@ -337,7 +341,6 @@ function ContactUs() {
                   </div>
                   <div className="relative">
                     <textarea
-                      type="text"
                       name="message"
                       id="message"
                       placeholder=""

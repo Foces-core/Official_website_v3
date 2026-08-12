@@ -53,7 +53,7 @@ reviews:
   path_instructions:
     - path: "src/**/*.jsx"
       instructions: |
-        - React 18 + Tailwind CSS + Vite; keep components small and focused.
+        - React 19 + Tailwind CSS + Vite 8; keep components small and focused.
         - No inline `style={{}}` objects for custom visuals — use Tailwind
           utility classes or a dedicated CSS file.
         - Never remove `useDeviceProfile` (slowNetwork/lowPower) guards or the

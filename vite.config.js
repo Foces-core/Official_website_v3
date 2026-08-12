@@ -5,6 +5,8 @@ import { VitePWA } from 'vite-plugin-pwa';
 import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { imagetools } from 'vite-imagetools';
 
+const PORT = 5173;
+
 // Preloads the two self-hosted woff2 fonts in the HTML so the browser starts
 // the fetch as soon as the document is parsed — instead of waiting for the
 // CSS bundle (which carries the @font-face) to download + parse. Inter is used
@@ -33,7 +35,7 @@ export default defineConfig({
   // DX: auto-open the dev server in the default browser.
   server: {
     open: true,
-    port: 5173,
+    port: PORT,
   },
   plugins: [
     react(),
@@ -136,7 +138,6 @@ export default defineConfig({
       },
     }),
   ],
-  assetsInclude: ['**/*.glb'],
   resolve: {
     dedupe: ['react', 'react-dom'],
   },

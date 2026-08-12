@@ -1,4 +1,6 @@
 import puppeteer from 'puppeteer-core';
+import { PREVIEW_URL } from './constants.mjs';
+
 const b = await puppeteer.launch({
   executablePath: 'C:/Users/sebin/AppData/Local/Chromium/Application/chrome.exe',
   headless: 'new',
@@ -9,7 +11,7 @@ const out = [];
 // HOME PAGE: Featuring carousel
 const p = await b.newPage();
 await p.setViewport({ width: 1280, height: 900 });
-await p.goto('http://localhost:4178/', { waitUntil: 'networkidle0', timeout: 60000 });
+await p.goto(`${PREVIEW_URL}/`, { waitUntil: 'networkidle0', timeout: 60000 });
 await new Promise((r) => setTimeout(r, 2000));
 
 // scroll to featuring
@@ -99,7 +101,7 @@ console.log('HOVER GLOW:', JSON.stringify(hoverState));
 // EVENTS page: no Register Now, modal infinite loop
 const p2 = await b.newPage();
 await p2.setViewport({ width: 1280, height: 900 });
-await p2.goto('http://localhost:4178/events', { waitUntil: 'networkidle0', timeout: 60000 });
+await p2.goto(`${PREVIEW_URL}/events`, { waitUntil: 'networkidle0', timeout: 60000 });
 await new Promise((r) => setTimeout(r, 2000));
 
 const reg = await p2.evaluate(() => {

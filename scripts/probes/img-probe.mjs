@@ -1,4 +1,6 @@
 import puppeteer from 'puppeteer-core';
+import { PREVIEW_URL } from './constants.mjs';
+
 const CHROME = 'C:/Users/sebin/AppData/Local/Chromium/Application/chrome.exe';
 const browser = await puppeteer.launch({
   headless: 'new',
@@ -8,7 +10,7 @@ const browser = await puppeteer.launch({
 const page = await browser.newPage();
 await page.setViewport({ width: 1440, height: 900 });
 page.on('pageerror', (e) => console.log('PAGE ERROR:', e.message));
-await page.goto('http://localhost:4173', { waitUntil: 'networkidle2' });
+await page.goto(PREVIEW_URL, { waitUntil: 'networkidle2' });
 await new Promise((r) => setTimeout(r, 2200));
 const out = await page.evaluate(() => {
   const imgs = [...document.querySelectorAll('img')].filter(

@@ -3,12 +3,13 @@
 // profiles and prints scores + the top actionable "what's wrong" items.
 //
 // Usage:
-//   node scripts/perf-test.mjs [url]
-//   CHROME_PATH="path/to/chrome|edge|thorium" node scripts/perf-test.mjs https://focess-five.vercel.app/
+//   node scripts/probes/perf-test.mjs [url]
+//   CHROME_PATH="path/to/chrome|edge|thorium" node scripts/probes/perf-test.mjs https://focess-five.vercel.app/
 import { writeFile, readFile, mkdir } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { PREVIEW_URL } from './constants.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const envChrome = process.env.CHROME_PATH;
@@ -16,7 +17,7 @@ const CHROME =
   envChrome && envChrome.toLowerCase().endsWith('.exe')
     ? envChrome
     : 'C:/Users/sebin/AppData/Local/Chromium/Application/chrome.exe';
-const URL = process.argv[2] || process.env.URL || 'http://localhost:4173';
+const URL = process.argv[2] || process.env.URL || PREVIEW_URL;
 
 const { default: lighthouse } = await import('lighthouse');
 const chromeLauncher = await import('chrome-launcher');

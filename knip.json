@@ -1,0 +1,43 @@
+{
+  "$schema": "https://knip.dev/schema.json",
+  "entry": [
+    "src/main.jsx",
+    "vite.config.js",
+    "playwright.config.js",
+    "scripts/probes/**/*.mjs",
+    "scripts/maintenance/**/*.{cjs,mjs}",
+    "tests/**/*.js"
+  ],
+  "project": ["src/**/*.{js,jsx}", "!src/main.jsx"],
+  "ignore": ["foces-webv23/**", "dist/**", "node_modules/**", ".git/**"],
+  "ignoreDependencies": [
+    "@emailjs/browser",
+    "@fontsource-variable/inter",
+    "@fontsource-variable/space-grotesk",
+    "@sentry/react",
+    "@sentry/vite-plugin",
+    "@vercel/speed-insights",
+    "aos",
+    "js.foresight",
+    "prop-types",
+    "react",
+    "react-dom",
+    "react-icons",
+    "react-router",
+    "react-toastify",
+    "swiper",
+    "three",
+    "vanta",
+    "yet-another-react-lightbox"
+  ],
+  "ignoreUnresolved": [
+    "#imports",
+    "virtual:*",
+    "\\.css$",
+    "\\.svg$",
+    "\\.png$",
+    "\\.jpg$",
+    "\\.webp$",
+    "\\.avif$"
+  ]
+}
