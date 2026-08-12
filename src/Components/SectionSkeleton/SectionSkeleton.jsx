@@ -1,4 +1,5 @@
 import './SectionSkeleton.css';
+import PropTypes from 'prop-types';
 import detectProfile from '../../utils/detectProfile';
 
 /**
@@ -29,3 +30,8 @@ export default function SectionSkeleton({ height = '80vh', label = 'Loading sect
     </div>
   );
 }
+
+SectionSkeleton.propTypes = {
+  height: PropTypes.string,
+  label: PropTypes.string,
+};
