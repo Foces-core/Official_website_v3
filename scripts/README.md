@@ -23,6 +23,7 @@ Verification scripts that run against a live server (preview or dev). All probes
 | `img-probe.mjs`      | Image asset checks: webp delivery, broken images, font loading                                       |
 | `perf-probe.mjs`     | Single-profile Lighthouse-style metrics (LCP, TBT, CLS, transfer size)                               |
 | `perf-test.mjs`      | Multi-profile Lighthouse runner (desktop/mobile, 4G/3G/2G, CPU throttling variants)                  |
+| `boot-profile.mjs`   | Boot profiler: where JS boot time goes (long-task attribution + V8 CPU profile per chunk)            |
 
 ### Running Probes
 
@@ -44,6 +45,8 @@ PREVIEW_URL=https://focess-five.vercel.app pnpm probe:wcag
 pnpm probe:perf                 # full multi-profile Lighthouse run
 PERF_ONLY=mobile-4g pnpm probe:perf
 pnpm probe:perf:quick           # single-profile puppeteer metrics
+pnpm probe:boot 1               # boot profile at 1x CPU (fast)
+pnpm probe:boot 4               # boot profile at 4x CPU (simulates a mid-tier phone)
 ```
 
 ### Browser resolution (portable)
@@ -60,15 +63,27 @@ run on any machine and in CI (the `probes` CI job uses Playwright's Chromium).
 
 ### Performance probes are MANUAL
 
-`perf-test.mjs` and `perf-probe.mjs` throttle the CPU (2x–8x), cold-cache the
-network, and take multiple samples — under shared CI CPU contention the
-numbers are noise, not signal. They are deliberately **not** wired into CI;
-run them locally on a quiet machine to compare real changes:
+`perf-test.mjs`, `perf-probe.mjs`, and `boot-profile.mjs` throttle the CPU
+(2x–8x), cold-cache the network, and take multiple samples — under shared CI
+CPU contention the numbers are noise, not signal. They are deliberately
+**not** wired into CI; run them locally on a quiet machine to compare real
+changes:
 
 ```bash
 pnpm probe:perf            # all profiles (slowest)
 PERF_ONLY=mobile-3g pnpm probe:perf   # one profile
+pnpm probe:boot 1          # where does boot CPU go? (1x = no throttle)
+pnpm probe:boot 4          # same, at 4x CPU (mid-tier phone simulation)
 ```
+
+`boot-profile.mjs` is an **attribution tool, not a wall-clock one**: its V8
+profiler (1ms sampling during load) inflates absolute timings under throttle
+— measured ~9s splash removal at 4x profiled vs ~0.9s unprofiled on the same
+build. Use its output to answer "which chunk is costing boot CPU?"
+(per-chunk eval ms), not "how fast is the page?". For wall-clock numbers use
+`perf-test.mjs` / Lighthouse. The boot-behavioral regression it guards
+(swiper-vendor must not be fetched at boot) is enforced in CI by the E2E
+spec `tests/swiper-lazy.spec.js`, so no CI wiring is needed here.
 
 ### Shared Constants
 

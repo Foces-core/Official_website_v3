@@ -40,6 +40,7 @@
     "probe:firefox": "node scripts/probes/firefox-probe.mjs",
     "probe:perf": "node scripts/probes/perf-test.mjs",
     "probe:perf:quick": "node scripts/probes/perf-probe.mjs",
+    "probe:boot": "node scripts/probes/boot-profile.mjs",
     "clean": "rm -rf dist test-results playwright-report",
     "prepare": "husky"
   },
