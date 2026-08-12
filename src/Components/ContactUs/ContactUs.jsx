@@ -15,8 +15,7 @@ import Footer from '../../Pages/LandingPage/Footer/Footer';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../ContactUs/notification.css';
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { validateContactForm } from '../../utils/validateContactForm.js';
 
 function ContactUs() {
   const [formData, setFormData] = useState({
@@ -27,24 +26,12 @@ function ContactUs() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Returns an error message string, or null when the form is valid.
-  const validateForm = () => {
-    const { name, email, subject, message } = formData;
-    if (!name.trim() || !email.trim() || !subject.trim() || !message.trim()) {
-      return 'Please fill in all fields.';
-    }
-    if (!EMAIL_RE.test(email.trim())) {
-      return 'Please enter a valid email address.';
-    }
-    return null;
-  };
-
   const sendEmail = (e) => {
     e.preventDefault();
 
     if (isSubmitting) return;
 
-    const validationError = validateForm();
+    const validationError = validateContactForm(formData);
     if (validationError) {
       toast.error(validationError, {
         autoClose: 2000,

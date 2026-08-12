@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import SectionSkeleton from '../SectionSkeleton/SectionSkeleton';
+import { shouldMountSection } from './scrollGateLogic.js';
 
 // Real section heights, cached after first mount so the placeholder matches
 // the real content on subsequent visits (no layout shift on return). Keyed by
@@ -50,7 +51,9 @@ export default function ScrollGate({ id, placeholderHeight = '110vh', label, chi
     // + about ~100vh), so a wide margin would mount it at boot — defeating the
     // whole point. 0.5 viewport below the fold gives the chunk ~half a viewport
     // of scroll to download while the skeleton fallback holds the space.
-    const MOUNT_MARGIN_PX = window.innerHeight * 0.5;
+    // (The geometry rule lives in scrollGateLogic.js, unit-tested.)
+    const MOUNT_MARGIN_VIEWPORTS = 0.5;
+    const MOUNT_MARGIN_PX = window.innerHeight * MOUNT_MARGIN_VIEWPORTS;
 
     let io = null;
     const mount = () => setMounted(true);
@@ -76,7 +79,7 @@ export default function ScrollGate({ id, placeholderHeight = '110vh', label, chi
       const rect = el.getBoundingClientRect();
       // Mount when the section top is within the margin below the fold OR
       // already above it (user scrolled past — catch up and mount anyway).
-      if (rect.top <= window.innerHeight + MOUNT_MARGIN_PX) mount();
+      if (shouldMountSection(rect.top, window.innerHeight, MOUNT_MARGIN_VIEWPORTS)) mount();
     };
     const onScroll = () => {
       if (rafId) cancelAnimationFrame(rafId);
