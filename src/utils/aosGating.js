@@ -1,35 +1,29 @@
 // AOS reveal animations are disabled for users who asked for no motion AND
 // for low-end devices (slow network / few cores / low RAM) where transform
 // reveals on scroll cause visible jank. Capable machines get the reveals.
+//
+// The device heuristics themselves live in detectProfile.js — they must not
+// be re-implemented here a second time (that was the old bug: aosGating had
+// its own copy of the network/CPU checks and read prefers-reduced-motion
+// directly, so the ?motion=on/off and ?perf=slow/high overrides never
+// reached AOS). This module only applies the profile + the motion override.
+import detectProfile from './detectProfile.js';
+
 export function aosDisabled() {
   if (typeof window === 'undefined') return false;
 
-  if (
-    typeof window.matchMedia === 'function' &&
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  ) {
-    return true;
-  }
+  const profile = detectProfile();
 
+  // Explicit overrides win: ?motion=on forces reveals even when the OS asks
+  // for reduced motion; ?motion=off / ?perf=slow force them off. ?perf=high
+  // still respects the OS preference via detectReducedMotion().
   try {
-    const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-    if (conn) {
-      if (conn.saveData) return true;
-      const type = (conn.effectiveType || '').toLowerCase();
-      if (type === 'slow-2g' || type === '2g') return true;
-      if (typeof conn.downlink === 'number' && conn.downlink > 0 && conn.downlink < 1.2)
-        return true;
-    }
-    const cores = navigator.hardwareConcurrency;
-    const lowRam =
-      typeof navigator.deviceMemory === 'number' &&
-      navigator.deviceMemory > 0 &&
-      navigator.deviceMemory <= 4;
-    const fewCores = typeof cores !== 'number' || cores <= 4;
-    if (lowRam && fewCores) return true;
+    const motion = new URLSearchParams(window.location.search).get('motion');
+    if (motion === 'on') return false;
+    if (motion === 'off') return true;
   } catch {
-    // ignore — default to enabled
+    // ignore — malformed URL
   }
 
-  return false;
+  return profile.reducedMotion || profile.lowPower;
 }

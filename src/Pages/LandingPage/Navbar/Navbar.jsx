@@ -320,14 +320,18 @@ export default function Navbar() {
     }
   }, []);
 
-  // Preload route chunks during browser idle time so nav clicks load instantly
+  // Preload route chunks during browser idle time so nav clicks load
+  // instantly — but NOT on slow networks: pulling 29KB gz of route chunks
+  // nobody may visit, 1.2s into a 3G load, competes with the LCP-critical
+  // resources. js.foresight + hover prefetch cover fast connections.
   useEffect(() => {
+    if (slowNetwork) return;
     const idleTimer = setTimeout(() => {
       import('../../EventPage/Eventpage.jsx').catch(() => {});
       import('../../../Components/ContactUs/ContactUs.jsx').catch(() => {});
     }, 1200);
     return () => clearTimeout(idleTimer);
-  }, []);
+  }, [slowNetwork]);
 
   // ForesightJS: predict intent from mouse trajectory / touch / keyboard and
   // prefetch the matching route chunk a beat BEFORE the user actually hovers.
