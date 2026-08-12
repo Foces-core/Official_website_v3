@@ -42,7 +42,6 @@ updates:
           - "eslint*"
           - "tailwindcss"
           - "postcss*"
-          - "autoprefixer"
           - "vite-plugin-*"
           - "three"
           - "vanta"
