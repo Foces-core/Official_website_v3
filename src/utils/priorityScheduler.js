@@ -12,7 +12,7 @@ const prioritizedUrls = new Set();
  * @param {Function} taskFn
  * @returns {Promise<any>}
  */
-export function scheduleUserBlockingTask(taskFn) {
+function scheduleUserBlockingTask(taskFn) {
   if (typeof taskFn !== 'function') return Promise.resolve();
 
   if (typeof window !== 'undefined' && window.navigator?.scheduling?.postTask) {

@@ -1,12 +1,11 @@
 import './App.css';
-import { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import SectionSkeleton from './Components/SectionSkeleton/SectionSkeleton';
 import HeroSection from './Pages/LandingPage/HeroSection/HeroSection';
 import Navbar from './Pages/LandingPage/Navbar/Navbar';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import { useLocation } from 'react-router';
-import { useDeviceProfile } from './hooks/useLowPower.js';
 import { aosDisabled } from './utils/aosGating.js';
 
 // Below-the-fold sections are code-split: the heavy Swiper chunk (used by
@@ -36,7 +35,7 @@ AOS.init({
 
 function App() {
   const location = useLocation();
-  const [found, setFound] = React.useState(false);
+  const [found, setFound] = useState(false);
 
   const pageH1 = <h1 className="sr-only">FOCES - Forum of Computer Engineering Students</h1>;
 
@@ -86,7 +85,7 @@ function App() {
       clearInterval(intervalRef);
       if (observer) observer.disconnect();
     };
-  }, [location]);
+  }, [location, found]);
 
   return (
     <div className="App bg-[#101011]">

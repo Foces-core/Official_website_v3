@@ -25,8 +25,6 @@ function ContactUs() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const h1 = <h1 className="sr-only">Contact FOCES</h1>;
-
   const validateForm = () => {
     const { name, email, subject, message } = formData;
     if (!name || !email || !subject || !message) {

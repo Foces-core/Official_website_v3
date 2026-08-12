@@ -4,7 +4,6 @@ import EventCardRight from './EventCardRight.jsx';
 import EventCardMobile from './EventCardMobile.jsx';
 import Navbar from '../LandingPage/Navbar/Navbar.jsx';
 import Footer from '../LandingPage/Footer/Footer.jsx';
-import EventTitle from '../../assets/Event.svg';
 import { featuredEvents } from '../../data/events.js';
 
 function Eventpage() {

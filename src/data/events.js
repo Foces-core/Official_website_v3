@@ -93,5 +93,3 @@ export const featuredEvents = [
     desc: 'The ultimate competitive programming and rapid prototyping battlefield at MCA Lab.',
   },
 ];
-
-export default featuredEvents;

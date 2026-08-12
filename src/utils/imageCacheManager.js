@@ -69,12 +69,3 @@ export function preloadImages(urls = []) {
     setTimeout(loadTask, 500);
   }
 }
-
-/**
- * Checks if a specific image URL is already tracked in the preloaded set.
- * @param {string} url
- * @returns {boolean}
- */
-export function isImagePreloaded(url) {
-  return preloadedUrls.has(url);
-}

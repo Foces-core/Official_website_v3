@@ -12,8 +12,6 @@
  *   ?perf=high  — force all constraints off (full experience)
  *   ?motion=off — force reduced motion (skip all animations)
  *   ?motion=on  — force full motion (ignore prefers-reduced-motion)
- *
- * Exported for direct use outside React (e.g., PWA, analytics).
  */
 
 const BREAKPOINTS = {
@@ -162,5 +160,3 @@ export default function detectProfile() {
     lowPower: slowNetwork || lowCPU || reducedMotion,
   };
 }
-
-export { BREAKPOINTS, getPerfOverride, getMotionOverride };

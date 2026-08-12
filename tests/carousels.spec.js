@@ -1,0 +1,99 @@
+import { test, expect } from '@playwright/test';
+import { gotoHome } from './helpers';
+
+test.describe('Featuring carousel', () => {
+  test.beforeEach(async ({ page }) => {
+    await gotoHome(page);
+    await page.locator('#featuring').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(1000);
+  });
+
+  const activeIndex = (page) =>
+    page.evaluate(() =>
+      [...document.querySelectorAll('.feat-swiper .swiper-slide')].findIndex((s) =>
+        s.classList.contains('swiper-slide-active'),
+      ),
+    );
+
+  test('arrow buttons navigate', async ({ page }) => {
+    const before = await activeIndex(page);
+    await page.locator('button[aria-label="Next ECHO photos"]').click();
+    await page.waitForTimeout(600);
+    const after = await activeIndex(page);
+    expect(after).not.toBe(before);
+  });
+
+  test('keyboard arrows navigate when carousel owns focus', async ({ page }) => {
+    // Click the visible slide so it claims arrow ownership (the carousel
+    // starts mid-way through duplicated copies; earlier slides are off-screen).
+    await page.locator('.feat-swiper .swiper-slide-active').click({ force: true });
+    await page.waitForTimeout(300);
+    const before = await activeIndex(page);
+    await page.keyboard.press('ArrowRight');
+    await page.waitForTimeout(600);
+    const after = await activeIndex(page);
+    expect(after).not.toBe(before);
+  });
+
+  test('pagination dots sit below the images', async ({ page }) => {
+    const ok = await page.evaluate(() => {
+      const img = document.querySelector('.feat-swiper .swiper-slide img');
+      const pag = document.querySelector('.feat-dots');
+      return pag.getBoundingClientRect().top >= img.getBoundingClientRect().bottom;
+    });
+    expect(ok).toBe(true);
+  });
+});
+
+test.describe('Execom / Meet the team carousel', () => {
+  // The Swiper-based team carousel only mounts on desktop (mobile renders a
+  // static grid with the cube disabled), so its interactions are desktop-only.
+  test.skip(({ isMobile }) => isMobile, 'team carousel only mounts on desktop');
+
+  test.beforeEach(async ({ page }) => {
+    await gotoHome(page);
+    await page.locator('#execom').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(1000);
+  });
+
+  const activeIndex = (page) =>
+    page.evaluate(() =>
+      [...document.querySelectorAll('.execom-swiper .swiper-slide')].findIndex((s) =>
+        s.classList.contains('swiper-slide-active'),
+      ),
+    );
+
+  test('dot indicator navigates the team carousel', async ({ page }) => {
+    // Both cube and flat modes render the custom 11-dot indicator (Swiper's
+    // loop + pagination were replaced by duplicated slides + wrap).
+    const before = await activeIndex(page);
+    await page.locator('.execom-swiper + div button[aria-label]').nth(2).click();
+    await page.waitForTimeout(600);
+    const after = await activeIndex(page);
+    expect(after).not.toBe(before);
+  });
+
+  test('keyboard arrows navigate the team carousel', async ({ page }) => {
+    // Click the visible slide so it claims arrow ownership (the swiper starts
+    // mid-way through duplicated copies; earlier slides are off-screen).
+    await page.locator('.execom-swiper .swiper-slide-active').click({ force: true });
+    await page.waitForTimeout(300);
+    const before = await activeIndex(page);
+    await page.keyboard.press('ArrowRight');
+    await page.waitForTimeout(600);
+    const after = await activeIndex(page);
+    expect(after).not.toBe(before);
+  });
+
+  test('dots sit below the member cards', async ({ page }) => {
+    const ok = await page.evaluate(() => {
+      const card = document.querySelector('.execom-swiper .swiper-slide .container-execom');
+      const dots = document.querySelector('.execom-swiper + div');
+      const pag = document.querySelector('.execom-swiper .swiper-pagination');
+      const target = dots || pag;
+      if (!card || !target) return false;
+      return target.getBoundingClientRect().top >= card.getBoundingClientRect().bottom;
+    });
+    expect(ok).toBe(true);
+  });
+});
