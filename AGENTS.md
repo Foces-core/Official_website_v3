@@ -30,10 +30,10 @@ Read this before touching anything.
 - `src/App.jsx` — landing page composition (home, about, featuring, events, execom).
 - `src/main.jsx` — router (`/`, `/events`, `/contact`), lazy routes, boot splash, StrictMode.
 - `src/Pages/` — route-level pages (`LandingPages/`, `EventPage/`).
-- `src/Components/` — shared UI (AboutUs, ContactUs, Cursor, Execom, Grain, Loader).
+- `src/Components/` — shared UI (AboutUs, ContactUs, Execom, Grain, InstallPrompt, Loader, ScrollGate, SectionSkeleton).
 - `src/data/events.js` — **single source of truth** for events (home section + `/events` share it).
-- `src/utils/` — helpers: `srcset.js`, `sanityImage.js`, `keyboardLock.js`, `aosGating.js`, `DeferredAnalytics.jsx`.
-- `src/hooks/useLowPower.js` — device-profile hook driving all perf degradation.
+- `src/utils/` — helpers: `srcset.js`, `eventPhotos.js`, `validateContactForm.js`, `validateEvents.js`, `keyboardLock.js`, `aosGating.js`, `DeferredAnalytics.jsx`.
+- `src/hooks/useLowPower.js` — exports the `useDeviceProfile` hook driving all perf degradation.
 - `scripts/` — puppeteer probes + Lighthouse perf tests.
 - `tests/*.spec.js` — Playwright E2E suite (split by page/section).
 - `public/`, `src/assets/` — static + optimized images.
@@ -41,7 +41,8 @@ Read this before touching anything.
 ## Architecture contract (non-negotiable)
 
 - **Performance is a feature.** The site deliberately degrades on slow/low-end
-  devices via `useDeviceProfile` (`slowNetwork`, `lowPower`). Never remove
+  devices via the `useDeviceProfile` hook in `src/hooks/useLowPower.js`
+  (`slowNetwork`, `lowPower`). Never remove
   those guards, and never let gated content disappear entirely (see the AOS
   safety net in `App.css`).
 - **PWA precache is app-shell only.** Photos ship via the immutable HTTP

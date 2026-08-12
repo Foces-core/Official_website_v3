@@ -4,6 +4,10 @@ import detectProfile from '../utils/detectProfile';
 /**
  * React hook wrapper around the pure detectProfile utility.
  *
+ * Consumption rule: components subscribe here (reactive to connection
+ * changes); non-React code reads detectProfile() once. One seam, two
+ * documented entries — see the detectProfile JSDoc.
+ *
  * Re-detects when the Network Information API fires a "change" event
  * (e.g., user toggles Data Saver or switches WiFi -> 4G).
  *

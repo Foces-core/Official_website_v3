@@ -1,6 +1,13 @@
 /**
  * Device-profile detection — pure logic, no React dependency.
  *
+ * Consumption rule (the one seam, two entries):
+ *   - React components subscribe reactively via the useDeviceProfile hook
+ *     (src/hooks/useLowPower.js) so connection changes re-evaluate.
+ *   - Non-React code (aosGating, SectionSkeleton) reads this function once.
+ *   Never re-implement a heuristic or an override elsewhere — this module is
+ *   the single owner of both.
+ *
  * Returns:
  *   slowNetwork  — cut payload (lazy-load, skip prefetch)
  *   lowCPU       — cut JS animation cost (flatter, shorter, cheaper)
