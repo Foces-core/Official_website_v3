@@ -313,7 +313,7 @@ function Execom() {
                     src={d.img}
                     blurSrc={d.blur}
                     alt={d.name}
-                    loading={index < 4 ? 'eager' : 'lazy'}
+                    loading="lazy"
                     decoding="async"
                   />
                   <div className="absolute rounded-b-3xl bottom-0 w-full bg-gradient-to-t from-black via-black/85 to-transparent p-4 text-left">
@@ -380,7 +380,7 @@ function Execom() {
                     src={d.img}
                     blurSrc={d.blur}
                     alt={d.name}
-                    loading={index < 2 ? 'eager' : 'lazy'}
+                    loading="lazy"
                     decoding="async"
                   />
                   <div className="absolute rounded-b-3xl bottom-0 w-full bg-gradient-to-t from-black via-black/90 to-transparent p-4 text-left">

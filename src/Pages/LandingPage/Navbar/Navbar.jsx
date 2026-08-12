@@ -132,17 +132,21 @@ export default function Navbar() {
     };
 
     handleResize();
+    // Coalesce scroll-driven state to one update per animation frame so the
+    // navbar doesn't re-render on every scroll tick.
+    let scrolledRaf = null;
     const handleScroll = () => {
-      if (window.scrollY > 150) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
+      if (scrolledRaf != null) return;
+      scrolledRaf = requestAnimationFrame(() => {
+        scrolledRaf = null;
+        setIsScrolled(window.scrollY > 150);
+      });
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     window.addEventListener('resize', handleResize, { passive: true });
 
     return () => {
+      if (scrolledRaf != null) cancelAnimationFrame(scrolledRaf);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('scroll', handleScroll);
     };
