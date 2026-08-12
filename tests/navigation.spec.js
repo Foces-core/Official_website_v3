@@ -16,17 +16,21 @@ test.describe('Cross-route navigation', () => {
     await expect(link).toBeVisible();
     // Click and wait for navigation
     await Promise.all([page.waitForURL('**/', { timeout: 10000 }), link.click()]);
-    // Wait for lazy-loaded sections to mount
-    await page.waitForSelector('#execom', { timeout: 10000 });
-    await page.waitForTimeout(3000);
-    const scrollY = await page.evaluate(() => window.scrollY);
-    const execomTop = await page.evaluate(() => {
-      const el = document.getElementById('execom');
-      return el ? el.getBoundingClientRect().top : Infinity;
-    });
-    // The page should have scrolled (scrollY > 0) and execom should be near viewport
-    expect(scrollY).toBeGreaterThan(0);
-    expect(execomTop).toBeLessThan(1000);
+    // Poll instead of sleeping: the lazy Execom section mounts asynchronously
+    // and the smooth scroll lands after that.
+    await expect
+      .poll(() => page.evaluate(() => window.scrollY), { timeout: 15000 })
+      .toBeGreaterThan(0);
+    await expect
+      .poll(
+        () =>
+          page.evaluate(() => {
+            const el = document.getElementById('execom');
+            return el ? el.getBoundingClientRect().top : Infinity;
+          }),
+        { timeout: 15000 },
+      )
+      .toBeLessThan(1000);
   });
 
   test('clicking About from /events navigates home and scrolls to about section', async ({
@@ -36,12 +40,16 @@ test.describe('Cross-route navigation', () => {
     await waitForLoaderGone(page);
     await page.locator('a[href="/#about"]').click();
     await page.waitForURL('**/');
-    await page.waitForTimeout(2500);
-    const aboutTop = await page.evaluate(() => {
-      const el = document.getElementById('about');
-      return el ? el.getBoundingClientRect().top : Infinity;
-    });
-    expect(aboutTop).toBeLessThan(800);
+    await expect
+      .poll(
+        () =>
+          page.evaluate(() => {
+            const el = document.getElementById('about');
+            return el ? el.getBoundingClientRect().top : Infinity;
+          }),
+        { timeout: 15000 },
+      )
+      .toBeLessThan(800);
   });
 
   test('clicking Contact from /events navigates to /contact', async ({ page }) => {

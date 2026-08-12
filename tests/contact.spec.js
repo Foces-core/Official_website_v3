@@ -35,3 +35,39 @@ test.describe('Contact', () => {
     expect(Number(width)).toBeGreaterThan(0);
   });
 });
+
+test.describe('Contact form validation', () => {
+  const fillValid = async (page) => {
+    await page.fill('#name', 'Test User');
+    await page.fill('#email', 'test@example.com');
+    await page.fill('#subject', 'Hello');
+    await page.fill('#message', 'Hi there');
+  };
+
+  test('empty submit shows a validation toast', async ({ page }) => {
+    await page.goto('/contact', { waitUntil: 'networkidle' });
+    await page.locator('button[type="submit"]').click();
+    await expect(page.getByText('Please fill in all fields.')).toBeVisible({ timeout: 4000 });
+  });
+
+  test('malformed email shows a validation toast', async ({ page }) => {
+    await page.goto('/contact', { waitUntil: 'networkidle' });
+    await fillValid(page);
+    await page.fill('#email', 'not-an-email');
+    await page.locator('button[type="submit"]').click();
+    await expect(page.getByText('Please enter a valid email address.')).toBeVisible({
+      timeout: 4000,
+    });
+  });
+
+  test('valid form without EmailJS keys falls back to the mail app', async ({ page }) => {
+    await page.goto('/contact', { waitUntil: 'networkidle' });
+    await fillValid(page);
+    await page.locator('button[type="submit"]').click();
+    // No VITE_EMAILJS_* env vars in the test environment, so the mailto
+    // fallback toast is what a successful submission shows.
+    await expect(page.getByText(/Opening your email app to send message/)).toBeVisible({
+      timeout: 5000,
+    });
+  });
+});

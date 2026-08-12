@@ -18,9 +18,7 @@ test.describe('Featuring carousel', () => {
   test('arrow buttons navigate', async ({ page }) => {
     const before = await activeIndex(page);
     await page.locator('button[aria-label="Next ECHO photos"]').click();
-    await page.waitForTimeout(600);
-    const after = await activeIndex(page);
-    expect(after).not.toBe(before);
+    await expect.poll(() => activeIndex(page), { timeout: 5000 }).not.toBe(before);
   });
 
   test('keyboard arrows navigate when carousel owns focus', async ({ page }) => {
@@ -30,9 +28,7 @@ test.describe('Featuring carousel', () => {
     await page.waitForTimeout(300);
     const before = await activeIndex(page);
     await page.keyboard.press('ArrowRight');
-    await page.waitForTimeout(600);
-    const after = await activeIndex(page);
-    expect(after).not.toBe(before);
+    await expect.poll(() => activeIndex(page), { timeout: 5000 }).not.toBe(before);
   });
 
   test('pagination dots sit below the images', async ({ page }) => {
@@ -68,9 +64,7 @@ test.describe('Execom / Meet the team carousel', () => {
     // loop + pagination were replaced by duplicated slides + wrap).
     const before = await activeIndex(page);
     await page.locator('.execom-swiper + div button[aria-label]').nth(2).click();
-    await page.waitForTimeout(600);
-    const after = await activeIndex(page);
-    expect(after).not.toBe(before);
+    await expect.poll(() => activeIndex(page), { timeout: 5000 }).not.toBe(before);
   });
 
   test('keyboard arrows navigate the team carousel', async ({ page }) => {
@@ -80,9 +74,7 @@ test.describe('Execom / Meet the team carousel', () => {
     await page.waitForTimeout(300);
     const before = await activeIndex(page);
     await page.keyboard.press('ArrowRight');
-    await page.waitForTimeout(600);
-    const after = await activeIndex(page);
-    expect(after).not.toBe(before);
+    await expect.poll(() => activeIndex(page), { timeout: 5000 }).not.toBe(before);
   });
 
   test('dots sit below the member cards', async ({ page }) => {
@@ -95,5 +87,32 @@ test.describe('Execom / Meet the team carousel', () => {
       return target.getBoundingClientRect().top >= card.getBoundingClientRect().bottom;
     });
     expect(ok).toBe(true);
+  });
+});
+
+test.describe('Execom mobile cube drag', () => {
+  test.skip(({ isMobile }) => !isMobile, 'cube drag is a touchscreen interaction');
+
+  test('dragging the cube advances to the next member', async ({ page }) => {
+    await gotoHome(page);
+    await page.locator('#execom').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(800);
+
+    const activeIndex = () =>
+      page.evaluate(() =>
+        [...document.querySelectorAll('.execom-cube-swiper .swiper-slide')].findIndex((s) =>
+          s.classList.contains('swiper-slide-active'),
+        ),
+      );
+    const before = await activeIndex();
+
+    const slide = page.locator('.execom-cube-swiper .swiper-slide-active');
+    const box = await slide.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 - 160, box.y + box.height / 2, { steps: 10 });
+    await page.mouse.up();
+
+    await expect.poll(activeIndex, { timeout: 5000 }).not.toBe(before);
   });
 });

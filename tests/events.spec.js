@@ -42,4 +42,31 @@ test.describe('Events', () => {
     await page.keyboard.press('Escape');
     await expect(page.locator('[role="dialog"]')).not.toBeVisible();
   });
+
+  test('lightbox traps focus while open', async ({ page }) => {
+    await page.goto('/events', { waitUntil: 'networkidle' });
+    await page.locator('[aria-haspopup="dialog"]').first().click();
+    const dialog = page.locator('[role="dialog"]');
+    await expect(dialog).toBeVisible();
+
+    // Focus should be inside the dialog after it opens.
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const d = document.querySelector('[role="dialog"]');
+          return d ? d.contains(document.activeElement) : false;
+        }),
+      )
+      .toBe(true);
+
+    // Tab several times — focus must never leave the dialog.
+    for (let i = 0; i < 5; i += 1) {
+      await page.keyboard.press('Tab');
+    }
+    const stillInside = await page.evaluate(() => {
+      const d = document.querySelector('[role="dialog"]');
+      return d ? d.contains(document.activeElement) : false;
+    });
+    expect(stillInside).toBe(true);
+  });
 });
