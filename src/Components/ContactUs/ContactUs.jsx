@@ -16,6 +16,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../ContactUs/notification.css';
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 function ContactUs() {
   const [formData, setFormData] = useState({
     name: '',
@@ -25,12 +27,16 @@ function ContactUs() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Returns an error message string, or null when the form is valid.
   const validateForm = () => {
     const { name, email, subject, message } = formData;
-    if (!name || !email || !subject || !message) {
-      return false;
+    if (!name.trim() || !email.trim() || !subject.trim() || !message.trim()) {
+      return 'Please fill in all fields.';
     }
-    return true;
+    if (!EMAIL_RE.test(email.trim())) {
+      return 'Please enter a valid email address.';
+    }
+    return null;
   };
 
   const sendEmail = (e) => {
@@ -38,8 +44,9 @@ function ContactUs() {
 
     if (isSubmitting) return;
 
-    if (!validateForm()) {
-      toast.error('Please fill in all fields.', {
+    const validationError = validateForm();
+    if (validationError) {
+      toast.error(validationError, {
         autoClose: 2000,
         className: 'toast-custom',
         style: {
@@ -283,7 +290,14 @@ function ContactUs() {
                 <div className="font-semibold">SHARE WITH US!</div>
               </div>
               <div className="p-4">
-                <form className="flex flex-col space-y-1 text-black" onSubmit={sendEmail}>
+                {/* noValidate: type=email triggers native browser validation on
+                    submit, which would swallow our custom toast + messaging.
+                    Validation lives in validateForm() (JS) instead. */}
+                <form
+                  className="flex flex-col space-y-1 text-black"
+                  onSubmit={sendEmail}
+                  noValidate
+                >
                   <div>
                     <label htmlFor="name" className="text-sm text-white">
                       Name
