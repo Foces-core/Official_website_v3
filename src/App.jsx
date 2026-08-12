@@ -1,6 +1,7 @@
 import './App.css';
 import { lazy, Suspense, useEffect, useState } from 'react';
 import SectionSkeleton from './Components/SectionSkeleton/SectionSkeleton';
+import ScrollGate from './Components/ScrollGate/ScrollGate';
 import HeroSection from './Pages/LandingPage/HeroSection/HeroSection';
 import Navbar from './Pages/LandingPage/Navbar/Navbar';
 import AOS from 'aos';
@@ -12,6 +13,13 @@ import { aosDisabled } from './utils/aosGating.js';
 // Featuring + Execom) and the cube logic only download once the user scrolls
 // to them, shrinking the first-load bundle. AOS picks up the newly-mounted
 // [data-aos] elements via its built-in MutationObserver.
+//
+// IMPORTANT: lazy sections must NOT all share one <Suspense> boundary — React
+// resolves every child of a suspended boundary in parallel, so a single
+// boundary would fire ALL the dynamic imports (including swiper-vendor) at
+// boot. Each section gets its own boundary; the two Swiper sections are
+// additionally wrapped in <ScrollGate>, which keeps them unmounted (and their
+// chunks undownloaded) until the user scrolls near them.
 const AboutUs = lazy(() => import('./Components/AboutUs/AboutUs'));
 const Featuring = lazy(() => import('./Pages/LandingPages/Featuring'));
 const Events = lazy(() => import('./Pages/LandingPages/Events'));
@@ -96,12 +104,21 @@ function App() {
       <main id="main-content" tabIndex={-1}>
         {pageH1}
         <HeroSection />
-        <Suspense fallback={<SectionSkeleton height="200vh" label="Loading sections" />}>
+        <Suspense fallback={<SectionSkeleton height="100vh" label="Loading about" />}>
           <AboutUs />
-          <Featuring />
-          <Events />
-          <Execom />
         </Suspense>
+        {/* Swiper sections are scroll-gated: the chunk (swiper-vendor, ~300KB)
+            only downloads when the section approaches the viewport. The wrapper
+            owns the section id, so anchors/scrollspy/tests still find it. */}
+        <ScrollGate id="featuring" placeholderHeight="95vh" label="Loading featuring">
+          <Featuring />
+        </ScrollGate>
+        <Suspense fallback={<SectionSkeleton height="100vh" label="Loading events" />}>
+          <Events />
+        </Suspense>
+        <ScrollGate id="execom" placeholderHeight="110vh" label="Loading team">
+          <Execom />
+        </ScrollGate>
       </main>
       <Suspense fallback={<SectionSkeleton height="30vh" label="Loading footer" />}>
         <Footer />

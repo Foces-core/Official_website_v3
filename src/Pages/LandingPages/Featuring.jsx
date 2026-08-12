@@ -166,11 +166,12 @@ function Featuring() {
     return () => observer.disconnect();
   }, [disableAutoplay]);
 
+  // The section id lives on the ScrollGate wrapper in App.jsx, not here —
+  // the wrapper is always present, so anchors/scrollspy always find it.
   return (
     <div
       ref={sectionRef}
       className="bg-[#101011] h-fit w-full flex flex-col pt-32 overflow-x-hidden pb-20 scroll-mt-24"
-      id="featuring"
     >
       <div className="flex items-center h-20 pb-9">
         <div className="flex items-center justify-center w-full">

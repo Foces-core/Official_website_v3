@@ -75,11 +75,10 @@ function Execom() {
     return () => carouselEl?.removeEventListener('pointerdown', mark, true);
   }, []);
 
+  // The section id lives on the ScrollGate wrapper in App.jsx, not here —
+  // the wrapper is always present, so anchors/scrollspy always find it.
   return (
-    <section
-      className="min-h-full flex flex-col pt-10 pb-20 overflow-hidden scroll-mt-24"
-      id="execom"
-    >
+    <section className="min-h-full flex flex-col pt-10 pb-20 overflow-hidden scroll-mt-24">
       {/* Advisor banner — separate thin strip at the top of the section */}
       <div
         className="m-auto w-[90%] sm:w-5/6 md:w-4/5 px-2 pb-10"
