@@ -90,17 +90,23 @@ function Root() {
     };
 
     // The splash lasts only as long as the boot genuinely needs:
-    //  1. hero fonts + first paint landed, or
+    //  1. first paint landed (double rAF — fires right after the first frame
+    //     paints, which is what the hero content is waiting on), or
     //  2. the whole page finished loading (window 'load'), or
-    //  3. a failsafe at 5s so a stalled resource can never block the page
+    //  3. a hard failsafe at 1.5s so a stalled resource can never occlude the
+    //     page. The old path waited on document.fonts.ready too — but a
+    //     stalled font fetch keeps that promise pending, and the old 5s
+    //     failsafe stretched further under CPU throttle. The preloaded hero
+    //     PNG + @fontsource woff2s start at parse time, so painting the page
+    //     early costs nothing; keeping an opaque splash over them is what
+    //     inflated LCP (measured 9s of occlusion at 4x throttle).
     const paint = () =>
       new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-    const fonts = document.fonts ? document.fonts.ready : Promise.resolve();
-    Promise.all([fonts, paint()]).then(hide);
+    paint().then(hide);
 
     const onLoad = () => hide();
     window.addEventListener('load', onLoad, { once: true });
-    const failsafe = setTimeout(hide, 5000);
+    const failsafe = setTimeout(hide, 1500);
 
     return () => {
       disposed = true;
