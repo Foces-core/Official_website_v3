@@ -49,6 +49,9 @@ jobs:
       - name: Dead code check (knip)
         run: pnpm exec knip
 
+      - name: Orphan asset check
+        run: pnpm check:assets
+
       - name: Build
         run: pnpm build
 

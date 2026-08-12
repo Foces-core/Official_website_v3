@@ -29,6 +29,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:install": "playwright install chromium",
     "knip": "knip",
+    "check:assets": "node scripts/maintenance/check-orphan-assets.mjs",
     "clean": "rm -rf dist test-results playwright-report",
     "prepare": "husky"
   },
