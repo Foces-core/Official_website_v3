@@ -100,11 +100,13 @@ try {
   const skip2 = await page2.$eval('a.skip-link', (el) => el.getAttribute('href')).catch(() => null);
   check('/events skip-link targets #main-content', skip2 === '#main-content', skip2);
 
-  const headingCls = await page2.$eval('#main-content img', (el) => el.className).catch(() => null);
+  const headingInfo = await page2
+    .$eval('#main-content h1', (el) => ({ cls: el.className, text: el.textContent.trim() }))
+    .catch(() => null);
   check(
-    '/events heading auto-scales (w-72 h-[45%])',
-    !!headingCls && headingCls.includes('w-72') && headingCls.includes('h-[45%]'),
-    headingCls,
+    '/events has sr-only h1 heading (WCAG 2.4.6)',
+    !!headingInfo && headingInfo.cls.includes('sr-only') && headingInfo.text === 'FOCES Events',
+    JSON.stringify(headingInfo),
   );
 
   // ---------- MODAL FOCUS TRAP on /events ----------
@@ -157,8 +159,9 @@ try {
   });
   check('Tab is trapped inside dialog', stillInDialog);
 
-  // close via button, focus restored to trigger
-  await page2.click('[aria-label="Close gallery"]').catch(() => {});
+  // close via button, focus restored to trigger (yet-another-react-lightbox
+  // labels its close button "Close")
+  await page2.click('[aria-label="Close"]').catch(() => {});
   await sleep(400);
   const closed = await page2.$('[role="dialog"]').catch(() => null);
   check('close button closes dialog', !closed);
