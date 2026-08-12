@@ -7,6 +7,28 @@ import { imagetools } from 'vite-imagetools';
 
 const PORT = 5173;
 
+// The hero PNG is the LCP element. It only mounts after React renders, so
+// without a hint its fetch waits for the JS bundle — on 3G that's seconds.
+// Preload it in the built HTML so the (tiny) request starts at parse time,
+// overlapping the JS download; React then paints it from cache instantly.
+function preloadHeroImage() {
+  let heroPath = null;
+  return {
+    name: 'preload-hero-image',
+    apply: 'build',
+    generateBundle(_opts, bundle) {
+      heroPath = Object.keys(bundle).find(
+        (n) => /assets\/foces-[A-Za-z0-9_-]+\.png$/.test(n) && !/-(?:400|800)\.png$/.test(n),
+      );
+    },
+    transformIndexHtml(html) {
+      if (!heroPath) return html;
+      const link = `<link rel="preload" as="image" type="image/png" href="/${heroPath}" fetchpriority="high" />`;
+      return html.replace('</head>', `    ${link}\n  </head>`);
+    },
+  };
+}
+
 // Preloads the two self-hosted woff2 fonts in the HTML so the browser starts
 // the fetch as soon as the document is parsed — instead of waiting for the
 // CSS bundle (which carries the @font-face) to download + parse. Inter is used
@@ -54,6 +76,7 @@ export default defineConfig({
         ]
       : []),
     preloadFonts(),
+    preloadHeroImage(),
     // Compress every image at build time (smaller payloads for everyone,
     // especially low-end devices on slow connections)
     ViteImageOptimizer({
