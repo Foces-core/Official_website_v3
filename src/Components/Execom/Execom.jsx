@@ -1,6 +1,6 @@
 import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Pagination, Navigation, EffectCube, Keyboard } from 'swiper/modules';
+import { Autoplay, Navigation, EffectCube, Keyboard } from 'swiper/modules';
 
 import 'swiper/css';
 import 'swiper/css/effect-cube';
@@ -44,7 +44,6 @@ import {
 } from '../../utils/keyboardLock.js';
 
 const cardData = [
-  { name: 'Gopakumar G', img: Gopakumar, blur: GopakumarBlur, review: 'Advisor' },
   { name: 'Aleetta Mariya Sebastian', img: Aleetta, blur: AleettaBlur, review: 'Chairperson' },
   { name: 'Lisha Jins', img: Lisha, blur: LishaBlur, review: 'Vice Chairperson' },
   { name: 'Steve Jose', img: Steve, blur: SteveBlur, review: 'Secretary' },
