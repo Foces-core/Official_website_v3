@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { gotoHome } from './helpers';
+import { gotoHome, waitForLoaderGone } from './helpers';
 
 test.describe('Reduced motion', () => {
   test('content stays visible with prefers-reduced-motion', async ({ page }) => {
@@ -60,6 +60,24 @@ test.describe('Overlays & install', () => {
     await gotoHome(page);
     // Chromium headless never fires beforeinstallprompt, so the banner must
     // stay hidden until a real browser emits it.
+    await expect(page.getByLabel('Install FOCES app')).toHaveCount(0);
+  });
+
+  test('install toast shows at most once per session', async ({ page }) => {
+    await gotoHome(page);
+    const firePrompt = () =>
+      page.evaluate(() =>
+        window.dispatchEvent(new Event('beforeinstallprompt', { cancelable: true })),
+      );
+
+    // First visit: the toast appears.
+    await firePrompt();
+    await expect(page.getByLabel('Install FOCES app')).toBeVisible();
+
+    // Same browser session, new page load: the session cookie silences it.
+    await page.reload({ waitUntil: 'networkidle' });
+    await waitForLoaderGone(page);
+    await firePrompt();
     await expect(page.getByLabel('Install FOCES app')).toHaveCount(0);
   });
 });

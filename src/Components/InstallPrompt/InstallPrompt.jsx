@@ -4,6 +4,25 @@ import './InstallPrompt.css';
 const TOAST_MS = 7000; // how long the toast stays before fading out
 const FADE_MS = 350; // exit animation length — keep in sync with InstallPrompt.css
 
+// Session-cookie key: once the toast has shown, it stays silent for the rest
+// of the browser session (beforeinstallprompt re-fires on every page load,
+// so without this the toast nagged on every visit). A session cookie has no
+// Max-Age/Expires — the browser clears it when the session ends, so a
+// genuinely new visit (fresh browser session) gets the prompt again.
+const SEEN_COOKIE = 'foces-install-seen';
+
+function hasSeenPrompt() {
+  if (typeof document === 'undefined') return false;
+  // Exact match on the full `name=value` pair — startsWith would also match a
+  // hypothetical foces-install-seen=10, and this costs nothing.
+  return document.cookie.split('; ').some((c) => c === `${SEEN_COOKIE}=1`);
+}
+
+function markPromptSeen() {
+  if (typeof document === 'undefined') return;
+  document.cookie = `${SEEN_COOKIE}=1; SameSite=Lax; path=/`;
+}
+
 /**
  * InstallPrompt — PWA install toast.
  *
@@ -14,7 +33,8 @@ const FADE_MS = 350; // exit animation length — keep in sync with InstallPromp
  * appears:
  *   - on iOS Safari (no beforeinstallprompt; users use "Add to Home Screen"),
  *   - once the app is already installed (appinstalled),
- *   - when running inside a standalone/installed PWA window.
+ *   - when running inside a standalone/installed PWA window,
+ *   - more than once per browser session (session cookie, see above).
  *
  * The prompt object can only be used once, so the toast hides after prompt().
  */
@@ -29,7 +49,8 @@ export default function InstallPrompt() {
     if (window.matchMedia('(display-mode: standalone)').matches) return;
 
     const onPrompt = (e) => {
-      e.preventDefault(); // suppress the default mini-infobar
+      e.preventDefault(); // suppress the default mini-infobar either way
+      if (hasSeenPrompt()) return; // already offered this session — don't nag
       setDeferred(e);
     };
     const onInstalled = () => setDeferred(null);
@@ -41,6 +62,14 @@ export default function InstallPrompt() {
       window.removeEventListener('appinstalled', onInstalled);
     };
   }, []);
+
+  // Once the toast actually shows, remember it for this session — even if the
+  // user ignores it, the next page load stays quiet until the browser session
+  // ends. Idempotent, so StrictMode's double-invoke is harmless.
+  useEffect(() => {
+    if (!deferred || dismissed) return;
+    markPromptSeen();
+  }, [deferred, dismissed]);
 
   // Auto-dismiss: fade out after TOAST_MS, unmount a beat later.
   useEffect(() => {
