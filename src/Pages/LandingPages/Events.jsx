@@ -2,7 +2,6 @@ import { Link } from 'react-router';
 import EventTitle from '../../assets/Event.svg';
 import { featuredEvents } from '../../data/events.js';
 import BlurImage from '../../Components/BlurImage/BlurImage';
-import { sanityBlurUrl } from '../../utils/sanityImage.js';
 
 function Events() {
   return (
@@ -49,7 +48,6 @@ function Events() {
               <div className="relative h-64 w-full overflow-hidden bg-gray-900">
                 <BlurImage
                   src={evt.image}
-                  blurSrc={sanityBlurUrl(evt.image)}
                   srcSet={evt.imageSet}
                   sizes="(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 90vw"
                   alt={evt.name}

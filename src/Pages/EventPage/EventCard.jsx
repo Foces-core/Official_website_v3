@@ -1,10 +1,7 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import Modal from './Modal';
-import { sanityImg, sanityBlurUrl } from '../../utils/sanityImage.js';
-import { preloadImages } from '../../utils/imageCacheManager.js';
 import { prioritizeAssetFetch } from '../../utils/priorityScheduler.js';
-import useDeviceProfile from '../../hooks/useLowPower.js';
 import BlurImage from '../../Components/BlurImage/BlurImage';
 
 /**
@@ -17,7 +14,6 @@ import BlurImage from '../../Components/BlurImage/BlurImage';
  * (and its per-resize re-render is gone with it).
  */
 function EventCard({ Events, priority, reverse }) {
-  const { slowNetwork } = useDeviceProfile();
   const [Expanding, setExpanding] = useState(false);
 
   const images = useMemo(() => Events.images || [], [Events.images]);
@@ -25,15 +21,13 @@ function EventCard({ Events, priority, reverse }) {
   const primaryImage = images[0];
   const primarySet = imageSets[0];
 
-  useEffect(() => {
-    if (images.length > 0) {
-      preloadImages(images.map((url) => sanityImg(url, 1400)));
-    }
-  }, [images]);
-
+  // Images are already cached by the service worker (images-cache-v2,
+  // CacheFirst) — the removed imageCacheManager fetched + stored every photo
+  // a second time in its own cache. Only warm the browser's HTTP cache for
+  // the photos the user is about to look at (modal open intent), on demand.
   const handleInteraction = () => {
     if (images.length > 0) {
-      images.map((url) => sanityImg(url, 1400)).forEach((u) => prioritizeAssetFetch(u));
+      images.forEach((url) => prioritizeAssetFetch(url));
     }
   };
 
@@ -66,8 +60,7 @@ function EventCard({ Events, priority, reverse }) {
         >
           {primaryImage && (
             <BlurImage
-              src={sanityImg(primaryImage, slowNetwork ? 640 : 1000)}
-              blurSrc={sanityBlurUrl(primaryImage)}
+              src={primaryImage}
               srcSet={primarySet}
               sizes="(min-width: 768px) 50vw, 92vw"
               alt={Events.name}
@@ -106,8 +99,7 @@ function EventCard({ Events, priority, reverse }) {
                 }}
               >
                 <BlurImage
-                  src={sanityImg(img, slowNetwork ? 160 : 240)}
-                  blurSrc={sanityBlurUrl(img)}
+                  src={img}
                   srcSet={imageSets[idx + 1]}
                   sizes="80px"
                   alt={`${Events.name} gallery photo ${idx + 2}`}

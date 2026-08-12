@@ -4,7 +4,6 @@ import Counter from 'yet-another-react-lightbox/plugins/counter';
 import 'yet-another-react-lightbox/styles.css';
 import 'yet-another-react-lightbox/plugins/counter.css';
 import PropTypes from 'prop-types';
-import { sanityImg } from '../../utils/sanityImage.js';
 
 function Modal({ images, open, onClose }) {
   const lightboxRef = useRef(null);
@@ -34,17 +33,9 @@ function Modal({ images, open, onClose }) {
 
   if (!open || !images || images.length === 0) return null;
 
-  const slides = images.map((url) => ({
-    src: sanityImg(url, 1400),
-    srcSet:
-      typeof url === 'string' && url.includes('cdn.sanity.io')
-        ? [
-            { src: sanityImg(url, 640), width: 640 },
-            { src: sanityImg(url, 1000), width: 1000 },
-            { src: sanityImg(url, 1400), width: 1400 },
-          ]
-        : undefined,
-  }));
+  // All images are local bundled webp assets (Sanity was removed — see
+  // index.html). srcSet is left undefined so the lightbox uses src directly.
+  const slides = images.map((url) => ({ src: url, srcSet: undefined }));
 
   return (
     <Lightbox
