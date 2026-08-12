@@ -83,10 +83,13 @@ function Root() {
     const hide = () => {
       if (disposed || hiddenRef.current) return;
       hiddenRef.current = true; // idempotent — many triggers, one fade-out
+      // Remove IMMEDIATELY (not via a 700ms timer): the CSS transition on
+      // .is-fading animates the fade-out, and a delayed remove() keeps the
+      // element in the DOM — which occludes the hero and blocks its LCP
+      // entry. Under CPU throttle that setTimeout stretches (measured: ~9s
+      // at 4x), exactly the failure the 1.5s failsafe was meant to fix.
       splash.classList.add('is-fading');
-      setTimeout(() => {
-        if (!disposed) splash.remove();
-      }, 700); // matches #boot-splash transition duration
+      splash.remove();
     };
 
     // The splash lasts only as long as the boot genuinely needs:
