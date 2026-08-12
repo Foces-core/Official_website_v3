@@ -211,6 +211,32 @@ function Execom() {
         </div>
       </div>
 
+      {/* Featured Advisor — shown above the execom carousel */}
+      <div className="m-auto w-[90%] sm:w-5/6 md:w-4/5 px-2 pb-6" aria-label="Advisor">
+        <div className="bg-[#161618] rounded-3xl overflow-hidden flex flex-col md:flex-row items-stretch group">
+          <div className="relative md:w-2/5 lg:w-1/3 md:shrink-0">
+            <BlurImage
+              className="object-cover object-top w-full h-64 md:h-full grayscale group-hover:filter-none transition-all duration-300"
+              src={Gopakumar}
+              blurSrc={GopakumarBlur}
+              alt="Gopakumar G"
+              loading="eager"
+              decoding="async"
+            />
+          </div>
+          <div className="relative flex flex-col justify-center p-6 md:p-10 md:w-3/5 lg:w-2/3">
+            <div className="text-white text-2xl md:text-3xl font-semibold italic">Gopakumar G</div>
+            <div className="mt-1 text-[#007aff] text-sm font-medium uppercase tracking-wider">
+              Advisor
+            </div>
+            <p className="mt-4 text-gray-300 text-sm leading-relaxed max-w-prose">
+              Guiding wisdom behind FOCES — the team looks to Gopakumar Sir for direction,
+              mentorship, and the steady hand that keeps our community events running.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div ref={carouselRef} className="m-auto w-[90%] sm:w-5/6 md:w-4/5 px-2 relative">
         {/* Desktop / Tablet Swiper — 3D Cube on capable devices, flat slider on low-power */}
         <div
