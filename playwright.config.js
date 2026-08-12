@@ -5,6 +5,9 @@ const BASE_URL = `http://localhost:${PORT}`;
 
 export default defineConfig({
   testDir: './tests',
+  // Vitest owns tests/unit/ (pure-logic suites) — exclude them so Playwright
+  // doesn't try to run them as browser E2E.
+  testIgnore: ['**/unit/**'],
   fullyParallel: false,
   timeout: 60_000,
   retries: 0,

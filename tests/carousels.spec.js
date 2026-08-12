@@ -77,6 +77,19 @@ test.describe('Execom / Meet the team carousel', () => {
     await expect.poll(() => activeIndex(page), { timeout: 5000 }).not.toBe(before);
   });
 
+  test('arrow keys still work after clicking a dot (dots are part of the widget)', async ({
+    page,
+  }) => {
+    // The dots sit OUTSIDE the swiper element (direct sibling). If the widget
+    // boundary were the swiper alone, focusing a dot would withhold the arrow
+    // keys from the carousel. Click a dot, then verify arrows still advance.
+    await page.locator('.execom-swiper + div button[aria-label]').nth(3).click();
+    await page.waitForTimeout(300);
+    const before = await activeIndex(page);
+    await page.keyboard.press('ArrowRight');
+    await expect.poll(() => activeIndex(page), { timeout: 5000 }).not.toBe(before);
+  });
+
   test('dots sit below the member cards', async ({ page }) => {
     const ok = await page.evaluate(() => {
       const card = document.querySelector('.execom-swiper .swiper-slide .container-execom');
