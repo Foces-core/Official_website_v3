@@ -3,8 +3,16 @@ import PropTypes from 'prop-types';
 import SectionSkeleton from '../SectionSkeleton/SectionSkeleton';
 
 // Real section heights, cached after first mount so the placeholder matches
-// the real content on subsequent visits (no layout shift on return).
+// the real content on subsequent visits (no layout shift on return). Keyed by
+// `id + viewport bucket` because the carousels are responsive (slidesPerView
+// 1/2/3 by width) — a desktop-measured height reused on a phone would be wrong.
 const measuredHeights = new Map();
+
+// Coarse viewport bucket so desktop vs mobile heights never collide in the cache.
+function viewportBucket() {
+  if (typeof window === 'undefined') return 'unknown';
+  return window.innerWidth >= 768 ? 'desktop' : 'mobile';
+}
 
 /**
  * ScrollGate — keep an expensive lazy section unmounted until it approaches
@@ -97,15 +105,16 @@ export default function ScrollGate({ id, placeholderHeight = '110vh', label, chi
     if (!mounted) return;
     const el = wrapRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return;
+    const bucket = viewportBucket();
     const ro = new ResizeObserver((entries) => {
       const h = entries[0]?.contentRect.height;
-      if (h > 0) measuredHeights.set(id, h);
+      if (h > 0) measuredHeights.set(`${id}:${bucket}`, h);
     });
     ro.observe(el);
     return () => ro.disconnect();
   }, [mounted, id]);
 
-  const cachedHeight = measuredHeights.get(id);
+  const cachedHeight = measuredHeights.get(`${id}:${viewportBucket()}`);
   const skeletonHeight = cachedHeight ? `${Math.round(cachedHeight)}px` : placeholderHeight;
 
   return (
@@ -118,7 +127,11 @@ export default function ScrollGate({ id, placeholderHeight = '110vh', label, chi
           {children}
         </Suspense>
       ) : (
-        <SectionSkeleton height={skeletonHeight} label={label} />
+        // NOT role=status: this placeholder is not a loading state — the
+        // section is merely deferred until scrolled to. role=status would
+        // make screen readers announce "Loading featuring" at page load for
+        // content the user hasn't asked for yet.
+        <SectionSkeleton height={skeletonHeight} label={label} announce={false} />
       )}
     </div>
   );

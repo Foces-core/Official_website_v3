@@ -9,9 +9,17 @@ import detectProfile from '../../utils/detectProfile';
  * On low-power / reduced-motion devices the bars are static (no animation)
  * but still reserve vertical space to prevent layout shift.
  *
- * @param {{ height?: string, label?: string }} props
+ * @param {{ height?: string, label?: string, announce?: boolean }} props
+ *   announce=false renders a plain placeholder (no role=status): use it for
+ *   deferred-but-not-yet-loading content (e.g. ScrollGate pre-mount), where a
+ *   live region would make screen readers announce "Loading…" for something
+ *   the user hasn't asked for yet.
  */
-export default function SectionSkeleton({ height = '80vh', label = 'Loading section' }) {
+export default function SectionSkeleton({
+  height = '80vh',
+  label = 'Loading section',
+  announce = true,
+}) {
   // Use the raw detector (not the hook) because this is a Suspense fallback
   // that may render outside a fully mounted React tree
   const { lowPower } = detectProfile();
@@ -21,8 +29,9 @@ export default function SectionSkeleton({ height = '80vh', label = 'Loading sect
     <div
       className="skeleton-section bg-[#101011]"
       style={{ minHeight: height }}
-      role="status"
-      aria-label={label}
+      role={announce ? 'status' : undefined}
+      aria-label={announce ? label : undefined}
+      aria-hidden={announce ? undefined : true}
     >
       <div className={`skeleton-bar skeleton-bar--wide${staticClass}`} />
       <div className={`skeleton-bar skeleton-bar--medium${staticClass}`} />
@@ -34,4 +43,5 @@ export default function SectionSkeleton({ height = '80vh', label = 'Loading sect
 SectionSkeleton.propTypes = {
   height: PropTypes.string,
   label: PropTypes.string,
+  announce: PropTypes.bool,
 };
