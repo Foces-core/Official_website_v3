@@ -15,7 +15,12 @@ if (!fs.existsSync(targetDir)) {
   fs.mkdirSync(targetDir, { recursive: true });
 }
 
-// Key selected photos & video frames
+// Key selected photos & video frames.
+// Only assets actually imported by src/data/events.js are generated here.
+// (Orphaned variants — coding_arena_lab_wide, coding_arena_action,
+// agentic_coding_lab1/lab2, prompt_paradox_session, student_seminar_presentation,
+// agentic_coding_demo_video — were pruned in 2026-08; keep this list in sync
+// with what the site consumes.)
 const items = [
   // High quality lab photos
   {
@@ -26,39 +31,11 @@ const items = [
     src: path.join(downloadsDir, '5D80A877-34ED-4359-B2FA-F71BF9F216C2.JPG.jpeg'),
     name: 'agentic_workshop_students.webp',
   },
-  {
-    src: path.join(downloadsDir, 'ECCACA6D-9B41-4760-A617-2366B80ED402.JPG.jpeg'),
-    name: 'coding_arena_lab_wide.webp',
-  },
-  {
-    src: path.join(downloadsDir, '9D66F96F-E487-40E0-814B-155B1DCA4E08.JPG.jpeg'),
-    name: 'coding_arena_action.webp',
-  },
-  {
-    src: path.join(downloadsDir, 'PHOTO-2026-07-09-19-05-03.jpg.jpeg'),
-    name: 'agentic_coding_lab1.webp',
-  },
-  {
-    src: path.join(downloadsDir, 'PHOTO-2026-07-09-19-05-11 3.jpg.jpeg'),
-    name: 'agentic_coding_lab2.webp',
-  },
-  {
-    src: path.join(downloadsDir, 'PHOTO-2026-06-25-13-24-33.jpg.jpeg'),
-    name: 'prompt_paradox_session.webp',
-  },
 
   // High quality extracted video frames
   {
-    src: path.join(framesDir, 'WhatsApp_Video_2026_08_08_at_3_28_47_PM_mp4_frame_2.jpg'),
-    name: 'student_seminar_presentation.webp',
-  },
-  {
     src: path.join(framesDir, 'WhatsApp_Video_2026_08_08_at_3_29_14_PM_mp4_frame_2.jpg'),
     name: 'java_algorithm_lecture.webp',
-  },
-  {
-    src: path.join(framesDir, 'VIDEO_2026_07_09_19_05_02_3_mp4_frame_2.jpg'),
-    name: 'agentic_coding_demo_video.webp',
   },
 ];
 
