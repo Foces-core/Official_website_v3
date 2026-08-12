@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 
-export function ErrorFallback({ error, resetError }) {
+function ErrorFallback({ error, resetError }) {
   const handleReload = () => {
     if (resetError) resetError();
     window.location.reload();

@@ -147,17 +147,20 @@ export default defineConfig({
       output: {
         manualChunks(id) {
           if (id.includes('node_modules')) {
+            // Note: match the real React packages, NOT any package whose path
+            // merely contains /react/ (e.g. @sentry/react) — that would pull
+            // the lazy Sentry SDK into the eager vendor chunk.
             if (
-              id.includes('/react/') ||
-              id.includes('/react-dom/') ||
-              id.includes('/react-router')
+              id.includes('/node_modules/react/') ||
+              id.includes('/node_modules/react-dom/') ||
+              id.includes('/node_modules/react-router')
             ) {
               return 'react-vendor';
             }
-            if (id.includes('/swiper/')) {
+            if (id.includes('/node_modules/swiper/')) {
               return 'swiper-vendor';
             }
-            if (id.includes('/react-icons/')) {
+            if (id.includes('/node_modules/react-icons/')) {
               return 'icons-vendor';
             }
           }

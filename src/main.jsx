@@ -2,31 +2,41 @@
 import React, { Suspense, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router';
-import * as Sentry from '@sentry/react';
 import DeferredAnalytics from './utils/DeferredAnalytics.jsx';
 import App from './App.jsx';
 import Loader from './Components/Loader/Loader.jsx';
 import Grain from './Components/Grain/Grain.jsx';
-import ErrorFallback from './Components/ErrorFallback/ErrorFallback.jsx';
+import ErrorBoundary from './Components/ErrorBoundary/ErrorBoundary.jsx';
 import { lazyWithRetry } from './utils/lazyWithRetry.js';
 import useDeviceProfile from './hooks/useLowPower.js';
 import './assets/fonts-latin.css';
 import './index.css';
 
-// Sentry: initialize only when a DSN is configured (production).
-// In dev, errors stay in the console — no external service needed.
+// Sentry is intentionally NOT statically imported: the SDK (browser tracing +
+// replay) is ~100KB and would inflate the initial bundle for every visitor.
+// Instead it is fetched on demand, only when a DSN is configured (production).
+// Most visits never configure a DSN, so they never download it.
+let reportError = () => {};
+
 if (import.meta.env.VITE_SENTRY_DSN) {
-  Sentry.init({
-    dsn: import.meta.env.VITE_SENTRY_DSN,
-    environment: import.meta.env.MODE,
-    integrations: [
-      Sentry.browserTracingIntegration(),
-      Sentry.replayIntegration({ maskAllText: true, blockAllMedia: true }),
-    ],
-    tracesSampleRate: 0.2,
-    replaysSessionSampleRate: 0,
-    replaysOnErrorSampleRate: 1.0,
-  });
+  import('@sentry/react')
+    .then((Sentry) => {
+      Sentry.init({
+        dsn: import.meta.env.VITE_SENTRY_DSN,
+        environment: import.meta.env.MODE,
+        integrations: [
+          Sentry.browserTracingIntegration(),
+          Sentry.replayIntegration({ maskAllText: true, blockAllMedia: true }),
+        ],
+        tracesSampleRate: 0.2,
+        replaysSessionSampleRate: 0,
+        replaysOnErrorSampleRate: 1.0,
+      });
+      reportError = (error) => Sentry.captureException(error);
+    })
+    // Best-effort: if the SDK fails to load, fall back to the console-only
+    // behavior — never let telemetry break the app.
+    .catch(() => {});
 }
 
 const Eventpage = lazyWithRetry(() => import('./Pages/EventPage/Eventpage'));
@@ -99,11 +109,10 @@ function Root() {
 
   return (
     <>
-      <Sentry.ErrorBoundary
-        fallback={({ error, resetError }) => (
-          <ErrorFallback error={error} resetError={resetError} />
-        )}
-      >
+      {/* onError must dereference reportError at call time (wrapper closure),
+          not snapshot it at render time — otherwise the no-op assigned before
+          the async Sentry import resolves would be captured permanently. */}
+      <ErrorBoundary onError={(error) => reportError(error)}>
         <Suspense fallback={<Loader />}>
           <Routes>
             <Route path="/" element={<App />} />
@@ -111,7 +120,7 @@ function Root() {
             <Route path="/contact" element={<ContactUs />} />
           </Routes>
         </Suspense>
-      </Sentry.ErrorBoundary>
+      </ErrorBoundary>
       <Grain />
     </>
   );
