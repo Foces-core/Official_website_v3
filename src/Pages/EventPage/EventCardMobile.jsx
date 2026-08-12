@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Modal from './Modal';
 import { sanityImg, sanityBlurUrl } from '../../utils/sanityImage.js';
@@ -11,7 +11,7 @@ function EventCardMobile({ Events, priority }) {
   const { slowNetwork } = useDeviceProfile();
   const [Expanding, setExpanding] = useState(false);
 
-  const images = Events.images || [];
+  const images = useMemo(() => Events.images || [], [Events.images]);
   const imageSets = Events.imageSets || [];
   const primaryImage = images[0];
   const primarySet = imageSets[0];

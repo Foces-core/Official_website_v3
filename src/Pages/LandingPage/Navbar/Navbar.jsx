@@ -83,24 +83,40 @@ export default function Navbar() {
       }
 
       if (!current) current = 'home';
-      setCurrentItem(current);
+      // Bail out unless the active item actually changed — avoids re-rendering
+      // the navbar on every scroll tick when the section hasn't moved.
+      setCurrentItem((prev) => (prev === current ? prev : current));
+    };
+
+    // The scrollspy reads layout (getBoundingClientRect × sections + scroll
+    // height) on every scroll/mutation. Coalesce calls to one per animation
+    // frame so low-end devices don't pay layout-thrash per scroll tick — that
+    // contention is what inflates INP under CPU throttle.
+    let rafId = null;
+    const schedulePick = () => {
+      if (rafId != null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        pickActiveSection();
+      });
     };
 
     pickActiveSection();
 
-    window.addEventListener('scroll', pickActiveSection, { passive: true });
-    window.addEventListener('resize', pickActiveSection, { passive: true });
+    window.addEventListener('scroll', schedulePick, { passive: true });
+    window.addEventListener('resize', schedulePick, { passive: true });
 
     // Observe DOM mutations to pick up lazy-loaded Suspense section elements as they mount
-    const observer = new MutationObserver(pickActiveSection);
+    const observer = new MutationObserver(schedulePick);
     const mainEl = document.getElementById('main-content') || document.body;
     if (mainEl) {
       observer.observe(mainEl, { childList: true, subtree: true });
     }
 
     return () => {
-      window.removeEventListener('scroll', pickActiveSection);
-      window.removeEventListener('resize', pickActiveSection);
+      if (rafId != null) cancelAnimationFrame(rafId);
+      window.removeEventListener('scroll', schedulePick);
+      window.removeEventListener('resize', schedulePick);
       observer.disconnect();
     };
   }, [location.pathname]);
