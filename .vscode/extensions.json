@@ -3,6 +3,7 @@
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
     "bradlc.vscode-tailwindcss",
-    "editorconfig.editorconfig"
+    "editorconfig.editorconfig",
+    "ms-playwright.playwright"
   ]
 }
