@@ -32,7 +32,9 @@ import promptParadoxLeaderboard800 from '../assets/events/prompt_paradox_leaderb
 
 import javaLecture from '../assets/events/java_algorithm_lecture.webp';
 import javaLecture400 from '../assets/events/java_algorithm_lecture-400.webp';
-import javaLecture800 from '../assets/events/java_algorithm_lecture-800.webp';
+// The source is only 576px wide, so the -800 variant was byte-identical to
+// the full file (withoutEnlargement capped it). Reuse the full file instead.
+import javaLecture800 from '../assets/events/java_algorithm_lecture.webp';
 
 import { srcset } from '../utils/srcset.js';
 
