@@ -34,13 +34,7 @@ import javaLecture from '../assets/events/java_algorithm_lecture.webp';
 import javaLecture400 from '../assets/events/java_algorithm_lecture-400.webp';
 
 import { srcset } from '../utils/srcset.js';
-
-const set = (full, s800, s400) =>
-  srcset([
-    [full, 1000],
-    [s800, 800],
-    [s400, 400],
-  ]);
+import { photoTriplet } from '../utils/eventPhotos.js';
 
 export const featuredEvents = [
   {
@@ -48,13 +42,14 @@ export const featuredEvents = [
     name: 'The Prompt Paradox 2.0',
     tag: 'AI & Prompt Engineering',
     date: '21st June 2026',
-    image: promptParadoxPoster,
-    imageSet: set(promptParadoxPoster, promptParadoxPoster800, promptParadoxPoster400),
-    images: [promptParadoxPoster, promptParadoxWinners, promptParadoxLeaderboard],
-    imageSets: [
-      set(promptParadoxPoster, promptParadoxPoster800, promptParadoxPoster400),
-      set(promptParadoxWinners, promptParadoxWinners800, promptParadoxWinners400),
-      set(promptParadoxLeaderboard, promptParadoxLeaderboard800, promptParadoxLeaderboard400),
+    photos: [
+      photoTriplet(promptParadoxPoster, promptParadoxPoster800, promptParadoxPoster400),
+      photoTriplet(promptParadoxWinners, promptParadoxWinners800, promptParadoxWinners400),
+      photoTriplet(
+        promptParadoxLeaderboard,
+        promptParadoxLeaderboard800,
+        promptParadoxLeaderboard400,
+      ),
     ],
     desc: 'Test your prompt engineering mastery, solve complex AI puzzles, and break through the digital maze.',
     websiteUrl: 'https://foces-core.github.io/prompt-paradox-2/',
@@ -64,13 +59,10 @@ export const featuredEvents = [
     name: 'Agentic Coding Workshop',
     tag: 'Hands-on Workshop',
     date: '9th July 2026',
-    image: agenticCodingPoster,
-    imageSet: set(agenticCodingPoster, agenticCodingPoster800, agenticCodingPoster400),
-    images: [agenticCodingPoster, agenticMentor, agenticStudents],
-    imageSets: [
-      set(agenticCodingPoster, agenticCodingPoster800, agenticCodingPoster400),
-      set(agenticMentor, agenticMentor800, agenticMentor400),
-      set(agenticStudents, agenticStudents800, agenticStudents400),
+    photos: [
+      photoTriplet(agenticCodingPoster, agenticCodingPoster800, agenticCodingPoster400),
+      photoTriplet(agenticMentor, agenticMentor800, agenticMentor400),
+      photoTriplet(agenticStudents, agenticStudents800, agenticStudents400),
     ],
     desc: 'Empowering developers to build autonomous AI agents using cutting-edge LLMs and agent frameworks.',
   },
@@ -79,20 +71,20 @@ export const featuredEvents = [
     name: 'Coding Arena 4.0',
     tag: 'Bootcamp',
     date: '27th July - 5th Aug',
-    image: codingArenaPoster,
-    imageSet: set(codingArenaPoster, codingArenaPoster800, codingArenaPoster400),
-    images: [codingArenaPoster, javaLecture, codingArenaPhoto],
-    imageSets: [
-      set(codingArenaPoster, codingArenaPoster800, codingArenaPoster400),
+    photos: [
+      photoTriplet(codingArenaPoster, codingArenaPoster800, codingArenaPoster400),
       // java_algorithm_lecture.webp is intrinsically 576px wide — the -800
       // variant was byte-identical (withoutEnlargement capped it), and
       // declaring the 576px file at 800w/1000w would make browsers upscale
       // it. Use its true width instead.
-      srcset([
-        [javaLecture, 576],
-        [javaLecture400, 400],
-      ]),
-      set(codingArenaPhoto, codingArenaPhoto800, codingArenaPhoto400),
+      {
+        url: javaLecture,
+        srcset: srcset([
+          [javaLecture, 576],
+          [javaLecture400, 400],
+        ]),
+      },
+      photoTriplet(codingArenaPhoto, codingArenaPhoto800, codingArenaPhoto400),
     ],
     desc: 'The ultimate competitive programming and rapid prototyping battlefield at MCA Lab.',
   },

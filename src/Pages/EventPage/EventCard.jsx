@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import Modal from './Modal';
 import { prioritizeAssetFetch } from '../../utils/priorityScheduler.js';
@@ -16,19 +16,17 @@ import BlurImage from '../../Components/BlurImage/BlurImage';
 function EventCard({ Events, priority, reverse }) {
   const [Expanding, setExpanding] = useState(false);
 
-  const images = useMemo(() => Events.images || [], [Events.images]);
-  const imageSets = Events.imageSets || [];
-  const primaryImage = images[0];
-  const primarySet = imageSets[0];
+  // photos are { url, srcset } pairs (see src/utils/eventPhotos.js) — no more
+  // parallel images[i] ↔ imageSets[i] index math to get wrong.
+  const photos = Events.photos || [];
+  const primary = photos[0];
 
   // Images are already cached by the service worker (images-cache-v2,
   // CacheFirst) — the removed imageCacheManager fetched + stored every photo
   // a second time in its own cache. Only warm the browser's HTTP cache for
   // the photos the user is about to look at (modal open intent), on demand.
   const handleInteraction = () => {
-    if (images.length > 0) {
-      images.forEach((url) => prioritizeAssetFetch(url));
-    }
+    photos.forEach((photo) => prioritizeAssetFetch(photo.url));
   };
 
   return (
@@ -58,10 +56,10 @@ function EventCard({ Events, priority, reverse }) {
             }
           }}
         >
-          {primaryImage && (
+          {primary && (
             <BlurImage
-              src={primaryImage}
-              srcSet={primarySet}
+              src={primary.url}
+              srcSet={primary.srcset}
               sizes="(min-width: 768px) 50vw, 92vw"
               alt={Events.name}
               loading={priority ? 'eager' : 'lazy'}
@@ -71,19 +69,19 @@ function EventCard({ Events, priority, reverse }) {
           )}
           {/* Mobile-only photo count badge */}
           <div className="absolute bottom-2 right-2 bg-cyan-600/90 text-white text-xs font-semibold px-2.5 py-1 rounded-full backdrop-blur-sm z-10 md:hidden">
-            {images.length} Photos
+            {photos.length} Photos
           </div>
           {/* Desktop-only hover gallery prompt */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden md:flex items-end p-4 z-10">
             <span className="text-white text-sm font-medium bg-cyan-600/80 px-3 py-1.5 rounded-full backdrop-blur-sm">
-              🔍 Click to View Gallery ({images.length} Photos)
+              🔍 Click to View Gallery ({photos.length} Photos)
             </span>
           </div>
         </div>
 
-        {images.length > 1 && (
+        {photos.length > 1 && (
           <div className="hidden md:flex gap-2 overflow-x-auto pb-1">
-            {images.slice(1, 4).map((img, idx) => (
+            {photos.slice(1, 4).map((photo, idx) => (
               <div
                 key={idx}
                 role="button"
@@ -99,8 +97,8 @@ function EventCard({ Events, priority, reverse }) {
                 }}
               >
                 <BlurImage
-                  src={img}
-                  srcSet={imageSets[idx + 1]}
+                  src={photo.url}
+                  srcSet={photo.srcset}
                   sizes="80px"
                   alt={`${Events.name} gallery photo ${idx + 2}`}
                   loading="lazy"
@@ -113,7 +111,11 @@ function EventCard({ Events, priority, reverse }) {
         )}
       </div>
 
-      <Modal images={images} open={Expanding} onClose={() => setExpanding(false)} />
+      <Modal
+        images={photos.map((photo) => photo.url)}
+        open={Expanding}
+        onClose={() => setExpanding(false)}
+      />
 
       {/* Details Section */}
       <div className="w-full md:w-1/2 flex flex-col justify-between text-white space-y-3 md:space-y-4">
@@ -158,8 +160,12 @@ EventCard.propTypes = {
     name: PropTypes.string,
     date: PropTypes.string,
     websiteUrl: PropTypes.string,
-    images: PropTypes.arrayOf(PropTypes.string),
-    imageSets: PropTypes.arrayOf(PropTypes.string),
+    photos: PropTypes.arrayOf(
+      PropTypes.shape({
+        url: PropTypes.string,
+        srcset: PropTypes.string,
+      }),
+    ),
     desc: PropTypes.string,
   }).isRequired,
   priority: PropTypes.bool,

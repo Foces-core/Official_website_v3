@@ -47,8 +47,8 @@ function Events() {
               {/* Image Banner */}
               <div className="relative h-64 w-full overflow-hidden bg-gray-900">
                 <BlurImage
-                  src={evt.image}
-                  srcSet={evt.imageSet}
+                  src={evt.photos[0].url}
+                  srcSet={evt.photos[0].srcset}
                   sizes="(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 90vw"
                   alt={evt.name}
                   loading={index === 0 ? 'eager' : 'lazy'}

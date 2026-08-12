@@ -1,6 +1,6 @@
 // 'name' is handled separately (it has its own uniqueness check), so it is
 // deliberately not in this list.
-const STRING_FIELDS = ['tag', 'date', 'image', 'imageSet', 'desc'];
+const STRING_FIELDS = ['tag', 'date', 'desc'];
 
 function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim() !== '';
@@ -75,36 +75,28 @@ export function validateEvents(events) {
       problems.push(`${label}: websiteUrl must be a non-empty string when present`);
     }
 
-    const imagesValid =
-      Array.isArray(event.images) &&
-      event.images.length > 0 &&
-      event.images.every((src) => isNonEmptyString(src));
-    const imageSetsValid =
-      Array.isArray(event.imageSets) &&
-      event.imageSets.length > 0 &&
-      event.imageSets.every((src) => isNonEmptyString(src));
+    // photos are { url, srcset } pairs (src/utils/eventPhotos.js) — the pairing
+    // is structural, so no parity check is needed; only shape + width accuracy.
+    const photosValid =
+      Array.isArray(event.photos) &&
+      event.photos.length > 0 &&
+      event.photos.every(
+        (photo) =>
+          photo &&
+          typeof photo === 'object' &&
+          isNonEmptyString(photo.url) &&
+          isNonEmptyString(photo.srcset),
+      );
 
-    if (!imagesValid) {
-      problems.push(`${label}: images is not a non-empty array of strings`);
-    }
-    if (!imageSetsValid) {
-      problems.push(`${label}: imageSets is not a non-empty array of strings`);
+    if (!photosValid) {
+      problems.push(`${label}: photos must be a non-empty array of { url, srcset }`);
     } else {
-      event.imageSets.forEach((srcsetString) => {
-        const dup = findDuplicateWidth(srcsetString);
+      event.photos.forEach((photo) => {
+        const dup = findDuplicateWidth(photo.srcset);
         if (dup) {
-          problems.push(
-            `${label}: imageSet declares "${dup[0]}" at both ${dup[1]}w and ${dup[2]}w`,
-          );
+          problems.push(`${label}: photo "${dup[0]}" declared at both ${dup[1]}w and ${dup[2]}w`);
         }
       });
-    }
-    // Parity only when both arrays are structurally sound — an empty/missing
-    // array is already flagged above, no need for a redundant mismatch line.
-    if (imagesValid && imageSetsValid && event.images.length !== event.imageSets.length) {
-      problems.push(
-        `${label}: imageSets length ${event.imageSets.length} != images length ${event.images.length}`,
-      );
     }
   });
 

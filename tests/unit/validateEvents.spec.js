@@ -7,10 +7,10 @@ const baseEvent = {
   name: 'The Prompt Paradox 2.0',
   tag: 'AI & Prompt Engineering',
   date: '21st June 2026',
-  image: '/assets/poster.webp',
-  imageSet: '/assets/poster.webp 1000w',
-  images: ['/assets/a.webp', '/assets/b.webp'],
-  imageSets: ['/assets/a.webp 1000w', '/assets/b.webp 1000w'],
+  photos: [
+    { url: '/assets/a.webp', srcset: '/assets/a.webp 1000w' },
+    { url: '/assets/b.webp', srcset: '/assets/b.webp 1000w' },
+  ],
   desc: 'Test your prompt engineering mastery.',
 };
 
@@ -59,47 +59,54 @@ describe('validateEvents', () => {
     ]);
   });
 
-  it('flags an empty images array', () => {
-    expect(validateEvents([{ ...baseEvent, images: [] }])).toEqual([
-      expect.stringContaining('images'),
+  it('flags an empty photos array', () => {
+    expect(validateEvents([{ ...baseEvent, photos: [] }])).toEqual([
+      expect.stringContaining('photos'),
     ]);
   });
 
-  it('flags images/imageSets length mismatch', () => {
-    expect(validateEvents([{ ...baseEvent, imageSets: ['/assets/a.webp 1000w'] }])).toEqual([
-      expect.stringContaining('imageSets'),
+  it('flags a malformed photo entry (missing srcset)', () => {
+    expect(validateEvents([{ ...baseEvent, photos: [{ url: '/assets/a.webp' }] }])).toEqual([
+      expect.stringContaining('photos'),
     ]);
   });
 
-  it('flags a non-string entry inside images', () => {
-    expect(validateEvents([{ ...baseEvent, images: ['/assets/a.webp', 42] }])).toEqual([
-      expect.stringContaining('images'),
+  it('flags a non-object entry inside photos', () => {
+    expect(validateEvents([{ ...baseEvent, photos: ['/assets/a.webp'] }])).toEqual([
+      expect.stringContaining('photos'),
     ]);
   });
 
-  it('flags an imageSet declaring the same URL at two different widths', () => {
+  it('flags a photo declaring the same URL at two different widths', () => {
     // Regression: java_algorithm_lecture.webp (576px) was reused as both the
     // 800w and 1000w candidates — browsers would upscale the 576px file.
     expect(
       validateEvents([
         {
           ...baseEvent,
-          images: ['/assets/lecture.webp'],
-          imageSets: [
-            '/assets/lecture.webp 1000w, /assets/lecture.webp 800w, /assets/lecture-400.webp 400w',
+          photos: [
+            {
+              url: '/assets/lecture.webp',
+              srcset:
+                '/assets/lecture.webp 1000w, /assets/lecture.webp 800w, /assets/lecture-400.webp 400w',
+            },
           ],
         },
       ]),
     ).toEqual([expect.stringContaining('at both 1000w and 800w')]);
   });
 
-  it('accepts an imageSet where each URL has a single width', () => {
+  it('accepts a photo whose srcset has one width per URL', () => {
     expect(
       validateEvents([
         {
           ...baseEvent,
-          images: ['/assets/lecture.webp'],
-          imageSets: ['/assets/lecture.webp 576w, /assets/lecture-400.webp 400w'],
+          photos: [
+            {
+              url: '/assets/lecture.webp',
+              srcset: '/assets/lecture.webp 576w, /assets/lecture-400.webp 400w',
+            },
+          ],
         },
       ]),
     ).toEqual([]);
