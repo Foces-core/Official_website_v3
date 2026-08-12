@@ -66,8 +66,10 @@ pnpm build      # production build (image optimizer + PWA precache)
 ## Testing
 
 - `pnpm lint` and `pnpm build` before every PR.
-- `pnpm test` runs the Playwright E2E suite (`tests/site.spec.js`). Run
-  targeted tests when your change is scoped: `pnpm exec playwright test -g "Carousel"`.
+- `pnpm test` runs the Playwright E2E suite, split across `tests/*.spec.js`
+  by page/section so failing scenarios run in isolation. Run targeted tests
+  when your change is scoped: `pnpm exec playwright test -g "Carousel"` or
+  `pnpm exec playwright test tests/contact.spec.js`.
 - For UI changes, verify desktop + mobile viewports.
 - The repo has puppeteer **probes** in `scripts/probes/` (`wcag-probe.mjs`,
   `mobile-probe.mjs`, `carousel-probe.mjs`, `img-probe.mjs`,

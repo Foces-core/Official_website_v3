@@ -32,17 +32,20 @@ See `.env.example` for the full list of available variables and their expected v
 
 ## Scripts
 
-| Command             | Purpose                                                              |
-| ------------------- | -------------------------------------------------------------------- |
-| `pnpm dev`          | Local dev server (HMR, auto-opens the browser)                       |
-| `pnpm dev:network`  | Dev server exposed on the LAN (test from your phone)                 |
-| `pnpm build`        | Production build to `dist/` (image optimizer + PWA precache)         |
-| `pnpm preview`      | Serve `dist/` locally                                                |
-| `pnpm lint`         | ESLint over all `js`/`jsx` files                                     |
-| `pnpm format`       | Prettier format the whole repo (single quotes, 100-col, 4-space CSS) |
-| `pnpm format:check` | Verify formatting (run by CI)                                        |
-| `pnpm test`         | Playwright E2E suite (17 tests, `tests/site.spec.js`)                |
-| `pnpm test:e2e:ui`  | Playwright UI mode (interactive debugger)                            |
+| Command             | Purpose                                                                  |
+| ------------------- | ------------------------------------------------------------------------ |
+| `pnpm dev`          | Local dev server (HMR, auto-opens the browser)                           |
+| `pnpm dev:network`  | Dev server exposed on the LAN (test from your phone)                     |
+| `pnpm build`        | Production build to `dist/` (image optimizer + PWA precache)             |
+| `pnpm preview`      | Serve `dist/` locally                                                    |
+| `pnpm lint`         | ESLint over all `js`/`jsx` files                                         |
+| `pnpm format`       | Prettier format the whole repo (single quotes, 100-col, 4-space CSS)     |
+| `pnpm format:check` | Verify formatting (run by CI)                                            |
+| `pnpm lint:watch`   | ESLint in watch mode (live feedback while editing)                       |
+| `pnpm knip`         | Dead-code / unused-dependency guard                                      |
+| `pnpm clean`        | Remove generated artifacts (`dist`, `test-results`, `playwright-report`) |
+| `pnpm test`         | Playwright E2E suite (split across `tests/*.spec.js`)                    |
+| `pnpm test:e2e:ui`  | Playwright UI mode (interactive debugger)                                |
 
 ## Performance Tooling
 
@@ -83,8 +86,9 @@ The site deliberately degrades on slow networks and low-end hardware (see
 - `scripts/img-probe.mjs` — image asset checks
 - `scripts/firefox-probe.mjs` — Gecko (Firefox/Waterfox) rendering check
 
-Probes expect a local preview server (e.g. `pnpm preview`); the URL is a
-constant at the top of each script.
+Probes expect a local preview server (e.g. `pnpm preview`). All probes read
+the URL from `PREVIEW_URL` (default `http://localhost:4173`) via the shared
+`scripts/probes/constants.mjs` module.
 
 ## Contributing
 

@@ -8,3 +8,6 @@ LICENSE
 # Tooling YAML — Prettier's YAML printer would reformat them for no benefit
 .github
 .coderabbit.yaml
+
+# Session/scratch notes (transcripts, not project content)
+session-*.md

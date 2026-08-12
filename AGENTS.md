@@ -35,7 +35,7 @@ Read this before touching anything.
 - `src/utils/` — helpers: `srcset.js`, `sanityImage.js`, `keyboardLock.js`, `aosGating.js`, `DeferredAnalytics.jsx`.
 - `src/hooks/useLowPower.js` — device-profile hook driving all perf degradation.
 - `scripts/` — puppeteer probes + Lighthouse perf tests.
-- `tests/site.spec.js` — Playwright E2E suite.
+- `tests/*.spec.js` — Playwright E2E suite (split by page/section).
 - `public/`, `src/assets/` — static + optimized images.
 
 ## Architecture contract (non-negotiable)
@@ -63,7 +63,7 @@ Read this before touching anything.
 pnpm lint          # ESLint 10 flat config, no warnings expected
 pnpm format:check  # Prettier (writes with pnpm format if dirty)
 pnpm build         # production build must succeed
-pnpm test          # Playwright E2E (17 tests) — run targeted tests when scoping
+pnpm test          # Playwright E2E (tests/*.spec.js) — run targeted tests when scoping
 git diff --check   # no whitespace errors
 ```
 

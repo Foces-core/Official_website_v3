@@ -42,3 +42,4 @@ suggestions.md
 suggestions-monitor.ps1
 devserver.log
 devserver.err.log
+session-*.md
