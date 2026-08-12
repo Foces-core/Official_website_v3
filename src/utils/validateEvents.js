@@ -6,6 +6,24 @@ function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim() !== '';
 }
 
+// Parses a srcset string like "/a.webp 1000w, /a-800.webp 800w" and returns
+// the first URL that is declared with two DIFFERENT width descriptors (e.g. a
+// 576px file reused as both the 800w and 1000w candidates — browsers would
+// upscale it). Returns null when every URL has a single consistent width.
+function findDuplicateWidth(srcsetString) {
+  const widthsByUrl = new Map();
+  for (const part of srcsetString.split(',')) {
+    const match = part.trim().match(/^(\S+)\s+(\d+)w$/);
+    if (!match) continue;
+    const [, url, width] = match;
+    if (widthsByUrl.has(url) && widthsByUrl.get(url) !== width) {
+      return [url, widthsByUrl.get(url), width];
+    }
+    widthsByUrl.set(url, width);
+  }
+  return null;
+}
+
 /**
  * Validates the event data shape (src/data/events.js). Returns an array of
  * human-readable problem strings; an empty array means the list is valid.
@@ -71,6 +89,15 @@ export function validateEvents(events) {
     }
     if (!imageSetsValid) {
       problems.push(`${label}: imageSets is not a non-empty array of strings`);
+    } else {
+      event.imageSets.forEach((srcsetString) => {
+        const dup = findDuplicateWidth(srcsetString);
+        if (dup) {
+          problems.push(
+            `${label}: imageSet declares "${dup[0]}" at both ${dup[1]}w and ${dup[2]}w`,
+          );
+        }
+      });
     }
     // Parity only when both arrays are structurally sound — an empty/missing
     // array is already flagged above, no need for a redundant mismatch line.

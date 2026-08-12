@@ -76,4 +76,32 @@ describe('validateEvents', () => {
       expect.stringContaining('images'),
     ]);
   });
+
+  it('flags an imageSet declaring the same URL at two different widths', () => {
+    // Regression: java_algorithm_lecture.webp (576px) was reused as both the
+    // 800w and 1000w candidates — browsers would upscale the 576px file.
+    expect(
+      validateEvents([
+        {
+          ...baseEvent,
+          images: ['/assets/lecture.webp'],
+          imageSets: [
+            '/assets/lecture.webp 1000w, /assets/lecture.webp 800w, /assets/lecture-400.webp 400w',
+          ],
+        },
+      ]),
+    ).toEqual([expect.stringContaining('at both 1000w and 800w')]);
+  });
+
+  it('accepts an imageSet where each URL has a single width', () => {
+    expect(
+      validateEvents([
+        {
+          ...baseEvent,
+          images: ['/assets/lecture.webp'],
+          imageSets: ['/assets/lecture.webp 576w, /assets/lecture-400.webp 400w'],
+        },
+      ]),
+    ).toEqual([]);
+  });
 });

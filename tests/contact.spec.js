@@ -70,4 +70,17 @@ test.describe('Contact form validation', () => {
       timeout: 5000,
     });
   });
+
+  test('keyboard Enter submits the form instead of moving focus', async ({ page }) => {
+    // Regression: handleKeyDown used to preventDefault() Enter in every
+    // single-line input to advance focus — which also blocked native form
+    // submission, so a keyboard user could never submit with Enter.
+    await page.goto('/contact', { waitUntil: 'networkidle' });
+    await fillValid(page);
+    await page.focus('#name');
+    await page.keyboard.press('Enter');
+    await expect(page.getByText(/Opening your email app to send message/)).toBeVisible({
+      timeout: 5000,
+    });
+  });
 });

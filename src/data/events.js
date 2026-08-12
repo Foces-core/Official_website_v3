@@ -32,9 +32,6 @@ import promptParadoxLeaderboard800 from '../assets/events/prompt_paradox_leaderb
 
 import javaLecture from '../assets/events/java_algorithm_lecture.webp';
 import javaLecture400 from '../assets/events/java_algorithm_lecture-400.webp';
-// The source is only 576px wide, so the -800 variant was byte-identical to
-// the full file (withoutEnlargement capped it). Reuse the full file instead.
-import javaLecture800 from '../assets/events/java_algorithm_lecture.webp';
 
 import { srcset } from '../utils/srcset.js';
 
@@ -87,7 +84,14 @@ export const featuredEvents = [
     images: [codingArenaPoster, javaLecture, codingArenaPhoto],
     imageSets: [
       set(codingArenaPoster, codingArenaPoster800, codingArenaPoster400),
-      set(javaLecture, javaLecture800, javaLecture400),
+      // java_algorithm_lecture.webp is intrinsically 576px wide — the -800
+      // variant was byte-identical (withoutEnlargement capped it), and
+      // declaring the 576px file at 800w/1000w would make browsers upscale
+      // it. Use its true width instead.
+      srcset([
+        [javaLecture, 576],
+        [javaLecture400, 400],
+      ]),
       set(codingArenaPhoto, codingArenaPhoto800, codingArenaPhoto400),
     ],
     desc: 'The ultimate competitive programming and rapid prototyping battlefield at MCA Lab.',

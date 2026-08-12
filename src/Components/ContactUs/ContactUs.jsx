@@ -134,18 +134,12 @@ function ContactUs() {
     setFormData((prevData) => ({ ...prevData, [name]: value }));
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      if (e.target.tagName === 'TEXTAREA') return;
-      e.preventDefault();
-      const formInputs = e.target.form.elements;
-      const currentInputIndex = Array.from(formInputs).indexOf(e.target);
-      const nextInput = formInputs[currentInputIndex + 1];
-      if (nextInput) {
-        nextInput.focus();
-      }
-    }
-  };
+  // NOTE: no Enter-to-advance keydown interception here anymore — it called
+  // preventDefault() on Enter in every single-line input, which blocked the
+  // native form submission entirely: a keyboard user could never submit with
+  // Enter (only Tab-to-button + Enter). Diagnosed by probe; restored the
+  // standard expectation that Enter in a text input submits the form. The
+  // textarea keeps its native newline behavior (no handler attached).
 
   return (
     <div
@@ -297,7 +291,6 @@ function ContactUs() {
                       id="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      onKeyDown={handleKeyDown}
                       className="w-full rounded-lg px-4 py-2 mt-2 bg-white text-black"
                     />
                   </div>
@@ -313,7 +306,6 @@ function ContactUs() {
                       id="email"
                       value={formData.email}
                       onChange={handleInputChange}
-                      onKeyDown={handleKeyDown}
                       className="w-full rounded-lg px-4 py-2 mt-2 bg-white text-black"
                     />
                   </div>
@@ -329,7 +321,6 @@ function ContactUs() {
                       id="subject"
                       value={formData.subject}
                       onChange={handleInputChange}
-                      onKeyDown={handleKeyDown}
                       className="w-full rounded-lg px-4 py-2 mt-2 bg-white text-black"
                     />
                   </div>
@@ -345,7 +336,6 @@ function ContactUs() {
                       placeholder=""
                       value={formData.message}
                       onChange={handleInputChange}
-                      onKeyDown={handleKeyDown}
                       className="w-full rounded-lg px-4 py-2 mt-2 bg-white text-black"
                     />
                     <div className="flex justify-end mt-4">
