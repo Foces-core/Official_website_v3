@@ -11,24 +11,6 @@
           "value": "public, max-age=31536000, immutable"
         }
       ]
-    },
-    {
-      "source": "/sanity/images/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/sanity/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, s-maxage=300, stale-while-revalidate=600"
-        }
-      ]
     }
   ],
   "rewrites": [
@@ -36,7 +18,6 @@
     { "source": "/Events", "destination": "/index.html" },
     { "source": "/contact", "destination": "/index.html" },
     { "source": "/Contact", "destination": "/index.html" },
-    { "source": "/sanity/(.*)", "destination": "https://n7hx0w67.apicdn.sanity.io/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
