@@ -1,7 +1,11 @@
 import puppeteer from 'puppeteer-core';
-import { PREVIEW_URL } from './constants.mjs';
+import { PREVIEW_URL, resolveChrome } from './constants.mjs';
 
-const CHROME = 'C:/Users/sebin/AppData/Local/Chromium/Application/chrome.exe';
+const chromePath = resolveChrome();
+if (!chromePath) {
+  console.error('Chrome not found — set CHROME_PATH to the Chrome/Chromium binary.');
+  process.exit(1);
+}
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -12,7 +16,7 @@ const check = (name, ok, detail = '') => {
 };
 
 const browser = await puppeteer.launch({
-  executablePath: CHROME,
+  executablePath: chromePath,
   headless: 'new',
   args: ['--no-sandbox', '--window-size=1280,800'],
 });
@@ -127,11 +131,13 @@ try {
   check('modal openable', opened);
   await sleep(800);
 
-  const modal = await page2.$('[role="dialog"]').catch(() => null);
-  check('modal has role=dialog + aria-modal', !!modal);
+  // The lightbox root (.yarl__root) — the PWA InstallPrompt also renders
+  // role=dialog, so a generic dialog query would match the wrong element.
+  const modal = await page2.$('.yarl__root').catch(() => null);
+  check('modal (lightbox) openable', !!modal);
 
   const dialogInfo = await page2.evaluate(() => {
-    const d = document.querySelector('[role="dialog"]');
+    const d = document.querySelector('.yarl__root');
     return d
       ? { ariaModal: d.getAttribute('aria-modal'), label: d.getAttribute('aria-label') }
       : null;
@@ -143,7 +149,7 @@ try {
   );
 
   const focusInDialog = await page2.evaluate(() => {
-    const d = document.querySelector('[role="dialog"]');
+    const d = document.querySelector('.yarl__root');
     return d && d.contains(document.activeElement);
   });
   check('focus moved into dialog on open', focusInDialog);
@@ -154,7 +160,7 @@ try {
   await page2.keyboard.press('Tab');
   await sleep(200);
   const stillInDialog = await page2.evaluate(() => {
-    const d = document.querySelector('[role="dialog"]');
+    const d = document.querySelector('.yarl__root');
     return d && d.contains(document.activeElement);
   });
   check('Tab is trapped inside dialog', stillInDialog);
@@ -163,16 +169,16 @@ try {
   // labels its close button "Close")
   await page2.click('[aria-label="Close"]').catch(() => {});
   await sleep(400);
-  const closed = await page2.$('[role="dialog"]').catch(() => null);
+  const closed = await page2.$('.yarl__root').catch(() => null);
   check('close button closes dialog', !closed);
   const restored = await page2.evaluate(() => {
-    const d = document.querySelector('[role="dialog"]');
+    const d = document.querySelector('.yarl__root');
     return !d; // dialog gone
   });
   check('dialog removed from DOM', restored);
 
   const triggerFocused = await page2.evaluate(() => {
-    const d = document.querySelector('[role="dialog"]');
+    const d = document.querySelector('.yarl__root');
     return !d && !!document.activeElement && document.activeElement !== document.body;
   });
   check('focus restored to trigger after close', triggerFocused);
@@ -185,11 +191,11 @@ try {
     if (poster) poster.click();
   });
   await sleep(800);
-  const modal2 = await page2.$('[role="dialog"]').catch(() => null);
+  const modal2 = await page2.$('.yarl__root').catch(() => null);
   check('modal reopens', !!modal2);
   await page2.keyboard.press('Escape');
   await sleep(400);
-  const closed2 = await page2.$('[role="dialog"]').catch(() => null);
+  const closed2 = await page2.$('.yarl__root').catch(() => null);
   check('Escape closes dialog', !closed2);
 
   const navErrors = errors.filter(

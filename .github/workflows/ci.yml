@@ -98,6 +98,49 @@ jobs:
           path: playwright-report
           retention-days: 7
 
+  probes:
+    name: Probes (structural checks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.3.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers (Chromium used by the probes)
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build + serve preview
+        run: |
+          pnpm build
+          nohup pnpm exec vite preview --port 4173 --strictPort > /tmp/preview.log 2>&1 &
+          for i in $(seq 1 60); do
+            curl -s -o /dev/null http://localhost:4173/ && break
+            sleep 1
+          done
+          curl -s -o /dev/null http://localhost:4173/ && echo "preview up" || (echo "preview failed"; cat /tmp/preview.log; exit 1)
+
+      - name: Run structural probes
+        run: |
+          # Point the puppeteer-core probes at Playwright's installed Chromium.
+          export CHROME_PATH=$(node -e "console.log(require('@playwright/test').chromium.executablePath())")
+          pnpm probe:wcag
+          pnpm probe:carousel
+          pnpm probe:mobile
+
   # Enforce Conventional Commits on every PR (same rules as the local
   # husky commit-msg hook, see commitlint.config.cjs).
   commitlint:

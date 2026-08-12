@@ -18,7 +18,7 @@ Verification scripts that run against a live server (preview or dev). All probes
 | -------------------- | ---------------------------------------------------------------------------------------------------- |
 | `carousel-probe.mjs` | Featuring & Events modal carousel: arrows, infinite loop, hover glow, no "Register Now"              |
 | `wcag-probe.mjs`     | WCAG/ARIA checks: skip link, roving tabindex, modal focus trap/restore, navbar theme, console errors |
-| `mobile-probe.mjs`   | Mobile viewport: nav color, hamburger menu, modal, cursor blob tracking                              |
+| `mobile-probe.mjs`   | Mobile viewport: nav color, hamburger menu, modal                                                    |
 | `firefox-probe.mjs`  | Gecko (Firefox/Waterfox) rendering + CPU throttling                                                  |
 | `img-probe.mjs`      | Image asset checks: webp delivery, broken images, font loading                                       |
 | `perf-probe.mjs`     | Single-profile Lighthouse-style metrics (LCP, TBT, CLS, transfer size)                               |
@@ -31,19 +31,43 @@ Verification scripts that run against a live server (preview or dev). All probes
 pnpm build && pnpm preview
 
 # In another terminal, run a probe (uses PREVIEW_URL=http://localhost:4173 by default)
-node scripts/probes/wcag-probe.mjs
-node scripts/probes/carousel-probe.mjs
-node scripts/probes/mobile-probe.mjs
-node scripts/probes/firefox-probe.mjs
-node scripts/probes/img-probe.mjs
+pnpm probe:wcag
+pnpm probe:carousel
+pnpm probe:mobile
+pnpm probe:img
+pnpm probe:firefox
 
 # Override the target URL
-PREVIEW_URL=https://focess-five.vercel.app node scripts/probes/wcag-probe.mjs
+PREVIEW_URL=https://focess-five.vercel.app pnpm probe:wcag
 
-# Run perf test against a specific URL
-node scripts/probes/perf-test.mjs https://focess-five.vercel.app/
-# Or run a single profile
-PERF_ONLY=mobile-4g node scripts/probes/perf-test.mjs
+# Perf (manual lab measurement — see below)
+pnpm probe:perf                 # full multi-profile Lighthouse run
+PERF_ONLY=mobile-4g pnpm probe:perf
+pnpm probe:perf:quick           # single-profile puppeteer metrics
+```
+
+### Browser resolution (portable)
+
+All probes resolve Chrome automatically, in this order:
+
+1. `CHROME_PATH` env var (when set),
+2. Playwright's installed Chromium (`~/.cache/ms-playwright/…`),
+3. common system install paths.
+
+Firefox is resolved via `FIREFOX_PATH` env var, then system paths
+(`firefox-probe.mjs` only). No hardcoded user paths remain — the same scripts
+run on any machine and in CI (the `probes` CI job uses Playwright's Chromium).
+
+### Performance probes are MANUAL
+
+`perf-test.mjs` and `perf-probe.mjs` throttle the CPU (2x–8x), cold-cache the
+network, and take multiple samples — under shared CI CPU contention the
+numbers are noise, not signal. They are deliberately **not** wired into CI;
+run them locally on a quiet machine to compare real changes:
+
+```bash
+pnpm probe:perf            # all profiles (slowest)
+PERF_ONLY=mobile-3g pnpm probe:perf   # one profile
 ```
 
 ### Shared Constants
@@ -51,7 +75,7 @@ PERF_ONLY=mobile-4g node scripts/probes/perf-test.mjs
 All probes import from `scripts/probes/constants.mjs`:
 
 ```js
-import { PREVIEW_URL, DEV_URL } from './constants.mjs';
+import { PREVIEW_URL, DEV_URL, resolveChrome } from './constants.mjs';
 ```
 
 ## Maintenance (`scripts/maintenance/`)
@@ -84,4 +108,6 @@ One-off generators and asset preparation scripts. These are **not** part of the 
 node scripts/maintenance/prepare-event-assets.mjs
 ```
 
-These scripts use local Chromium paths and are environment-specific. Adjust paths as needed.
+The probes resolve their browser via `CHROME_PATH` / `FIREFOX_PATH` env vars
+or system installs (see above); the maintenance scripts are run manually and
+may still need local paths.

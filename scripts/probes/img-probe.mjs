@@ -1,11 +1,15 @@
 import puppeteer from 'puppeteer-core';
-import { PREVIEW_URL } from './constants.mjs';
+import { PREVIEW_URL, resolveChrome } from './constants.mjs';
 
-const CHROME = 'C:/Users/sebin/AppData/Local/Chromium/Application/chrome.exe';
+const chromePath = resolveChrome();
+if (!chromePath) {
+  console.error('Chrome not found — set CHROME_PATH to the Chrome/Chromium binary.');
+  process.exit(1);
+}
 const browser = await puppeteer.launch({
   headless: 'new',
   args: ['--no-sandbox'],
-  executablePath: CHROME,
+  executablePath: chromePath,
 });
 const page = await browser.newPage();
 await page.setViewport({ width: 1440, height: 900 });

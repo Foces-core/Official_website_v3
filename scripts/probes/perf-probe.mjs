@@ -1,18 +1,26 @@
 import puppeteer from 'puppeteer-core';
-import { PREVIEW_URL } from './constants.mjs';
+import os from 'node:os';
+import path from 'node:path';
+import { PREVIEW_URL, resolveChrome } from './constants.mjs';
 
 const URL = process.argv[2] || PREVIEW_URL;
 const NAME = process.argv[3] || 'SITE';
 const THROTTLE = parseFloat(process.argv[4] || '4');
 
+const chromePath = resolveChrome();
+if (!chromePath) {
+  console.error('Chrome not found — set CHROME_PATH to the Chrome/Chromium binary.');
+  process.exit(1);
+}
+
 const b = await puppeteer.launch({
-  executablePath: 'C:/Users/sebin/AppData/Local/Chromium/Application/chrome.exe',
+  executablePath: chromePath,
   headless: 'new',
   args: [
     '--no-sandbox',
     '--disable-extensions',
     '--disable-component-extensions-with-background-pages',
-    '--user-data-dir=C:/Users/sebin/AppData/Local/Temp/opencode/lh-prof3',
+    `--user-data-dir=${path.join(os.tmpdir(), 'foces-lh-prof')}`,
   ],
 });
 const pg = await b.newPage();

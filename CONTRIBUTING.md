@@ -74,7 +74,11 @@ pnpm build      # production build (image optimizer + PWA precache)
 - The repo has puppeteer **probes** in `scripts/probes/` (`wcag-probe.mjs`,
   `mobile-probe.mjs`, `carousel-probe.mjs`, `img-probe.mjs`,
   `firefox-probe.mjs`, `perf-probe.mjs`, `perf-test.mjs`) — run them against
-  `pnpm preview` when you touch navigation, modals, carousels, or a11y. See
+  `pnpm preview` when you touch navigation, modals, carousels, or a11y. The
+  fast structural probes (`probe:wcag`, `probe:carousel`, `probe:mobile`) run
+  in CI; the perf probes are manual lab measurements (CPU throttling makes
+  them noisy under CI contention). Chrome/Firefox are resolved portably via
+  `CHROME_PATH`/`FIREFOX_PATH` or the installed Playwright browser. See
   [scripts/README.md](scripts/README.md) for details.
 
 ## Automation you can rely on

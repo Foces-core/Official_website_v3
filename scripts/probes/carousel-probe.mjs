@@ -1,8 +1,13 @@
 import puppeteer from 'puppeteer-core';
-import { PREVIEW_URL } from './constants.mjs';
+import { PREVIEW_URL, resolveChrome } from './constants.mjs';
 
+const chromePath = resolveChrome();
+if (!chromePath) {
+  console.error('Chrome not found — set CHROME_PATH to the Chrome/Chromium binary.');
+  process.exit(1);
+}
 const b = await puppeteer.launch({
-  executablePath: 'C:/Users/sebin/AppData/Local/Chromium/Application/chrome.exe',
+  executablePath: chromePath,
   headless: 'new',
   args: ['--no-sandbox'],
 });

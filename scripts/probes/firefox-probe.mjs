@@ -1,14 +1,20 @@
 import puppeteer from 'puppeteer-core';
-import { PREVIEW_URL } from './constants.mjs';
+import os from 'node:os';
+import path from 'node:path';
+import { PREVIEW_URL, resolveFirefox } from './constants.mjs';
 
-const FF = 'C:/Program Files/Waterfox/waterfox.exe';
+const FF = process.env.FIREFOX_PATH ?? resolveFirefox();
+if (!FF) {
+  console.error('Firefox not found — set FIREFOX_PATH to the Firefox binary.');
+  process.exit(1);
+}
 let browser;
 try {
   browser = await puppeteer.launch({
     headless: true,
     executablePath: FF,
     product: 'firefox',
-    userDataDir: 'C:/Users/sebin/AppData/Local/Temp/opencode/ffprobe-profile',
+    userDataDir: process.env.FIREFOX_PROFILE_DIR ?? path.join(os.tmpdir(), 'foces-ffprobe'),
     args: ['--no-sandbox'],
   });
 } catch (e) {
