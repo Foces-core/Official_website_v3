@@ -183,9 +183,13 @@ export default defineConfig({
             if (id.includes('/node_modules/swiper/')) {
               return 'swiper-vendor';
             }
-            if (id.includes('/node_modules/react-icons/')) {
-              return 'icons-vendor';
-            }
+            // NOTE: no react-icons grouping on purpose. Every react-icons
+            // consumer (ContactUs, Footer, Featuring) is lazy, so forcing an
+            // eager 'icons-vendor' chunk hoisted its shared React core into
+            // the entry graph — ~5KB gz of duplication for zero benefit.
+            // Trade-off: the small IconContext/IconBase core now ships once
+            // per lazy chunk that uses icons — deliberate, keep it out of the
+            // eager graph.
           }
         },
       },

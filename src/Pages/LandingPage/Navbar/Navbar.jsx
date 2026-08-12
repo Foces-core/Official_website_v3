@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router';
 import { createPortal } from 'react-dom';
-import { AiOutlineClose } from 'react-icons/ai';
 import toggleW from '../../../assets/ButtonW.svg';
 import toggleB from '../../../assets/ButtonB.svg';
 import LogoWhite from '../../../assets/FOCES White.svg';
@@ -402,7 +401,22 @@ export default function Navbar() {
           onClick={toggleItems}
           aria-label="Close menu"
         >
-          <AiOutlineClose size={24} color={isDark ? '#fff' : '#000'} />
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={isDark ? 'text-white' : 'text-black'}
+          >
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
         </button>
       )}
       {navItems.map((item) => (

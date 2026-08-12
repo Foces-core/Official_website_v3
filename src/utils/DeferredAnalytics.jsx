@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { SpeedInsights } from '@vercel/speed-insights/react';
 
 /**
  * Analytics must never compete with the real page for network or CPU on first
@@ -7,9 +6,14 @@ import { SpeedInsights } from '@vercel/speed-insights/react';
  * the user has interacted (or scrolled), so on 2G/3G the FOCES content wins
  * every time. If the tab is idle for a long time it still boots once the user
  * touches the page.
+ *
+ * The @vercel/speed-insights/react module itself is also dynamically imported
+ * here (only once `ready` flips) rather than statically, so its code + React
+ * share never ship in the initial JS bundle.
  */
 export default function DeferredAnalytics() {
   const [ready, setReady] = useState(false);
+  const [Insights, setInsights] = useState(null);
 
   useEffect(() => {
     let done = false;
@@ -42,6 +46,19 @@ export default function DeferredAnalytics() {
     return cleanup;
   }, []);
 
-  if (!ready) return null;
-  return <SpeedInsights />;
+  useEffect(() => {
+    if (!ready || Insights) return;
+    let cancelled = false;
+    import('@vercel/speed-insights/react')
+      .then((m) => {
+        if (!cancelled) setInsights(() => m.SpeedInsights);
+      })
+      .catch(() => {}); // analytics is best-effort — never break the app
+    return () => {
+      cancelled = true;
+    };
+  }, [ready, Insights]);
+
+  if (!ready || !Insights) return null;
+  return <Insights />;
 }
