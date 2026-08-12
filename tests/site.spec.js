@@ -12,12 +12,14 @@ async function waitForLoaderGone(page) {
   await expect
     .poll(async () => {
       const phase = await page.evaluate(() => {
-        const loader = document.querySelector('.fixed.inset-0.z-\\[100\\]');
-        return loader ? getComputedStyle(loader).opacity : 'gone';
+        // Static inline boot splash — while it's up its fixed inset-0 z-100
+        // overlay swallows every click.
+        const splash = document.getElementById('boot-splash');
+        return splash && !splash.classList.contains('is-fading') ? '1' : 'gone';
       });
       return phase;
     })
-    .not.toBe('1')
+    .toBe('gone')
     .catch(() => {});
   await page.waitForTimeout(300);
 }

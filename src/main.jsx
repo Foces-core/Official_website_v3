@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components -- entry file: no exports, fast-refresh irrelevant */
-import React, { Suspense, useState, useEffect, useRef } from 'react';
+import React, { Suspense, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router';
 import * as Sentry from '@sentry/react';
@@ -44,47 +44,51 @@ function ScrollToTop() {
 }
 
 /**
- * First-load branded loader: the coffee mug + FOCES logo covers the very
- * first paint (while the app boots underneath), then fades out. It only runs
- * once per full page load — never on client-side navigation — and it lasts
- * exactly as long as the boot needs: no fixed duration.
+ * First-load boot splash: a static, inline splash in index.html covers first
+ * paint from the HTML document (so FCP does not wait on the JS bundle). React
+ * only drives its dismissal — once the boot is genuinely ready, or a failsafe
+ * elapses, it fades out and removes the element. It only runs once per full
+ * page load — never on client-side navigation.
+ *
+ * Slow/low-end devices (ADR-0001) skip the splash: it is removed immediately,
+ * not painted.
  */
 function Root() {
-  // First-load loader info screen: displayed for all users (including reduced motion)
-  // Reduced-motion users get a static mug & loading text (handled in Loader.css).
   const { slowNetwork } = useDeviceProfile();
-  const [loaderPhase, setLoaderPhase] = useState(
-    () => (slowNetwork ? 'gone' : 'show'), // 'show' -> 'fade' -> 'gone'
-  );
-  const hiddenRef = useRef(slowNetwork);
+  const hiddenRef = useRef(false);
 
   useEffect(() => {
-    if (slowNetwork) return;
+    const splash = document.getElementById('boot-splash');
+    if (!splash) return;
+
+    if (slowNetwork) {
+      // ADR-0001: slow/low-end devices get no splash — drop it immediately.
+      splash.remove();
+      return;
+    }
 
     let disposed = false;
     const hide = () => {
       if (disposed || hiddenRef.current) return;
       hiddenRef.current = true; // idempotent — many triggers, one fade-out
-      setLoaderPhase('fade');
+      splash.classList.add('is-fading');
       setTimeout(() => {
-        if (!disposed) setLoaderPhase('gone');
-      }, 700); // matches duration-700
+        if (!disposed) splash.remove();
+      }, 700); // matches #boot-splash transition duration
     };
 
-    // The loader lasts only as long as the boot genuinely needs:
-    //  1. hero fonts + first paint landed AND a minimum 2.5s branding delay, or
-    //  2. the whole page finished loading (window 'load') AND the min delay, or
-    //  3. a failsafe at 6s so a stalled resource can never block the page
+    // The splash lasts only as long as the boot genuinely needs:
+    //  1. hero fonts + first paint landed, or
+    //  2. the whole page finished loading (window 'load'), or
+    //  3. a failsafe at 5s so a stalled resource can never block the page
     const paint = () =>
       new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     const fonts = document.fonts ? document.fonts.ready : Promise.resolve();
-    const minDelay = new Promise((resolve) => setTimeout(resolve, 2500));
-    Promise.all([fonts, paint(), minDelay]).then(hide);
+    Promise.all([fonts, paint()]).then(hide);
 
-    // window 'load' also gated behind the minimum delay
-    const onLoad = () => minDelay.then(hide);
+    const onLoad = () => hide();
     window.addEventListener('load', onLoad, { once: true });
-    const failsafe = setTimeout(hide, 6000);
+    const failsafe = setTimeout(hide, 5000);
 
     return () => {
       disposed = true;
@@ -95,16 +99,6 @@ function Root() {
 
   return (
     <>
-      {loaderPhase !== 'gone' && (
-        <div
-          className={`fixed inset-0 z-[100] bg-[#101011] flex items-center justify-center transition-opacity duration-700 ${
-            loaderPhase === 'fade' ? 'opacity-0 pointer-events-none' : 'opacity-100'
-          }`}
-          aria-hidden={loaderPhase === 'fade'}
-        >
-          <Loader />
-        </div>
-      )}
       <Sentry.ErrorBoundary
         fallback={({ error, resetError }) => (
           <ErrorFallback error={error} resetError={resetError} />
