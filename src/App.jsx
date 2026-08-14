@@ -1,13 +1,18 @@
 import './App.css';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import 'aos/dist/aos.css';
+import { Suspense, useEffect } from 'react';
 import SectionSkeleton from './Components/SectionSkeleton/SectionSkeleton';
 import ScrollGate from './Components/ScrollGate/ScrollGate';
 import HeroSection from './Pages/LandingPage/HeroSection/HeroSection';
 import Navbar from './Pages/LandingPage/Navbar/Navbar';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
 import { useLocation } from 'react-router';
-import { aosDisabled } from './utils/aosGating.js';
+import { initAOS } from './utils/aosGating.js';
+import { lazyWithRetry } from './utils/lazyWithRetry.js';
+import {
+  targetIdFromLocation,
+  shouldScrollToTarget,
+  timedOut,
+} from './utils/scrollToSectionLogic.js';
 
 // Below-the-fold sections are code-split: the heavy Swiper chunk (used by
 // Featuring + Execom) and the cube logic only download once the user scrolls
@@ -20,48 +25,46 @@ import { aosDisabled } from './utils/aosGating.js';
 // boot. Each section gets its own boundary; the two Swiper sections are
 // additionally wrapped in <ScrollGate>, which keeps them unmounted (and their
 // chunks undownloaded) until the user scrolls near them.
-const AboutUs = lazy(() => import('./Components/AboutUs/AboutUs'));
-const Featuring = lazy(() => import('./Pages/LandingPages/Featuring'));
-const Events = lazy(() => import('./Pages/LandingPages/Events'));
-const Execom = lazy(() => import('./Components/Execom/Execom'));
-const Footer = lazy(() => import('./Pages/LandingPage/Footer/Footer'));
+// Below-the-fold sections load through lazyWithRetry (same as the routes): a
+// chunk that fails to load — stale deployment hash, a network blip, or a
+// backgrounded tab that iOS evicted from memory — is retried once and then
+// recovered with a single clean reload instead of surfacing the error
+// fallback (see docs/adr/0008).
+const AboutUs = lazyWithRetry(() => import('./Components/AboutUs/AboutUs'));
+const Featuring = lazyWithRetry(() => import('./Pages/LandingPages/Featuring'));
+const Events = lazyWithRetry(() => import('./Pages/LandingPages/Events'));
+const Execom = lazyWithRetry(() => import('./Components/Execom/Execom'));
+const Footer = lazyWithRetry(() => import('./Pages/LandingPage/Footer/Footer'));
 
 // AOS hides [data-aos] elements (opacity/transform) until they scroll into
 // view. Init runs at module scope, before React renders, so when the animation
 // gate is active (reduced motion / low-end device) AOS finds no elements to
 // unhide and never registers its observer — leaving every [data-aos] element
-// stuck invisible. So when gated, we tag <body> and CSS force-shows all
+// stuck invisible. So when gated, initAOS tags <body> and CSS force-shows all
 // [data-aos] content (including anything mounted later, e.g. lazy routes).
-const aosGated = aosDisabled();
-if (document.body) {
-  document.body.classList.toggle('aos-disabled', aosGated);
-}
-AOS.init({
-  once: true,
-  disable: aosGated,
-});
+initAOS();
 
 function App() {
   const location = useLocation();
-  const [found, setFound] = useState(false);
 
   const pageH1 = <h1 className="sr-only">FOCES - Forum of Computer Engineering Students</h1>;
 
   useEffect(() => {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const targetId = location.state?.id || (location.hash ? location.hash.replace('#', '') : null);
+    const targetId = targetIdFromLocation(location.state, location.hash);
     if (!targetId) return;
 
     let cancelled = false;
+    let scrolled = false; // closure-local, not state — no re-render, no polling re-run
     let observer = null;
     let intervalRef = null;
     const startTime = Date.now();
 
     const scrollToTarget = () => {
       const el = document.getElementById(targetId);
-      if (el && !found) {
+      if (shouldScrollToTarget(el, scrolled)) {
         el.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' });
-        setFound(true);
+        scrolled = true;
         return true;
       }
       return false;
@@ -82,7 +85,7 @@ function App() {
     // 3. Failsafe polling for up to 5 seconds across slow network chunk downloads
     intervalRef = setInterval(() => {
       if (cancelled) return;
-      if (scrollToTarget() || Date.now() - startTime > 5000) {
+      if (scrollToTarget() || timedOut(startTime, Date.now(), 5000)) {
         clearInterval(intervalRef);
         if (observer) observer.disconnect();
       }
@@ -93,7 +96,7 @@ function App() {
       clearInterval(intervalRef);
       if (observer) observer.disconnect();
     };
-  }, [location, found]);
+  }, [location]);
 
   return (
     <div className="App bg-[#101011]">
