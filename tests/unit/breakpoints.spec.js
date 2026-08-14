@@ -6,22 +6,31 @@ import {
   isSmallScreen,
   isMobileViewport,
   isDesktopViewport,
+  isWideScreen,
   featuringSlidesPerView,
 } from '../../src/utils/breakpoints.js';
 
 // Viewport breakpoint hygiene: the numbers 500/767/768/1024 used to be
 // scattered as magic literals across Loader, Navbar, ScrollGate, HeroSection
-// and Featuring. This module is the single source of truth — and its
-// boundaries must stay in lockstep with the CSS media queries in
-// detectProfile.js (mobile: max-width 767px, desktop: min-width 1024px).
+// and Featuring. This module is the single source of truth. Two DISTINCT
+// thresholds are at play, and the tests pin both:
+//   - 767/768 — the app's own layout bucket (mobile menu, ScrollGate cache)
+//   - 1024    — detectProfile's desktop query (min-width: 1024px), used by
+//     the Vanta hero. NOT the same boundary as DESKTOP_MIN.
+// The 767 mobile edge matches detectProfile's `(max-width: 767px)`.
 
 describe('breakpoint constants agree with detectProfile CSS queries', () => {
   it('mobile boundary is 767px (max-width: 767px)', () => {
     expect(MOBILE_MAX).toBe(767);
   });
 
-  it('desktop boundary is 768px (min-width: 768px)', () => {
+  it('layout-desktop bucket is 768px (app-internal, not detectProfile)', () => {
     expect(DESKTOP_MIN).toBe(768);
+  });
+
+  it('detectProfile-desktop is 1024px, distinct from the 768px layout bucket', () => {
+    expect(isWideScreen(1023)).toBe(false);
+    expect(isWideScreen(1024)).toBe(true);
   });
 });
 
@@ -44,7 +53,7 @@ describe('isMobileViewport / isDesktopViewport — Navbar + ScrollGate buckets',
 });
 
 describe('featuringSlidesPerView — the ECHO carousel column policy', () => {
-  it('1 slide under 500px, 2 up to 750px, 3 beyond', () => {
+  it('1 slide below 500px, 2 from 500px through 749px, 3 from 750px', () => {
     expect(featuringSlidesPerView(400)).toBe(1);
     expect(featuringSlidesPerView(500)).toBe(2);
     expect(featuringSlidesPerView(749)).toBe(2);
