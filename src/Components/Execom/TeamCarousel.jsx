@@ -12,6 +12,7 @@ import {
   registerWidget,
   rectIsOnScreen,
 } from '../../utils/keyboardLock.js';
+import { normalizeIndex, wrapTarget } from './carouselWrap.js';
 import '../Execom/custom.css';
 
 /**
@@ -49,25 +50,24 @@ function TeamCarousel({
   // smear on the near-black site background.
   const cubeEffectConfig = { shadow: false, slideShadows: false };
 
-  // Seamless infinite wrap: the cube rotates 90° per face, so Swiper's loop
-  // mode can't be used — 3 copies of the cards are rendered and a 0ms jump
-  // between copies makes the wrap invisible (index 0 and 32 share the same
-  // cube orientation). The flat slider uses the same copies instead of loop
-  // mode: Swiper's loop with only ~3× slidesPerView jams at its append
-  // boundary (autoplay/keyboard advance a few times, then freeze).
+  // Seamless infinite wrap (math in carouselWrap.js): the cube rotates 90°
+  // per face, so Swiper's loop mode can't be used — 3 copies of the cards are
+  // rendered and a 0ms jump between copies makes the wrap invisible (index 0
+  // and 32 share the same cube orientation). The flat slider uses the same
+  // copies instead of loop mode: Swiper's loop with only ~3× slidesPerView
+  // jams at its append boundary (autoplay/keyboard advance a few times, then
+  // freeze).
   const handleWrap = useCallback(
     (swiper) => {
       if (!swiper) return;
       const idx = swiper.activeIndex;
-      onActiveChange(idx % total);
+      onActiveChange(normalizeIndex(idx, total));
 
-      if (idx >= total * 2) {
-        swiper.slideTo(idx - total, 0);
+      const target = wrapTarget(idx, total);
+      if (target !== null) {
+        swiper.slideTo(target, 0);
         // The 0ms jump fires no DOM transitionend, so Swiper autoplay's
         // transition-wait would stay paused forever — nudge it back on.
-        swiper.autoplay?.resume();
-      } else if (idx < total) {
-        swiper.slideTo(idx + total, 0);
         swiper.autoplay?.resume();
       }
     },
