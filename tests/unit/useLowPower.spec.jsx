@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { act } from 'react';
-import { createRoot } from 'react-dom/client';
 import useDeviceProfile from '../../src/hooks/useLowPower.js';
+import { createHarness } from './harness.jsx';
 
 // The seam is the hook's public behavior: it must return the resolved device
 // profile and re-resolve it whenever the Network Information API reports a
@@ -31,13 +31,10 @@ function Probe() {
   return <div id="profile">{JSON.stringify(profile)}</div>;
 }
 
-let root;
-let container;
+let harness;
 
 function renderProbe() {
-  act(() => {
-    root.render(<Probe />);
-  });
+  harness.render(<Probe />);
 }
 
 function readProfile() {
@@ -45,14 +42,12 @@ function readProfile() {
 }
 
 beforeEach(() => {
-  container = document.body.appendChild(document.createElement('div'));
-  root = createRoot(container);
+  harness = createHarness();
 });
 
 afterEach(() => {
   vi.unstubAllGlobals();
-  act(() => root.unmount());
-  document.body.innerHTML = '';
+  harness.unmount();
 });
 
 describe('useDeviceProfile', () => {
@@ -92,7 +87,7 @@ describe('useDeviceProfile', () => {
     const conn = makeConnection();
     vi.stubGlobal('navigator', { hardwareConcurrency: 8, deviceMemory: 8, connection: conn });
     renderProbe();
-    act(() => root.unmount());
+    harness.unmount();
     expect(conn.removeEventListener).toHaveBeenCalledWith('change', expect.any(Function));
   });
 

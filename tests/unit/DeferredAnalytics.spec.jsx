@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { act } from 'react';
-import { createRoot } from 'react-dom/client';
 import DeferredAnalytics from '../../src/utils/DeferredAnalytics.jsx';
+import { createHarness } from './harness.jsx';
 
 // The seam is the rendered output: DeferredAnalytics must render NOTHING at
 // boot (analytics must not compete with the page), then mount SpeedInsights
@@ -12,8 +12,7 @@ vi.mock('@vercel/speed-insights/react', () => ({
   SpeedInsights: () => <div id="speed-insights">analytics</div>,
 }));
 
-let root;
-let container;
+let harness;
 let idleCb;
 let idleOpts;
 
@@ -29,9 +28,7 @@ function stubIdleCallback() {
 }
 
 function renderAnalytics() {
-  act(() => {
-    root.render(<DeferredAnalytics />);
-  });
+  harness.render(<DeferredAnalytics />);
 }
 
 // arm() only runs on interaction or the safety timer, so boot tests interact
@@ -60,15 +57,13 @@ function insightsRendered() {
 }
 
 beforeEach(() => {
-  container = document.body.appendChild(document.createElement('div'));
-  root = createRoot(container);
+  harness = createHarness();
 });
 
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.useRealTimers();
-  act(() => root.unmount());
-  document.body.innerHTML = '';
+  harness.unmount();
 });
 
 describe('DeferredAnalytics — idle boot path', () => {
@@ -76,7 +71,7 @@ describe('DeferredAnalytics — idle boot path', () => {
     stubIdleCallback();
     renderAnalytics();
     expect(insightsRendered()).toBe(false);
-    expect(container.textContent).toBe('');
+    expect(harness.container.textContent).toBe('');
   });
 
   it('does not request idle or boot before any user interaction', async () => {
@@ -122,7 +117,7 @@ describe('DeferredAnalytics — idle boot path', () => {
     stubIdleCallback();
     renderAnalytics();
     const removeSpy = vi.spyOn(window, 'removeEventListener');
-    act(() => root.unmount());
+    harness.unmount();
     const removedEvents = removeSpy.mock.calls.map(([name]) => name);
     for (const type of ['pointerdown', 'keydown', 'scroll', 'touchstart']) {
       expect(removedEvents).toContain(type);
@@ -179,7 +174,7 @@ describe('DeferredAnalytics — timer fallbacks', () => {
   it('does not boot after unmount, even when the safety timer would fire', async () => {
     vi.useFakeTimers();
     renderAnalytics();
-    act(() => root.unmount());
+    harness.unmount();
     expect(() => mountAt(8000)).not.toThrow();
     expect(insightsRendered()).toBe(false);
   });
