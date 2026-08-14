@@ -128,4 +128,50 @@ test.describe('Execom mobile cube drag', () => {
 
     await expect.poll(activeIndex, { timeout: 5000 }).not.toBe(before);
   });
+
+  test('rotating the cube never scrolls the page (touch-action none + Swiper preventDefault)', async ({
+    page,
+  }) => {
+    await gotoHome(page);
+    await page.locator('#execom').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(800);
+
+    // A real phone fires pointer events for a touch drag — Swiper v14 only
+    // drives its gesture from pointer events (its touchstart handler just
+    // records the touchId and returns), so synthetic PointerEvents are the
+    // faithful stand-in. The swiper must own the gesture (computed
+    // touch-action none, overriding Swiper's pan-y) and Swiper must engage
+    // and preventDefault the horizontal drag — either alone would let a
+    // diagonal drag scroll the page mid-rotation.
+    const result = await page.evaluate(() => {
+      const swiper = document.querySelector('.execom-cube-swiper');
+      const slide =
+        swiper.querySelector('.swiper-slide-active') || swiper.querySelector('.swiper-slide');
+      const rect = slide.getBoundingClientRect();
+      const x0 = rect.left + rect.width / 2;
+      const y0 = rect.top + rect.height / 2;
+      const pointer = (type, x, y) =>
+        new PointerEvent(type, {
+          pointerId: 1,
+          pointerType: 'touch',
+          isPrimary: true,
+          clientX: x,
+          clientY: y,
+          bubbles: true,
+          cancelable: true,
+        });
+
+      slide.dispatchEvent(pointer('pointerdown', x0, y0));
+      const move = pointer('pointermove', x0 - 80, y0);
+      slide.dispatchEvent(move);
+      slide.dispatchEvent(pointer('pointerup', x0 - 80, y0));
+      return {
+        touchAction: getComputedStyle(swiper).touchAction,
+        prevented: move.defaultPrevented,
+      };
+    });
+
+    expect(result.touchAction).toBe('none');
+    expect(result.prevented).toBe(true);
+  });
 });
