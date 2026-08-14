@@ -10,12 +10,18 @@ import { createHarness } from './harness.jsx';
 
 let harness;
 
+// setInnerWidth redefines a global browser property — save the original
+// descriptor and restore it after the suite so other specs see a clean window.
+const originalInnerWidth = Object.getOwnPropertyDescriptor(window, 'innerWidth');
+
 beforeEach(() => {
   harness = createHarness();
 });
 
 afterEach(() => {
   harness.unmount();
+  if (originalInnerWidth) Object.defineProperty(window, 'innerWidth', originalInnerWidth);
+  else delete window.innerWidth;
 });
 
 function setInnerWidth(width) {
