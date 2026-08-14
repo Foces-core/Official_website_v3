@@ -1,27 +1,16 @@
 import { useEffect, useState } from 'react';
 import './InstallPrompt.css';
+import { readSessionFlag, writeSessionFlag } from '../../utils/sessionCookie.js';
 
 const TOAST_MS = 7000; // how long the toast stays before fading out
 const FADE_MS = 350; // exit animation length — keep in sync with InstallPrompt.css
 
 // Session-cookie key: once the toast has shown, it stays silent for the rest
 // of the browser session (beforeinstallprompt re-fires on every page load,
-// so without this the toast nagged on every visit). A session cookie has no
-// Max-Age/Expires — the browser clears it when the session ends, so a
-// genuinely new visit (fresh browser session) gets the prompt again.
+// so without this the toast nagged on every visit). The helpers live in
+// utils/sessionCookie.js (unit-tested); a session cookie has no
+// Max-Age/Expires, so a genuinely new visit gets the prompt again.
 const SEEN_COOKIE = 'foces-install-seen';
-
-function hasSeenPrompt() {
-  if (typeof document === 'undefined') return false;
-  // Exact match on the full `name=value` pair — startsWith would also match a
-  // hypothetical foces-install-seen=10, and this costs nothing.
-  return document.cookie.split('; ').some((c) => c === `${SEEN_COOKIE}=1`);
-}
-
-function markPromptSeen() {
-  if (typeof document === 'undefined') return;
-  document.cookie = `${SEEN_COOKIE}=1; SameSite=Lax; path=/`;
-}
 
 /**
  * InstallPrompt — PWA install toast.
@@ -50,7 +39,7 @@ export default function InstallPrompt() {
 
     const onPrompt = (e) => {
       e.preventDefault(); // suppress the default mini-infobar either way
-      if (hasSeenPrompt()) return; // already offered this session — don't nag
+      if (readSessionFlag(SEEN_COOKIE)) return; // already offered this session — don't nag
       setDeferred(e);
     };
     const onInstalled = () => setDeferred(null);
@@ -68,7 +57,7 @@ export default function InstallPrompt() {
   // ends. Idempotent, so StrictMode's double-invoke is harmless.
   useEffect(() => {
     if (!deferred || dismissed) return;
-    markPromptSeen();
+    writeSessionFlag(SEEN_COOKIE);
   }, [deferred, dismissed]);
 
   // Auto-dismiss: fade out after TOAST_MS, unmount a beat later.
