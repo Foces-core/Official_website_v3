@@ -9,7 +9,7 @@ import react from '@vitejs/plugin-react-swc';
 export default defineConfig({
   plugins: [react()],
   test: {
-    include: ['tests/unit/**/*.spec.js'],
+    include: ['tests/unit/**/*.spec.{js,jsx}'],
     environment: 'jsdom',
   },
 });
