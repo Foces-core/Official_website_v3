@@ -12,11 +12,15 @@ const prioritizedUrls = new Set();
  * @param {Function} taskFn
  * @returns {Promise<any>}
  */
-function scheduleUserBlockingTask(taskFn) {
+export function scheduleUserBlockingTask(taskFn) {
   if (typeof taskFn !== 'function') return Promise.resolve();
 
   if (typeof window !== 'undefined' && window.navigator?.scheduling?.postTask) {
-    return window.navigator.scheduling.postTask(taskFn, { priority: 'user-blocking' });
+    // A rejected task must never surface as an unhandled rejection — same
+    // containment the fallback paths below apply.
+    return window.navigator.scheduling
+      .postTask(taskFn, { priority: 'user-blocking' })
+      .catch(() => undefined);
   }
 
   return new Promise((resolve) => {
@@ -39,7 +43,9 @@ export function scheduleBackgroundTask(taskFn) {
   if (typeof taskFn !== 'function') return Promise.resolve();
 
   if (typeof window !== 'undefined' && window.navigator?.scheduling?.postTask) {
-    return window.navigator.scheduling.postTask(taskFn, { priority: 'background' });
+    return window.navigator.scheduling
+      .postTask(taskFn, { priority: 'background' })
+      .catch(() => undefined);
   }
 
   if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
@@ -54,7 +60,15 @@ export function scheduleBackgroundTask(taskFn) {
     });
   }
 
-  return new Promise((resolve) => setTimeout(() => resolve(taskFn()), 200));
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      try {
+        resolve(taskFn());
+      } catch {
+        resolve(undefined);
+      }
+    }, 200);
+  });
 }
 
 /**
