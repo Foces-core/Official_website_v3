@@ -32,21 +32,24 @@ See `.env.example` for the full list of available variables and their expected v
 
 ## Scripts
 
-| Command             | Purpose                                                                  |
-| ------------------- | ------------------------------------------------------------------------ |
-| `pnpm dev`          | Local dev server (HMR, auto-opens the browser)                           |
-| `pnpm dev:network`  | Dev server exposed on the LAN (test from your phone)                     |
-| `pnpm build`        | Production build to `dist/` (image optimizer + PWA precache)             |
-| `pnpm preview`      | Serve `dist/` locally                                                    |
-| `pnpm lint`         | ESLint over all `js`/`jsx` files                                         |
-| `pnpm format`       | Prettier format the whole repo (single quotes, 100-col, 4-space CSS)     |
-| `pnpm format:check` | Verify formatting (run by CI)                                            |
-| `pnpm lint:watch`   | ESLint in watch mode (live feedback while editing)                       |
-| `pnpm knip`         | Dead-code / unused-dependency guard                                      |
-| `pnpm clean`        | Remove generated artifacts (`dist`, `test-results`, `playwright-report`) |
-| `pnpm test`         | Playwright E2E suite (split across `tests/*.spec.js`)                    |
-| `pnpm test:unit`    | Vitest unit suite (`tests/unit/`: detectProfile, keyboardLock, srcset)   |
-| `pnpm test:e2e:ui`  | Playwright UI mode (interactive debugger)                                |
+| Command                                                                   | Purpose                                                                  |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `pnpm dev`                                                                | Local dev server (HMR, auto-opens the browser)                           |
+| `pnpm dev:network`                                                        | Dev server exposed on the LAN (test from your phone)                     |
+| `pnpm build`                                                              | Production build to `dist/` (image optimizer + PWA precache)             |
+| `pnpm preview`                                                            | Serve `dist/` locally                                                    |
+| `pnpm lint`                                                               | ESLint over all `js`/`jsx` files                                         |
+| `pnpm format`                                                             | Prettier format the whole repo (single quotes, 100-col, 4-space CSS)     |
+| `pnpm format:check`                                                       | Verify formatting (run by CI)                                            |
+| `pnpm lint:watch`                                                         | ESLint in watch mode (live feedback while editing)                       |
+| `pnpm knip`                                                               | Dead-code / unused-dependency guard                                      |
+| `pnpm clean`                                                              | Remove generated artifacts (`dist`, `test-results`, `playwright-report`) |
+| `pnpm test`                                                               | Playwright E2E suite (split across `tests/*.spec.js`)                    |
+| `pnpm test:unit`                                                          | Vitest unit suite (`tests/unit/` — pure logic + component seams via the  |
+| shared `harness.jsx`; covers detectProfile, keyboardLock, srcset, events, |
+| contact, scroll-to-section, cube physics/easter egg, carousel wrap,       |
+| session cookies, boot splash, analytics deferral)                         |
+| `pnpm test:e2e:ui`                                                        | Playwright UI mode (interactive debugger)                                |
 
 ## Performance Tooling
 
@@ -96,6 +99,10 @@ the URL from `PREVIEW_URL` (default `http://localhost:4173`) via the shared
 See [CONTRIBUTING.md](CONTRIBUTING.md) — setup, branch naming, Conventional
 Commits, PR workflow, and the performance/a11y expectations every change must
 meet.
+
+**Architecture decisions** live in [docs/adr/](docs/adr/) — touch-gesture
+ownership (0007), automatic chunk-load recovery (0008), and the pure-logic
+test seams (0009) are the recent ones.
 
 **Automation in this repo:**
 
