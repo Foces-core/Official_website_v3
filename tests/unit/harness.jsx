@@ -18,7 +18,9 @@ export function createHarness() {
     },
     unmount() {
       act(() => root.unmount());
-      document.body.innerHTML = '';
+      // Remove only our own container — clearing document.body would destroy
+      // DOM fixtures that other specs (or the spec's own setup) still own.
+      container.remove();
     },
   };
 }

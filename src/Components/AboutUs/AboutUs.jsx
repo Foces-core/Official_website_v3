@@ -18,6 +18,13 @@ import {
   isWindStopped,
   resolveWindDown,
 } from './cubePhysics.js';
+import {
+  TOAST_MS,
+  MAX_TOASTS,
+  pickEasterMessage,
+  pushToast,
+  emaVelocity,
+} from './easterEggCelebration.js';
 import { createParticleSpec, stepParticle } from './confettiSim.js';
 
 // Easter egg: if the user spins the cube rapidly (via keyboard arrows or a
@@ -38,12 +45,9 @@ const TOUCH_FIRST =
   window.matchMedia != null &&
   window.matchMedia('(pointer: coarse)').matches;
 const SPIN_CONFIG = TOUCH_FIRST ? SPIN_BARS.touch : SPIN_BARS.desktop;
-const TOAST_MS = 1700; // must outlast the .about-toast animation (1.6s)
-const MAX_TOASTS = 4; // cap concurrent toasts during a rapid-fire session
-
-// Drag + wind-down tuning lives in cubePhysics.js (pure, unit-tested) —
-// these constants used to sit here untested, where every tweak risked the
-// feel of the spin.
+// Drag + wind-down tuning lives in cubePhysics.js (pure, unit-tested); the
+// celebration policies (message pick, toast cap, velocity EMA) live in
+// easterEggCelebration.js — both used to sit here untested.
 
 const PARTICLE_COLORS = [
   '#22d3ee',
@@ -125,19 +129,12 @@ function AboutUs() {
       stack.className = 'about-toasts';
       wrap.appendChild(stack);
     }
-    while (stack.children.length >= MAX_TOASTS) {
-      stack.firstChild.remove(); // drop the oldest first so the pile stays small
-    }
-    const toast = document.createElement('div');
-    toast.className = 'about-toast';
-    // Never show the same message twice in a row (random, no repeat-until-different).
-    let msg;
-    do {
-      msg = EASTER_MESSAGES[Math.floor(Math.random() * EASTER_MESSAGES.length)];
-    } while (msg === lastToastRef.current && EASTER_MESSAGES.length > 1);
-    lastToastRef.current = msg;
-    toast.textContent = msg;
-    stack.appendChild(toast);
+    // Never show the same message twice in a row (no-repeat pick + capped
+    // stack live in easterEggCelebration.js — pure, unit-tested).
+    lastToastRef.current = pickEasterMessage(lastToastRef.current, EASTER_MESSAGES, () =>
+      Math.floor(Math.random() * EASTER_MESSAGES.length),
+    );
+    const toast = pushToast(stack, lastToastRef.current, MAX_TOASTS);
     setTimeout(() => toast.remove(), TOAST_MS);
 
     // Confetti burst + shockwave ring: scheduled with lowest background priority
@@ -423,8 +420,7 @@ function AboutUs() {
       // spin). Dragging right turns the cube right, matching ArrowRight.
       const ny = startRotY.current + (clientX - startX.current) * CUBE_PHYSICS.dragSensitivity;
       const dt = Math.max(now - lastMove.current.t, 1);
-      const k = 0.4;
-      velY.current = velY.current * (1 - k) + ((ny - lastMove.current.y) / dt) * k;
+      velY.current = emaVelocity(velY.current, ny - lastMove.current.y, dt);
       accumulateAngle(Math.abs(ny - lastMove.current.y));
       lastMove.current = { t: now, y: ny };
       rotYRef.current = ny;
