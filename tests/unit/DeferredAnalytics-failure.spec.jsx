@@ -3,9 +3,13 @@ import { act } from 'react';
 import DeferredAnalytics from '../../src/utils/DeferredAnalytics.jsx';
 import { createHarness } from './harness.jsx';
 
-// Analytics is best-effort: when the vendor chunk fails to load, the page
-// must keep working with nothing mounted and no unhandled rejection.
-vi.mock('@vercel/speed-insights/react', () => Promise.reject(new Error('offline')));
+// Analytics is best-effort PER INTEGRATION: the two vendor chunks load
+// independently (Promise.allSettled), so when one fails (e.g. the analytics
+// script is blocked offline) the other must still mount, and the page must
+// keep working — no unhandled rejection, no crash.
+vi.mock('@vercel/speed-insights/react', () => ({
+  SpeedInsights: () => <div id="speed-insights">analytics</div>,
+}));
 vi.mock('@vercel/analytics/react', () => Promise.reject(new Error('offline')));
 
 let harness;
@@ -33,12 +37,12 @@ afterEach(() => {
   harness.unmount();
 });
 
-describe('DeferredAnalytics — analytics import failure', () => {
-  it('never breaks the page: stays unmounted, no unhandled rejection, no crash', async () => {
+describe('DeferredAnalytics — one vendor import fails', () => {
+  it('mounts the working integration: Speed Insights renders, Analytics stays out', async () => {
     stubIdleCallback();
     renderAnalytics();
 
-    // Interact so the idle path arms, then let idle fire and the failed
+    // Interact so the idle path arms, then let idle fire and the failing
     // dynamic import settle. Any unhandled rejection fails the test run.
     act(() => {
       window.dispatchEvent(new Event('pointerdown'));
@@ -48,7 +52,15 @@ describe('DeferredAnalytics — analytics import failure', () => {
     });
     await act(async () => {});
 
-    expect(document.getElementById('speed-insights')).toBeNull();
+    expect(document.getElementById('speed-insights')).not.toBeNull();
+    expect(document.getElementById('vercel-analytics')).toBeNull();
+    expect(harness.container.textContent).toContain('analytics');
+  });
+
+  it('renders nothing at boot even with a failing chunk pending (no crash on mount)', async () => {
+    stubIdleCallback();
+    renderAnalytics();
     expect(harness.container.textContent).toBe('');
+    expect(document.getElementById('speed-insights')).toBeNull();
   });
 });
