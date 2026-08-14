@@ -2,8 +2,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Suspense, Component } from 'react';
 import PropTypes from 'prop-types';
 import { act } from 'react';
-import { createRoot } from 'react-dom/client';
 import { lazyWithRetry } from '../../src/utils/lazyWithRetry.js';
+import { createHarness } from './harness.jsx';
 
 // The seam is the rendered component: lazyWithRetry returns a React.lazy
 // component, so behavior is observed through Suspense rendering, not module
@@ -35,32 +35,29 @@ class Boundary extends Component {
   }
 }
 
-let root;
+let harness;
 const reload = vi.fn();
 
 beforeEach(() => {
   window.sessionStorage.clear();
   reload.mockClear();
-  root = createRoot(document.body.appendChild(document.createElement('div')));
+  harness = createHarness();
 });
 
 afterEach(() => {
-  act(() => root.unmount());
-  document.body.innerHTML = '';
+  harness.unmount();
   vi.restoreAllMocks();
 });
 
 // Render a lazy component and flush microtasks + the 300ms retry window.
 async function renderAndSettle(Lazy) {
-  act(() => {
-    root.render(
-      <Boundary>
-        <Suspense fallback={<div id="fallback">fallback</div>}>
-          <Lazy />
-        </Suspense>
-      </Boundary>,
-    );
-  });
+  harness.render(
+    <Boundary>
+      <Suspense fallback={<div id="fallback">fallback</div>}>
+        <Lazy />
+      </Suspense>
+    </Boundary>,
+  );
   await act(async () => {
     await new Promise((resolve) => setTimeout(resolve, RETRY_WAIT_MS));
   });
