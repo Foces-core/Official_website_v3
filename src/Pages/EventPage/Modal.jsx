@@ -4,17 +4,17 @@ import Counter from 'yet-another-react-lightbox/plugins/counter';
 import 'yet-another-react-lightbox/styles.css';
 import 'yet-another-react-lightbox/plugins/counter.css';
 import PropTypes from 'prop-types';
+import { acquireScrollLock } from '../../utils/scrollLock.js';
 
 function Modal({ images, open, onClose }) {
   const lightboxRef = useRef(null);
 
+  // Body scroll-lock while the lightbox is open (ref-counted — safe if the
+  // navbar drawer or another overlay is locked at the same time).
   useEffect(() => {
     if (!open) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prevOverflow;
-    };
+    const release = acquireScrollLock();
+    return release;
   }, [open]);
 
   useEffect(() => {
