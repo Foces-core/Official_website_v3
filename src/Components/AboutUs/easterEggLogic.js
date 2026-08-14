@@ -8,8 +8,12 @@
 // Touch-first phones get an easier bar: fewer spins + a wider gap, because
 // every spin costs real finger travel on a small cube. The device pick lives
 // in AboutUs.jsx (it is an input-kind heuristic, not a perf heuristic — the
-// perf ones stay in detectProfile); this module just applies whatever
-// { target, gap } it is given.
+// perf ones stay in detectProfile); this module owns the bars it applies.
+export const SPIN_BARS = {
+  touch: { target: 8, gap: 1500 },
+  desktop: { target: 20, gap: 800 },
+};
+
 export function createSpinTracker({ target, gap }) {
   let count = 0;
   let last = 0;
