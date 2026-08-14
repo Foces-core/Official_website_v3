@@ -6,6 +6,12 @@ import toggleB from '../../../assets/ButtonB.svg';
 import LogoWhite from '../../../assets/FOCES White.svg';
 import LogoGrey from '../../../assets/FOCES Black.svg';
 import useDeviceProfile from '../../../hooks/useLowPower.js';
+import {
+  pickActiveSection,
+  resolveNavAction,
+  resolveLogoAction,
+  coalesceToFrame,
+} from './navSpy.js';
 import './Navbar.css';
 
 const navItems = [
@@ -40,8 +46,13 @@ export default function Navbar() {
 
   useEffect(() => () => clearTimeout(joinTimer.current), []);
 
+  // The scrollspy DECISION (which section is under the 35% reference line,
+  // near-bottom fallback, lazy-section skipping) lives in the pure
+  // pickActiveSection (navSpy.js, unit-tested); this effect only wires it to
+  // the DOM and coalesces the reads to one per animation frame so low-end
+  // devices don't pay layout-thrash per scroll tick (INP guard, ADR-0001).
   useEffect(() => {
-    const pickActiveSection = () => {
+    const routeAwarePick = () => {
       if (location.pathname === '/contact') {
         setCurrentItem('contact');
         return;
@@ -52,55 +63,23 @@ export default function Navbar() {
       }
 
       const sectionIds = navItems.map((item) => item.id).filter((id) => id !== 'contact');
-
-      // Reference line at ~35% down the viewport
-      const refY = window.innerHeight * 0.35;
-      let current = null;
-
-      // Check if user is scrolled near the bottom of the page
-      const isNearBottom =
-        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 50;
-
-      for (const id of sectionIds) {
-        const el = document.getElementById(id);
-        if (el) {
-          const top = el.getBoundingClientRect().top;
-          if (top <= refY) {
-            current = id;
-          }
-        }
-      }
-
-      if (isNearBottom) {
-        // Find last visible section in DOM
-        for (let i = sectionIds.length - 1; i >= 0; i--) {
-          if (document.getElementById(sectionIds[i])) {
-            current = sectionIds[i];
-            break;
-          }
-        }
-      }
-
-      if (!current) current = 'home';
+      const next = pickActiveSection({
+        sectionIds,
+        scrollY: window.scrollY,
+        viewportH: window.innerHeight,
+        docHeight: document.documentElement.scrollHeight,
+        getTop: (id) => {
+          const el = document.getElementById(id);
+          return el ? el.getBoundingClientRect().top : null;
+        },
+      });
       // Bail out unless the active item actually changed — avoids re-rendering
       // the navbar on every scroll tick when the section hasn't moved.
-      setCurrentItem((prev) => (prev === current ? prev : current));
+      setCurrentItem((prev) => (prev === next ? prev : next));
     };
 
-    // The scrollspy reads layout (getBoundingClientRect × sections + scroll
-    // height) on every scroll/mutation. Coalesce calls to one per animation
-    // frame so low-end devices don't pay layout-thrash per scroll tick — that
-    // contention is what inflates INP under CPU throttle.
-    let rafId = null;
-    const schedulePick = () => {
-      if (rafId != null) return;
-      rafId = requestAnimationFrame(() => {
-        rafId = null;
-        pickActiveSection();
-      });
-    };
-
-    pickActiveSection();
+    const schedulePick = coalesceToFrame(routeAwarePick);
+    routeAwarePick();
 
     window.addEventListener('scroll', schedulePick, { passive: true });
     window.addEventListener('resize', schedulePick, { passive: true });
@@ -113,7 +92,7 @@ export default function Navbar() {
     }
 
     return () => {
-      if (rafId != null) cancelAnimationFrame(rafId);
+      schedulePick.cancel();
       window.removeEventListener('scroll', schedulePick);
       window.removeEventListener('resize', schedulePick);
       observer.disconnect();
@@ -133,50 +112,38 @@ export default function Navbar() {
 
     handleResize();
     // Coalesce scroll-driven state to one update per animation frame so the
-    // navbar doesn't re-render on every scroll tick.
-    let scrolledRaf = null;
-    const handleScroll = () => {
-      if (scrolledRaf != null) return;
-      scrolledRaf = requestAnimationFrame(() => {
-        scrolledRaf = null;
-        setIsScrolled(window.scrollY > 150);
-      });
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    // navbar doesn't re-render on every scroll tick (same coalescer as the
+    // scrollspy — navSpy.js).
+    const scheduleScrolled = coalesceToFrame(() => setIsScrolled(window.scrollY > 150));
+    window.addEventListener('scroll', scheduleScrolled, { passive: true });
     window.addEventListener('resize', handleResize, { passive: true });
 
     return () => {
-      if (scrolledRaf != null) cancelAnimationFrame(scrolledRaf);
+      scheduleScrolled.cancel();
       window.removeEventListener('resize', handleResize);
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('scroll', scheduleScrolled);
     };
   }, []);
 
   const handleItemClick = (id, e) => {
-    if (id === 'contact') {
-      // Contact is a real route, not a same-page anchor.
+    // Where the click goes (route / cross-route-anchor / same-page scroll) is
+    // a pure decision — navSpy.js, unit-tested. This handler only performs the
+    // side effects.
+    const action = resolveNavAction(id, window.location.pathname);
+    if (isMobile) {
+      setShowItems(false);
+    }
+    if (action.type === 'route' || action.type === 'navigate') {
       e.preventDefault();
-      if (isMobile) {
-        setShowItems(false);
-      }
-      navigate('/contact');
+      navigate(action.to, action.type === 'navigate' ? { state: action.state } : undefined);
       return;
     }
-    if (window.location.pathname !== '/') {
-      // Not on the home page: navigate home, then scroll to the target section.
-      e.preventDefault();
-      if (isMobile) {
-        setShowItems(false);
-      }
-      navigate('/', { state: { id } });
-      return;
-    }
+    // Same-page anchor: scroll to the section.
     setCurrentItem(id);
     setRovingId(id);
     if (isMobile) {
       // Close the overlay first; the body scroll lock is released when it
       // unmounts, so defer the section scroll by a frame pair.
-      setShowItems(false);
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           const toggle = document.getElementById('nav-toggle');
@@ -197,7 +164,8 @@ export default function Navbar() {
     if (isMobile) {
       setShowItems(false);
     }
-    if (window.location.pathname !== '/') {
+    const action = resolveLogoAction(window.location.pathname);
+    if (action.type === 'navigate') {
       navigate('/');
     } else {
       window.scrollTo({ top: 0, behavior: 'smooth' });
