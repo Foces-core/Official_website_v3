@@ -39,7 +39,7 @@ export default [
     },
   },
   {
-    files: ['vite.config.js'],
+    files: ['vite.config.js', 'lint-staged.config.js'],
     languageOptions: {
       globals: { ...globals.node },
     },
