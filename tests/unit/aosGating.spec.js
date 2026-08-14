@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { aosDisabled } from '../../src/utils/aosGating.js';
+import { aosDisabled, initAOS } from '../../src/utils/aosGating.js';
+
+vi.mock('aos', () => ({ default: { init: vi.fn() } }));
+import AOS from 'aos';
 
 // aosDisabled reads detectProfile(), which reads window.location.search,
 // matchMedia and navigator at call time — stub those the same way the
@@ -85,5 +88,26 @@ describe('aosDisabled — SSR guard', () => {
     } finally {
       globalThis.window = savedWindow;
     }
+  });
+});
+
+describe('initAOS — gate + init in one owner', () => {
+  beforeEach(() => {
+    document.body.classList.remove('aos-disabled');
+    AOS.init.mockClear();
+  });
+
+  it('calls AOS.init with once:true and the resolved gate, and tags <body> when gated', () => {
+    setUrl('?motion=off');
+    expect(initAOS()).toBe(true);
+    expect(AOS.init).toHaveBeenCalledWith({ once: true, disable: true });
+    expect(document.body.classList.contains('aos-disabled')).toBe(true);
+  });
+
+  it('leaves <body> untagged and AOS enabled on a capable device', () => {
+    setUrl('?perf=high');
+    expect(initAOS()).toBe(false);
+    expect(AOS.init).toHaveBeenCalledWith({ once: true, disable: false });
+    expect(document.body.classList.contains('aos-disabled')).toBe(false);
   });
 });
