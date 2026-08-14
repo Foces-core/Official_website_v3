@@ -11,11 +11,18 @@
  * Function syntax notes (lint-staged v17):
  * - Function configs run their returned commands VERBATIM (no file args are
  *   appended), so the filtered file list must be embedded in the commands.
- * - Filepaths arrive absolute (e.g. `D:/git folder/...` on Windows) and the
- *   command parser splits on whitespace — single-quote every path or paths
- *   containing spaces get truncated mid-argument.
+ * - Filepaths arrive ABSOLUTE (e.g. `D:/git folder/...` on Windows), so the
+ *   studio check must normalize them relative to the cwd — a raw prefix
+ *   match against `foces-webv23/` silently matches nothing.
+ * - The command parser splits on whitespace — single-quote every path or
+ *   paths containing spaces get truncated mid-argument.
  */
-const isStudioPath = (file) => file === 'foces-webv23' || file.startsWith('foces-webv23/');
+import path from 'node:path';
+
+const isStudioPath = (file) => {
+  const rel = path.relative(process.cwd(), file);
+  return rel.split(path.sep)[0] === 'foces-webv23';
+};
 const quote = (file) => `'${file}'`;
 
 export default {
