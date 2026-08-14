@@ -1,10 +1,22 @@
+import { useEffect, useState } from 'react';
 import './Loader.css';
 import logo from '../../assets/logo.svg';
+import { isSmallScreen } from '../../utils/breakpoints.js';
 
 const Loader = () => {
-  const isSmallScreen = window.innerWidth < 500;
+  // The narrow-screen pick used to be a one-shot render-time window read
+  // (unreactive — resizing mid-navigation kept the wrong tagline). Now the
+  // POLICY lives in breakpoints.js (unit-tested); this effect just makes it
+  // reactive, same resize seam the other responsive components use.
+  const [isNarrow, setIsNarrow] = useState(() => isSmallScreen(window.innerWidth));
 
-  const textContent = isSmallScreen
+  useEffect(() => {
+    const onResize = () => setIsNarrow(isSmallScreen(window.innerWidth));
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const textContent = isNarrow
     ? "\u00A0 \u00A0 1st Rule Of Programming: \nIf A Code Works, Don't Touch It."
     : "1st Rule Of Programming: If A Code Works, Don't Touch It.";
 
@@ -38,9 +50,7 @@ const Loader = () => {
         <span className="text-cyan-400 font-semibold text-xs tracking-widest uppercase mb-1">
           Loading...
         </span>
-        <span
-          className={`text-gray-300 p-3 text-sm font-Grotesk ${isSmallScreen ? 'break-lines' : ''}`}
-        >
+        <span className={`text-gray-300 p-3 text-sm font-Grotesk ${isNarrow ? 'break-lines' : ''}`}>
           {textContent}
         </span>
       </div>

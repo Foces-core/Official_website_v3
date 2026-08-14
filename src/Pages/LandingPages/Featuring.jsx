@@ -18,6 +18,7 @@ import mentorReveal from '../../assets/Mentor_reveal.webp';
 import mentorReveal480 from '../../assets/Mentor_reveal-480.webp';
 import mentorReveal960 from '../../assets/Mentor_reveal-960.webp';
 import { srcset } from '../../utils/srcset.js';
+import { featuringSlidesPerView } from '../../utils/breakpoints.js';
 import {
   syncCarouselKeyboard,
   subscribeKeyboardArbitration,
@@ -104,15 +105,7 @@ function Featuring() {
 
   useEffect(() => {
     const handleResize = () => {
-      const width = window.innerWidth;
-
-      if (width < 500) {
-        setNoSlides(1);
-      } else if (width >= 500 && width < 750) {
-        setNoSlides(2);
-      } else {
-        setNoSlides(3);
-      }
+      setNoSlides(featuringSlidesPerView(window.innerWidth));
     };
 
     handleResize(); // Initial setup

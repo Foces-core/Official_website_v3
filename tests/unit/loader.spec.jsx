@@ -3,10 +3,9 @@ import Loader from '../../src/Components/Loader/Loader.jsx';
 import { createHarness } from './harness.jsx';
 
 // Characterization of the route-loader fallback: it reads window.innerWidth
-// at render to pick a short (phone) vs long (desktop) tagline and toggles a
-// word-wrap class. The width read is the one remaining raw window query in
-// the app — pinned here so a future switch to the device-profile seam keeps
-// the exact 500px behavior.
+// (reactively, via a resize listener) to pick a short (phone) vs long
+// (desktop) tagline and toggles a word-wrap class. The 500px policy lives in
+// breakpoints.js — pinned here so the exact narrow-screen behavior holds.
 
 let harness;
 

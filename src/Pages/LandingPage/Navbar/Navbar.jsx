@@ -6,12 +6,14 @@ import toggleB from '../../../assets/ButtonB.svg';
 import LogoWhite from '../../../assets/FOCES White.svg';
 import LogoGrey from '../../../assets/FOCES Black.svg';
 import useDeviceProfile from '../../../hooks/useLowPower.js';
+import { isMobileViewport } from '../../../utils/breakpoints.js';
 import {
   pickActiveSection,
   resolveNavAction,
   resolveLogoAction,
   coalesceToFrame,
 } from './navSpy.js';
+import { acquireScrollLock } from '../../../utils/scrollLock.js';
 import './Navbar.css';
 
 const navItems = [
@@ -28,10 +30,10 @@ export default function Navbar() {
   // Read the viewport synchronously on first render so phones never flash the
   // desktop menu open for a frame before the resize effect kicks in.
   const [isMobile, setIsMobile] = useState(
-    () => typeof window !== 'undefined' && window.innerWidth <= 767,
+    () => typeof window !== 'undefined' && isMobileViewport(window.innerWidth),
   );
   const [showItems, setShowItems] = useState(
-    () => typeof window !== 'undefined' && window.innerWidth > 767,
+    () => typeof window !== 'undefined' && !isMobileViewport(window.innerWidth),
   );
   const [joinPressed, setJoinPressed] = useState(false);
   const joinTimer = useRef(null);
@@ -105,7 +107,7 @@ export default function Navbar() {
 
   useEffect(() => {
     const handleResize = () => {
-      const mobile = window.innerWidth <= 767;
+      const mobile = isMobileViewport(window.innerWidth);
       setIsMobile(mobile);
       setShowItems(!mobile);
     };
@@ -172,14 +174,13 @@ export default function Navbar() {
     }
   };
 
-  // While the mobile menu is open, lock the page behind it: no scrolling and  // no interaction with the content under the full-screen overlay.
+  // While the mobile menu is open, lock the page behind it: no scrolling and
+  // no interaction with the content under the full-screen overlay (ref-counted
+  // scrollLock — safe if the event lightbox or another overlay is open).
   useEffect(() => {
     if (!isMobile || !showItems) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = prevOverflow;
-    };
+    const release = acquireScrollLock();
+    return release;
   }, [isMobile, showItems]);
 
   // Move focus into the overlay when the mobile menu opens and trap Tab focus
