@@ -36,14 +36,23 @@ Read this before touching anything.
 - `src/main.jsx` — router (`/`, `/events`, `/contact`), lazy routes, boot splash (decisions in
   `bootSplashLogic`), StrictMode.
 - `src/Pages/` — route-level pages (`LandingPages/`, `EventPage/`).
-- `src/Components/` — shared UI (AboutUs, ContactUs, Execom, Grain, InstallPrompt, Loader,
-  ScrollGate, SectionSkeleton).
+- `src/Components/` — shared UI (AboutUs, BlurImage, ContactUs, Execom, Grain, InstallPrompt,
+  Loader, ScrollGate, SectionSkeleton).
 - `src/Components/AboutUs/` — the cube: `easterEggLogic.js` (spin tracker + `SPIN_BARS`),
-  `cubePhysics.js` (wind-down), `confettiSim.js` (particles) — pure modules, the JSX is wiring.
-- `src/Components/Execom/` — team carousel: `TeamCarousel.jsx` + pure `carouselWrap.js`.
+  `cubePhysics.js` (wind-down), `confettiSim.js` (particles), `easterEggCelebration.js`
+  (toast/message/EMA policies) — pure modules, the JSX is wiring.
+- `src/Components/BlurImage/` — shared image primitive: `BlurImage.jsx` + `useBlurImage.js`
+  (loaded/placeholder/fetch-priority state machine).
+- `src/Components/Execom/` — team carousel: `TeamCarousel.jsx` + pure `carouselWrap.js`; the
+  roster lives in `src/data/team.js` (shape-guarded by `validateTeam`).
+- `src/Pages/LandingPage/Navbar/` — navbar: scrollspy + nav-action decisions in pure
+  `navSpy.js`; viewport buckets come from `breakpoints.js`.
 - `src/data/events.js` — **single source of truth** for events (home section + `/events` share it).
+- `src/data/team.js` — **single source of truth** for the team roster (`cardData`, `cubeSlides`,
+  `advisor`).
 - `src/utils/` — helpers: `srcset.js`, `eventPhotos.js`, `validateContactForm.js`,
-  `validateEvents.js`, `keyboardLock.js`, `aosGating.js` (gate + `initAOS`),
+  `validateEvents.js`, `validateTeam.js`, `keyboardLock.js`, `aosGating.js` (gate + `initAOS`),
+  `breakpoints.js` (viewports 500/767/768/1024), `scrollLock.js` (ref-counted body lock),
   `DeferredAnalytics.jsx`, `lazyWithRetry.js`, `sessionCookie.js`, `scrollToSectionLogic.js`,
   `bootSplashLogic.js`.
 - `src/hooks/useLowPower.js` — exports the `useDeviceProfile` hook driving all perf degradation.
