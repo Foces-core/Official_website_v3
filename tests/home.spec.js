@@ -66,46 +66,56 @@ test.describe('Cube touch rotation', () => {
   // spin). Returns whether the touchmove was defaultPrevented and the
   // computed touch-action, so the test can assert both scroll-prevention
   // mechanisms directly.
-  async function dragCube(page, deltaX = 150) {
+  //
+  // drags > 1 dispatches several drags SYNCHRONOUSLY inside the single
+  // evaluate. That keeps the "rapid" burst deterministic: each page.evaluate
+  // round-trip costs ~tens of ms (more under full-suite CPU load), and the
+  // easter-egg tracker resets the counter if a gap between spins exceeds its
+  // 1.5s window — so per-drag round-trips made the 8-spin test flaky under
+  // load. Same-ms drags are the truest form of "rapid".
+  async function dragCube(page, deltaX = 150, drags = 1) {
     return page.evaluate(
-      ({ deltaX: dx }) => {
+      ({ deltaX: dx, drags: count }) => {
         const el = document.getElementById('boxDiv-about');
         const rect = el.getBoundingClientRect();
         const x0 = rect.left + rect.width / 2;
         const y0 = rect.top + rect.height / 2;
         const touch = (x, y) => new Touch({ identifier: 1, target: el, clientX: x, clientY: y });
-        el.dispatchEvent(
-          new TouchEvent('touchstart', {
-            touches: [touch(x0, y0)],
-            targetTouches: [touch(x0, y0)],
-            changedTouches: [touch(x0, y0)],
-            bubbles: true,
-            cancelable: true,
-          }),
-        );
-        const move = new TouchEvent('touchmove', {
-          touches: [touch(x0 - dx, y0)],
-          targetTouches: [touch(x0 - dx, y0)],
-          changedTouches: [touch(x0 - dx, y0)],
-          bubbles: true,
-          cancelable: true,
-        });
-        el.dispatchEvent(move);
-        el.dispatchEvent(
-          new TouchEvent('touchend', {
-            touches: [],
-            targetTouches: [],
+        let move;
+        for (let i = 0; i < count; i += 1) {
+          el.dispatchEvent(
+            new TouchEvent('touchstart', {
+              touches: [touch(x0, y0)],
+              targetTouches: [touch(x0, y0)],
+              changedTouches: [touch(x0, y0)],
+              bubbles: true,
+              cancelable: true,
+            }),
+          );
+          move = new TouchEvent('touchmove', {
+            touches: [touch(x0 - dx, y0)],
+            targetTouches: [touch(x0 - dx, y0)],
             changedTouches: [touch(x0 - dx, y0)],
             bubbles: true,
             cancelable: true,
-          }),
-        );
+          });
+          el.dispatchEvent(move);
+          el.dispatchEvent(
+            new TouchEvent('touchend', {
+              touches: [],
+              targetTouches: [],
+              changedTouches: [touch(x0 - dx, y0)],
+              bubbles: true,
+              cancelable: true,
+            }),
+          );
+        }
         return {
           prevented: move.defaultPrevented,
           touchAction: getComputedStyle(el).touchAction,
         };
       },
-      { deltaX },
+      { deltaX, drags },
     );
   }
 
@@ -124,9 +134,9 @@ test.describe('Cube touch rotation', () => {
   }) => {
     test.skip(!isMobile, 'the touch-eased bar only applies on coarse-pointer phones');
     await scrollToCube(page);
-    for (let i = 0; i < 8; i += 1) {
-      await dragCube(page);
-    }
+    // All 8 drags in one evaluate — synchronous burst, immune to round-trip
+    // jitter under suite load (see dragCube).
+    await dragCube(page, 150, 8);
     await expect(page.locator('.about-toast')).toBeVisible();
   });
 });
