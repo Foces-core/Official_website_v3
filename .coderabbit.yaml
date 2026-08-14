@@ -1,17 +1,25 @@
 # CodeRabbit AI code review — https://coderabbit.ai
-# Config reference: https://docs.coderabbit.ai/configuration
+# Config reference: https://docs.coderabbit.ai/reference/configuration
+#
+# NOTE: tone_instructions is schema-limited to 250 characters — keep it short.
+# A longer value makes the whole config fail to parse and CodeRabbit silently
+# falls back to defaults (CHILL profile), which is how reviews lost their
+# strictness. Verify with `@coderabbitai configuration` on any PR.
 language: "en-US"
-tone_instructions: |
-  Be concise and specific. Lead each comment with a clear, actionable summary.
-  Reference the file path and line. Prefer offering a concrete fix over a
-  general guideline. Do not repeat findings other linters already report.
-  Respect repo conventions: Conventional Commits, pnpm, Tailwind utilities.
-early_access: false
+tone_instructions: >-
+  Be concise, specific, and demanding. Lead with file:line. Offer concrete
+  fixes. Never repeat what other linters already report.
+# Early access on: enables Change Stack (the layered PR inspection interface)
+# and other early-access review features. One flag, easily reverted.
+early_access: true
 enable_free_tier: true
 
 reviews:
-  profile: "assertive" # strict about correctness, security, a11y, and perf
-  request_changes_workflow: true
+  # assertive is the strictest review profile CodeRabbit offers (quiet < chill
+  # < assertive) — most feedback, correctness/security/a11y/perf focused.
+  profile: "assertive"
+  request_changes_workflow: true # bot requests changes on blocking findings
+  auto_approve: false # never auto-approve; every merge needs human eyes
   high_level_summary: true
   high_level_summary_in_walkthrough: true
   high_level_summary_instructions: |
@@ -25,6 +33,11 @@ reviews:
   sequence_diagrams: false
   abort_on_close: true
   disable_cache: false
+
+  # Flag low-quality/slop PRs (public GitHub repos only).
+  anti_slop:
+    enabled: true
+    label: "slop"
 
   auto_review:
     enabled: true
@@ -81,7 +94,8 @@ reviews:
     - path: ".github/workflows/**"
       instructions: |
         - CI runs root checks with pnpm only. Never run tooling against
-          foces-webv23/ (archived studio, pinned Sanity 3 / React 18 on purpose).
+          foces-webv23/ (archived studio, pinned Sanity 3 / React 18 on
+          purpose).
     - path: "tests/**"
       instructions: |
         - Playwright E2E suite. Keep tests deterministic and resilient to
@@ -95,12 +109,22 @@ reviews:
         - Architecture decisions live in docs/adr/ following the template
           there. Do not duplicate decisions in prose.
 
-  # Static analysis tools that add context to reviews.
+  # Static analysis tools that add context to reviews. Security scanners
+  # (semgrep, opengrep), workflow hardening (zizmor, actionlint) and
+  # language/grammar (languagetool) are all on — the strictest review posture.
   tools:
     eslint:
       enabled: true
       e18e:
         enabled: true
+    semgrep:
+      enabled: true
+    opengrep:
+      enabled: true
+    zizmor:
+      enabled: true
+    languagetool:
+      enabled: true
     markdownlint:
       enabled: true
     actionlint:
@@ -130,16 +154,19 @@ knowledge_base:
   pull_requests:
     scope: "local"
 
+# Both title AND description are error-mode: with request_changes_workflow on,
+# a PR that violates either blocks merge until fixed.
 pre_merge_checks:
   title:
     mode: "error"
     requirements: |
       Must follow Conventional Commits:
-      feat|fix|perf|a11y|chore|docs|test|refactor|ci|build|style|revert(scope):
-      subject. Keep the subject under ~72 characters, lowercase, no trailing
-      period. Example: 'feat(events): add 2026 lineup carousel'.
+      feat|fix|perf|a11y|chore|docs|test|refactor|ci|build|style|
+      revert(scope): subject. Keep the subject under ~72 characters,
+      lowercase, no trailing period. Example: 'feat(events): add 2026 lineup
+      carousel'.
   description:
-    mode: "warning"
+    mode: "error"
 
 issue_enrichment:
   auto_enrich:
