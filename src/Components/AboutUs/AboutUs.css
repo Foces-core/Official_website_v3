@@ -29,7 +29,9 @@
     width: 200px;
     height: 200px;
     transform-style: preserve-3d;
-    touch-action: pan-y; /* vertical swipes scroll the page; only horizontal drags rotate */
+    /* The cube owns the whole gesture: rotating must never scroll the page,
+       and a pan-y allowance would let diagonal drags jump the viewport. */
+    touch-action: none;
     cursor: grab;
 }
 
@@ -261,7 +263,7 @@
         width: 150px; /* Reduced width */
         height: 150px; /* Reduced height */
         animation: none; /* Disable 3D rotation on mobile; rotation is controlled by drag */
-        touch-action: pan-y; /* Horizontal drags rotate; vertical swipes scroll the page */
+        touch-action: none; /* Rotating must never scroll the page — the cube owns the gesture */
         cursor: grab;
     }
 

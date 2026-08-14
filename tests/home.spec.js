@@ -29,7 +29,9 @@ test.describe('Cube easter egg', () => {
       await page.keyboard.press('ArrowRight');
       await page.waitForTimeout(40);
     }
-    await expect(page.locator('.about-toast')).toBeVisible();
+    // The easier touch bar fires more than once in 20 presses (bursts at 10
+    // and 20) — assert on the first toast, not a strict single match.
+    await expect(page.locator('.about-toast').first()).toBeVisible();
   });
 
   test('no consecutive duplicate toast messages', async ({ page }) => {
@@ -50,5 +52,81 @@ test.describe('Cube easter egg', () => {
     }
     const second = await readToast();
     expect(second).not.toBe(first);
+  });
+});
+
+test.describe('Cube touch rotation', () => {
+  async function scrollToCube(page) {
+    await gotoHome(page);
+    await page.locator('#about').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(800);
+  }
+
+  // One synthetic touch drag across the cube (~150px at 0.6 sens = one 90°
+  // spin). Returns whether the touchmove was defaultPrevented and the
+  // computed touch-action, so the test can assert both scroll-prevention
+  // mechanisms directly.
+  async function dragCube(page, deltaX = 150) {
+    return page.evaluate(
+      ({ deltaX: dx }) => {
+        const el = document.getElementById('boxDiv-about');
+        const rect = el.getBoundingClientRect();
+        const x0 = rect.left + rect.width / 2;
+        const y0 = rect.top + rect.height / 2;
+        const touch = (x, y) => new Touch({ identifier: 1, target: el, clientX: x, clientY: y });
+        el.dispatchEvent(
+          new TouchEvent('touchstart', {
+            touches: [touch(x0, y0)],
+            targetTouches: [touch(x0, y0)],
+            changedTouches: [touch(x0, y0)],
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+        const move = new TouchEvent('touchmove', {
+          touches: [touch(x0 - dx, y0)],
+          targetTouches: [touch(x0 - dx, y0)],
+          changedTouches: [touch(x0 - dx, y0)],
+          bubbles: true,
+          cancelable: true,
+        });
+        el.dispatchEvent(move);
+        el.dispatchEvent(
+          new TouchEvent('touchend', {
+            touches: [],
+            targetTouches: [],
+            changedTouches: [touch(x0 - dx, y0)],
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+        return {
+          prevented: move.defaultPrevented,
+          touchAction: getComputedStyle(el).touchAction,
+        };
+      },
+      { deltaX },
+    );
+  }
+
+  test('rotating the cube never scrolls the page (touch-action none + preventDefault)', async ({
+    page,
+  }) => {
+    await scrollToCube(page);
+    const result = await dragCube(page);
+    expect(result.touchAction).toBe('none');
+    expect(result.prevented).toBe(true);
+  });
+
+  test('rapid touch drags fire the easter egg toast on phones (easier 10-spin bar)', async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(!isMobile, 'the touch-eased bar only applies on coarse-pointer phones');
+    await scrollToCube(page);
+    for (let i = 0; i < 10; i += 1) {
+      await dragCube(page);
+    }
+    await expect(page.locator('.about-toast')).toBeVisible();
   });
 });

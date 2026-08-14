@@ -10,25 +10,25 @@ import {
   isControlFocused,
   rectIsOnScreen,
 } from '../../utils/keyboardLock.js';
+import { createSpinTracker } from './easterEggLogic.js';
 
-// Easter egg: if the user spins the cube 20 times in RAPID succession (via
-// keyboard arrows or a fast horizontal drag), a celebration fires. A spin =
-// one 90° of Y rotation. A gap longer than RAPID_GAP between spins resets
-// the counter, so casual rotating never triggers it — only deliberate rapid
-// spinning. Wind-down inertia deliberately does NOT count: only spins the
-// user actively drives. Hard to earn on purpose.
+// Easter egg: if the user spins the cube rapidly (via keyboard arrows or a
+// fast horizontal drag), a celebration fires. A spin = one 90° of Y rotation.
+// A gap longer than the reset window between spins resets the counter, so
+// casual rotating never triggers it — only deliberate rapid spinning.
+// Wind-down inertia deliberately does NOT count: only spins the user
+// actively drives. Hard to earn on purpose.
 //
 // On touch-first (mobile) devices the gesture is physically harder — the
 // cube is small and every spin costs ~150px of finger travel — so the bar
-// is eased a bit there (fewer spins + a wider reset gap). Desktop is
-// unchanged. These constants are read once at module scope; the module is
-// only ever evaluated on the client, so `window` is safe here.
+// is eased there: 10 spins / 1.5s window vs 20 / 0.8s on desktop. The
+// counting logic lives in easterEggLogic.js (pure, unit-tested); these
+// configs are read once at module scope (client-only, so `window` is safe).
 const TOUCH_FIRST =
   typeof window !== 'undefined' &&
   window.matchMedia != null &&
   window.matchMedia('(pointer: coarse)').matches;
-const RAPID_GAP = TOUCH_FIRST ? 1200 : 800;
-const SPIN_TARGET = TOUCH_FIRST ? 15 : 20;
+const SPIN_CONFIG = TOUCH_FIRST ? { target: 10, gap: 1500 } : { target: 20, gap: 800 };
 const TOAST_MS = 1700; // must outlast the .about-toast animation (1.6s)
 const MAX_TOASTS = 4; // cap concurrent toasts during a rapid-fire session
 
@@ -55,13 +55,13 @@ const PARTICLE_COLORS = [
 const PARTICLE_EMOJIS = ['✨', '🎉', '⭐', '🔥', '💥', '🚀'];
 const EASTER_MESSAGES = [
   'DARE to spin! 🎉',
-  `${SPIN_TARGET} spins? You DEVELOP-ded that. 😎`,
+  `${SPIN_CONFIG.target} spins? You DEVELOP-ded that. 😎`,
   'DOMINATE the cube! 🔥',
   'You FOCES-inated the cube ✨',
   'Spin champion! 🌀',
   'The cube is dizzy now! 😵‍💫',
   'Rapid-fire spinner! ⚡',
-  `${SPIN_TARGET} spins? The cube can't keep up! 💫`,
+  `${SPIN_CONFIG.target} spins? The cube can't keep up! 💫`,
   'All spins, no glitches — clean code! 🧹',
   'You spin me right round! 💿',
   'The cube bows to you. 🙇',
@@ -87,9 +87,8 @@ function AboutUs() {
   const confettiRaf = useRef(null);
   const manualUntilRef = useRef(0);
 
-  // Easter-egg tracking
-  const spinCountRef = useRef(0);
-  const lastSpinRef = useRef(0);
+  // Easter-egg tracking (sequence logic in easterEggLogic.js)
+  const spinTrackerRef = useRef(createSpinTracker(SPIN_CONFIG));
   const accumAngleRef = useRef(0);
   const lastToastRef = useRef('');
 
@@ -224,15 +223,9 @@ function AboutUs() {
     });
   }, [lowPower]);
 
-  // Register one manual spin; fires the easter egg after SPIN_TARGET rapid spins.
+  // Register one manual spin; fires the easter egg after the rapid-spin bar.
   const registerSpin = useCallback(() => {
-    const now = Date.now();
-    spinCountRef.current = now - lastSpinRef.current > RAPID_GAP ? 1 : spinCountRef.current + 1;
-    lastSpinRef.current = now;
-    if (spinCountRef.current >= SPIN_TARGET) {
-      spinCountRef.current = 0;
-      triggerEasterEgg();
-    }
+    if (spinTrackerRef.current.register()) triggerEasterEgg();
   }, [triggerEasterEgg]);
 
   // Accumulate horizontal (Y-axis) angular travel; every full 90° = one spin.
@@ -393,6 +386,22 @@ function AboutUs() {
       unregister();
       wrap?.removeEventListener('pointerdown', mark, true);
     };
+  }, []);
+
+  // Own the touch gesture: once a drag starts on the cube, native scrolling
+  // is suppressed for the rest of the gesture — rotating must never scroll
+  // the page. This is belt-and-suspenders for old iOS that ignores
+  // `touch-action` (see AboutUs.css); on modern browsers the CSS alone opts
+  // the cube out of panning. Must be a NON-passive listener — React's
+  // delegated touchmove is passive, so e.preventDefault() there would no-op.
+  useEffect(() => {
+    const el = boxRef.current;
+    if (!el) return;
+    const preventScroll = (e) => {
+      if (isDraggingRef.current) e.preventDefault();
+    };
+    el.addEventListener('touchmove', preventScroll, { passive: false });
+    return () => el.removeEventListener('touchmove', preventScroll);
   }, []);
 
   // Cancel any wind-down / confetti rAF on unmount.
