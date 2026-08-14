@@ -35,7 +35,7 @@ reviews:
   disable_cache: false
 
   # Flag low-quality/slop PRs (public GitHub repos only).
-  anti_slop:
+  slop_detection:
     enabled: true
     label: "slop"
 
