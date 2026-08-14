@@ -179,7 +179,7 @@ function TeamCarousel({
               />
               <div className="absolute rounded-b-3xl bottom-0 w-full bg-gradient-to-t from-black via-black/85 to-transparent p-4 text-left">
                 <div className="text-white text-base font-semibold italic">{d.name}</div>
-                <div className="text-gray-300 text-xs font-light">{d.review}</div>
+                <div className="text-gray-300 text-xs font-light">{d.role}</div>
               </div>
             </div>
           </SwiperSlide>
