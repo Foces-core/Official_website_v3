@@ -10,7 +10,7 @@ import {
   isControlFocused,
   rectIsOnScreen,
 } from '../../utils/keyboardLock.js';
-import { createSpinTracker } from './easterEggLogic.js';
+import { createSpinTracker, SPIN_BARS } from './easterEggLogic.js';
 
 // Easter egg: if the user spins the cube rapidly (via keyboard arrows or a
 // fast horizontal drag), a celebration fires. A spin = one 90° of Y rotation.
@@ -21,14 +21,15 @@ import { createSpinTracker } from './easterEggLogic.js';
 //
 // On touch-first (mobile) devices the gesture is physically harder — the
 // cube is small and every spin costs ~150px of finger travel — so the bar
-// is eased there: 10 spins / 1.5s window vs 20 / 0.8s on desktop. The
-// counting logic lives in easterEggLogic.js (pure, unit-tested); these
-// configs are read once at module scope (client-only, so `window` is safe).
+// is eased there (SPIN_BARS.touch vs SPIN_BARS.desktop in easterEggLogic.js,
+// the single source of truth). The counting logic lives in that module too
+// (pure, unit-tested); the pick is read once at module scope (client-only,
+// so `window` is safe).
 const TOUCH_FIRST =
   typeof window !== 'undefined' &&
   window.matchMedia != null &&
   window.matchMedia('(pointer: coarse)').matches;
-const SPIN_CONFIG = TOUCH_FIRST ? { target: 10, gap: 1500 } : { target: 20, gap: 800 };
+const SPIN_CONFIG = TOUCH_FIRST ? SPIN_BARS.touch : SPIN_BARS.desktop;
 const TOAST_MS = 1700; // must outlast the .about-toast animation (1.6s)
 const MAX_TOASTS = 4; // cap concurrent toasts during a rapid-fire session
 

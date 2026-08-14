@@ -118,13 +118,13 @@ test.describe('Cube touch rotation', () => {
     expect(result.prevented).toBe(true);
   });
 
-  test('rapid touch drags fire the easter egg toast on phones (easier 10-spin bar)', async ({
+  test('rapid touch drags fire the easter egg toast on phones (easier 8-spin bar)', async ({
     page,
     isMobile,
   }) => {
     test.skip(!isMobile, 'the touch-eased bar only applies on coarse-pointer phones');
     await scrollToCube(page);
-    for (let i = 0; i < 10; i += 1) {
+    for (let i = 0; i < 8; i += 1) {
       await dragCube(page);
     }
     await expect(page.locator('.about-toast')).toBeVisible();

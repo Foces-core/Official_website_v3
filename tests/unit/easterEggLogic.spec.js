@@ -1,13 +1,15 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import { createSpinTracker } from '../../src/Components/AboutUs/easterEggLogic.js';
+import { createSpinTracker, SPIN_BARS } from '../../src/Components/AboutUs/easterEggLogic.js';
 
 // The seam is the tracker's register() -> boolean interface: it counts 90°
 // spins and fires exactly once when `target` spins arrive within `gap` ms of
-// each other. Times are passed in explicitly so the sequence logic is fully
-// deterministic; the Date.now() default is pinned with fake timers.
+// each other. The bars come from the module's SPIN_BARS (single source of
+// truth — AboutUs.jsx picks touch vs desktop from the same constants). Times
+// are passed in explicitly so the sequence logic is fully deterministic; the
+// Date.now() default is pinned with fake timers.
 
-const DESKTOP = { target: 20, gap: 800 };
-const TOUCH = { target: 10, gap: 1500 };
+const DESKTOP = SPIN_BARS.desktop;
+const TOUCH = SPIN_BARS.touch;
 
 afterEach(() => {
   vi.useRealTimers();
@@ -63,18 +65,18 @@ describe('createSpinTracker — device bars', () => {
     expect(tracker.register(19 * 40)).toBe(true);
   });
 
-  it('touch phones fire after 10 rapid spins (1.5s window) — the easier bar', () => {
+  it('touch phones fire after 8 rapid spins (1.5s window) — the easier bar', () => {
     const tracker = createSpinTracker(TOUCH);
-    for (let i = 0; i < 9; i += 1) {
+    for (let i = 0; i < 7; i += 1) {
       expect(tracker.register(i * 120)).toBe(false);
     }
-    expect(tracker.register(9 * 120)).toBe(true);
+    expect(tracker.register(7 * 120)).toBe(true);
   });
 
   it('touch bar still respects the wider gap: a 1.4s pause keeps the burst alive', () => {
-    const tracker = createSpinTracker({ target: 3, gap: 1500 });
+    const tracker = createSpinTracker({ target: 3, gap: TOUCH.gap });
     tracker.register(0);
-    tracker.register(1400); // within the 1500ms touch window
+    tracker.register(1400); // within the 1.5s touch window
     expect(tracker.register(2800)).toBe(true);
   });
 });
