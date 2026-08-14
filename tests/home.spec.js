@@ -23,34 +23,51 @@ test.describe('Cube easter egg', () => {
     await page.waitForTimeout(800);
   }
 
+  // All presses dispatched SYNCHRONOUSLY inside the single evaluate — same
+  // reasoning as dragCube below: each page.keyboard.press round-trip costs
+  // ~tens of ms (more under full-suite CPU load), and the easter-egg tracker
+  // resets its counter if a gap between spins exceeds its window (800ms
+  // desktop / 1500ms touch), so per-press round-trips made the 20-spin burst
+  // flaky under load. Same-ms presses are the truest form of "rapid".
+  async function pressArrowRapidly(page, key, presses) {
+    return page.evaluate(
+      ({ keyName, count }) => {
+        for (let i = 0; i < count; i += 1) {
+          window.dispatchEvent(
+            new KeyboardEvent('keydown', { key: keyName, bubbles: true, cancelable: true }),
+          );
+        }
+      },
+      { keyName: key, count: presses },
+    );
+  }
+
   test('rapid arrow spins fire the easter egg toast', async ({ page }) => {
     await scrollToCube(page);
-    for (let i = 0; i < 20; i += 1) {
-      await page.keyboard.press('ArrowRight');
-      await page.waitForTimeout(40);
-    }
-    // The easier touch bar fires more than once in 20 presses (bursts at 10
-    // and 20) — assert on the first toast, not a strict single match.
+    // The easier touch bar (8 spins) fires more than once in 20 presses
+    // (bursts at 8 and 16) — assert on the first toast, not a strict single
+    // match. The desktop bar (20 spins) fires exactly at the 20th press.
+    await pressArrowRapidly(page, 'ArrowRight', 20);
     await expect(page.locator('.about-toast').first()).toBeVisible();
   });
 
   test('no consecutive duplicate toast messages', async ({ page }) => {
     await scrollToCube(page);
-    const readToast = async () => {
-      const last = page.locator('.about-toast').last();
-      await expect(last).toBeVisible();
-      return (await last.textContent()).trim();
-    };
-    for (let i = 0; i < 20; i += 1) {
-      await page.keyboard.press('ArrowRight');
-      await page.waitForTimeout(40);
-    }
-    const first = await readToast();
-    for (let i = 0; i < 20; i += 1) {
-      await page.keyboard.press('ArrowRight');
-      await page.waitForTimeout(40);
-    }
-    const second = await readToast();
+    await pressArrowRapidly(page, 'ArrowRight', 20);
+    const lastOfFirst = page.locator('.about-toast').last();
+    await expect(lastOfFirst).toBeVisible();
+    const first = (await lastOfFirst.textContent()).trim();
+    const countAfterFirst = await page.locator('.about-toast').count();
+
+    await pressArrowRapidly(page, 'ArrowRight', 20);
+    // Compare the LAST toast of burst 1 with the FIRST NEW toast of burst 2
+    // — those are consecutive fires, which the no-repeat picker guarantees
+    // differ. (The last toast of each burst are NOT consecutive when the
+    // touch bar fires twice per burst, so comparing those would be a ~8%
+    // flake.)
+    const firstOfSecond = page.locator('.about-toast').nth(countAfterFirst);
+    await expect(firstOfSecond).toBeVisible();
+    const second = (await firstOfSecond.textContent()).trim();
     expect(second).not.toBe(first);
   });
 });
