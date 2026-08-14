@@ -5,9 +5,7 @@ import focespng from '../../../assets/foces.png';
 import foces1 from '../../../assets/foces1.svg';
 import useDeviceProfile from '../../../hooks/useLowPower.js';
 import { scheduleBackgroundTask } from '../../../utils/priorityScheduler.js';
-
-// Skip Vanta on small screens — it looks bad on phones/tablets and wastes GPU.
-const MIN_VANTA_WIDTH = 1024;
+import { isWideScreen } from '../../../utils/breakpoints.js';
 
 function HeroSection() {
   const myRef = useRef(null);
@@ -17,9 +15,10 @@ function HeroSection() {
     let vantaEffect = null;
     let cancelled = false;
 
-    // Skip on low-end devices, reduced-motion, or small screens.
+    // Skip on low-end devices, reduced-motion, or below desktop-wide width
+    // (Vanta looks bad on phones/tablets and wastes GPU — breakpoints.js).
     if (lowPower) return;
-    if (window.innerWidth < MIN_VANTA_WIDTH) return;
+    if (!isWideScreen(window.innerWidth)) return;
 
     // Defer the ~700KB 3D WebGL library to the lowest background load priority
     // so critical page assets, fonts, and interactive elements load first.

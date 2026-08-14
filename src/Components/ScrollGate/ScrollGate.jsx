@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import SectionSkeleton from '../SectionSkeleton/SectionSkeleton';
+import { isDesktopViewport } from '../../utils/breakpoints.js';
 import { shouldMountSection } from './scrollGateLogic.js';
 
 // Real section heights, cached after first mount so the placeholder matches
@@ -12,7 +13,7 @@ const measuredHeights = new Map();
 // Coarse viewport bucket so desktop vs mobile heights never collide in the cache.
 function viewportBucket() {
   if (typeof window === 'undefined') return 'unknown';
-  return window.innerWidth >= 768 ? 'desktop' : 'mobile';
+  return isDesktopViewport(window.innerWidth) ? 'desktop' : 'mobile';
 }
 
 /**
