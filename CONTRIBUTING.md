@@ -71,8 +71,13 @@ pnpm build      # production build (image optimizer + PWA precache)
   when your change is scoped: `pnpm exec playwright test -g "Carousel"` or
   `pnpm exec playwright test tests/contact.spec.js`.
 - `pnpm test:unit` runs the fast Vitest suite in `tests/unit/` (jsdom):
-  `detectProfile` overrides/heuristics, `keyboardLock` arrow-key arbitration,
-  and `srcset`. CI runs it in the lint-and-build job; E2E never imports it.
+  device-profile heuristics, `keyboardLock` arrow-key arbitration, `srcset`,
+  events/contact validation, and the pure decision modules behind the
+  components (cube physics + easter egg, carousel wrap, scroll-to-section,
+  session cookies, boot splash, analytics deferral). JSX specs render
+  through the shared `tests/unit/harness.jsx`. CI runs it in the
+  lint-and-build job; E2E never imports it. Behavior lives in pure tested
+  modules — see [ADR-0009](docs/adr/0009-pure-logic-test-seams.md).
 - For UI changes, verify desktop + mobile viewports.
 - The repo has puppeteer **probes** in `scripts/probes/` (`wcag-probe.mjs`,
   `mobile-probe.mjs`, `carousel-probe.mjs`, `img-probe.mjs`,

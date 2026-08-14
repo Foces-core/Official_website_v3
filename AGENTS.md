@@ -27,13 +27,25 @@ Read this before touching anything.
 
 ## Map
 
-- `src/App.jsx` — landing page composition (home, about, featuring, events, execom).
-- `src/main.jsx` — router (`/`, `/events`, `/contact`), lazy routes, boot splash, StrictMode.
+- `src/App.jsx` — landing page composition (home, about, featuring, events, execom); every lazy
+  chunk here loads via `lazyWithRetry` (ADR-0008); cross-route anchor scroll
+  decisions come from `scrollToSectionLogic`.
+- `src/main.jsx` — router (`/`, `/events`, `/contact`), lazy routes, boot splash (decisions in
+  `bootSplashLogic`), StrictMode.
 - `src/Pages/` — route-level pages (`LandingPages/`, `EventPage/`).
-- `src/Components/` — shared UI (AboutUs, ContactUs, Execom, Grain, InstallPrompt, Loader, ScrollGate, SectionSkeleton).
+- `src/Components/` — shared UI (AboutUs, ContactUs, Execom, Grain, InstallPrompt, Loader,
+  ScrollGate, SectionSkeleton).
+- `src/Components/AboutUs/` — the cube: `easterEggLogic.js` (spin tracker + `SPIN_BARS`),
+  `cubePhysics.js` (wind-down), `confettiSim.js` (particles) — pure modules, the JSX is wiring.
+- `src/Components/Execom/` — team carousel: `TeamCarousel.jsx` + pure `carouselWrap.js`.
 - `src/data/events.js` — **single source of truth** for events (home section + `/events` share it).
-- `src/utils/` — helpers: `srcset.js`, `eventPhotos.js`, `validateContactForm.js`, `validateEvents.js`, `keyboardLock.js`, `aosGating.js`, `DeferredAnalytics.jsx`.
+- `src/utils/` — helpers: `srcset.js`, `eventPhotos.js`, `validateContactForm.js`,
+  `validateEvents.js`, `keyboardLock.js`, `aosGating.js` (gate + `initAOS`),
+  `DeferredAnalytics.jsx`, `lazyWithRetry.js`, `sessionCookie.js`, `scrollToSectionLogic.js`,
+  `bootSplashLogic.js`.
 - `src/hooks/useLowPower.js` — exports the `useDeviceProfile` hook driving all perf degradation.
+- Behavior lives in pure tested modules; components are wiring (ADR-0009) — new logic lands as a
+  module with its spec in the same change, and JSX specs use `tests/unit/harness.jsx`.
 - `scripts/` — puppeteer probes + Lighthouse perf tests.
 - `tests/*.spec.js` — Playwright E2E suite (split by page/section).
 - `public/`, `src/assets/` — static + optimized images.
