@@ -9,6 +9,7 @@ import Grain from './Components/Grain/Grain.jsx';
 import InstallPrompt from './Components/InstallPrompt/InstallPrompt.jsx';
 import ErrorBoundary from './Components/ErrorBoundary/ErrorBoundary.jsx';
 import { lazyWithRetry } from './utils/lazyWithRetry.js';
+import { SPLASH_FAILSAFE_MS, skipSplash, paintReady } from './utils/bootSplashLogic.js';
 import useDeviceProfile from './hooks/useLowPower.js';
 import './assets/fonts-latin.css';
 import './index.css';
@@ -73,7 +74,7 @@ function Root() {
     const splash = document.getElementById('boot-splash');
     if (!splash) return;
 
-    if (slowNetwork) {
+    if (skipSplash(slowNetwork)) {
       // ADR-0001: slow/low-end devices get no splash — drop it immediately.
       splash.remove();
       return;
@@ -103,13 +104,11 @@ function Root() {
     //     PNG + @fontsource woff2s start at parse time, so painting the page
     //     early costs nothing; keeping an opaque splash over them is what
     //     inflated LCP (measured 9s of occlusion at 4x throttle).
-    const paint = () =>
-      new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-    paint().then(hide);
+    paintReady().then(hide);
 
     const onLoad = () => hide();
     window.addEventListener('load', onLoad, { once: true });
-    const failsafe = setTimeout(hide, 1500);
+    const failsafe = setTimeout(hide, SPLASH_FAILSAFE_MS);
 
     return () => {
       disposed = true;
