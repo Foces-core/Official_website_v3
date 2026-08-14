@@ -1,10 +1,12 @@
-import { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { prioritizeAssetFetch } from '../../utils/priorityScheduler.js';
+import { useBlurImage } from './useBlurImage.js';
 
 /**
  * BlurImage — lazy-loads an image with a blur-up placeholder.
  * Automatically elevates fetchPriority to 'high' upon direct user interaction.
+ *
+ * The state machine (loaded / placeholder removal / priority elevation) lives
+ * in the tested useBlurImage hook (useBlurImage.js); this component is wiring.
  */
 export default function BlurImage({
   src,
@@ -17,55 +19,8 @@ export default function BlurImage({
   decoding = 'async',
   ...rest
 }) {
-  const [loaded, setLoaded] = useState(false);
-  const [removed, setRemoved] = useState(!blurSrc);
-  const [prevSrc, setPrevSrc] = useState(src);
-  const [priorityAttr, setPriorityAttr] = useState(() =>
-    loading === 'eager' ? 'high' : undefined,
-  );
-  const imgRef = useRef(null);
-  const timerRef = useRef(null);
-
-  if (src !== prevSrc) {
-    setPrevSrc(src);
-    setLoaded(false);
-    setRemoved(!blurSrc);
-    setPriorityAttr(loading === 'eager' ? 'high' : undefined);
-  }
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
-
-  useEffect(() => {
-    const img = imgRef.current;
-    if (!img) return;
-
-    if (img.complete && img.naturalWidth > 0) {
-      setLoaded(true);
-    }
-  }, [src, blurSrc]);
-
-  const handleInteraction = () => {
-    if (!priorityAttr) {
-      setPriorityAttr('high');
-      prioritizeAssetFetch(src);
-    }
-  };
-
-  const handleLoad = () => {
-    setLoaded(true);
-    // Remove the placeholder from DOM after the cross-fade completes
-    timerRef.current = setTimeout(() => setRemoved(true), 500);
-  };
-
-  const handleError = () => {
-    // Reveal image element on error so broken image / alt text renders instead of invisible node
-    setLoaded(true);
-    setRemoved(true);
-  };
+  const { imgRef, loaded, removed, priorityAttr, handleLoad, handleError, handleInteraction } =
+    useBlurImage({ src, blurSrc, eager: loading === 'eager' });
 
   const showBlur = blurSrc && !removed;
 
