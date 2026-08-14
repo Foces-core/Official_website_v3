@@ -10,10 +10,12 @@
  */
 
 // The scrollspy reference line sits at 35% down the viewport; the page counts
-// as "at the bottom" within 50px of its end. These policies live here, where
-// the specs pin them, instead of in the component.
-export const REF_LINE_RATIO = 0.35;
-export const NEAR_BOTTOM_MARGIN_PX = 50;
+// as "at the bottom" within 50px of its end. These policies live here, not in
+// the component. They are deliberately NOT exported: knip would flag dead
+// exports, and the spec pins them through behavior (refY = 280 at viewportH
+// 800 in the worked example) rather than by importing constants.
+const REF_LINE_RATIO = 0.35;
+const NEAR_BOTTOM_MARGIN_PX = 50;
 
 /**
  * Decide the active navbar section for a given scroll position.
