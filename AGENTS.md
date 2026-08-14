@@ -13,7 +13,10 @@ Read this before touching anything.
   PRs. Don't use `--no-verify` unless it's genuinely broken.
 - **`foces-webv23/` is OFF-LIMITS:** it is the archived Sanity CMS studio from
   the previous site generation. Root tooling must never lint/build/format it.
-  Do not "upgrade to match the root" (it's pinned to Sanity 3 / React 18 on
+  Every tool skips it: ESLint flat-config `ignores`, `.prettierignore`, knip
+  `ignore`, Dependabot `exclude-paths`, CodeRabbit `path_filters`, and
+  `lint-staged.config.js` (filters it out of pre-commit tasks). Do not
+  "upgrade to match the root" (it's pinned to Sanity 3 / React 18 on
   purpose). See `foces-webv23/README.md`.
 - **Package managers:** root uses **pnpm** (`pnpm install`, `pnpm test`, ...).
   The studio uses **yarn** (inside `foces-webv23/` only). Do not mix.

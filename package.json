@@ -8,13 +8,6 @@
     "node": "22.x"
   },
   "packageManager": "pnpm@11.3.0",
-  "lint-staged": {
-    "*.{js,jsx,cjs,mjs}": [
-      "eslint --fix --report-unused-disable-directives",
-      "prettier --write"
-    ],
-    "*.{json,css,md,html}": "prettier --write"
-  },
   "scripts": {
     "dev": "vite",
     "dev:network": "vite --host",
