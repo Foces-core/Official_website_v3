@@ -25,10 +25,17 @@ lowPower }` from `detectProfile`. One seam, two entries: components
 - **Cube easter egg** — the About-cube rapid-spin celebration. Spin
   counting lives in the pure `createSpinTracker` (`easterEggLogic.js`):
   fires after `target` spins within `gap` ms, gap-reset so casual spinning
-  never triggers. Touch-first phones get an easier bar (8/1.5s vs
-  20/0.8s desktop); the cube owns its touch gesture (`touch-action: none`)
-  so rotating never scrolls the page. The same touch-ownership rule applies
-  to the Execom team carousel (`.execom-swiper` / `.execom-cube-swiper`).
+  never triggers. What happens on a fire — no-repeat message pick, capped
+  toast stack, velocity EMA — lives in `easterEggCelebration.js`.
+  Touch-first phones get an easier bar (8/1.5s vs 20/0.8s desktop); the
+  cube owns its touch gesture (`touch-action: none`) so rotating never
+  scrolls the page. The same touch-ownership rule applies to the Execom
+  team carousel (`.execom-swiper` / `.execom-cube-swiper`).
+- **Team roster** — the Execom member cards. Single source of truth:
+  `src/data/team.js` (`cardData`, `cubeSlides`, `advisor`), shape-guarded
+  by `validateTeam` in CI. Each member has a **role** (Chairperson,
+  Secretary, …) — deliberately named `role`, not the old `review`, since it
+  holds a job title.
 - **Boot splash** — the static inline `#boot-splash` in `index.html`
   (ADR-0005), faded on first paint; the branded `Loader` is the lazy-route
   Suspense fallback.
