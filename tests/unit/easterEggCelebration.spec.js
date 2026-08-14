@@ -29,6 +29,18 @@ describe('pickEasterMessage — no two identical toasts in a row', () => {
     const rand = () => 0;
     expect(pickEasterMessage('Solo 🎉', ['Solo 🎉'], rand)).toBe('Solo 🎉');
   });
+
+  it("terminates when rand keeps returning the previous message's index (bounded retry)", () => {
+    // A hostile/constant rand that always points at the previous message —
+    // the bounded walk must still return a valid, different message.
+    const rand = () => 0;
+    expect(pickEasterMessage(MESSAGES[0], MESSAGES, rand)).toBe(MESSAGES[1]);
+  });
+
+  it('normalizes an out-of-range rand result (wraps, never index errors)', () => {
+    const rand = () => 5; // beyond MESSAGES.length — must wrap to a valid index
+    expect(pickEasterMessage('DARE to spin! 🎉', MESSAGES, rand)).toBe(MESSAGES[2]);
+  });
 });
 
 describe('pushToast — capped, oldest-first toast stack', () => {

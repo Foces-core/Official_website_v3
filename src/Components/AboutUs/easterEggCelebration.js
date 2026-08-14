@@ -9,16 +9,18 @@ export const TOAST_MS = 1700; // must outlast the .about-toast animation (1.6s)
 export const MAX_TOASTS = 4; // cap concurrent toasts during a rapid-fire session
 
 // Pick a celebration message, never repeating the one just shown. `rand`
-// must return an integer index in [0, messages.length) (the caller wraps
+// must return an index in [0, messages.length) (the caller wraps
 // Math.random the same way the component used to). A single-message list is
-// returned as-is so the guard never loops forever.
+// returned as-is, and the retry is BOUNDED: it starts at a random index and
+// walks forward to the next non-repeating message, so a rand that keeps
+// returning the previous message's index can never loop forever.
 export function pickEasterMessage(last, messages, rand) {
   if (messages.length <= 1) return messages[0];
-  let msg;
-  do {
-    msg = messages[rand()];
-  } while (msg === last);
-  return msg;
+  const start = Math.floor(rand()) % messages.length;
+  const offset = messages.findIndex((_, i) => messages[(start + i) % messages.length] !== last);
+  // All messages identical to `last` (degenerate data) — any pick repeats.
+  if (offset === -1) return messages[start];
+  return messages[(start + offset) % messages.length];
 }
 
 // Append a toast to the stack, dropping the OLDEST first once the stack is

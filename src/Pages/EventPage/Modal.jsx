@@ -8,14 +8,17 @@ import { acquireScrollLock } from '../../utils/scrollLock.js';
 
 function Modal({ images, open, onClose }) {
   const lightboxRef = useRef(null);
+  const imagesAvailable = Boolean(images && images.length > 0);
 
-  // Body scroll-lock while the lightbox is open (ref-counted — safe if the
-  // navbar drawer or another overlay is locked at the same time).
+  // Body scroll-lock while the lightbox is actually rendered (ref-counted —
+  // safe if the navbar drawer or another overlay is locked at the same
+  // time). Locking only when images are available keeps the lock in sync
+  // with the `return null` above: an open modal with no slides never locks.
   useEffect(() => {
-    if (!open) return;
+    if (!open || !imagesAvailable) return;
     const release = acquireScrollLock();
     return release;
-  }, [open]);
+  }, [open, imagesAvailable]);
 
   useEffect(() => {
     if (!open || !lightboxRef.current) return;
