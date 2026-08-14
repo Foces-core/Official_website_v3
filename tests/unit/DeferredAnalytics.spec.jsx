@@ -5,11 +5,15 @@ import { createHarness } from './harness.jsx';
 
 // The seam is the rendered output: DeferredAnalytics must render NOTHING at
 // boot (analytics must not compete with the page), then mount SpeedInsights
-// only after the user has interacted and the browser is idle — or the safety
-// timer fires. The dynamic import is mocked; jsdom has no
-// requestIdleCallback, so we drive it by hand.
+// and Analytics only after the user has interacted and the browser is idle —
+// or the safety timer fires. Both dynamic imports are mocked (the real
+// @vercel/analytics module pulls in its own React copy and breaks jsdom's
+// act environment); jsdom has no requestIdleCallback, so we drive it by hand.
 vi.mock('@vercel/speed-insights/react', () => ({
   SpeedInsights: () => <div id="speed-insights">analytics</div>,
+}));
+vi.mock('@vercel/analytics/react', () => ({
+  Analytics: () => <div id="vercel-analytics">analytics</div>,
 }));
 
 let harness;
@@ -56,6 +60,10 @@ function insightsRendered() {
   return document.getElementById('speed-insights') !== null;
 }
 
+function analyticsRendered() {
+  return document.getElementById('vercel-analytics') !== null;
+}
+
 beforeEach(() => {
   harness = createHarness();
 });
@@ -90,6 +98,7 @@ describe('DeferredAnalytics — idle boot path', () => {
 
     await fireIdle();
     expect(insightsRendered()).toBe(true);
+    expect(analyticsRendered()).toBe(true);
   });
 
   it('boots after a user interaction even if the browser is never idle until the timeout', async () => {
