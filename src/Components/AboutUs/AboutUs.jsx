@@ -11,6 +11,14 @@ import {
   rectIsOnScreen,
 } from '../../utils/keyboardLock.js';
 import { createSpinTracker, SPIN_BARS } from './easterEggLogic.js';
+import {
+  CUBE_PHYSICS,
+  snapAngle,
+  windStepVelocity,
+  isWindStopped,
+  resolveWindDown,
+} from './cubePhysics.js';
+import { createParticleSpec, stepParticle } from './confettiSim.js';
 
 // Easter egg: if the user spins the cube rapidly (via keyboard arrows or a
 // fast horizontal drag), a celebration fires. A spin = one 90° of Y rotation.
@@ -33,15 +41,9 @@ const SPIN_CONFIG = TOUCH_FIRST ? SPIN_BARS.touch : SPIN_BARS.desktop;
 const TOAST_MS = 1700; // must outlast the .about-toast animation (1.6s)
 const MAX_TOASTS = 4; // cap concurrent toasts during a rapid-fire session
 
-// Drag + wind-down tuning
-const DRAG_SENS = 0.6;
-const NORMAL_WIND_FRICTION = 0.92; // per-frame velocity decay for normal spins — snappy stop
-const RAPID_WIND_FRICTION = 0.975; // slower velocity decay for rapid spins — smooth long glide
-const RAPID_SPEED_THRESHOLD = 2.5; // release speed (deg/frame) threshold to trigger rapid wind-down
-const NORMAL_MAX_WIND_SPEED = 4; // deg/frame cap for normal spins
-const RAPID_MAX_WIND_SPEED = 9; // deg/frame cap for rapid spins
-const MIN_WIND_SPEED = 0.05; // deg/frame — below this the cube snaps to a face
-const SNAP_MS = 400; // how long the settle-to-face animation takes
+// Drag + wind-down tuning lives in cubePhysics.js (pure, unit-tested) —
+// these constants used to sit here untested, where every tweak risked the
+// feel of the spin.
 
 const PARTICLE_COLORS = [
   '#22d3ee',
@@ -179,33 +181,17 @@ function AboutUs() {
         // Hidden until the first physics frame so nothing flashes at the origin.
         p.style.opacity = '0';
         p.style.transform = 'translate(-50%, -50%) scale(0.1)';
-        particles.push({
-          el: p,
-          x: 0,
-          y: 0,
-          vx: (Math.random() - 0.5) * 6,
-          vy: -(2.5 + Math.random() * 5),
-          rot: Math.random() * 360,
-          vr: (Math.random() - 0.5) * 22,
-          life: 1,
-          decay: 0.012 + Math.random() * 0.008,
-        });
+        particles.push({ el: p, ...createParticleSpec() });
         frag.appendChild(p);
       }
       burst.appendChild(frag);
 
       // 60fps loop: gravity pulls the confetti down while it drifts, spins and fades.
+      // The per-frame math lives in confettiSim.js; only the DOM writes stay here.
       const step = () => {
         let alive = false;
         for (const p of particles) {
-          p.vy += 0.16;
-          p.vx *= 0.985;
-          p.vy *= 0.985;
-          p.x += p.vx;
-          p.y += p.vy;
-          p.rot += p.vr;
-          p.life -= p.decay;
-          if (p.life <= 0) {
+          if (!stepParticle(p)) {
             p.el.style.opacity = '0';
             continue;
           }
@@ -250,22 +236,22 @@ function AboutUs() {
     }
     const el = boxRef.current;
     if (!el) return;
-    const tx = Math.round(rotXRef.current / 90) * 90;
-    const ty = Math.round(rotYRef.current / 90) * 90;
-    el.style.transition = `transform ${SNAP_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+    const tx = snapAngle(rotXRef.current);
+    const ty = snapAngle(rotYRef.current);
+    el.style.transition = `transform ${CUBE_PHYSICS.snapMs}ms cubic-bezier(0.22, 1, 0.36, 1)`;
     rotXRef.current = tx;
     rotYRef.current = ty;
     applyTransform();
     setTimeout(() => {
       if (boxRef.current) boxRef.current.style.transition = 'none';
-    }, SNAP_MS);
+    }, CUBE_PHYSICS.snapMs);
     manualUntilRef.current = Date.now() + 1200;
   }, [applyTransform]);
 
   // Release "inertia": keep rotating with the release velocity, decaying, until
   // it's slow enough to settle onto a face. Rapid spins decay slower for a longer glide.
   const startWindDown = useCallback(
-    (friction = NORMAL_WIND_FRICTION) => {
+    (friction = CUBE_PHYSICS.normalWindFriction) => {
       windingRef.current = true;
       manualUntilRef.current = Date.now() + 10000;
       if (windRaf.current != null) cancelAnimationFrame(windRaf.current);
@@ -273,9 +259,8 @@ function AboutUs() {
         // Y-axis only — spin decays on the horizontal plane. Inertia spins do
         // NOT count toward the easter egg; only deliberate drags/keys do.
         rotYRef.current += velY.current;
-        velY.current *= friction;
-        const speed = Math.abs(velY.current);
-        if (speed < MIN_WIND_SPEED) {
+        velY.current = windStepVelocity(velY.current, friction);
+        if (isWindStopped(velY.current)) {
           snapToFace();
           return;
         }
@@ -436,7 +421,7 @@ function AboutUs() {
       const now = Date.now();
       // Horizontal movement only — vertical drags are ignored (left/right
       // spin). Dragging right turns the cube right, matching ArrowRight.
-      const ny = startRotY.current + (clientX - startX.current) * DRAG_SENS;
+      const ny = startRotY.current + (clientX - startX.current) * CUBE_PHYSICS.dragSensitivity;
       const dt = Math.max(now - lastMove.current.t, 1);
       const k = 0.4;
       velY.current = velY.current * (1 - k) + ((ny - lastMove.current.y) / dt) * k;
@@ -452,17 +437,12 @@ function AboutUs() {
     if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
 
-    // Convert release velocity from deg/ms to deg/frame, cap it, then wind down.
-    // Rapid spins use a higher speed cap and a slower decay (friction) for an elegant long glide.
-    const vy = velY.current * (1000 / 60);
-    const speed = Math.abs(vy);
-    if (speed > 0.05) {
-      const isRapid = speed >= RAPID_SPEED_THRESHOLD;
-      const maxSpeed = isRapid ? RAPID_MAX_WIND_SPEED : NORMAL_MAX_WIND_SPEED;
-      const friction = isRapid ? RAPID_WIND_FRICTION : NORMAL_WIND_FRICTION;
-      const s = Math.min(speed, maxSpeed) / speed;
-      velY.current = vy * s;
-      startWindDown(friction);
+    // Resolve the release velocity into wind-down parameters (deg/ms ->
+    // deg/frame, cap, rapid-vs-normal friction) — see cubePhysics.js.
+    const resolved = resolveWindDown(velY.current);
+    if (resolved) {
+      velY.current = resolved.velocity;
+      startWindDown(resolved.friction);
     } else {
       snapToFace();
     }
