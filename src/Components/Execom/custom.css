@@ -11,6 +11,11 @@
    padding lives here (not Tailwind utilities) because Swiper's own
    `.swiper { padding: 0 }` overrides utilities due to stylesheet order. */
 .execom-swiper {
+    /* The carousel owns its touch gesture (same rule as the About cube):
+       rotating the cube must never scroll the page, and a pan-y allowance
+       would let diagonal drags jump the viewport. Swiper's own non-passive
+       touchmove preventDefault then covers the gesture in JS. */
+    touch-action: none;
     padding-bottom: 52px;
     --swiper-pagination-bottom: 4px;
     --swiper-pagination-color: white;
@@ -53,7 +58,9 @@
         height: 390px;
     }
     .execom-cube-swiper {
-        touch-action: pan-y;
+        /* Rotating the cube must never scroll the page — the carousel owns
+           the whole gesture (same rule as the About cube). */
+        touch-action: none;
         perspective: 1200px;
     }
 }
