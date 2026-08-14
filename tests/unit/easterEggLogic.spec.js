@@ -1,0 +1,91 @@
+import { describe, it, expect, afterEach, vi } from 'vitest';
+import { createSpinTracker } from '../../src/Components/AboutUs/easterEggLogic.js';
+
+// The seam is the tracker's register() -> boolean interface: it counts 90°
+// spins and fires exactly once when `target` spins arrive within `gap` ms of
+// each other. Times are passed in explicitly so the sequence logic is fully
+// deterministic; the Date.now() default is pinned with fake timers.
+
+const DESKTOP = { target: 20, gap: 800 };
+const TOUCH = { target: 10, gap: 1500 };
+
+afterEach(() => {
+  vi.useRealTimers();
+});
+
+describe('createSpinTracker — counting and firing', () => {
+  it('returns false for the first spin', () => {
+    expect(createSpinTracker(DESKTOP).register(0)).toBe(false);
+  });
+
+  it('fires exactly when the target is reached, then starts a fresh run', () => {
+    const tracker = createSpinTracker({ target: 3, gap: 800 });
+    expect(tracker.register(0)).toBe(false);
+    expect(tracker.register(100)).toBe(false);
+    expect(tracker.register(200)).toBe(true); // 3rd spin within gap
+    expect(tracker.register(300)).toBe(false); // fresh run — never double-fires
+  });
+
+  it('keeps counting consecutive spins within the gap', () => {
+    const tracker = createSpinTracker({ target: 4, gap: 800 });
+    for (let i = 0; i < 3; i += 1) {
+      expect(tracker.register(i * 100)).toBe(false);
+    }
+    expect(tracker.register(300)).toBe(true);
+  });
+});
+
+describe('createSpinTracker — gap reset', () => {
+  it('resets the counter when a spin arrives after the gap (casual spinning never fires)', () => {
+    const tracker = createSpinTracker({ target: 3, gap: 800 });
+    tracker.register(0);
+    tracker.register(100);
+    // Long pause — the burst dies; the next spin restarts at 1.
+    expect(tracker.register(1000)).toBe(false);
+    expect(tracker.register(1100)).toBe(false);
+    expect(tracker.register(1200)).toBe(true); // still 3 rapid spins needed
+  });
+
+  it('a single spin separated by long gaps never fires', () => {
+    const tracker = createSpinTracker({ target: 5, gap: 800 });
+    for (let i = 0; i < 20; i += 1) {
+      expect(tracker.register(i * 5000)).toBe(false);
+    }
+  });
+});
+
+describe('createSpinTracker — device bars', () => {
+  it('desktop fires after 20 rapid spins (0.8s window)', () => {
+    const tracker = createSpinTracker(DESKTOP);
+    for (let i = 0; i < 19; i += 1) {
+      expect(tracker.register(i * 40)).toBe(false);
+    }
+    expect(tracker.register(19 * 40)).toBe(true);
+  });
+
+  it('touch phones fire after 10 rapid spins (1.5s window) — the easier bar', () => {
+    const tracker = createSpinTracker(TOUCH);
+    for (let i = 0; i < 9; i += 1) {
+      expect(tracker.register(i * 120)).toBe(false);
+    }
+    expect(tracker.register(9 * 120)).toBe(true);
+  });
+
+  it('touch bar still respects the wider gap: a 1.4s pause keeps the burst alive', () => {
+    const tracker = createSpinTracker({ target: 3, gap: 1500 });
+    tracker.register(0);
+    tracker.register(1400); // within the 1500ms touch window
+    expect(tracker.register(2800)).toBe(true);
+  });
+});
+
+describe('createSpinTracker — default clock', () => {
+  it('uses Date.now() when no timestamp is given', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(1000);
+    const tracker = createSpinTracker({ target: 2, gap: 800 });
+    expect(tracker.register()).toBe(false);
+    vi.setSystemTime(1100);
+    expect(tracker.register()).toBe(true);
+  });
+});
