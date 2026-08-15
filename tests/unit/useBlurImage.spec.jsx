@@ -133,4 +133,31 @@ describe('fetch-priority elevation', () => {
     });
     expect(prioritizeAssetFetch).not.toHaveBeenCalled();
   });
+
+  it('keeps eager images at high priority when the src changes', async () => {
+    harness.render(<BlurImage src="a.jpg" alt="Photo" loading="eager" />);
+    await act(async () => {
+      harness.render(<BlurImage src="b.jpg" alt="Photo" loading="eager" />);
+    });
+    // The src-change reset re-applies the eager priority policy ('high'),
+    // not the lazy default (undefined)
+    expect(fullImg(harness.container, 'b.jpg').getAttribute('fetchpriority')).toBe('high');
+  });
+});
+
+describe('cached-image fast path', () => {
+  it('treats an already-complete image (browser cache) as loaded from the first frame', async () => {
+    harness.render(<BlurImage src="a.jpg" blurSrc="blur.jpg" alt="Photo" />);
+    const img = fullImg(harness.container, 'a.jpg');
+
+    // Simulate a cache hit: the <img> is complete with real dimensions.
+    Object.defineProperty(img, 'complete', { value: true, configurable: true });
+    Object.defineProperty(img, 'naturalWidth', { value: 500, configurable: true });
+
+    // A src change re-runs the completeness effect against the same node.
+    await act(async () => {
+      harness.render(<BlurImage src="b.jpg" blurSrc="blur.jpg" alt="Photo" />);
+    });
+    expect(fullImg(harness.container, 'b.jpg').className).toContain('opacity-100');
+  });
 });

@@ -119,6 +119,11 @@ describe('scheduleUserBlockingTask', () => {
       }),
     ).resolves.toBeUndefined();
   });
+
+  it('resolves undefined for a non-function argument', async () => {
+    await expect(scheduleUserBlockingTask(undefined)).resolves.toBeUndefined();
+    await expect(scheduleUserBlockingTask('nope')).resolves.toBeUndefined();
+  });
 });
 
 describe('prioritizeAssetFetch', () => {

@@ -47,6 +47,12 @@ describe('validateEvents', () => {
     ]);
   });
 
+  it('flags a missing name', () => {
+    const noName = { ...baseEvent };
+    delete noName.name;
+    expect(validateEvents([noName])).toEqual([expect.stringContaining('missing name')]);
+  });
+
   it('flags a websiteUrl that is present but blank', () => {
     expect(validateEvents([{ ...baseEvent, websiteUrl: '   ' }])).toEqual([
       expect.stringContaining('websiteUrl'),
@@ -107,6 +113,19 @@ describe('validateEvents', () => {
               srcset: '/assets/lecture.webp 576w, /assets/lecture-400.webp 400w',
             },
           ],
+        },
+      ]),
+    ).toEqual([]);
+  });
+
+  it('skips srcset parts that do not parse as width candidates', () => {
+    // '/assets/crop.png' has no "<url> <width>w" descriptor — the parser
+    // must ignore it rather than treat it as a malformed candidate.
+    expect(
+      validateEvents([
+        {
+          ...baseEvent,
+          photos: [{ url: '/assets/a.webp', srcset: '/assets/a.webp 1000w, /assets/crop.png' }],
         },
       ]),
     ).toEqual([]);

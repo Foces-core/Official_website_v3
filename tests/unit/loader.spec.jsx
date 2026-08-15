@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { act } from 'react';
 import Loader from '../../src/Components/Loader/Loader.jsx';
 import { createHarness } from './harness.jsx';
 
@@ -48,6 +49,26 @@ describe('Loader', () => {
 
     setInnerWidth(1280);
     harness.render(<Loader />);
+    expect(harness.container.querySelector('.break-lines')).toBeNull();
+  });
+
+  it('reacts to resize: crossing 500px swaps the tagline without a remount', () => {
+    setInnerWidth(1280);
+    harness.render(<Loader />);
+    expect(harness.container.querySelector('.break-lines')).toBeNull();
+
+    setInnerWidth(400);
+    act(() => {
+      window.dispatchEvent(new Event('resize'));
+    });
+    expect(harness.container.querySelector('.break-lines')).not.toBeNull();
+    expect(harness.container.textContent).toContain('1st Rule Of Programming');
+
+    // And back the other way
+    setInnerWidth(1280);
+    act(() => {
+      window.dispatchEvent(new Event('resize'));
+    });
     expect(harness.container.querySelector('.break-lines')).toBeNull();
   });
 });

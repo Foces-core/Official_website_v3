@@ -130,6 +130,33 @@ describe('keyboardLock — focused-control rules', () => {
     expect(getArrowOwner()).toBe('cube');
   });
 
+  it('a contentEditable region withholds the arrow keys', () => {
+    const editable = document.createElement('div');
+    editable.contentEditable = 'true';
+    // jsdom never sets isContentEditable and only focuses tabbable elements;
+    // define the browser property on the instance and give it a tab stop so
+    // the isContentEditable branch of isInteractiveControl runs.
+    Object.defineProperty(editable, 'isContentEditable', { value: true });
+    editable.tabIndex = 0;
+    document.body.appendChild(editable);
+    editable.focus();
+
+    reg('cube', onScreen, null);
+    expect(isControlFocused()).toBe(true);
+    expect(getArrowOwner()).toBeNull();
+  });
+
+  it('an element with tabindex >= 0 counts as an interactive control', () => {
+    const el = document.createElement('div');
+    el.tabIndex = 0;
+    document.body.appendChild(el);
+    el.focus();
+
+    reg('cube', onScreen, null);
+    expect(isControlFocused()).toBe(true);
+    expect(getArrowOwner()).toBeNull();
+  });
+
   it('a plain body focus does not withhold the keys', () => {
     reg('cube', onScreen, null);
     expect(getArrowOwner()).toBe('cube');
@@ -172,6 +199,28 @@ describe('keyboardLock — subscriptions', () => {
     reg('cube', onScreen, null);
     expect(listener.mock.calls.length).toBe(before);
   });
+
+  it('notifies through the rAF-throttled scroll path, deduping rapid scrolls', async () => {
+    const listener = vi.fn();
+    subscribeKeyboardArbitration(listener);
+
+    // Two scrolls in the same frame coalesce into a single notify.
+    window.dispatchEvent(new Event('scroll'));
+    window.dispatchEvent(new Event('scroll'));
+    await new Promise((resolve) => setTimeout(resolve, 10)); // let the rAF fire
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it('the focus-in/out listeners notify subscribers on focus changes', async () => {
+    const listener = vi.fn();
+    subscribeKeyboardArbitration(listener);
+    const button = document.createElement('button');
+    document.body.appendChild(button);
+
+    button.focus();
+    button.blur();
+    expect(listener).toHaveBeenCalled();
+  });
 });
 
 describe('keyboardLock — rectIsOnScreen', () => {
@@ -205,5 +254,31 @@ describe('keyboardLock — rectIsOnScreen', () => {
     const el = fakeEl({ top: 900, bottom: 1000, left: 0, right: 200 });
     expect(rectIsOnScreen(el)).toBe(false);
     expect(rectIsOnScreen(el, 400)).toBe(true);
+  });
+
+  it('falls back to the document dimensions when innerWidth/innerHeight are falsy', () => {
+    // jsdom reports 0 for clientWidth/clientHeight; the || fallback must still
+    // produce a usable viewport (rect spanning the origin counts as on-screen).
+    Object.defineProperty(window, 'innerWidth', { value: 0, configurable: true });
+    Object.defineProperty(window, 'innerHeight', { value: 0, configurable: true });
+    const el = fakeEl({ top: -5, bottom: 5, left: -5, right: 5 });
+    expect(rectIsOnScreen(el)).toBe(true);
+  });
+});
+
+describe('keyboardLock — SSR guard', () => {
+  it('skips attaching window listeners when window is undefined (module-scope guard)', async () => {
+    const savedWindow = globalThis.window;
+    delete globalThis.window;
+    try {
+      vi.resetModules();
+      const mod = await import('../../src/utils/keyboardLock.js');
+      // The fresh module evaluated without window: the listener block was
+      // skipped, but the exported API still exists and works.
+      expect(typeof mod.getArrowOwner).toBe('function');
+      expect(mod.getArrowOwner()).toBeNull();
+    } finally {
+      globalThis.window = savedWindow;
+    }
   });
 });

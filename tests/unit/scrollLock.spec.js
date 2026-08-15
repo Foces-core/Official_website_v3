@@ -82,4 +82,23 @@ describe('acquireScrollLock', () => {
       globalThis.document = savedDoc;
     }
   });
+
+  // Note: the `originalOverflow ?? ''` nullish fallback (release path) is
+  // deliberately left uncovered — originalOverflow is always written by the
+  // first acquire of a lock chain, so the null side is unreachable through
+  // the public API. It is a defensive guard against future refactors.
+
+  it('is a no-op when the document exists but has no <body> yet', () => {
+    const bodyDesc = Object.getOwnPropertyDescriptor(document, 'body');
+    Object.defineProperty(document, 'body', { value: null, configurable: true });
+    try {
+      const release = acquireScrollLock();
+      expect(typeof release).toBe('function');
+      expect(() => release()).not.toThrow();
+      expect(document.body).toBeNull(); // untouched by the no-op
+    } finally {
+      if (bodyDesc) Object.defineProperty(document, 'body', bodyDesc);
+      else delete document.body;
+    }
+  });
 });

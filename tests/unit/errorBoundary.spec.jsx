@@ -92,3 +92,17 @@ test('shows the dev error message and wires both buttons to resetError', () => {
   expect(resetError).toHaveBeenCalledTimes(2);
   h.unmount();
 });
+
+test('fallback handlers still navigate when resetError is not provided (standalone use)', () => {
+  const h = createHarness();
+  h.render(<ErrorFallback error={new Error('x')} />);
+  const [refresh, home] = h.container.querySelectorAll('button');
+  // Both handlers guard on resetError being present; without it they must
+  // fall through to the navigation without throwing.
+  expect(() => {
+    act(() => refresh.click());
+    act(() => home.click());
+  }).not.toThrow();
+  expect(h.container.textContent).toContain('Something went wrong');
+  h.unmount();
+});

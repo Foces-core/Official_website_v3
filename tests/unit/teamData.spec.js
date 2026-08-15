@@ -17,6 +17,16 @@ describe('validateTeam — shape rules', () => {
     expect(validateTeam([member]).join('\n')).toContain('missing role');
   });
 
+  it('flags a missing name', () => {
+    const member = { img: '/a.webp', blur: '/a-blur.webp', role: 'Lead' };
+    expect(validateTeam([member]).join('\n')).toContain('missing name');
+  });
+
+  it('flags a missing img', () => {
+    const member = { name: 'A Member', blur: '/a-blur.webp', role: 'Lead' };
+    expect(validateTeam([member]).join('\n')).toContain('missing img');
+  });
+
   it('flags duplicate names', () => {
     const member = { name: 'A Member', img: '/a.webp', blur: '/a-blur.webp', role: 'Lead' };
     const problems = validateTeam([member, { ...member, role: 'Other' }]);

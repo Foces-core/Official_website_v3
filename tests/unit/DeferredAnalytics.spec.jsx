@@ -187,4 +187,40 @@ describe('DeferredAnalytics — timer fallbacks', () => {
     expect(() => mountAt(8000)).not.toThrow();
     expect(insightsRendered()).toBe(false);
   });
+
+  it('cancels the pending idle callback on unmount while the idle stubs are still live', () => {
+    stubIdleCallback();
+    const cancelSpy = vi.fn();
+    vi.stubGlobal('cancelIdleCallback', cancelSpy); // AFTER the idle stub, or it is overwritten
+    renderAnalytics();
+    interact(); // arm() → idleId = 42
+    expect(idleCb).not.toBeNull();
+
+    // The afterEach unstubs globals BEFORE unmounting, so unmounting here (with
+    // the stubs live) is the only way the cancelIdleCallback branch runs.
+    harness.unmount();
+    expect(cancelSpy).toHaveBeenCalledWith(42);
+  });
+
+  it('does not set state after unmount while the vendor import is still resolving', async () => {
+    stubIdleCallback();
+    renderAnalytics();
+    interact();
+    // Arm idle without awaiting: ready=true schedules the dynamic imports, but
+    // their allSettled microtask is still pending when we unmount, so the
+    // cancelled guard must swallow the result (no crash, no late setState).
+    act(() => {
+      idleCb({ didTimeout: false, timeRemaining: () => 50 });
+    });
+    harness.unmount();
+    await act(async () => {}); // flush the import microtask
+    expect(insightsRendered()).toBe(false);
+  });
 });
+
+// The `if (done) return` guard inside arm() is deliberately left uncovered:
+// arm can only ever run once per effect instance (the interaction listeners
+// are { once: true } and cleanup() removes them synchronously inside arm,
+// while the safety timer is cleared by that same cleanup), so the guard is a
+// defensive no-op that no public seam can reach. Covering it would require
+// reaching into module internals — not a real behavior.

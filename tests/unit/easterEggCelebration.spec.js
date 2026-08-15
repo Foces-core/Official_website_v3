@@ -41,6 +41,13 @@ describe('pickEasterMessage — no two identical toasts in a row', () => {
     const rand = () => 5; // beyond MESSAGES.length — must wrap to a valid index
     expect(pickEasterMessage('DARE to spin! 🎉', MESSAGES, rand)).toBe(MESSAGES[2]);
   });
+
+  it('returns a message when every candidate equals the previous one (degenerate data)', () => {
+    // offset === -1: nothing to pick that differs — any choice repeats. The
+    // picker must still return a valid message instead of looping forever.
+    const rand = () => 0;
+    expect(pickEasterMessage('Same 🎉', ['Same 🎉', 'Same 🎉', 'Same 🎉'], rand)).toBe('Same 🎉');
+  });
 });
 
 describe('pushToast — capped, oldest-first toast stack', () => {

@@ -139,6 +139,11 @@ describe('detectProfile — network heuristics', () => {
     stubNavigator({ connection: null });
     expect(detectProfile().slowNetwork).toBe(false);
   });
+
+  it('a connection without an effectiveType falls back to an empty string (not slow)', () => {
+    stubNavigator({ connection: { saveData: false, downlink: 20 } });
+    expect(detectProfile().slowNetwork).toBe(false);
+  });
 });
 
 describe('detectProfile — CPU heuristics', () => {
@@ -225,5 +230,51 @@ describe('detectProfile — composition', () => {
       reducedMotion: false,
       lowPower: false,
     });
+  });
+});
+
+describe('detectProfile — defensive catch paths', () => {
+  it('treats a throwing matchMedia as a miss (matches catch)', () => {
+    vi.stubGlobal('matchMedia', () => {
+      throw new Error('matchMedia denied');
+    });
+    const profile = detectProfile();
+    expect(profile.lowCPU).toBe(false);
+    expect(profile.reducedMotion).toBe(false);
+  });
+
+  it('falls back to no override when localStorage is unavailable (getOverride catch)', () => {
+    // jsdom's window.localStorage is a getter that discards instance
+    // mutations (spying on getItem silently no-ops), so make the getter
+    // itself throw to exercise the storage catch + the null fall-through.
+    const desc = Object.getOwnPropertyDescriptor(window, 'localStorage');
+    Object.defineProperty(window, 'localStorage', {
+      configurable: true,
+      get() {
+        throw new Error('storage denied');
+      },
+    });
+    try {
+      expect(detectProfile()).toEqual({
+        slowNetwork: false,
+        lowCPU: false,
+        reducedMotion: false,
+        lowPower: false,
+      });
+    } finally {
+      if (desc) Object.defineProperty(window, 'localStorage', desc);
+      else delete window.localStorage;
+    }
+  });
+
+  it('treats a throwing userAgentData read as a capable device (detectCPU catch)', () => {
+    const nav = { hardwareConcurrency: 4, deviceMemory: 4 };
+    Object.defineProperty(nav, 'userAgentData', {
+      get() {
+        throw new Error('uaData denied');
+      },
+    });
+    vi.stubGlobal('navigator', nav);
+    expect(detectProfile().lowCPU).toBe(false);
   });
 });

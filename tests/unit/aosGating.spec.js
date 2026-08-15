@@ -110,4 +110,18 @@ describe('initAOS — gate + init in one owner', () => {
     expect(AOS.init).toHaveBeenCalledWith({ once: true, disable: false });
     expect(document.body.classList.contains('aos-disabled')).toBe(false);
   });
+
+  it('still inits AOS when <body> is not in the document yet', () => {
+    // The body-tag step is optional; AOS.init must still run (and not throw)
+    // when the gate is evaluated before hydration attaches <body>.
+    const bodyDesc = Object.getOwnPropertyDescriptor(document, 'body');
+    Object.defineProperty(document, 'body', { value: null, configurable: true });
+    try {
+      expect(() => initAOS()).not.toThrow();
+      expect(AOS.init).toHaveBeenCalledWith({ once: true, disable: false });
+    } finally {
+      if (bodyDesc) Object.defineProperty(document, 'body', bodyDesc);
+      else delete document.body;
+    }
+  });
 });
