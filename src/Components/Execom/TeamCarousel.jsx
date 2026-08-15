@@ -186,10 +186,18 @@ function TeamCarousel({
               const copy = Math.floor(sw.activeIndex / total);
               sw.slideTo(copy * total + i, 350);
             }}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              activeIndex === i ? 'w-6 bg-[#007aff]' : 'w-2 bg-[#4f4f54]'
-            }`}
-          />
+            // 8px dot on a 24px hit area (WCAG 2.2.8 target size): the button
+            // is a genuine 24×24 box (min-w-6/min-h-6) with the visible dot
+            // centered inside — no padding/margin tricks, which axe reads as
+            // overlapping targets.
+            className="flex items-center justify-center min-w-6 min-h-6 rounded-full"
+          >
+            <span
+              className={`h-2 rounded-full transition-all duration-300 ${
+                activeIndex === i ? 'w-6 bg-[#007aff]' : 'w-2 bg-[#4f4f54]'
+              }`}
+            />
+          </button>
         ))}
       </div>
     </div>

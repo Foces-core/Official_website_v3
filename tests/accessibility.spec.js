@@ -1,5 +1,47 @@
 import { test, expect } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 import { gotoHome, waitForLoaderGone } from './helpers';
+
+test.describe('WCAG scan (axe-core)', () => {
+  // The repo's a11y contract is WCAG 2.1/2.2 AA (CONTRIBUTING.md); scan those
+  // tags on every route. Serious/critical failures block the PR; moderate
+  // ones are logged so the picture stays visible while we whittle them down.
+  const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
+
+  for (const route of ['/', '/events', '/contact']) {
+    test(`${route} has no serious/critical WCAG violations`, async ({ page }) => {
+      await page.goto(route, { waitUntil: 'networkidle' });
+      await waitForLoaderGone(page);
+
+      // ScrollGate mounts lazy sections only near the viewport — scroll the
+      // whole page first so gated content is actually in the DOM to audit.
+      await page.evaluate(async () => {
+        const step = window.innerHeight;
+        for (let y = 0; y <= document.body.scrollHeight; y += step) {
+          window.scrollTo(0, y);
+          await new Promise((r) => setTimeout(r, 60)); // give IO a tick
+        }
+        window.scrollTo(0, 0);
+      });
+      await page.waitForTimeout(500);
+
+      const results = await new AxeBuilder({ page }).withTags(TAGS).analyze();
+      const blocking = results.violations.filter((v) => ['serious', 'critical'].includes(v.impact));
+      const summary = results.violations
+        .map((v) => `${v.id}[${v.impact}] x${v.nodes.length}`)
+        .join(', ');
+      console.log(`axe ${route}: ${summary || 'clean'}`);
+      expect(
+        blocking,
+        `serious/critical: ${JSON.stringify(
+          blocking.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.length })),
+          null,
+          2,
+        )}`,
+      ).toEqual([]);
+    });
+  }
+});
 
 test.describe('Reduced motion', () => {
   test('content stays visible with prefers-reduced-motion', async ({ page }) => {

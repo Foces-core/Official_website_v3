@@ -173,10 +173,18 @@ function Featuring() {
               const copy = copyFor(sw.activeIndex, echoSlides.length);
               sw.slideTo(copy * echoSlides.length + i, 350);
             }}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              activeSlide === i ? 'w-6 bg-white' : 'w-2 bg-white/50 hover:bg-white/80'
-            }`}
-          />
+            // 8px dot on a 24px hit area (WCAG 2.2.8 target size): the button
+            // is a genuine 24×24 box (min-w-6/min-h-6) with the visible dot
+            // centered inside — no padding/margin tricks, which axe reads as
+            // overlapping targets.
+            className="flex items-center justify-center min-w-6 min-h-6 rounded-full"
+          >
+            <span
+              className={`h-2 rounded-full transition-all duration-300 ${
+                activeSlide === i ? 'w-6 bg-white' : 'w-2 bg-white/50 hover:bg-white/80'
+              }`}
+            />
+          </button>
         ))}
       </div>
     </div>
