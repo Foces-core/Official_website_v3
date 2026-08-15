@@ -42,8 +42,15 @@ pnpm build      # production build (image optimizer + PWA precache)
    [commitlint](https://commitlint.js.org/) validates the message (`a11y:`
    is allowed). CI runs the same commitlint check on every PR. Emergency
    bypass: `git commit --no-verify` (don't make it a habit).
-3. Open a pull request against `main` and push freely — the checks comment
-   on the PR instead of blocking locally: CI runs lint, format, unit
+3. Open a pull request against `main` — the body auto-fills from
+   `.github/pull_request_template.md`. Fill it in properly: the
+   **How to test** steps and the **Checklist** are not optional decoration.
+   CodeRabbit's PR-description check validates that the description follows
+   the template (a PR that omits those sections gets flagged), and the
+   checklist mirrors the exact checks that gate the merge — tick only what
+   you actually ran (`pnpm verify`, `pnpm knip`, `pnpm lint:workflows` for
+   workflow changes). Then push freely — the checks comment on the PR
+   instead of blocking locally: CI runs lint, format, unit
    (coverage-thresholded), spec/assets/SW guards, build, E2E and the axe
    WCAG scan; CodeRabbit reviews automatically; and a **notify-on-failure**
    job comments once the run finishes if any check failed, mentioning
@@ -168,7 +175,10 @@ require the `Lint & Build`, `E2E (Playwright)`, `Probes (structural checks)`
 and `Validate commit messages` status checks before merge, plus the perf
 nightly so it never blocks a PR on timing jitter. With that in place the
 flow is: **push freely → CI/CodeRabbit/axe comment on anything wrong →
-merge only when the checks are green.**
+merge only when the checks are green.** The PR template's checklist is
+your pre-flight for that gate: it lists the same commands CI runs, so if
+you ticked every box honestly, the checks should be green on the first
+push.
 
 ## Questions?
 
