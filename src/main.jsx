@@ -10,6 +10,7 @@ import InstallPrompt from './Components/InstallPrompt/InstallPrompt.jsx';
 import ErrorBoundary from './Components/ErrorBoundary/ErrorBoundary.jsx';
 import { lazyWithRetry } from './utils/lazyWithRetry.js';
 import { SPLASH_FAILSAFE_MS, skipSplash, paintReady } from './utils/bootSplashLogic.js';
+import { shouldReloadOnResume } from './utils/resumeReload.js';
 import useDeviceProfile from './hooks/useLowPower.js';
 import './assets/fonts-latin.css';
 import './index.css';
@@ -71,6 +72,26 @@ function ScrollToTop() {
     if ((state && state.id) || hash) return;
     window.scrollTo(0, 0);
   }, [pathname, state, hash]);
+  return null;
+}
+
+// iOS suspends backgrounded tabs (timers freeze, WebGL contexts are
+// reclaimed); returning to one can surface a crashed page that never
+// refreshes itself. Reload when a tab comes back after being hidden past
+// PAGE_RESUME_RELOAD_MS — decision in src/utils/resumeReload.js, wiring here.
+function ResumeReloadGuard() {
+  useEffect(() => {
+    let hiddenAt = null;
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        hiddenAt = Date.now();
+      } else if (hiddenAt !== null && shouldReloadOnResume({ hiddenAt, visibleAt: Date.now() })) {
+        window.location.reload();
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
+  }, []);
   return null;
 }
 
@@ -162,6 +183,7 @@ root.render(
   <React.StrictMode>
     <Router>
       <ScrollToTop />
+      <ResumeReloadGuard />
       <Root />
       <DeferredAnalytics />
       <InstallPrompt />

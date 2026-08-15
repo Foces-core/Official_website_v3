@@ -1,4 +1,4 @@
-import { test, expect, vi, afterEach } from 'vitest';
+import { test, expect, vi, afterEach, beforeEach } from 'vitest';
 import { act } from 'react';
 import ErrorBoundary from '../../src/Components/ErrorBoundary/ErrorBoundary.jsx';
 import ErrorFallback from '../../src/Components/ErrorFallback/ErrorFallback.jsx';
@@ -8,8 +8,23 @@ import { createHarness } from './harness.jsx';
 // catching them, so silence the noise and assert the behavior instead.
 const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
 
+const AUTO_RELOAD_KEY = 'foces:error-auto-reloaded';
+
+// jsdom's window.location.reload is non-configurable (can't be spied), so the
+// whole location global is stubbed — the component's reload goes through it.
+let reload;
+
+beforeEach(() => {
+  reload = vi.fn();
+  vi.stubGlobal('location', { href: window.location.href, reload });
+  sessionStorage.removeItem(AUTO_RELOAD_KEY);
+});
+
 afterEach(() => {
   consoleError.mockClear();
+  sessionStorage.removeItem(AUTO_RELOAD_KEY);
+  vi.unstubAllGlobals();
+  vi.useRealTimers();
 });
 
 function Bomb() {
@@ -103,6 +118,44 @@ test('fallback handlers still navigate when resetError is not provided (standalo
     act(() => refresh.click());
     act(() => home.click());
   }).not.toThrow();
+  expect(h.container.textContent).toContain('Something went wrong');
+  h.unmount();
+});
+
+test('fallback auto-reloads once after a short delay', () => {
+  vi.useFakeTimers();
+  const h = createHarness();
+  h.render(<ErrorFallback error={new Error('x')} />);
+  // Session guard armed + timer running; the page should reload on its own.
+  act(() => {
+    vi.advanceTimersByTime(1201);
+  });
+  expect(reload).toHaveBeenCalledTimes(1);
+  h.unmount();
+});
+
+test('fallback does not auto-reload a second time in the same session', () => {
+  // A previous auto-reload in this session armed the guard; a second error
+  // must show the static fallback instead of reload-looping.
+  sessionStorage.setItem(AUTO_RELOAD_KEY, '1');
+  vi.useFakeTimers();
+  const h = createHarness();
+  h.render(<ErrorFallback error={new Error('x')} />);
+  act(() => {
+    vi.advanceTimersByTime(5000);
+  });
+  expect(reload).not.toHaveBeenCalled();
+  expect(h.container.textContent).toContain('Something went wrong');
+  h.unmount();
+});
+
+test('boundary shows the fallback once and lets the fallback heal (auto-reload path)', () => {
+  const h = createHarness();
+  h.render(
+    <ErrorBoundary>
+      <Bomb />
+    </ErrorBoundary>,
+  );
   expect(h.container.textContent).toContain('Something went wrong');
   h.unmount();
 });

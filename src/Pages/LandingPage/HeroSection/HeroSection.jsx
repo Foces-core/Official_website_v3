@@ -20,6 +20,27 @@ function HeroSection() {
     if (lowPower) return;
     if (!isWideScreen(window.innerWidth)) return;
 
+    // iOS reclaims GPU contexts for backgrounded tabs; Vanta's rAF loop then
+    // throws on the dead context and the whole app lands on the error screen
+    // with nobody to reload it. On context loss, stop Vanta instead — the
+    // hero keeps its static layers and the page stays alive. Capture phase:
+    // webglcontextlost does not bubble, but capture listeners on an ancestor
+    // still see it.
+    const heroEl = myRef.current; // stable copy — refs may change by cleanup
+    const onContextLost = (event) => {
+      event.preventDefault();
+      console.info('Hero WebGL context lost — stopping Vanta (iOS background resume).');
+      if (vantaEffect && typeof vantaEffect.destroy === 'function') {
+        try {
+          vantaEffect.destroy();
+        } catch {
+          /* already destroyed */
+        }
+      }
+      vantaEffect = null;
+    };
+    heroEl.addEventListener('webglcontextlost', onContextLost, true);
+
     // Defer the ~700KB 3D WebGL library to the lowest background load priority
     // so critical page assets, fonts, and interactive elements load first.
     scheduleBackgroundTask(async () => {
@@ -57,6 +78,7 @@ function HeroSection() {
 
     return () => {
       cancelled = true;
+      heroEl.removeEventListener('webglcontextlost', onContextLost, true);
       if (vantaEffect && typeof vantaEffect.destroy === 'function') {
         vantaEffect.destroy();
       }

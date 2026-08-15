@@ -1,6 +1,27 @@
+import { useEffect } from 'react';
 import PropTypes from 'prop-types';
 
+// "Refresh by itself": the fallback auto-reloads once per session so a
+// transient crash (e.g. iOS WebGL context loss after backgrounding) heals
+// without the user touching anything. The sessionStorage guard prevents a
+// reload loop — if the page errors again after one auto-reload, show the
+// static fallback with the manual buttons.
+const AUTO_RELOAD_KEY = 'foces:error-auto-reloaded';
+
 function ErrorFallback({ error, resetError }) {
+  useEffect(() => {
+    let alreadyReloaded = false;
+    try {
+      alreadyReloaded = sessionStorage.getItem(AUTO_RELOAD_KEY) === '1';
+      sessionStorage.setItem(AUTO_RELOAD_KEY, '1');
+    } catch {
+      /* storage unavailable (private mode) — static fallback */
+    }
+    if (alreadyReloaded) return;
+    const timer = setTimeout(() => window.location.reload(), 1200);
+    return () => clearTimeout(timer);
+  }, []);
+
   const handleReload = () => {
     if (resetError) resetError();
     window.location.reload();
