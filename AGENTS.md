@@ -105,10 +105,15 @@ one command. The individual steps, if you prefer:
 ```powershell
 pnpm lint          # ESLint 10 flat config, no warnings expected
 pnpm format:check  # Prettier (writes with pnpm format if dirty)
+pnpm knip          # dead-code / unused-dependency guard (CI runs it too — see CONTRIBUTING)
 pnpm build         # production build must succeed
 pnpm test          # Playwright E2E (tests/*.spec.js) — run targeted tests when scoping
 git diff --check   # no whitespace errors
 ```
+
+`pnpm lint:workflows` (actionlint) also runs in the pre-push hook — run it
+manually before pushing if you touched `.github/workflows/` and want the
+check without a push.
 
 For UI/a11y changes, run the relevant probes in `scripts/` against
 `pnpm preview` (per `CONTRIBUTING.md`).
