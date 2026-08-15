@@ -35,11 +35,6 @@
     // never imported in JS — knip can't trace it through CSS.
     "tailwindcss"
   ],
-  "ignoreBinaries": [
-    // System binaries invoked by maintenance/extract-frames.mjs, not npm deps.
-    "ffmpeg",
-    "ffprobe"
-  ],
   "ignoreUnresolved": [
     "#imports",
     "virtual:*",

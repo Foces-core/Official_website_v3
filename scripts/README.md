@@ -97,25 +97,14 @@ import { PREVIEW_URL, DEV_URL, resolveChrome } from './constants.mjs';
 
 One-off generators and asset preparation scripts. These are **not** part of the regular build pipeline — they're run manually when needed.
 
-| Script                                 | Purpose                                                         |
-| -------------------------------------- | --------------------------------------------------------------- |
-| `create-assets.cjs`                    | Generate optimized assets from source                           |
-| `create-og.cjs` / `create-og-full.cjs` | Generate Open Graph images                                      |
-| `generate-og-image.mjs`                | Generate OG image for social sharing                            |
-| `generate-public-assets.mjs`           | Generate public assets                                          |
-| `prepare-event-assets.mjs`             | Prepare event images (resize, optimize, srcset)                 |
-| `prepare-new-found-media.mjs`          | Process newly found media assets                                |
-| `prepare-winners-asset.mjs`            | Prepare winner showcase assets                                  |
-| `extract-frames.mjs`                   | Extract frames from video                                       |
-| `check-orphan-assets.mjs`              | Fail CI when a file in `src/assets/` is unreferenced            |
-| `check-sw-precache.mjs`                | Fail CI when the built SW precaches forbidden chunks (three.js) |
-| `empty.js`                             | Placeholder                                                     |
+| Script                    | Purpose                                                         |
+| ------------------------- | --------------------------------------------------------------- |
+| `check-orphan-assets.mjs` | Fail CI when a file in `src/assets/` is unreferenced            |
+| `check-sw-precache.mjs`   | Fail CI when the built SW precaches forbidden chunks (three.js) |
 
 > **`check-orphan-assets.mjs`** is the repo's guard against dead assets
 > (knip only checks code, not `src/assets/`). Run it locally with
-> `pnpm check:assets`; CI runs it in the lint-and-build job. It ignores
-> references from `scripts/maintenance/` on purpose — those scripts may name
-> assets they generate that the app never consumes.
+> `pnpm check:assets`; CI runs it in the lint-and-build job.
 >
 > **`check-sw-precache.mjs`** guards the app-shell precache (run with
 > `pnpm check:sw` after a build; CI runs it too). It fails if the built
@@ -125,10 +114,9 @@ One-off generators and asset preparation scripts. These are **not** part of the 
 ### Running Maintenance Scripts
 
 ```bash
-# Example: prepare event assets after adding new event images
-node scripts/maintenance/prepare-event-assets.mjs
+pnpm check:assets   # after touching src/assets/ or its references
+pnpm check:sw       # after a build, to verify the SW precache stayed app-shell only
 ```
 
 The probes resolve their browser via `CHROME_PATH` / `FIREFOX_PATH` env vars
-or system installs (see above); the maintenance scripts are run manually and
-may still need local paths.
+or system installs (see above).
