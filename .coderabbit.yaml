@@ -44,12 +44,6 @@ reviews:
   abort_on_close: true
   disable_cache: false
 
-  # Flag low-quality/slop PRs — detection is on but labeling is off (needs
-  # write access to add labels). Bot will still mention slop in review comments.
-  slop_detection:
-    enabled: true
-    # label: "slop"  # OFF: needs write access to add labels to PRs
-
   auto_review:
     enabled: true
     drafts: false
