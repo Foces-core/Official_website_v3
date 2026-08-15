@@ -1,17 +1,57 @@
+# Dependabot — automatically opens PRs for outdated dependencies.
+# Docs: https://docs.github.com/code-security/dependabot
 version: 2
 updates:
+  # The "npm" ecosystem covers pnpm lockfiles too.
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Asia/Kolkata"
+    versioning-strategy: "auto"
     open-pull-requests-limit: 10
+    # foces-webv23/ is the archived Sanity studio (previous site generation,
+    # pinned to Sanity 3 / React 18 on purpose). It is deprecated and will not
+    # be touched — never scan or open bump PRs for it. Note: this stops
+    # version-update PRs; GitHub security alerts for that directory still
+    # appear (silence those via auto-triage rules in repo Settings).
+    exclude-paths:
+      - "foces-webv23/**"
     labels:
       - "dependencies"
-    commit-message:
-      prefix: "chore(deps)"
+      - "bot"
+    # Group related bumps into single PRs to keep the queue manageable.
+    groups:
+      react-ecosystem:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "react-router-dom"
+          - "react-icons"
+          - "prop-types"
+      rendering-and-animation:
+        patterns:
+          - "swiper"
+          - "aos"
+      dev-tooling:
+        patterns:
+          - "vite"
+          - "@vitejs/*"
+          - "eslint*"
+          - "tailwindcss"
+          - "postcss*"
+          - "vite-plugin-*"
+          - "three"
+          - "vanta"
+    # No ignores: surface every bump as a PR for review.
+
+  # Keep GitHub Actions themselves updated.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
     labels:
       - "dependencies"
+      - "ci"
