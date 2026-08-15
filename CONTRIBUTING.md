@@ -34,9 +34,12 @@ pnpm build      # production build (image optimizer + PWA precache)
    `--fix` + Prettier) before every commit, and `commitlint` validates the
    message (`a11y:` is allowed). CI runs the same commitlint check on every
    PR. Emergency bypass: `git commit --no-verify` (don't make it a habit).
-3. Open a pull request against `main`. CI (lint + build + E2E) must pass, and
-   CodeRabbit will review it automatically. Request a human review from a
-   core member too.
+3. Open a pull request against `main` and push freely — the checks comment
+   on the PR instead of blocking locally: CI runs lint, format, unit
+   (coverage-thresholded), spec/assets/SW guards, build, E2E and the axe
+   WCAG scan; CodeRabbit reviews automatically; and a **notify-on-failure**
+   job @mentions the author the moment anything turns red. The **merge gate**
+   (below) keeps merges green-only.
 4. If your change makes a meaningful architecture decision, record it in
    `docs/adr/` (see the index + template there).
 
@@ -119,8 +122,8 @@ is enforced by **branch protection** in the repo settings (not in-repo):
 require the `Lint & Build`, `E2E (Playwright)`, `Probes (structural checks)`
 and `Validate commit messages` status checks before merge, plus the perf
 nightly so it never blocks a PR on timing jitter. With that in place the
-flow is: push freely → CI/CodeRabbit comment on anything wrong → merge only
-when the checks are green.
+flow is: **push freely → CI/CodeRabbit/axe comment on anything wrong →
+merge only when the checks are green.**
 
 ## Questions?
 
