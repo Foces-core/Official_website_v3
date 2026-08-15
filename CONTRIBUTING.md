@@ -75,7 +75,14 @@ pnpm build      # production build (image optimizer + PWA precache)
 - **Images**: ship responsive `srcset` variants and lazy-load below the
   fold. The build optimizes every asset automatically.
 - **No dead code**: if a field, class, or dependency isn't consumed,
-  remove it (or ask why it's still there).
+  remove it (or ask why it's still there). CI enforces this with
+  [knip](https://knip.dev/) (the `Dead code check` step in the Lint &
+  Build job). Run it locally with `pnpm knip` before pushing — it flags
+  unused exports, unused files, and unused (dev)dependencies. If a
+  dependency is genuinely consumed in a way knip can't trace (e.g. CSS
+  `@import` or a side-effect import), add it to `ignoreDependencies` in
+  `knip.json` **with a comment explaining why** — never silence a real
+  finding just to make the check pass.
 
 ## Testing
 
