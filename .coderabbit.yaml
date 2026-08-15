@@ -9,12 +9,17 @@ language: "en-US"
 tone_instructions: >-
   Be concise, specific, and demanding. Lead with file:line. Offer concrete
   fixes. Never repeat what other linters already report.
-# Early access on: enables Change Stack (the layered PR inspection interface)
-# and other early-access review features. One flag, easily reverted.
-early_access: true
+# BOT MUTED (2026-08-15): CodeRabbit was stuck in a reply loop on a merged PR
+# (100+ "This command requires write access" comments, one every ~15s).
+# Reviews and command replies are off until the loop is resolved. early_access
+# (Change Stack) was also implicated — the layered-review feature retried a
+# failing branch creation forever.
+early_access: false
 enable_free_tier: true
 
 reviews:
+  auto_review:
+    enabled: false # muted until the reply loop is resolved (see header note)
   # assertive is the strictest review profile CodeRabbit offers (quiet < chill
   # < assertive) — most feedback, correctness/security/a11y/perf focused.
   profile: "assertive"
@@ -139,7 +144,7 @@ reviews:
       enabled: true
 
 chat:
-  auto_reply: true
+  auto_reply: false # muted until the reply loop is resolved (see header note)
   art: false
 
 knowledge_base:
