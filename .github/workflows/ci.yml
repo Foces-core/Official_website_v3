@@ -32,7 +32,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
-          node-version: 22.13
+          node-version: 22
           cache: pnpm
 
       - name: Install dependencies
@@ -91,7 +91,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
-          node-version: 22.13
+          node-version: 22
           cache: pnpm
 
       - name: Install dependencies
@@ -127,7 +127,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
-          node-version: 22.13
+          node-version: 22
           cache: pnpm
 
       - name: Install dependencies
@@ -155,11 +155,12 @@ jobs:
           pnpm probe:mobile
 
   # Enforce Conventional Commits on every PR (same rules as the local
-  # husky commit-msg hook, see commitlint.config.cjs).
+  # husky commit-msg hook, see commitlint.config.cjs). Also runs on manual
+  # workflow_dispatch so a dispatched run reproduces the full PR check set.
   commitlint:
     name: Validate commit messages
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -174,16 +175,25 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
-          node-version: 22.13
+          node-version: 22
           cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint commit messages
+      - name: Lint commit messages (pull request)
+        if: github.event_name == 'pull_request'
         uses: wagoid/commitlint-github-action@v6
         with:
           configFile: commitlint.config.cjs
+
+      - name: Lint commit messages (manual dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        # Explicit range for dispatch runs (no PR base to diff against):
+        # lint every commit on this branch that isn't already on main.
+        run: |
+          git fetch origin main --quiet
+          pnpm exec commitlint --from "$(git merge-base origin/main HEAD)" --to HEAD
     permissions:
       contents: read
       pull-requests: read

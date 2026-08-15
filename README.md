@@ -12,8 +12,9 @@ its docs, a beginner video, and a readable reference.
   [Install](https://git-scm.com/downloads) · [Docs](https://git-scm.com/doc) ·
   🎬 [Official videos](https://git-scm.com/videos) ·
   📖 [Pro Git book (free)](https://git-scm.com/book)
-- **Node.js ≥ 22.13** — runs Vite, Vitest, and the build (`.nvmrc` pins
-  22.13; pnpm 11 requires it).
+- **Node.js 22.x** — runs Vite, Vitest, and the build. The minimum is
+  `>=22.13` (set in `package.json` `engines` and enforced by
+  `engine-strict`); `.nvmrc` pins the update-tracked `22` line.
   [Install](https://nodejs.org/en/download) ·
   [Windows version manager (nvm-windows)](https://github.com/coreybutler/nvm-windows) ·
   [Learn](https://nodejs.org/en/learn) ·
@@ -28,8 +29,10 @@ its docs, a beginner video, and a readable reference.
   [Install](https://code.visualstudio.com/download) ·
   [Docs](https://code.visualstudio.com/docs) ·
   🎬 [Official intro videos](https://code.visualstudio.com/docs/getstarted/introvideos)
-- **Chrome** — used by the E2E tests and probes (Playwright also installs
-  its own Chromium automatically, so this is optional).
+- **Chrome** — **optional**. The E2E suite and probes run on the Chromium
+  that Playwright installs automatically, so Chrome itself isn't needed to
+  test — install it if you want it as your day-to-day browser and for
+  manual DevTools work.
   [Install](https://www.google.com/chrome/) ·
   [DevTools docs](https://developer.chrome.com/docs/devtools) ·
   🎬 [YouTube search — Chrome DevTools for beginners](https://www.youtube.com/results?search_query=chrome+devtools+for+beginners)
