@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 # Auto-merge dependabot PRs once CI passes.
 #
 # GitHub has no native "auto-merge dependabot PRs" flag in dependabot.yml, so
