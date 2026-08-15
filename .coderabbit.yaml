@@ -150,11 +150,13 @@ reviews:
     title:
       mode: "error"
       requirements: |
-        Must follow Conventional Commits:
-        feat|fix|perf|a11y|chore|docs|test|refactor|ci|build|style|
-        revert(scope): subject. Keep the subject under ~72 characters,
-        lowercase, no trailing period. Example: 'feat(events): add 2026 lineup
-        carousel'.
+        Must follow Conventional Commits: type[optional scope][!]: subject.
+        Allowed types: feat|fix|perf|a11y|chore|docs|test|refactor|ci|build|
+        style|revert. Scope is optional and only used when it adds context
+        (e.g. 'revert: restore behavior' is valid without one); a '!' before
+        the colon marks a breaking change (e.g. 'feat!: remove old API').
+        Subject under ~72 characters, lowercase, no trailing period.
+        Example: 'feat(events): add 2026 lineup carousel'.
     description:
       mode: "error"
 
