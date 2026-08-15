@@ -11,6 +11,7 @@
   "scripts": {
     "dev": "vite",
     "dev:network": "vite --host",
+    "verify": "pnpm lint && pnpm format:check && pnpm test:unit && pnpm check:specs && pnpm check:assets && pnpm check:sw && pnpm build && git diff --check",
     "build": "vite build",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives",
     "lint:watch": "eslint . --ext js,jsx --watch",
@@ -26,6 +27,7 @@
     "knip": "knip",
     "check:assets": "node scripts/maintenance/check-orphan-assets.mjs",
     "check:sw": "node scripts/maintenance/check-sw-precache.mjs",
+    "check:specs": "node scripts/maintenance/check-specs.mjs",
     "probe:carousel": "node scripts/probes/carousel-probe.mjs",
     "probe:mobile": "node scripts/probes/mobile-probe.mjs",
     "probe:wcag": "node scripts/probes/wcag-probe.mjs",

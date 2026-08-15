@@ -14,12 +14,14 @@ export default defineConfig({
     setupFiles: ['tests/unit/setup.js'],
     // Coverage is measured over the unit-test contract and enforced in CI
     // (the CI unit step runs with --coverage). Pure logic lives in
-    // src/utils, src/data, src/hooks, and the *.js modules inside
-    // Components — those are unit-spec'd (ADR-0009). JSX wiring components
-    // are deliberately excluded: they carry no behavior and are covered by
-    // the Playwright E2E suite, so counting them here would drag the
-    // threshold to noise. Thresholds are set just under measured values so
-    // a regression fails the run that produced it.
+    // src/utils, src/data, src/hooks, the *.js modules inside Components,
+    // and pure modules beside route components (src/Pages — e.g. Navbar's
+    // navSpy) — those are unit-spec'd (ADR-0009), and check:specs fails any
+    // new module that lands without a spec. JSX wiring components are
+    // deliberately excluded: they carry no behavior and are covered by the
+    // Playwright E2E suite, so counting them here would drag the threshold
+    // to noise. Thresholds are set just under measured values so a
+    // regression fails the run that produced it.
     coverage: {
       provider: 'v8',
       include: [
@@ -27,6 +29,7 @@ export default defineConfig({
         'src/data/**/*.js',
         'src/hooks/**/*.js',
         'src/Components/**/*.js',
+        'src/Pages/**/*.js',
       ],
       reporter: ['text', 'json-summary'],
       thresholds: {
