@@ -63,9 +63,9 @@ const AL_BIN_NAME = process.platform === 'win32' ? 'actionlint.exe' : 'actionlin
 const SC_BIN_NAME = process.platform === 'win32' ? 'shellcheck.exe' : 'shellcheck';
 
 // actionlint publishes `_linux_{amd64,arm64}.tar.gz`, `_darwin_{amd64,
-// arm64}.tar.gz`, `_windows_amd64.zip` (+ a few exotic targets we don't
-// ship for). Map the realistic dev platforms exactly; reject everything
-// else instead of collapsing it into amd64.
+// arm64}.tar.gz`, `_windows_{amd64,arm64}.zip` (+ a few exotic targets we
+// don't ship for). Map the realistic dev platforms exactly; reject
+// everything else instead of collapsing it into amd64.
 function alAssetName() {
   let arch;
   switch (process.arch) {
@@ -94,7 +94,8 @@ function alAssetName() {
   }
 }
 
-// shellcheck publishes `shellcheck-v0.11.0.zip` (Windows, x86_64) and
+// shellcheck publishes `shellcheck-v0.11.0.zip` (Windows — a single
+// x86_64 build; arm64 Windows runs it under emulation) and
 // `shellcheck-v0.11.0.{linux,darwin}.{x86_64,aarch64}.tar.xz` (POSIX).
 function scAssetName() {
   let arch;
@@ -126,22 +127,64 @@ function scAssetName() {
 
 // --- shared download/verify/extract helpers -------------------------------
 
-async function download(url, dest) {
-  console.log(`[actionlint] downloading ${url.split('/').pop()} (first run only)`);
+// Transient-vs-permanent HTTP classification. Retryable statuses (408, 429,
+// 5xx) mean a network hiccup → DownloadError → graceful skip (exit 0). 4xx
+// client errors (e.g. 404 from a bad pinned version or asset mapping) are a
+// permanent config bug → plain Error → setup failure (exit 1).
+function classifyHttpError(status, url) {
+  const message = `HTTP ${status} from ${url}`;
+  if (status === 408 || status === 429 || status >= 500) return new DownloadError(message);
+  return new Error(message);
+}
+
+// Fetch with a hard timeout. Covers fetch() AND body-read failures, which
+// otherwise escape as generic errors and wrongly exit 1 on a transient
+// network stall. Throws DownloadError for transient failures, plain Error
+// for permanent ones.
+async function fetchChecked(url) {
   let res;
   try {
     res = await fetch(url, {
       redirect: 'follow',
       // No default timeout in Node's fetch — a stalled request would hang
       // the pre-push hook forever. AbortSignal.timeout also aborts a
-      // stalled res.arrayBuffer() below.
+      // stalled body read below.
       signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
     });
   } catch (err) {
     throw new DownloadError(`fetch failed: ${err.message}`);
   }
-  if (!res.ok) throw new DownloadError(`HTTP ${res.status} from ${url}`);
-  const buf = Buffer.from(await res.arrayBuffer());
+  if (!res.ok) throw classifyHttpError(res.status, url);
+  try {
+    return await res.text();
+  } catch (err) {
+    throw new DownloadError(`reading response body failed: ${err.message}`);
+  }
+}
+
+// Binary-aware variant of fetchChecked: archives (zip/tar.gz) must be read
+// as raw bytes, not decoded as text. Same timeout + status classification.
+async function fetchBuffer(url) {
+  let res;
+  try {
+    res = await fetch(url, {
+      redirect: 'follow',
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
+  } catch (err) {
+    throw new DownloadError(`fetch failed: ${err.message}`);
+  }
+  if (!res.ok) throw classifyHttpError(res.status, url);
+  try {
+    return Buffer.from(await res.arrayBuffer());
+  } catch (err) {
+    throw new DownloadError(`reading response body failed: ${err.message}`);
+  }
+}
+
+async function download(url, dest) {
+  console.log(`[actionlint] downloading ${url.split('/').pop()} (first run only)`);
+  const buf = await fetchBuffer(url);
   const { writeFileSync } = await import('fs');
   writeFileSync(dest, buf);
   return dest;
@@ -173,7 +216,7 @@ function extractTar(archive, dir, flags) {
   if (r.status !== 0) throw new Error(`extract failed: ${r.stderr}`);
 }
 
-async function ensureTool({ cacheDir, assetName, binName, binUrl, isZip, tarFlags }) {
+async function ensureTool({ cacheDir, assetName, binName, binUrl, isZip, tarFlags, checksumsUrl }) {
   const existing = findBinary(cacheDir, binName);
   if (existing) return existing;
 
@@ -182,16 +225,18 @@ async function ensureTool({ cacheDir, assetName, binName, binUrl, isZip, tarFlag
   mkdirSync(cacheDir, { recursive: true });
   await download(binUrl(asset), archive);
 
-  // Verify the actionlint archive against the release checksums file.
-  if (asset.startsWith('actionlint_')) {
-    const checksumsUrl = `https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_checksums.txt`;
-    const res = await fetch(checksumsUrl, {
-      redirect: 'follow',
-      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  // When the caller supplies a checksumsUrl, verify the archive's SHA-256
+  // against that manifest before extracting — a corrupted or tampered
+  // download must never be executed. Verification is an explicit caller
+  // decision (passed as a param), not inferred from the asset name.
+  if (checksumsUrl) {
+    const text = await fetchChecked(checksumsUrl);
+    // Manifest lines are `<sha256>  <asset-name>` — match the filename
+    // field rather than relying on the exact two-space separator.
+    const entry = text.split('\n').find((l) => {
+      const fields = l.trim().split(/\s+/);
+      return fields.length >= 2 && fields[1] === asset;
     });
-    if (!res.ok) throw new Error(`could not fetch checksums (HTTP ${res.status})`);
-    const lines = (await res.text()).split('\n');
-    const entry = lines.find((l) => l.trimEnd().endsWith(`  ${asset}`));
     if (!entry) throw new Error(`no checksum entry for ${asset}`);
     const expected = entry.trim().split(/\s+/)[0];
     const { readFileSync } = await import('fs');
@@ -262,6 +307,11 @@ async function main() {
           `https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/${asset}`,
         isZip: process.platform === 'win32',
         tarFlags: 'z',
+        // actionlint ships a per-release checksums manifest — verify the
+        // archive against it before extraction. (shellcheck publishes no
+        // checksums file, so its archive relies on the pinned version +
+        // HTTPS alone.)
+        checksumsUrl: `https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_checksums.txt`,
       });
       // Drop any stale version dirs to keep the cache tidy.
       for (const entry of readdirSync(AL_CACHE_DIR)) {
