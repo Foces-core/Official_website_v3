@@ -171,3 +171,20 @@ Hosted on **Vercel** (`focess-five.vercel.app`). All static assets are served
 from the Vercel edge CDN same-origin; the service worker precaches them. An
 external CDN is intentionally **not** used — it would add cross-origin
 connection cost without benefit.
+
+> **Two Vercel projects are connected to this repo — only one is real.**
+>
+> - **`focces`** (under `sebins-projects-41e1f03e`) is the **canonical
+>   project**: it owns the production domain `focess-five.vercel.app` and
+>   deploys successfully on every push/PR. This is the one that matters.
+> - **`official-website-v3`** (under the `foces-cecs-projects` team) is a
+>   leftover from the early "fix(vercel)" era. It has **failed every
+>   deployment since the repo first connected to Vercel (Aug 5, 2026)** —
+>   same commits deploy fine on `focces`, so the breakage is in that
+>   project's Vercel-side settings, not in this codebase.
+>
+> Consequence: every PR shows a red **"Vercel – official-website-v3"** check.
+> It is cosmetic — that project is not the deploy path and never gates
+> merges. The clean fix is Vercel dashboard → that project → **Settings →
+> Git → Disconnect GitHub repo** (needs an account with access to the
+> `foces-cecs-projects` team). Until then, ignore that one red check.
