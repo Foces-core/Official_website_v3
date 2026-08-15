@@ -106,14 +106,16 @@ one command. The individual steps, if you prefer:
 pnpm lint          # ESLint 10 flat config, no warnings expected
 pnpm format:check  # Prettier (writes with pnpm format if dirty)
 pnpm knip          # dead-code / unused-dependency guard (CI runs it too — see CONTRIBUTING)
+pnpm lint:workflows  # actionlint + shellcheck on .github/workflows/ — required after touching any workflow file
 pnpm build         # production build must succeed
 pnpm test          # Playwright E2E (tests/*.spec.js) — run targeted tests when scoping
 git diff --check   # no whitespace errors
 ```
 
-`pnpm lint:workflows` (actionlint) also runs in the pre-push hook — run it
-manually before pushing if you touched `.github/workflows/` and want the
-check without a push.
+`pnpm lint:workflows` (actionlint + shellcheck, added in #86) also runs in
+the pre-push hook — run it manually anytime you edited `.github/workflows/`
+so workflow bugs (and shell-injection in `run:` steps) fail before CI
+queues a run.
 
 For UI/a11y changes, run the relevant probes in `scripts/` against
 `pnpm preview` (per `CONTRIBUTING.md`).
