@@ -54,21 +54,22 @@ test.describe('Cube easter egg', () => {
   test('no consecutive duplicate toast messages', async ({ page }) => {
     await scrollToCube(page);
     await pressArrowRapidly(page, 'ArrowRight', 20);
-    const lastOfFirst = page.locator('.about-toast').last();
-    await expect(lastOfFirst).toBeVisible();
-    const first = (await lastOfFirst.textContent()).trim();
-    const countAfterFirst = await page.locator('.about-toast').count();
-
+    await expect(page.locator('.about-toast').first()).toBeVisible();
     await pressArrowRapidly(page, 'ArrowRight', 20);
-    // Compare the LAST toast of burst 1 with the FIRST NEW toast of burst 2
-    // — those are consecutive fires, which the no-repeat picker guarantees
-    // differ. (The last toast of each burst are NOT consecutive when the
-    // touch bar fires twice per burst, so comparing those would be a ~8%
-    // flake.)
-    const firstOfSecond = page.locator('.about-toast').nth(countAfterFirst);
-    await expect(firstOfSecond).toBeVisible();
-    const second = (await firstOfSecond.textContent()).trim();
-    expect(second).not.toBe(first);
+
+    // Assert the picker's real invariant directly: consecutive fires never
+    // repeat, so no two ADJACENT toasts in the stack may be equal. Comparing
+    // "last toast of burst 1 vs first new toast of burst 2" instead is
+    // flaky: on the touch bar (target 8) a 20-press burst fires twice (at 8
+    // and 16), and wind-down inertia keeps registering spins after the burst
+    // ends (within the 1500ms gap), so bursts blur together and the index
+    // math lands on a stale toast. Adjacent-pair checking over the whole
+    // live stack is immune to that timing.
+    const texts = (await page.locator('.about-toast').allTextContents()).map((t) => t.trim());
+    expect(texts.length).toBeGreaterThanOrEqual(2);
+    for (let i = 1; i < texts.length; i += 1) {
+      expect(texts[i]).not.toBe(texts[i - 1]);
+    }
   });
 });
 
