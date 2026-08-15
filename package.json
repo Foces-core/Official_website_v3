@@ -81,7 +81,7 @@
     "lint-staged": "^17.3.0",
     "postcss": "^8.5.26",
     "prettier": "^3.9.6",
-    "puppeteer-core": "^25.5.0",
+    "puppeteer-core": "^25.6.0",
     "sharp": "^0.35.3",
     "svgo": "^4.0.2",
     "tailwindcss": "^4.3.3",
