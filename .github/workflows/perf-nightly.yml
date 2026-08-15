@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 # Nightly performance run: builds the site, runs the Lighthouse multi-profile
 # probe (8 profiles — desktop, throttled mobile 3G/4G/2G, CPU slowdowns,
 # reduced-motion), enforces budgets, and opens/updates a regression issue if

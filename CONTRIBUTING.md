@@ -83,6 +83,15 @@ pnpm build      # production build (image optimizer + PWA precache)
   `@import` or a side-effect import), add it to `ignoreDependencies` in
   `knip.json` **with a comment explaining why** — never silence a real
   finding just to make the check pass.
+- **YAML config files carry a schema hint where a schema exists**: the
+  top line of `.coderabbit.yaml` and every `.github/workflows/*.yml` is
+  `# yaml-language-server: $schema=...`, so the VS Code YAML extension
+  validates keys and catches typos as you type. When you add or edit a
+  config file, keep or add the matching hint (`https://coderabbit.ai/
+integrations/schema.v2.json` for CodeRabbit, `https://json.schemastore.
+org/github-workflow.json` for workflows). `pnpm-workspace.yaml`
+  intentionally has none — there's no maintained schema for its
+  `allowBuilds` field.
 
 ## Testing
 
