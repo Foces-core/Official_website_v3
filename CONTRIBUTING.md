@@ -129,16 +129,20 @@ org/github-workflow.json` for workflows). `pnpm-workspace.yaml`
 
 ## Automation you can rely on
 
-- **Pre-push hook** also lints the GitHub Actions workflows: it downloads
-  pinned [actionlint](https://github.com/rhysd/actionlint) **and
-  [shellcheck](https://github.com/koalaman/shellcheck)** binaries on first
-  use (cached under `node_modules/.cache/`) and reports workflow bugs —
-  including shell-injection issues in `run:` steps (SC2xxx/SC3xxx rules) —
-  before CI burns a run. Run it manually anytime with `pnpm lint:workflows`.
-  If a download fails (offline/proxy) the check degrades gracefully: without
+- **Workflow linting** lints the GitHub Actions workflows with pinned
+  [actionlint](https://github.com/rhysd/actionlint) **and
+  [shellcheck](https://github.com/koalaman/shellcheck)** binaries (cached
+  under `node_modules/.cache/`) — reporting workflow bugs, including
+  shell-injection issues in `run:` steps (SC2xxx/SC3xxx rules). It runs in
+  three places: the **pre-push hook** (catches bugs before CI burns a run),
+  **CI** (catches PRs from contributors who skip hooks), and manually
+  anytime with `pnpm lint:workflows`. Failure policy differs by context:
+  locally a download failure degrades gracefully (offline/proxy — without
   shellcheck it still runs actionlint's core checks, and only if actionlint
   itself is unavailable does it skip with a warning rather than blocking
-  your push. It fails only for real workflow bugs.
+  your push); in CI the same failure fails the run, so the gate can never
+  silently skip. It fails only for real workflow bugs or CI tooling
+  failures.
 - **Dependabot** opens dependency PRs weekly (grouped by area) and they
   auto-merge once the four CI checks pass (`.github/workflows/auto-merge-dependabot.yml`).
 - **CI** (`.github/workflows/ci.yml`) lints + builds every push/PR, and its

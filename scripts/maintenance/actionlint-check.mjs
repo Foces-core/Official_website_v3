@@ -48,6 +48,11 @@ import { fileURLToPath } from 'url';
 const ACTIONLINT_VERSION = '1.7.12';
 const SHELLCHECK_VERSION = '0.11.0';
 const FETCH_TIMEOUT_MS = 30_000;
+// In CI (GitHub Actions sets CI=true) the check must never silently skip:
+// if a tool can't be obtained, that's a hard failure — a PR merging with
+// un-linted workflows defeats the gate. Locally (pre-push hook) the
+// graceful skip stays: a network hiccup must never block a push.
+const STRICT = process.env.CI === 'true';
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const CACHE_ROOT = path.join(ROOT, 'node_modules', '.cache');
 const AL_CACHE_DIR = path.join(CACHE_ROOT, 'actionlint');
@@ -320,6 +325,13 @@ async function main() {
       }
     } catch (err) {
       if (err instanceof DownloadError) {
+        if (STRICT) {
+          // CI: a workflow-lint gate that silently skipped would let
+          // broken workflows merge. Fail the run instead.
+          console.error(`[actionlint] could not download actionlint (${err.message}); failing CI.`);
+          process.exitCode = 1;
+          return;
+        }
         console.warn(
           `[actionlint] could not download actionlint (${err.message}); skipping check.`,
         );
@@ -359,6 +371,11 @@ async function main() {
     }
     args.push(`-shellcheck=${scBin}`);
   } catch (err) {
+    if (STRICT) {
+      console.error(`[actionlint] could not obtain shellcheck (${err.message}); failing CI.`);
+      process.exitCode = 1;
+      return;
+    }
     console.warn(
       `[actionlint] could not obtain shellcheck (${err.message}); shell-injection checks disabled for this run.`,
     );
