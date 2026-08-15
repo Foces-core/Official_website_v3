@@ -86,20 +86,41 @@ pnpm build      # production build (image optimizer + PWA precache)
   navigation, modals, carousels, a11y, or boot performance. The fast
   structural probes (`probe:wcag`, `probe:carousel`, `probe:mobile`) run in
   CI; the perf probes (`probe:perf`, `probe:perf:quick`, `probe:boot`) are
-  manual lab measurements (CPU throttling makes them noisy under CI
-  contention — `boot-profile` in particular is an attribution tool whose
-  profiler inflates absolute timings). Chrome/Firefox are resolved portably
-  via `CHROME_PATH`/`FIREFOX_PATH` or the installed Playwright browser. See
+  lab measurements (CPU throttling makes them noisy under CI contention —
+  `boot-profile` in particular is an attribution tool whose profiler
+  inflates absolute timings). The nightly Lighthouse run
+  (`.github/workflows/perf-nightly.yml`) enforces generous budgets
+  (`scripts/maintenance/check-perf-budgets.mjs`) and opens a regression
+  issue when they're breached. Chrome/Firefox are resolved portably via
+  `CHROME_PATH`/`FIREFOX_PATH` or the installed Playwright browser. See
   [scripts/README.md](scripts/README.md) for details.
 
 ## Automation you can rely on
 
 - **Dependabot** opens dependency PRs weekly (grouped by area) and they
   auto-merge once the four CI checks pass (`.github/workflows/auto-merge-dependabot.yml`).
-- **CI** (`.github/workflows/ci.yml`) lints + builds every push/PR.
+- **CI** (`.github/workflows/ci.yml`) lints + builds every push/PR, and its
+  **notify-on-failure** job comments on a PR the moment any check turns red
+  (GitHub emails PR participants, so the author is pinged — the same
+  channel CodeRabbit review comments use).
 - **CodeRabbit** reviews every PR in read-only mode (comments/summaries only —
   it can't formally block merges; see `.coderabbit.yaml` header).
 - A **stale bot** closes abandoned issues/PRs so the backlog stays clean.
+- The **nightly perf run** (`.github/workflows/perf-nightly.yml`) audits
+  Lighthouse across eight profiles; a budget breach opens a regression
+  issue @mentioning the last committer on `main`, and the next green run
+  closes it.
+
+### Merge gate
+
+Merges should only happen when every CI check is green — that's what the
+Dependabot auto-merge workflow already enforces for bots. For human PRs it
+is enforced by **branch protection** in the repo settings (not in-repo):
+require the `Lint & Build`, `E2E (Playwright)`, `Probes (structural checks)`
+and `Validate commit messages` status checks before merge, plus the perf
+nightly so it never blocks a PR on timing jitter. With that in place the
+flow is: push freely → CI/CodeRabbit comment on anything wrong → merge only
+when the checks are green.
 
 ## Questions?
 

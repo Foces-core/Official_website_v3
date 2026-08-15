@@ -44,26 +44,35 @@ Read this before touching anything.
 - `src/Components/` — shared UI (AboutUs, BlurImage, ContactUs, Execom, Grain, InstallPrompt,
   Loader, ScrollGate, SectionSkeleton).
 - `src/Components/AboutUs/` — the cube: `easterEggLogic.js` (spin tracker + `SPIN_BARS`),
-  `cubePhysics.js` (wind-down), `confettiSim.js` (particles), `easterEggCelebration.js`
-  (toast/message/EMA policies) — pure modules, the JSX is wiring.
+  `cubePhysics.js` (wind-down), `cubeTiming.js` (timing windows +
+  `isManualOverrideActive`), `confettiSim.js` (particles), `easterEggCelebration.js`
+  (toast/message/EMA policies) — pure modules, the JSX is wiring. The motion
+  orchestration (drag/wind-down/snap, spin tracking, arrow keys) is `useCubeDrag`.
 - `src/Components/BlurImage/` — shared image primitive: `BlurImage.jsx` + `useBlurImage.js`
   (loaded/placeholder/fetch-priority state machine).
-- `src/Components/Execom/` — team carousel: `TeamCarousel.jsx` + pure `carouselWrap.js`; the
-  roster lives in `src/data/team.js` (shape-guarded by `validateTeam`).
+- `src/Components/Execom/` — team carousel: `TeamCarousel.jsx`; the wrap math
+  (`normalizeIndex`/`wrapTarget`/`copyFor`) is shared from `src/utils/carouselWrap.js`
+  with Featuring. The roster lives in `src/data/team.js` (shape-guarded by `validateTeam`).
 - `src/Pages/LandingPage/Navbar/` — navbar: scrollspy + nav-action decisions in pure
   `navSpy.js`; viewport buckets come from `breakpoints.js`.
 - `src/data/events.js` — **single source of truth** for events (home section + `/events` share it).
 - `src/data/team.js` — **single source of truth** for the team roster (`cardData`, `cubeSlides`,
   `advisor`).
+- `src/data/echoSlides.js` — **single source of truth** for the Featuring slides
+  (`echoSlides` + 3× `carouselSlides`), shape-guarded by `validateEchoSlides`.
 - `src/utils/` — helpers: `srcset.js`, `eventPhotos.js`, `validateContactForm.js`,
-  `validateEvents.js`, `validateTeam.js`, `keyboardLock.js`, `aosGating.js` (gate + `initAOS`),
-  `breakpoints.js` (viewports 500/767/768/1024), `scrollLock.js` (ref-counted body lock),
+  `validateEvents.js`, `validateTeam.js`, `validateEchoSlides.js`, `keyboardLock.js`,
+  `aosGating.js` (gate + `initAOS`), `breakpoints.js` (viewports 500/767/768/1024),
+  `carouselWrap.js` (shared wrap math), `scrollLock.js` (ref-counted body lock),
   `DeferredAnalytics.jsx`, `lazyWithRetry.js`, `sessionCookie.js`, `scrollToSectionLogic.js`,
   `bootSplashLogic.js`.
-- `src/hooks/useLowPower.js` — exports the `useDeviceProfile` hook driving all perf degradation.
+- `src/hooks/` — `useLowPower.js` (`useDeviceProfile` driving all perf degradation),
+  `useViewportWidth.js` (reactive width over `breakpoints.js`),
+  `useAutoplayOnScreen.js` (on-screen autoplay gate), `useCubeDrag.js` (cube orchestration).
 - Behavior lives in pure tested modules; components are wiring (ADR-0009) — new logic lands as a
   module with its spec in the same change, and JSX specs use `tests/unit/harness.jsx`.
-- `scripts/` — puppeteer probes + Lighthouse perf tests.
+- `scripts/` — puppeteer probes + Lighthouse perf tests; `scripts/maintenance/` holds the
+  CI guards (`check-specs.mjs`, `check-orphan-assets.mjs`, `check-sw-precache.mjs`).
 - `tests/*.spec.js` — Playwright E2E suite (split by page/section).
 - `public/`, `src/assets/` — static + optimized images.
 

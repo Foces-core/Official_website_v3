@@ -39,3 +39,31 @@ lowPower }` from `detectProfile`. One seam, two entries: components
 - **Boot splash** — the static inline `#boot-splash` in `index.html`
   (ADR-0005), faded on first paint; the branded `Loader` is the lazy-route
   Suspense fallback.
+- **Echo slides carousel** — the Featuring slides. Single source of truth:
+  `src/data/echoSlides.js` (`echoSlides` + the 3× `carouselSlides` wrap
+  copy), shape-guarded by `validateEchoSlides` in CI — same pattern as
+  events and the team roster.
+- **Cube drag mechanics** — the About cube's motion orchestration
+  (`useCubeDrag`): drag/wind-down/snap rAF loop, spin tracking, arrow-key
+  wiring, keyboardLock registration. The celebration fires through the
+  `onEggFire` seam. All decisions stay pure: timing windows are
+  `cubeTiming` constants (`SNAP_GRACE_MS`, `WIND_DOWN_OVERRIDE_MS`,
+  `ARROW_SPIN_GRACE_MS`, `DRAG_OVERRIDE_MS`) gated by
+  `isManualOverrideActive`, spin accumulation is `splitSpins`.
+- **Autoplay gating** — carousels autoplay only while on screen and not
+  disabled (`reducedMotion`/`lowPower`): `useAutoplayOnScreen` + the pure
+  `autoplayGate(visible, disable)`. One owner for both Featuring and
+  TeamCarousel; the duplicated IntersectionObserver effects were the
+  evidence.
+- **Viewport seam** — reactive width for components (`useViewportWidth`)
+  over the named `breakpoints.js` constants (`SMALL_SCREEN_MAX` 500,
+  `MOBILE_MAX` 767, `DESKTOP_MIN` 768, `WIDE_SCREEN_MIN` 1024). `sizes`
+  attributes are built from those constants. Distinct from the device
+  profile — the profile deliberately carries no width field.
+- **Carousel wrap math** — `src/utils/carouselWrap.js` (`normalizeIndex`,
+  `wrapTarget`, `copyFor`): the seamless 3×-copy wrap shared by
+  TeamCarousel and Featuring. One owner for both carousels.
+- **Spec guard** — `pnpm check:specs`: every pure module (the ADR-0009
+  globs, plus `src/Pages/**/*.js`) must be imported by a unit spec,
+  enforced in CI — structural enforcement of ADR-0009, so an untested
+  extraction fails the PR that introduces it.
