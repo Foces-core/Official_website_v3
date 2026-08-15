@@ -180,3 +180,29 @@ jobs:
         uses: wagoid/commitlint-github-action@v6
         with:
           configFile: commitlint.config.cjs
+
+  # The merge gate stays closed until every check is green; when one fails,
+  # ping the PR author here (GitHub emails PR participants, so this is the
+  # same notification channel CodeRabbit review comments use).
+  notify-on-failure:
+    name: Notify on failure
+    if: failure() && github.event_name == 'pull_request'
+    needs: [lint-and-build, e2e, probes, commitlint]
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Comment on the PR
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const sha = context.sha.slice(0, 7);
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `🚨 **CI failed** on \`${sha}\` — [view the run](${run}).\n\n` +
+                `@${context.actor} one of the checks (lint, format, unit, specs, build, E2E, probes, commitlint) is red, so the merge gate stays closed.`,
+            });
