@@ -112,7 +112,10 @@ describe('scAssetName — shellcheck release asset per platform/arch', () => {
     expect(scAssetName()).toBe('shellcheck-v0.11.0.darwin.x86_64.tar.xz');
     setTarget('darwin', 'arm64');
     expect(scAssetName()).toBe('shellcheck-v0.11.0.darwin.aarch64.tar.xz');
+    // The single Windows zip covers both arches (runs under emulation).
     setTarget('win32', 'x64');
+    expect(scAssetName()).toBe('shellcheck-v0.11.0.zip');
+    setTarget('win32', 'arm64');
     expect(scAssetName()).toBe('shellcheck-v0.11.0.zip');
   });
 
@@ -120,6 +123,14 @@ describe('scAssetName — shellcheck release asset per platform/arch', () => {
     ['ia32', 'x64'],
     ['arm', 'x64'],
   ])('rejects unsupported arch (%s, %s)', (arch, platform) => {
+    setTarget(platform, arch);
+    expect(() => scAssetName()).toThrow(UnsupportedTargetError);
+  });
+
+  it.each([
+    ['freebsd', 'x64'],
+    ['openbsd', 'x64'],
+  ])('rejects unsupported platform (%s, %s)', (platform, arch) => {
     setTarget(platform, arch);
     expect(() => scAssetName()).toThrow(UnsupportedTargetError);
   });
