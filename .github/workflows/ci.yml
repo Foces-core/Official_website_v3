@@ -52,8 +52,8 @@ jobs:
       - name: Orphan asset check
         run: pnpm check:assets
 
-      - name: Unit tests (Vitest)
-        run: pnpm test:unit
+      - name: Unit tests (Vitest) + coverage thresholds
+        run: pnpm exec vitest run --coverage
 
       - name: Build
         run: pnpm build
