@@ -20,6 +20,19 @@ export function snapAngle(rot) {
   return Math.round(rot / 90) * 90;
 }
 
+// Split an accumulated angle into whole 90° spins and the leftover remainder
+// — the drag accumulator used to `while (accum >= 90)` inline in AboutUs.jsx.
+// No spin until a full threshold is crossed: negative or sub-threshold
+// accumulation yields 0 spins and keeps the accumulator unchanged, exactly
+// what the old inline loop did.
+export function splitSpins(accumulated, threshold = 90) {
+  if (accumulated < threshold) return { spins: 0, remainder: accumulated };
+  return {
+    spins: Math.floor(accumulated / threshold),
+    remainder: accumulated % threshold,
+  };
+}
+
 // One wind-down step: decay the per-frame velocity by the friction.
 export function windStepVelocity(vel, friction) {
   return vel * friction;

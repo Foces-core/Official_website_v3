@@ -1,5 +1,9 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import { createSpinTracker, SPIN_BARS } from '../../src/Components/AboutUs/easterEggLogic.js';
+import {
+  createSpinTracker,
+  SPIN_BARS,
+  spinConfigFor,
+} from '../../src/Components/AboutUs/easterEggLogic.js';
 
 // The seam is the tracker's register() -> boolean interface: it counts 90°
 // spins and fires exactly once when `target` spins arrive within `gap` ms of
@@ -78,6 +82,16 @@ describe('createSpinTracker — device bars', () => {
     tracker.register(0);
     tracker.register(1400); // within the 1.5s touch window
     expect(tracker.register(2800)).toBe(true);
+  });
+});
+
+describe('spinConfigFor — which bar applies', () => {
+  it('coarse pointers (touch-first phones) get the easier bar', () => {
+    expect(spinConfigFor(true)).toBe(SPIN_BARS.touch);
+  });
+
+  it('fine pointers get the desktop bar', () => {
+    expect(spinConfigFor(false)).toBe(SPIN_BARS.desktop);
   });
 });
 

@@ -6,13 +6,20 @@
 // casual rotating never fire it.
 //
 // Touch-first phones get an easier bar: fewer spins + a wider gap, because
-// every spin costs real finger travel on a small cube. The device pick lives
-// in AboutUs.jsx (it is an input-kind heuristic, not a perf heuristic — the
-// perf ones stay in detectProfile); this module owns the bars it applies.
+// every spin costs real finger travel on a small cube. The DOM read (the
+// (pointer: coarse) media query) stays in AboutUs.jsx; the policy pick lives
+// here (spinConfigFor) — it is an input-kind heuristic, not a perf heuristic
+// (the perf ones stay in detectProfile).
 export const SPIN_BARS = {
   touch: { target: 8, gap: 1500 },
   desktop: { target: 20, gap: 800 },
 };
+
+// Which spin bar applies for a device: coarse pointers (touch-first phones)
+// get the easier bar. Pure — the component feeds it the media-query boolean.
+export function spinConfigFor(coarse) {
+  return coarse ? SPIN_BARS.touch : SPIN_BARS.desktop;
+}
 
 export function createSpinTracker({ target, gap }) {
   let count = 0;

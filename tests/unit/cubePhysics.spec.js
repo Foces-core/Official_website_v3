@@ -6,6 +6,7 @@ import {
   windStepVelocity,
   isWindStopped,
   resolveWindDown,
+  splitSpins,
 } from '../../src/Components/AboutUs/cubePhysics.js';
 
 // The seam is the pure physics behind the About cube's wind-down: snap
@@ -41,6 +42,19 @@ describe('windStepVelocity / isWindStopped', () => {
     expect(isWindStopped(0.04)).toBe(true);
     expect(isWindStopped(0.05)).toBe(false); // exactly at the floor keeps spinning
     expect(isWindStopped(-0.04)).toBe(true);
+  });
+});
+
+describe('splitSpins — full 90° spins vs remainder', () => {
+  it('splits accumulated angle into whole spins and the leftover', () => {
+    expect(splitSpins(95, 90)).toEqual({ spins: 1, remainder: 5 });
+    expect(splitSpins(180, 90)).toEqual({ spins: 2, remainder: 0 });
+    expect(splitSpins(89, 90)).toEqual({ spins: 0, remainder: 89 });
+  });
+
+  it('handles exactly one threshold step and negative leftovers', () => {
+    expect(splitSpins(270, 90)).toEqual({ spins: 3, remainder: 0 });
+    expect(splitSpins(-5, 90)).toEqual({ spins: 0, remainder: -5 });
   });
 });
 

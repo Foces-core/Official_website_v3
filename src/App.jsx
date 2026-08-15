@@ -8,6 +8,7 @@ import Navbar from './Pages/LandingPage/Navbar/Navbar';
 import { useLocation } from 'react-router';
 import { initAOS } from './utils/aosGating.js';
 import { lazyWithRetry } from './utils/lazyWithRetry.js';
+import useDeviceProfile from './hooks/useLowPower.js';
 import {
   targetIdFromLocation,
   shouldScrollToTarget,
@@ -46,11 +47,13 @@ initAOS();
 
 function App() {
   const location = useLocation();
+  // reducedMotion comes from the device-profile seam (detectProfile), not a
+  // raw matchMedia re-implementation — the same query, one owner.
+  const { reducedMotion } = useDeviceProfile();
 
   const pageH1 = <h1 className="sr-only">FOCES - Forum of Computer Engineering Students</h1>;
 
   useEffect(() => {
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const targetId = targetIdFromLocation(location.state, location.hash);
     if (!targetId) return;
 
@@ -96,7 +99,7 @@ function App() {
       clearInterval(intervalRef);
       if (observer) observer.disconnect();
     };
-  }, [location]);
+  }, [location, reducedMotion]);
 
   return (
     <div className="App bg-[#101011]">
