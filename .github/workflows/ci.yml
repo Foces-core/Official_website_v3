@@ -54,6 +54,12 @@ jobs:
       - name: Dead code check (knip)
         run: pnpm exec knip
 
+      # Workflow lint (actionlint + shellcheck) — the same gate the pre-push
+      # hook runs, so contributors who skip hooks still get caught here. CI
+      # mode fails hard if the tools can't be obtained (never silently skip).
+      - name: Workflow lint (actionlint + shellcheck)
+        run: pnpm lint:workflows
+
       - name: Orphan asset check
         run: pnpm check:assets
 
