@@ -23,10 +23,15 @@ Read this before touching anything.
   Use `sfw` for networked package/tool commands when available.
 - **Security:** never commit `.env`, tokens, or the Sanity studio auth.
   EmailJS keys are only referenced via `VITE_*` env vars.
-- **CodeRabbit reviews every PR** (`.coderabbit.yaml`). Wait for its review to
-  finish and address blocking comments before merging. Do not merge while a
-  CodeRabbit review is pending, and do not dismiss its findings without
-  reason.
+- **Dependabot PRs auto-merge** once the four CI checks pass
+  (`.github/workflows/auto-merge-dependabot.yml` polls CI, then squash-merges
+  and deletes the branch). Everything else merges manually.
+- **CodeRabbit reviews PRs in read-only mode** (`.coderabbit.yaml`): it posts
+  review comments and summaries but cannot formally block merges (the GitHub
+  App has no write access — see the config header note; re-enabling write
+  features without granting the app permissions caused a reply-loop incident
+  on 2026-08-15). Address its blocking findings before merging; do not
+  dismiss them without reason.
 
 ## Map
 

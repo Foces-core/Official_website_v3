@@ -94,9 +94,11 @@ pnpm build      # production build (image optimizer + PWA precache)
 
 ## Automation you can rely on
 
-- **Dependabot** opens dependency PRs weekly (grouped by area).
+- **Dependabot** opens dependency PRs weekly (grouped by area) and they
+  auto-merge once the four CI checks pass (`.github/workflows/auto-merge-dependabot.yml`).
 - **CI** (`.github/workflows/ci.yml`) lints + builds every push/PR.
-- **CodeRabbit** reviews every PR.
+- **CodeRabbit** reviews every PR in read-only mode (comments/summaries only —
+  it can't formally block merges; see `.coderabbit.yaml` header).
 - A **stale bot** closes abandoned issues/PRs so the backlog stays clean.
 
 ## Questions?

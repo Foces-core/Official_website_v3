@@ -105,7 +105,8 @@ test seams (0009) are the recent ones.
 
 - **CI** (`.github/workflows/ci.yml`) — lint + format-check + build + Playwright E2E on every push/PR to `main`
 - **Dependabot** (`.github/dependabot.yml`) — weekly grouped dependency PRs
-- **CodeRabbit** (`.coderabbit.yaml`) — AI code review on every PR
+- **CodeRabbit** (`.coderabbit.yaml`) — AI code review on every PR (read-only: comments/summaries only, can't block merges)
+- **Dependabot auto-merge** (`.github/workflows/auto-merge-dependabot.yml`) — dependabot PRs squash-merge themselves once CI passes
 - **Stale bot** (`.github/workflows/stale.yml`) — closes abandoned issues/PRs
 - **Deploys** — handled by the **native Vercel Git integration**: auto
   production deploy on every push to `main`, auto preview deploy on every PR
