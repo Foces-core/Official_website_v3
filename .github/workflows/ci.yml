@@ -141,16 +141,23 @@ jobs:
         run: |
           pnpm build
           nohup pnpm exec vite preview --port 4173 --strictPort > /tmp/preview.log 2>&1 &
-          for i in $(seq 1 60); do
+          for _ in $(seq 1 60); do
             curl -s -o /dev/null http://localhost:4173/ && break
             sleep 1
           done
-          curl -s -o /dev/null http://localhost:4173/ && echo "preview up" || (echo "preview failed"; cat /tmp/preview.log; exit 1)
+          if curl -s -o /dev/null http://localhost:4173/; then
+            echo "preview up"
+          else
+            echo "preview failed"
+            cat /tmp/preview.log
+            exit 1
+          fi
 
       - name: Run structural probes
         run: |
           # Point the puppeteer-core probes at Playwright's installed Chromium.
-          export CHROME_PATH=$(node -e "console.log(require('@playwright/test').chromium.executablePath())")
+          CHROME_PATH=$(node -e "console.log(require('@playwright/test').chromium.executablePath())")
+          export CHROME_PATH
           pnpm probe:wcag
           pnpm probe:carousel
           pnpm probe:mobile

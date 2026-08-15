@@ -29,8 +29,8 @@ jobs:
           SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           CHECKS='Lint & Build|E2E (Playwright)|Probes (structural checks)|Validate commit messages'
-          for i in $(seq 1 45); do
-            OUT=$(gh api repos/Foces-core/Official_website_v3/commits/$SHA/check-runs --jq \
+          for _ in $(seq 1 45); do
+            OUT=$(gh api "repos/Foces-core/Official_website_v3/commits/${SHA}/check-runs" --jq \
               "[.check_runs[] | select(.name|test(\"$CHECKS\")) | {name, status, conclusion}]")
             FAILED=$(echo "$OUT" | jq '[.[] | select(.conclusion != null and .conclusion != "success" and .conclusion != "skipped" and .conclusion != "neutral")] | length')
             DONE=$(echo "$OUT" | jq '[.[] | select(.status == "completed")] | length')
