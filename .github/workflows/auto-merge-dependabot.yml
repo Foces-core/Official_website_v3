@@ -50,6 +50,7 @@ jobs:
           exit 1
 
       - name: Merge (squash + delete branch)
+        if: github.event.pull_request.state == 'open'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
