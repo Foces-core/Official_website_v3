@@ -54,15 +54,6 @@ pnpm dev
 Run `pnpm verify` before committing — it runs the whole fast gate (lint,
 format check, unit tests, structural checks, build) in one command.
 
-**Watching PR checks from the terminal:** once a PR is up, follow its CI
-without leaving the terminal —
-`gh pr checks <number> --watch` (set the default repo once with
-`gh repo set-default`). It re-polls until every check settles and prints a
-live table; the [GitHub CLI](https://cli.github.com/) (`gh`) is already
-authorized if you've pushed to this repo, and `gh` is the fastest way to
-open/review/merge PRs too. The checks you'll see: `Lint & Build`, `E2E
-(Playwright)`, `Probes (structural checks)`, and `Validate commit messages`.
-
 ## Tech Stack
 
 - **[React 19](https://react.dev/)** + **[Vite 8](https://vite.dev/)** (SWC plugin)
