@@ -181,9 +181,9 @@ jobs:
         with:
           configFile: commitlint.config.cjs
 
-  # The merge gate stays closed until every check is green; when one fails,
-  # ping the PR author here (GitHub emails PR participants, so this is the
-  # same notification channel CodeRabbit review comments use).
+  # The merge gate stays closed until every check is green; once the run
+  # finishes red, ping whoever pushed (GitHub emails PR participants, so
+  # this is the same notification channel CodeRabbit review comments use).
   notify-on-failure:
     name: Notify on failure
     if: failure() && github.event_name == 'pull_request'

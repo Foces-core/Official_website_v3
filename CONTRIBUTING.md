@@ -38,8 +38,9 @@ pnpm build      # production build (image optimizer + PWA precache)
    on the PR instead of blocking locally: CI runs lint, format, unit
    (coverage-thresholded), spec/assets/SW guards, build, E2E and the axe
    WCAG scan; CodeRabbit reviews automatically; and a **notify-on-failure**
-   job @mentions the author the moment anything turns red. The **merge gate**
-   (below) keeps merges green-only.
+   job comments once the run finishes if any check failed, pinging whoever
+   pushed (GitHub emails PR participants, so the author is pinged too). The
+   **merge gate** (below) keeps merges green-only.
 4. If your change makes a meaningful architecture decision, record it in
    `docs/adr/` (see the index + template there).
 
@@ -103,9 +104,10 @@ pnpm build      # production build (image optimizer + PWA precache)
 - **Dependabot** opens dependency PRs weekly (grouped by area) and they
   auto-merge once the four CI checks pass (`.github/workflows/auto-merge-dependabot.yml`).
 - **CI** (`.github/workflows/ci.yml`) lints + builds every push/PR, and its
-  **notify-on-failure** job comments on a PR the moment any check turns red
-  (GitHub emails PR participants, so the author is pinged — the same
-  channel CodeRabbit review comments use).
+  **notify-on-failure** job adds a comment once the run finishes if any
+  check failed, pinging whoever pushed (GitHub emails PR participants, so
+  the author is pinged too — the same channel CodeRabbit review comments
+  use).
 - **CodeRabbit** reviews every PR in read-only mode (comments/summaries only —
   it can't formally block merges; see `.coderabbit.yaml` header).
 - A **stale bot** closes abandoned issues/PRs so the backlog stays clean.
