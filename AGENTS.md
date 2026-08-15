@@ -89,6 +89,10 @@ Read this before touching anything.
 
 ## Verify (run before you commit)
 
+`pnpm verify` runs the fast deterministic gate (lint + format check + unit
+tests + check:specs/check:assets/check:sw + build + `git diff --check`) in
+one command. The individual steps, if you prefer:
+
 ```powershell
 pnpm lint          # ESLint 10 flat config, no warnings expected
 pnpm format:check  # Prettier (writes with pnpm format if dirty)

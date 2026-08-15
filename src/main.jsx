@@ -41,6 +41,24 @@ if (import.meta.env.VITE_SENTRY_DSN) {
     .catch(() => {});
 }
 
+// Dev-only DX guard: the contact form silently falls back to mailto when the
+// EmailJS keys are missing (resolveSendChannel in useContactForm.js) — surface
+// that at boot instead of discovering it on submit. Stripped from production
+// builds (import.meta.env.DEV is statically replaced with false).
+if (import.meta.env.DEV) {
+  const missingEmailJs = [
+    'VITE_EMAILJS_SERVICE_ID',
+    'VITE_EMAILJS_TEMPLATE_ID',
+    'VITE_EMAILJS_PUBLIC_KEY',
+  ].filter((key) => !import.meta.env[key]);
+  if (missingEmailJs.length > 0) {
+    console.warn(
+      `[foces] Contact form will fall back to mailto: missing ${missingEmailJs.join(', ')}. ` +
+        'Copy .env.example to .env and fill them in to enable EmailJS.',
+    );
+  }
+}
+
 const Eventpage = lazyWithRetry(() => import('./Pages/EventPage/Eventpage'));
 const ContactUs = lazyWithRetry(() => import('./Components/ContactUs/ContactUs.jsx'));
 const NotFoundLazy = lazyWithRetry(() => import('./Pages/NotFound/NotFound.jsx'));

@@ -1,0 +1,14 @@
+# Commits to ignore in `git blame` — mass reformats, whitespace-only fixes,
+# and big renames that rewrite lines without changing their authorship.
+#
+# Usage:
+#   1. After a whole-repo reformat commit (e.g. `pnpm format` touching many
+#      files), append its FULL sha:
+#        git rev-parse HEAD >> .git-blame-ignore-revs
+#   2. Use it in one of two ways:
+#        - per invocation:  git blame --ignore-revs-file .git-blame-ignore-revs <file>
+#        - automatically:   git config blame.ignoreRevsFile .git-blame-ignore-revs
+#      GitHub's blame UI also reads this file automatically when present.
+#
+# Example (full 40-char shas — never abbreviations):
+# 4b825dc642cb6eb9a060e54bf8d69288fbee4904 # chore: prettier --write the whole repo

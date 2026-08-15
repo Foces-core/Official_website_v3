@@ -9,5 +9,8 @@ LICENSE
 .github
 .coderabbit.yaml
 
+# dotenv template — no prettier parser exists for it
+.env.example
+
 # Session/scratch notes (transcripts, not project content)
 session-*.md
