@@ -1,11 +1,12 @@
-# Auto-merge dependabot PRs once required CI checks pass.
+# Auto-merge dependabot PRs once CI passes.
 #
 # GitHub has no native "auto-merge dependabot PRs" flag in dependabot.yml, so
-# this workflow arms GitHub's auto-merge on every PR authored by
-# dependabot[bot]. The merge itself still waits for all required status checks
-# (Lint & Build, E2E, Probes, Validate commit messages) via the main branch
-# protection rule — nothing merges on a red build. Squash merge keeps history
-# linear, and the PR branch is deleted after merging.
+# this workflow polls the four CI checks (Lint & Build, E2E, Probes, Validate
+# commit messages) on the PR head until they complete, then squash-merges the
+# PR and deletes its branch. A failing check aborts the job and leaves the PR
+# open — nothing merges on a red build. Non-CI checks (e.g. the stale
+# Vercel official-website-v3 status) are deliberately ignored: they fail on
+# every commit regardless of code.
 name: Auto-merge dependabot PRs
 
 on:
@@ -21,8 +22,35 @@ jobs:
     runs-on: ubuntu-latest
     if: github.actor == 'dependabot[bot]' && github.event.pull_request.draft == false
     steps:
-      - name: Enable auto-merge (squash + delete branch)
+      - name: Wait for CI checks to pass
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          CHECKS='Lint & Build|E2E (Playwright)|Probes (structural checks)|Validate commit messages'
+          for i in $(seq 1 45); do
+            OUT=$(gh api repos/Foces-core/Official_website_v3/commits/$SHA/check-runs --jq \
+              "[.check_runs[] | select(.name|test(\"$CHECKS\")) | {name, status, conclusion}]")
+            FAILED=$(echo "$OUT" | jq '[.[] | select(.conclusion != null and .conclusion != "success" and .conclusion != "skipped" and .conclusion != "neutral")] | length')
+            DONE=$(echo "$OUT" | jq '[.[] | select(.status == "completed")] | length')
+            TOTAL=$(echo "$OUT" | jq 'length')
+            echo "CI checks: $DONE/$TOTAL completed"
+            if [ "$FAILED" -gt 0 ]; then
+              echo "A CI check failed — leaving PR open:"
+              echo "$OUT"
+              exit 1
+            fi
+            if [ "$TOTAL" -gt 0 ] && [ "$DONE" -eq "$TOTAL" ]; then
+              echo "All CI checks passed."
+              exit 0
+            fi
+            sleep 20
+          done
+          echo "Timed out waiting for CI to finish."
+          exit 1
+
+      - name: Merge (squash + delete branch)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
-        run: gh pr merge --auto --squash --delete-branch "$PR_URL"
+        run: gh pr merge --squash --delete-branch "$PR_URL"
