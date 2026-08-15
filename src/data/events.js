@@ -1,3 +1,8 @@
+// Single source of truth for events (mirrors src/data/team.js and
+// src/data/echoSlides.js) — the home-page events section and the /events
+// route both render from this array, and validateEvents pins its shape in
+// CI. Photos are built with photoTriplet (three responsive widths); see
+// src/utils/eventPhotos.js.
 import agenticCodingPoster from '../assets/agentic_coding_instagram.webp';
 import agenticCodingPoster400 from '../assets/agentic_coding_instagram-400.webp';
 import agenticCodingPoster800 from '../assets/agentic_coding_instagram-800.webp';

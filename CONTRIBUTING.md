@@ -7,8 +7,13 @@ decade and still feel at home.
 
 ## Development setup
 
-Prerequisites: **Node ≥ 22.13** (pnpm 11.x requires it) and **pnpm** (version
-pinned in `package.json` via `packageManager`).
+Prerequisites: **[Node ≥ 22.13](https://nodejs.org/en/download)** (pnpm 11.x
+requires it), **[pnpm](https://pnpm.io/installation)** (version pinned in
+`package.json` via `packageManager`), and **[Git](https://git-scm.com/downloads)**.
+Any editor works — [VS Code](https://code.visualstudio.com/download) is what
+the repo's settings target (ESLint fix + Prettier format on save). New to the
+stack? The README's [Prerequisites](README.md#prerequisites--install-the-tools)
+section links an install page, docs, a beginner video, and a blog for each tool.
 
 ```sh
 pnpm install
@@ -29,11 +34,13 @@ pnpm build      # production build (image optimizer + PWA precache)
    - `chore/` or `docs/` — maintenance, tooling, docs
 2. Make small, focused commits. We follow **Conventional Commits**:
    `feat:`, `fix:`, `perf:`, `a11y:`, `chore:`, `docs:` prefixes, ~50-char
-   subject, body only when it explains _why_. **Husky hooks enforce this**
-   locally: `lint-staged` lints _and formats_ your staged files (ESLint
-   `--fix` + Prettier) before every commit, and `commitlint` validates the
-   message (`a11y:` is allowed). CI runs the same commitlint check on every
-   PR. Emergency bypass: `git commit --no-verify` (don't make it a habit).
+   subject, body only when it explains _why_. **[Husky](https://typicode.github.io/husky/)
+   hooks enforce this** locally: `lint-staged` lints _and formats_ your
+   staged files ([ESLint](https://eslint.org/) `--fix` +
+   [Prettier](https://prettier.io/)) before every commit, and
+   [commitlint](https://commitlint.js.org/) validates the message (`a11y:`
+   is allowed). CI runs the same commitlint check on every PR. Emergency
+   bypass: `git commit --no-verify` (don't make it a habit).
 3. Open a pull request against `main` and push freely — the checks comment
    on the PR instead of blocking locally: CI runs lint, format, unit
    (coverage-thresholded), spec/assets/SW guards, build, E2E and the axe
@@ -72,11 +79,13 @@ pnpm build      # production build (image optimizer + PWA precache)
 ## Testing
 
 - `pnpm lint` and `pnpm build` before every PR.
-- `pnpm test` runs the Playwright E2E suite, split across `tests/*.spec.js`
-  by page/section so failing scenarios run in isolation. Run targeted tests
-  when your change is scoped: `pnpm exec playwright test -g "Carousel"` or
+- `pnpm test` runs the [Playwright](https://playwright.dev/) E2E suite,
+  split across `tests/*.spec.js` by page/section so failing scenarios run in
+  isolation — including the [axe](https://www.deque.com/axe/) WCAG scan.
+  Run targeted tests when your change is scoped: `pnpm exec playwright test -g "Carousel"` or
   `pnpm exec playwright test tests/contact.spec.js`.
-- `pnpm test:unit` runs the fast Vitest suite in `tests/unit/` (jsdom):
+- `pnpm test:unit` runs the fast [Vitest](https://vitest.dev/) suite in
+  `tests/unit/` (jsdom):
   device-profile heuristics, `keyboardLock` arrow-key arbitration, `srcset`,
   events/contact validation, and the pure decision modules behind the
   components (cube physics + easter egg, carousel wrap, scroll-to-section,
