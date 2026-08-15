@@ -25,7 +25,7 @@ import { prioritizeAssetFetch } from '../../utils/priorityScheduler.js';
  * @returns {{ loaded: boolean, removed: boolean, priorityAttr: string | undefined,
  *             prevSrc: string }}
  */
-export function initialState({ src, blurSrc, eager }) {
+function initialState({ src, blurSrc, eager }) {
   return {
     loaded: false,
     removed: !blurSrc,
