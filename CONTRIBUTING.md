@@ -120,6 +120,13 @@ pnpm build      # production build (image optimizer + PWA precache)
 
 ## Automation you can rely on
 
+- **Pre-push hook** also lints the GitHub Actions workflows: it downloads a
+  pinned [actionlint](https://github.com/rhysd/actionlint) binary on first
+  use (cached under `node_modules/.cache/actionlint/`) and reports workflow
+  bugs before CI burns a run — run it manually anytime with
+  `pnpm lint:workflows`. If the download fails (offline/proxy) the check
+  skips with a warning rather than blocking your push; it only fails for
+  real workflow bugs.
 - **Dependabot** opens dependency PRs weekly (grouped by area) and they
   auto-merge once the four CI checks pass (`.github/workflows/auto-merge-dependabot.yml`).
 - **CI** (`.github/workflows/ci.yml`) lints + builds every push/PR, and its
