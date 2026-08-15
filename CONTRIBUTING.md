@@ -38,9 +38,11 @@ pnpm build      # production build (image optimizer + PWA precache)
    on the PR instead of blocking locally: CI runs lint, format, unit
    (coverage-thresholded), spec/assets/SW guards, build, E2E and the axe
    WCAG scan; CodeRabbit reviews automatically; and a **notify-on-failure**
-   job comments once the run finishes if any check failed, pinging whoever
-   pushed (GitHub emails PR participants, so the author is pinged too). The
-   **merge gate** (below) keeps merges green-only.
+   job comments once the run finishes if any check failed, mentioning
+   `github.actor` (the user who triggered the run, usually whoever pushed).
+   GitHub emails PR participants only per their own notification settings,
+   so the author is pinged too in most setups. The **merge gate** (below)
+   keeps merges green-only.
 4. If your change makes a meaningful architecture decision, record it in
    `docs/adr/` (see the index + template there).
 
@@ -105,9 +107,10 @@ pnpm build      # production build (image optimizer + PWA precache)
   auto-merge once the four CI checks pass (`.github/workflows/auto-merge-dependabot.yml`).
 - **CI** (`.github/workflows/ci.yml`) lints + builds every push/PR, and its
   **notify-on-failure** job adds a comment once the run finishes if any
-  check failed, pinging whoever pushed (GitHub emails PR participants, so
-  the author is pinged too — the same channel CodeRabbit review comments
-  use).
+  check failed, mentioning `github.actor` (the user who triggered the run,
+  usually whoever pushed). GitHub emails PR participants only per their
+  own notification settings, so the author is pinged too in most setups —
+  the same channel CodeRabbit review comments use.
 - **CodeRabbit** reviews every PR in read-only mode (comments/summaries only —
   it can't formally block merges; see `.coderabbit.yaml` header).
 - A **stale bot** closes abandoned issues/PRs so the backlog stays clean.

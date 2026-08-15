@@ -180,10 +180,14 @@ jobs:
         uses: wagoid/commitlint-github-action@v6
         with:
           configFile: commitlint.config.cjs
+    permissions:
+      contents: read
+      pull-requests: read
 
   # The merge gate stays closed until every check is green; once the run
-  # finishes red, ping whoever pushed (GitHub emails PR participants, so
-  # this is the same notification channel CodeRabbit review comments use).
+  # finishes red, mention `github.actor` (the user who triggered the run,
+  # usually whoever pushed). GitHub emails PR participants only per their
+  # own notification settings — the same channel CodeRabbit comments use.
   notify-on-failure:
     name: Notify on failure
     if: failure() && github.event_name == 'pull_request'
