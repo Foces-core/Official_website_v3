@@ -13,7 +13,7 @@ requires it), **[pnpm](https://pnpm.io/installation)** (version pinned in
 Any editor works — [VS Code](https://code.visualstudio.com/download) is what
 the repo's settings target (ESLint fix + Prettier format on save). New to the
 stack? The README's [Prerequisites](README.md#prerequisites--install-the-tools)
-section links an install page, docs, a beginner video, and a blog for each tool.
+section links an install page, docs, a beginner video, and a readable reference for each tool.
 
 ```sh
 pnpm install
