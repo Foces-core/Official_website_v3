@@ -59,8 +59,9 @@ const AL_CACHE_DIR = path.join(CACHE_ROOT, 'actionlint');
 const SC_CACHE_DIR = path.join(CACHE_ROOT, 'shellcheck');
 
 // Distinct error types so `main` can apply the failure policy above.
-class DownloadError extends Error {}
-class UnsupportedTargetError extends Error {}
+// Exported so the failure-policy decision is unit-testable (ADR-0009).
+export class DownloadError extends Error {}
+export class UnsupportedTargetError extends Error {}
 
 // --- target mapping (per-tool exact asset names) -------------------------
 
@@ -71,7 +72,7 @@ const SC_BIN_NAME = process.platform === 'win32' ? 'shellcheck.exe' : 'shellchec
 // arm64}.tar.gz`, `_windows_{amd64,arm64}.zip` (+ a few exotic targets we
 // don't ship for). Map the realistic dev platforms exactly; reject
 // everything else instead of collapsing it into amd64.
-function alAssetName() {
+export function alAssetName() {
   let arch;
   switch (process.arch) {
     case 'x64':
@@ -107,7 +108,7 @@ function alAssetName() {
 // archive is verified before extraction, mirroring actionlint's
 // checksums.txt check. Cross-verified against the published values and
 // recomputed from the official downloads.
-const SC_SHA256 = {
+export const SC_SHA256 = {
   'shellcheck-v0.11.0.zip': '8a4e35ab0b331c85d73567b12f2a444df187f483e5079ceffa6bda1faa2e740e',
   'shellcheck-v0.11.0.linux.x86_64.tar.xz':
     '8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198',
@@ -118,7 +119,7 @@ const SC_SHA256 = {
   'shellcheck-v0.11.0.darwin.aarch64.tar.xz':
     '56affdd8de5527894dca6dc3d7e0a99a873b0f004d7aabc30ae407d3f48b0a79',
 };
-function scAssetName() {
+export function scAssetName() {
   let arch;
   switch (process.arch) {
     case 'x64':
@@ -152,7 +153,7 @@ function scAssetName() {
 // 5xx) mean a network hiccup → DownloadError → graceful skip (exit 0). 4xx
 // client errors (e.g. 404 from a bad pinned version or asset mapping) are a
 // permanent config bug → plain Error → setup failure (exit 1).
-function classifyHttpError(status, url) {
+export function classifyHttpError(status, url) {
   const message = `HTTP ${status} from ${url}`;
   if (status === 408 || status === 429 || status >= 500) return new DownloadError(message);
   return new Error(message);
@@ -434,4 +435,9 @@ async function main() {
   process.exitCode = r.status ?? 1;
 }
 
-main();
+// Run only when invoked directly (node scripts/maintenance/actionlint-
+// check.mjs) — not when imported by the unit spec, which must not trigger
+// downloads or spawn processes.
+const isDirectRun =
+  process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (isDirectRun) main();
