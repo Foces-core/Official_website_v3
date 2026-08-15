@@ -1,13 +1,16 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { act } from 'react';
 import BlurImage from '../../src/Components/BlurImage/BlurImage.jsx';
+import { blurImageReducer } from '../../src/Components/BlurImage/useBlurImage.js';
 import { createHarness } from './harness.jsx';
 
 // The shared image primitive's state machine: loaded / removed (placeholder)
-// / fetch-priority elevation, with a 500ms placeholder-removal timer. The old
-// implementation also set state inside the render body when src changed —
-// render-phase side effects React warns against. The extraction (useBlurImage)
-// moves that reset into an effect and pins every transition here.
+// / fetch-priority elevation, with a 500ms placeholder-removal timer — all
+// owned by the pure blurImageReducer (the hook only feeds it events and runs
+// side effects). The old implementation set state inside the render body when
+// src changed — a render-phase write; SRC_CHANGED now arrives via a layout
+// effect and the reset lives in the reducer. Every transition is pinned here:
+// the direct reducer specs below, plus the DOM-level behavior via the harness.
 
 vi.mock('../../src/utils/priorityScheduler.js', () => ({
   prioritizeAssetFetch: vi.fn(),
@@ -99,6 +102,95 @@ describe('BlurImage state machine', () => {
     });
     // Firing the stale timer after unmount must not throw or warn
     expect(() => vi.advanceTimersByTime(600)).not.toThrow();
+  });
+});
+
+describe('blurImageReducer — the pure state machine', () => {
+  // Direct transition tests (no DOM): the hook funnels every state write
+  // through the reducer, so this contract is what the BlurImage behaviors
+  // above are built on.
+  const base = (overrides = {}) => ({
+    loaded: false,
+    removed: true, // placeholder already gone (no blurSrc) unless overridden
+    priorityAttr: undefined, // lazy policy
+    prevSrc: 'a.jpg',
+    ...overrides,
+  });
+
+  it('SRC_CHANGED resets the machine for a new src (lazy policy)', () => {
+    const next = blurImageReducer(base({ loaded: true, removed: false }), {
+      type: 'SRC_CHANGED',
+      src: 'b.jpg',
+      blurSrc: 'blur.jpg',
+      eager: false,
+    });
+    expect(next).toEqual({
+      loaded: false,
+      removed: false, // placeholder back for the new pair
+      priorityAttr: undefined,
+      prevSrc: 'b.jpg',
+    });
+  });
+
+  it('SRC_CHANGED with an unchanged src is a no-op — same object, so useReducer bails', () => {
+    const state = base();
+    const next = blurImageReducer(state, {
+      type: 'SRC_CHANGED',
+      src: 'a.jpg',
+      blurSrc: undefined,
+      eager: false,
+    });
+    expect(next).toBe(state);
+  });
+
+  it('SRC_CHANGED re-applies the eager policy for the new src', () => {
+    const next = blurImageReducer(base(), {
+      type: 'SRC_CHANGED',
+      src: 'b.jpg',
+      blurSrc: undefined,
+      eager: true,
+    });
+    expect(next).toEqual({
+      loaded: false,
+      removed: true,
+      priorityAttr: 'high',
+      prevSrc: 'b.jpg',
+    });
+  });
+
+  it('LOADED marks the image loaded without touching the placeholder policy', () => {
+    const next = blurImageReducer(base(), { type: 'LOADED' });
+    expect(next.loaded).toBe(true);
+    expect(next.removed).toBe(true);
+    expect(next.priorityAttr).toBeUndefined();
+  });
+
+  it('ERROR reveals the element so broken-image alt text renders', () => {
+    const next = blurImageReducer(base(), { type: 'ERROR' });
+    expect(next).toEqual({
+      loaded: true,
+      removed: true,
+      priorityAttr: undefined,
+      prevSrc: 'a.jpg',
+    });
+  });
+
+  it('INTERACT elevates priority once — a second dispatch is a no-op', () => {
+    const first = blurImageReducer(base(), { type: 'INTERACT' });
+    expect(first.priorityAttr).toBe('high');
+    // Same object → the hook never re-renders for the redundant dispatch
+    expect(blurImageReducer(first, { type: 'INTERACT' })).toBe(first);
+  });
+
+  it('REMOVE_PLACEHOLDER drops the blur layer after the cross-fade', () => {
+    const next = blurImageReducer(base({ removed: false }), { type: 'REMOVE_PLACEHOLDER' });
+    expect(next.removed).toBe(true);
+    expect(next.loaded).toBe(false);
+  });
+
+  it('unknown action types leave the state untouched', () => {
+    const state = base();
+    expect(blurImageReducer(state, { type: 'NOPE' })).toBe(state);
   });
 });
 
