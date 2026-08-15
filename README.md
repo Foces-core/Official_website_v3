@@ -2,6 +2,42 @@
 
 Official website for **FOCES** (Foundation of Computer Engineering Students), College of Engineering Chengannur — built with React + Vite.
 
+## Prerequisites — install the tools
+
+New to the stack? Install these once (about 15 minutes), then the
+`pnpm` commands below just work. Each tool links its official install page,
+its docs, a beginner video, and a readable reference.
+
+- **Git** — for cloning, branching, and PRs.
+  [Install](https://git-scm.com/downloads) · [Docs](https://git-scm.com/doc) ·
+  🎬 [Official videos](https://git-scm.com/videos) ·
+  📖 [Pro Git book (free)](https://git-scm.com/book)
+- **Node.js ≥ 22.13** — runs Vite, Vitest, and the build (`.nvmrc` pins 22;
+  pnpm 11 requires it).
+  [Install](https://nodejs.org/en/download) ·
+  [Windows version manager (nvm-windows)](https://github.com/coreybutler/nvm-windows) ·
+  [Learn](https://nodejs.org/en/learn) ·
+  🎬 [YouTube: Node for beginners](https://www.youtube.com/results?search_query=node+js+for+beginners)
+- **pnpm** — the package manager. This repo uses **pnpm only** (never
+  npm/yarn): `pnpm install`, `pnpm dev`, ...
+  [Install](https://pnpm.io/installation) · [Docs](https://pnpm.io/) ·
+  🎬 [YouTube: pnpm](https://www.youtube.com/results?search_query=pnpm+tutorial) ·
+  📖 [Why pnpm?](https://pnpm.io/motivation)
+- **VS Code** — recommended editor; the repo's settings enable ESLint
+  fix-on-save + Prettier format-on-save so your edits are always formatted.
+  [Install](https://code.visualstudio.com/download) ·
+  [Docs](https://code.visualstudio.com/docs) ·
+  🎬 [Official intro videos](https://code.visualstudio.com/docs/getstarted/introvideos)
+- **Chrome** — used by the E2E tests and probes (Playwright also installs
+  its own Chromium automatically, so this is optional).
+  [Install](https://www.google.com/chrome/) ·
+  [DevTools docs](https://developer.chrome.com/docs/devtools) ·
+  🎬 [YouTube: DevTools for beginners](https://www.youtube.com/results?search_query=chrome+devtools+for+beginners)
+
+**Never used React or Vite before?** Do the official [React tutorial](https://react.dev/learn)
+and skim the [Vite guide](https://vite.dev/guide/) first, then watch a full
+walkthrough: 🎬 [YouTube: build a React + Vite app from scratch](https://www.youtube.com/results?search_query=vite+react+beginner+tutorial).
+
 ## Getting started
 
 ```bash
@@ -15,15 +51,15 @@ format check, unit tests, structural checks, build) in one command.
 
 ## Tech Stack
 
-- **React 19** + **Vite 8** (SWC plugin)
-- **Tailwind CSS** for styling
-- **Swiper** carousels (Featuring, event galleries, execom)
-- **Three.js / Vanta** hero background
-- **react-router** for `/events` and `/contact` routes
-- **PWA** (`vite-plugin-pwa`) with service-worker precaching
+- **[React 19](https://react.dev/)** + **[Vite 8](https://vite.dev/)** (SWC plugin)
+- **[Tailwind CSS](https://tailwindcss.com/)** for styling
+- **[Swiper](https://swiperjs.com/)** carousels (Featuring, event galleries, execom)
+- **[Three.js](https://threejs.org/) / [Vanta](https://www.vantajs.com/)** hero background
+- **[react-router](https://reactrouter.com/)** for `/events` and `/contact` routes
+- **PWA** ([`vite-plugin-pwa`](https://vite-pwa-org.netlify.app/)) with service-worker precaching
 - **Perf**: `js.foresight` (intent-based route chunk prefetch), manual chunk
   splitting, responsive `srcset` images, and build-time image optimization
-- **Sentry** (optional) — error tracking via `@sentry/react` + `@sentry/vite-plugin`;
+- **[Sentry](https://sentry.io/)** (optional) — error tracking via `@sentry/react` + `@sentry/vite-plugin`;
   see `.env.example` for required env vars (`VITE_SENTRY_DSN`, `SENTRY_ORG`,
   `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`)
 
@@ -43,26 +79,26 @@ See `.env.example` for the full list of available variables and their expected v
 
 ## Scripts
 
-| Command             | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm dev`          | Local dev server (HMR, auto-opens the browser)                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| `pnpm dev:network`  | Dev server exposed on the LAN (test from your phone)                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| `pnpm build`        | Production build to `dist/` (image optimizer + PWA precache)                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| `pnpm preview`      | Serve `dist/` locally                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `pnpm lint`         | ESLint over all `js`/`jsx` files                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| `pnpm format`       | Prettier format the whole repo (single quotes, 100-col, 4-space CSS)                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| `pnpm verify`       | One-command pre-commit gate: lint + format-check + unit tests + structural checks + build                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `pnpm format:check` | Verify formatting (run by CI)                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `pnpm lint:watch`   | ESLint in watch mode (live feedback while editing)                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
-| `pnpm knip`         | Dead-code / unused-dependency guard                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `pnpm clean`        | Remove generated artifacts (`dist`, `test-results`, `playwright-report`)                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| `pnpm test`         | Playwright E2E suite (split across `tests/*.spec.js`)                                                                                                                                                                                                                                                                                                                                                                                                                                               |
-| `pnpm test:unit`    | Vitest unit suite (`tests/unit/` — pure logic + component seams via the shared `harness.jsx`; covers detectProfile, keyboardLock, srcset, events, contact, scroll-to-section, cube physics/easter egg, carousel wrap, session cookies, boot splash, analytics deferral, navbar scrollspy/nav actions, body scroll-lock, blur-image states, cube celebration, team roster, breakpoints). Run a single spec by filename: `pnpm test:unit navSpy` (also works in watch: `pnpm test:unit:watch navSpy`) |
-| `pnpm test:e2e:ui`  | Playwright UI mode (interactive debugger)                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Command             | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm dev`          | Local dev server (HMR, auto-opens the browser)                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `pnpm dev:network`  | Dev server exposed on the LAN (test from your phone)                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| `pnpm build`        | Production build to `dist/` (image optimizer + PWA precache)                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `pnpm preview`      | Serve `dist/` locally                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| `pnpm lint`         | [ESLint](https://eslint.org/) over all `js`/`jsx` files                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `pnpm format`       | [Prettier](https://prettier.io/) format the whole repo (single quotes, 100-col, 4-space CSS)                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `pnpm verify`       | One-command pre-commit gate: lint + format-check + unit tests + structural checks + build                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| `pnpm format:check` | Verify formatting (run by CI)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `pnpm lint:watch`   | ESLint in watch mode (live feedback while editing)                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `pnpm knip`         | [knip](https://knip.dev/) dead-code / unused-dependency guard                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| `pnpm clean`        | Remove generated artifacts (`dist`, `test-results`, `playwright-report`)                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `pnpm test`         | [Playwright](https://playwright.dev/) E2E suite (split across `tests/*.spec.js`)                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| `pnpm test:unit`    | [Vitest](https://vitest.dev/) unit suite (`tests/unit/` — pure logic + component seams via the shared `harness.jsx`; covers detectProfile, keyboardLock, srcset, events, contact, scroll-to-section, cube physics/easter egg, carousel wrap, session cookies, boot splash, analytics deferral, navbar scrollspy/nav actions, body scroll-lock, blur-image states, cube celebration, team roster, breakpoints). Run a single spec by filename: `pnpm test:unit navSpy` (also works in watch: `pnpm test:unit:watch navSpy`) |
+| `pnpm test:e2e:ui`  | Playwright UI mode (interactive debugger)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
 ## Performance Tooling
 
-`scripts/probes/perf-test.mjs` runs Lighthouse across device/network profiles
+`scripts/probes/perf-test.mjs` runs [Lighthouse](https://developer.chrome.com/docs/lighthouse/) across device/network profiles
 (`desktop-fast`, `mobile-4g`, `mobile-3g`, `mobile-2g`, CPU-throttled variants).
 Run a single profile with `PERF_ONLY=profile node scripts/probes/perf-test.mjs`.
 
@@ -81,6 +117,11 @@ The site deliberately degrades on slow networks and low-end hardware (see
   cache, so first visits don't download the whole site
 
 ## Accessibility (WCAG 2.1/2.2 + ARIA APG)
+
+Every PR runs an automated [axe](https://www.deque.com/axe/) WCAG 2.1/2.2
+scan on `/`, `/events`, and `/contact` (in `tests/accessibility.spec.js`),
+failing on serious/critical violations — on top of these hand-checked
+behaviors:
 
 - Skip-to-content link on every route targets `#main-content`
 - Roving `tabindex` on navbar links (arrow keys cycle, exactly one tab stop)
