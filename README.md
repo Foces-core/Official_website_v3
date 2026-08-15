@@ -26,6 +26,8 @@ its docs, a beginner video, and a readable reference.
   📖 [Why pnpm?](https://pnpm.io/motivation)
 - **VS Code** — recommended editor; the repo's settings enable ESLint
   fix-on-save + Prettier format-on-save so your edits are always formatted.
+  On first open, VS Code offers the recommended extensions from
+  [`.vscode/extensions.json`](.vscode/extensions.json) — accept them.
   [Install](https://code.visualstudio.com/download) ·
   [Docs](https://code.visualstudio.com/docs) ·
   🎬 [Official intro videos](https://code.visualstudio.com/docs/getstarted/introvideos)

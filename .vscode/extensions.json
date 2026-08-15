@@ -1,0 +1,14 @@
+{
+  // Recommended VS Code extensions for this repo — VS Code prompts to install
+  // them when you open the project. Each maps to a tool this repo actually
+  // uses (see .vscode/settings.json, README, CONTRIBUTING).
+  "recommendations": [
+    "esbenp.prettier-vscode", // Prettier formatter (single source of truth for style)
+    "dbaeumer.vscode-eslint", // ESLint — auto-fix on save (settings.json wires it)
+    "editorconfig.editorconfig", // Respects .editorconfig (LF, no trailing whitespace)
+    "bradlc.vscode-tailwindcss", // Tailwind utility autocomplete + hover docs
+    "ms-playwright.playwright", // Run/debug the E2E suite from the editor
+    "vitest.explorer", // Run unit tests and see coverage inline
+    "ms-vscode.vscode-typescript-next" // TypeScript-aware IntelliSense for JS/JSX
+  ]
+}
