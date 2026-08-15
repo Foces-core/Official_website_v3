@@ -25,6 +25,7 @@
     "test:unit:watch": "vitest",
     "test:install": "playwright install chromium",
     "knip": "knip",
+    "lint:workflows": "node scripts/maintenance/actionlint-check.mjs",
     "check:assets": "node scripts/maintenance/check-orphan-assets.mjs",
     "check:sw": "node scripts/maintenance/check-sw-precache.mjs",
     "check:specs": "node scripts/maintenance/check-specs.mjs",
