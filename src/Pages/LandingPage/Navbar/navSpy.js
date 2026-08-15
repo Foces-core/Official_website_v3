@@ -2,8 +2,9 @@
  * navSpy — the Navbar's pure navigation + scroll decisions (ADR-0009: behavior
  * lives in tested modules; the component wires side effects).
  *
- * Three small interfaces, each owned by its specs in tests/unit/navSpy.spec.js:
- *  - pickActiveSection  — which section is under the scrollspy reference line
+ * Interfaces, each owned by its specs in tests/unit/navSpy.spec.js:
+ *  - pickActiveSection / pickOnViewport — which section is under the
+ *    scrollspy reference line (pure geometry + the thin DOM-reading wrapper)
  *  - resolveNavAction / resolveLogoAction — where a click goes (route vs.
  *    cross-route-with-anchor vs. same-page scroll)
  *  - coalesceToFrame    — coalesce scroll/resize-driven work to one rAF
@@ -16,6 +17,10 @@
 // 800 in the worked example) rather than by importing constants.
 const REF_LINE_RATIO = 0.35;
 const NEAR_BOTTOM_MARGIN_PX = 50;
+
+// Distance scrolled before the navbar swaps to the solid "scrolled"
+// treatment. Consumed by Navbar's is-scrolled wiring (coalesceToFrame).
+export const SCROLLED_THRESHOLD_PX = 150;
 
 /**
  * Decide the active navbar section for a given scroll position.
@@ -54,6 +59,43 @@ export function pickActiveSection({ sectionIds, scrollY, viewportH, docHeight, g
   // with 'home' (see Navbar's navItems), so this is the same fallback as the
   // original component logic.
   return current ?? 'home';
+}
+
+/**
+ * Thin DOM wrapper over pickActiveSection: reads the live scroll/viewport
+ * geometry and each section's getBoundingClientRect().top, and returns the
+ * nav item that should be current — null on non-home routes, where no home
+ * section is "current" (the navbar falls back to the dark theme), and
+ * 'contact' on the contact route.
+ *
+ * Route awareness lives here so the whole "which nav item is current"
+ * decision is unit-tested; the component only wires the result into state.
+ * The win/doc parameters default to the real globals and exist so the spec
+ * can inject fakes — jsdom's getBoundingClientRect returns all-zero rects,
+ * so a fake document keeps the wrapper's tests meaningful without a layout
+ * engine. Rects are viewport-relative in the browser, so the fake must
+ * return tops with scrollY already subtracted (same as the real caller).
+ *
+ * @param {{ sectionIds: string[], pathname: string,
+ *           win?: { scrollY: number, innerHeight: number },
+ *           doc?: { documentElement: { scrollHeight: number },
+ *                   getElementById: (id: string) => { getBoundingClientRect:
+ *                     () => { top: number } } | null } }} input
+ * @returns {string | null} active section id
+ */
+export function pickOnViewport({ sectionIds, pathname, win = window, doc = document }) {
+  if (pathname === '/contact') return 'contact';
+  if (pathname !== '/') return null;
+  return pickActiveSection({
+    sectionIds,
+    scrollY: win.scrollY,
+    viewportH: win.innerHeight,
+    docHeight: doc.documentElement.scrollHeight,
+    getTop: (id) => {
+      const el = doc.getElementById(id);
+      return el ? el.getBoundingClientRect().top : null;
+    },
+  });
 }
 
 /**

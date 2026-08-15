@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import {
   pickActiveSection,
+  pickOnViewport,
   resolveNavAction,
   resolveLogoAction,
   coalesceToFrame,
@@ -130,6 +131,80 @@ describe('pickActiveSection — the navbar scrollspy decision', () => {
   });
 });
 
+describe('pickOnViewport — the DOM-reading wrapper', () => {
+  const SECTION_IDS = ['home', 'about', 'featuring', 'events', 'execom'];
+
+  // Fake document whose getBoundingClientRect().top is viewport-relative,
+  // like the real browser (scrollY already subtracted) — exactly the shape
+  // pickOnViewport forwards to pickActiveSection. jsdom's real rects are
+  // all-zero, so the wrapper takes an injectable doc to stay meaningful.
+  const makeDoc = (rectTops) => ({
+    documentElement: { scrollHeight: 2000 },
+    getElementById: (id) =>
+      id in rectTops && rectTops[id] != null
+        ? { getBoundingClientRect: () => ({ top: rectTops[id] }) }
+        : null,
+  });
+
+  it('returns contact on the contact route without touching the DOM', () => {
+    const getElementById = vi.fn();
+    const result = pickOnViewport({
+      sectionIds: SECTION_IDS,
+      pathname: '/contact',
+      win: { scrollY: 0, innerHeight: 800 },
+      doc: { documentElement: { scrollHeight: 2000 }, getElementById },
+    });
+    expect(result).toBe('contact');
+    expect(getElementById).not.toHaveBeenCalled();
+  });
+
+  it('returns null on other non-home routes (no home section is current)', () => {
+    const result = pickOnViewport({
+      sectionIds: SECTION_IDS,
+      pathname: '/events',
+      win: { scrollY: 0, innerHeight: 800 },
+      doc: makeDoc({}),
+    });
+    expect(result).toBeNull();
+  });
+
+  it('picks the section under the 35% reference line from live geometry', () => {
+    // viewportH 800 → refY 280; scrollY 1100 → viewport bottom 1900, not
+    // near bottom (1950). Line scan: home −980 ✓, about −500 ✓, featuring
+    // 200 ✓, events 900 ✗, execom 1500 ✗ → featuring.
+    const result = pickOnViewport({
+      sectionIds: SECTION_IDS,
+      pathname: '/',
+      win: { scrollY: 1100, innerHeight: 800 },
+      doc: makeDoc({ home: -980, about: -500, featuring: 200, events: 900, execom: 1500 }),
+    });
+    expect(result).toBe('featuring');
+  });
+
+  it('applies the near-bottom fallback to the last mounted section', () => {
+    // scrollY 1400 → viewport bottom 2200 ≥ 1950 → fallback overrides the
+    // line scan (which stops at featuring) with execom, the last section
+    // present, even though its top (1200) never crossed the line.
+    const result = pickOnViewport({
+      sectionIds: SECTION_IDS,
+      pathname: '/',
+      win: { scrollY: 1400, innerHeight: 800 },
+      doc: makeDoc({ home: -1280, about: -800, featuring: -100, events: 600, execom: 1200 }),
+    });
+    expect(result).toBe('execom');
+  });
+
+  it('defaults to home when no section has mounted yet', () => {
+    const result = pickOnViewport({
+      sectionIds: SECTION_IDS,
+      pathname: '/',
+      win: { scrollY: 0, innerHeight: 800 },
+      doc: makeDoc({ home: null, about: null, featuring: null, events: null, execom: null }),
+    });
+    expect(result).toBe('home');
+  });
+});
+
 describe('resolveNavAction — where a nav-item click goes', () => {
   it('routes to /contact regardless of current pathname', () => {
     expect(resolveNavAction('contact', '/')).toEqual({ type: 'route', to: '/contact' });
@@ -141,6 +216,14 @@ describe('resolveNavAction — where a nav-item click goes', () => {
       type: 'navigate',
       to: '/',
       state: { id: 'featuring' },
+    });
+  });
+
+  it('header HOME from a non-home route also lands home-with-anchor', () => {
+    expect(resolveNavAction('home', '/events')).toEqual({
+      type: 'navigate',
+      to: '/',
+      state: { id: 'home' },
     });
   });
 
