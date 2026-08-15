@@ -7,8 +7,9 @@ decade and still feel at home.
 
 ## Development setup
 
-Prerequisites: **[Node ≥ 22.13](https://nodejs.org/en/download)** (pnpm 11.x
-requires it), **[pnpm](https://pnpm.io/installation)** (version pinned in
+Prerequisites: **[Node 22.x](https://nodejs.org/en/download)** — minimum
+`>=22.13`, set in `package.json` `engines` (enforced by `engine-strict`) and
+pinned in `.nvmrc`; **[pnpm](https://pnpm.io/installation)** (version pinned in
 `package.json` via `packageManager`), and **[Git](https://git-scm.com/downloads)**.
 Any editor works — [VS Code](https://code.visualstudio.com/download) is what
 the repo's settings target (ESLint fix + Prettier format on save). New to the
