@@ -122,6 +122,7 @@ describe('scAssetName — shellcheck release asset per platform/arch', () => {
   it.each([
     ['ia32', 'x64'],
     ['arm', 'x64'],
+    ['riscv64', 'x64'],
   ])('rejects unsupported arch (%s, %s)', (arch, platform) => {
     setTarget(platform, arch);
     expect(() => scAssetName()).toThrow(UnsupportedTargetError);
