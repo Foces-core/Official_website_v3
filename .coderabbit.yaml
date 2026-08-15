@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 # CodeRabbit AI code review — https://coderabbit.ai
 # Config reference: https://docs.coderabbit.ai/reference/configuration
 #
@@ -143,6 +144,20 @@ reviews:
     yamllint:
       enabled: true
 
+  # Both title AND description are error-mode: with request_changes_workflow on,
+  # a PR that violates either blocks merge until fixed.
+  pre_merge_checks:
+    title:
+      mode: "error"
+      requirements: |
+        Must follow Conventional Commits:
+        feat|fix|perf|a11y|chore|docs|test|refactor|ci|build|style|
+        revert(scope): subject. Keep the subject under ~72 characters,
+        lowercase, no trailing period. Example: 'feat(events): add 2026 lineup
+        carousel'.
+    description:
+      mode: "error"
+
 chat:
   auto_reply: true
   art: false
@@ -158,20 +173,6 @@ knowledge_base:
     scope: "local"
   pull_requests:
     scope: "local"
-
-# Both title AND description are error-mode: with request_changes_workflow on,
-# a PR that violates either blocks merge until fixed.
-pre_merge_checks:
-  title:
-    mode: "error"
-    requirements: |
-      Must follow Conventional Commits:
-      feat|fix|perf|a11y|chore|docs|test|refactor|ci|build|style|
-      revert(scope): subject. Keep the subject under ~72 characters,
-      lowercase, no trailing period. Example: 'feat(events): add 2026 lineup
-      carousel'.
-  description:
-    mode: "error"
 
 issue_enrichment:
   auto_enrich:
