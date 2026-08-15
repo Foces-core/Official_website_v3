@@ -12,7 +12,8 @@ import {
   registerWidget,
   rectIsOnScreen,
 } from '../../utils/keyboardLock.js';
-import { normalizeIndex, wrapTarget } from './carouselWrap.js';
+import { normalizeIndex, wrapTarget } from '../../utils/carouselWrap.js';
+import { useAutoplayOnScreen } from '../../hooks/useAutoplayOnScreen.js';
 import '../Execom/custom.css';
 
 /**
@@ -98,26 +99,9 @@ function TeamCarousel({
 
   // Only run autoplay while the carousel is actually on screen — at high CPU
   // throttle (or on low-end phones), a slider spinning off-screen is pure
-  // wasted frames.
-  useEffect(() => {
-    if (typeof IntersectionObserver === 'undefined') return;
-    const el = wrapRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        const swiper = swiperRef.current;
-        if (!swiper) return;
-        if (entry.isIntersecting) {
-          if (!disableAutoplay) swiper.autoplay?.start();
-        } else {
-          swiper.autoplay?.stop();
-        }
-      },
-      { threshold: 0.1 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [disableAutoplay]);
+  // wasted frames. Shared seam (useAutoplayOnScreen) — same hook Featuring
+  // uses.
+  useAutoplayOnScreen({ elementRef: wrapRef, swiperRef, disable: disableAutoplay });
 
   const containerClass = isDesktop
     ? `hidden sm:block ${flatCube ? '' : 'max-w-[360px] mx-auto py-4'}`

@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import EventTitle from '../../assets/Event.svg';
 import { featuredEvents } from '../../data/events.js';
 import BlurImage from '../../Components/BlurImage/BlurImage';
+import { WIDE_SCREEN_MIN, DESKTOP_MIN } from '../../utils/breakpoints.js';
 
 function Events() {
   return (
@@ -49,7 +50,7 @@ function Events() {
                 <BlurImage
                   src={evt.photos[0].url}
                   srcSet={evt.photos[0].srcset}
-                  sizes="(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 90vw"
+                  sizes={`(min-width: ${WIDE_SCREEN_MIN}px) 30vw, (min-width: ${DESKTOP_MIN}px) 45vw, 90vw`}
                   alt={evt.name}
                   loading={index === 0 ? 'eager' : 'lazy'}
                   decoding="async"

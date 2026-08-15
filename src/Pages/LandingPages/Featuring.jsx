@@ -1,24 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useViewportWidth } from '../../hooks/useViewportWidth.js';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Scrollbar, A11y, Keyboard } from 'swiper/modules';
 import 'swiper/css';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 import useDeviceProfile from '../../hooks/useLowPower.js';
+import { useAutoplayOnScreen } from '../../hooks/useAutoplayOnScreen.js';
 import featuring from '../../assets/featuring.svg';
-import episodeOne from '../../assets/episode-1.webp';
-import episodeOne480 from '../../assets/episode-1-480.webp';
-import episodeOne960 from '../../assets/episode-1-960.webp';
-import series from '../../assets/series.webp';
-import series480 from '../../assets/series-480.webp';
-import series960 from '../../assets/series-960.webp';
-import fourth from '../../assets/fourth.webp';
-import fourth480 from '../../assets/fourth-480.webp';
-import fourth960 from '../../assets/fourth-960.webp';
-import mentorReveal from '../../assets/Mentor_reveal.webp';
-import mentorReveal480 from '../../assets/Mentor_reveal-480.webp';
-import mentorReveal960 from '../../assets/Mentor_reveal-960.webp';
-import { srcset } from '../../utils/srcset.js';
-import { featuringSlidesPerView } from '../../utils/breakpoints.js';
+import { echoSlides, carouselSlides } from '../../data/echoSlides.js';
+import { featuringSlidesPerView, DESKTOP_MIN, SMALL_SCREEN_MAX } from '../../utils/breakpoints.js';
+import { normalizeIndex, wrapTarget, copyFor } from '../../utils/carouselWrap.js';
 import {
   syncCarouselKeyboard,
   subscribeKeyboardArbitration,
@@ -28,57 +19,10 @@ import {
 } from '../../utils/keyboardLock.js';
 import './Featuring.css';
 
-const echoSlides = [
-  {
-    image: episodeOne,
-    imageSet: srcset([
-      [episodeOne, 1280],
-      [episodeOne960, 960],
-      [episodeOne480, 480],
-    ]),
-    alt: 'ECHO - Episode 1',
-  },
-  {
-    image: series,
-    imageSet: srcset([
-      [series, 1280],
-      [series960, 960],
-      [series480, 480],
-    ]),
-    alt: 'ECHO Series',
-  },
-  {
-    image: mentorReveal,
-    imageSet: srcset([
-      [mentorReveal, 1280],
-      [mentorReveal960, 960],
-      [mentorReveal480, 480],
-    ]),
-    alt: 'ECHO - Mentor Reveal',
-  },
-  {
-    image: fourth,
-    imageSet: srcset([
-      [fourth, 1280],
-      [fourth960, 960],
-      [fourth480, 480],
-    ]),
-    alt: 'ECHO - Fourth',
-  },
-];
-
-// Swiper's loop mode jams at its append boundary when there are only slightly
-// more slides than slidesPerView (4 slides / up to 3 per view): autoplay and
-// keyboard both advance once and then freeze (the loopFix re-targets the same
-// slide). So — like the Execom cube — we render 3 copies of the 4 slides and
-// wrap with a 0ms jump between copies (indices 4 and 8 show the same content
-// as index 0), with no loop mode at all.
-const carouselSlides = [...echoSlides, ...echoSlides, ...echoSlides];
-
 function Featuring() {
   const { reducedMotion } = useDeviceProfile();
   const disableAutoplay = reducedMotion;
-  const [noSlides, setNoSlides] = useState(1);
+  const noSlides = featuringSlidesPerView(useViewportWidth());
   const [activeSlide, setActiveSlide] = useState(0);
   const swiperRef = useRef(null);
   const carouselRef = useRef(null);
@@ -86,35 +30,21 @@ function Featuring() {
 
   // Seamless infinite wrap: as soon as a copy boundary is crossed, jump 0ms
   // to the equivalent slide in the adjacent copy (same content → invisible).
+  // The copy math lives in the shared, tested carouselWrap seam (same module
+  // TeamCarousel uses); this handler only performs the swiper side effects.
   const handleWrap = useCallback((swiper) => {
     if (!swiper) return;
     const total = echoSlides.length;
     const idx = swiper.activeIndex;
-    setActiveSlide(idx % total);
+    setActiveSlide(normalizeIndex(idx, total));
 
-    if (idx >= total * 2) {
-      swiper.slideTo(idx - total, 0);
+    const target = wrapTarget(idx, total);
+    if (target != null) {
+      swiper.slideTo(target, 0);
       // The 0ms jump fires no DOM transitionend, so Swiper autoplay's
       // transition-wait would stay paused forever — nudge it back on.
       swiper.autoplay?.resume();
-    } else if (idx < total) {
-      swiper.slideTo(idx + total, 0);
-      swiper.autoplay?.resume();
     }
-  }, []);
-
-  useEffect(() => {
-    const handleResize = () => {
-      setNoSlides(featuringSlidesPerView(window.innerWidth));
-    };
-
-    handleResize(); // Initial setup
-
-    window.addEventListener('resize', handleResize, { passive: true });
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
   }, []);
 
   // Arrow-key arbitration (see utils/keyboardLock.js): register the carousel
@@ -141,23 +71,9 @@ function Featuring() {
     };
   }, []);
 
-  // IntersectionObserver: start/stop autoplay only when on screen
-  useEffect(() => {
-    if (typeof IntersectionObserver === 'undefined' || !carouselRef.current) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!swiperRef.current) return;
-        if (entry.isIntersecting) {
-          if (!disableAutoplay) swiperRef.current.autoplay?.start();
-        } else {
-          swiperRef.current.autoplay?.stop();
-        }
-      },
-      { threshold: 0.1 },
-    );
-    observer.observe(carouselRef.current);
-    return () => observer.disconnect();
-  }, [disableAutoplay]);
+  // Only run autoplay while the carousel is on screen (shared seam —
+  // useAutoplayOnScreen, same hook TeamCarousel uses).
+  useAutoplayOnScreen({ elementRef: carouselRef, swiperRef, disable: disableAutoplay });
 
   // The section id lives on the ScrollGate wrapper in App.jsx, not here —
   // the wrapper is always present, so anchors/scrollspy always find it.
@@ -224,7 +140,7 @@ function Featuring() {
                 className="h-full w-full rounded-2xl object-cover transition-all duration-300 shadow-xl hover:scale-105 hover:ring-2 hover:ring-white/50 hover:shadow-[0_0_25px_6px_rgba(255,255,255,0.25)]"
                 src={image}
                 srcSet={imageSet}
-                sizes="(min-width: 768px) 33vw, (min-width: 500px) 50vw, 90vw"
+                sizes={`(min-width: ${DESKTOP_MIN}px) 33vw, (min-width: ${SMALL_SCREEN_MAX}px) 50vw, 90vw`}
                 alt={alt}
                 loading="lazy"
                 decoding="async"
@@ -254,7 +170,7 @@ function Featuring() {
             onClick={() => {
               const sw = swiperRef.current;
               if (!sw) return;
-              const copy = Math.floor(sw.activeIndex / echoSlides.length);
+              const copy = copyFor(sw.activeIndex, echoSlides.length);
               sw.slideTo(copy * echoSlides.length + i, 350);
             }}
             className={`h-2 rounded-full transition-all duration-300 ${

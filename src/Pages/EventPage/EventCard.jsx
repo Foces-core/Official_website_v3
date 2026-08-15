@@ -2,6 +2,7 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import Modal from './Modal';
 import { prioritizeAssetFetch } from '../../utils/priorityScheduler.js';
+import { DESKTOP_MIN } from '../../utils/breakpoints.js';
 import BlurImage from '../../Components/BlurImage/BlurImage';
 
 /**
@@ -60,7 +61,7 @@ function EventCard({ Events, priority, reverse }) {
             <BlurImage
               src={primary.url}
               srcSet={primary.srcset}
-              sizes="(min-width: 768px) 50vw, 92vw"
+              sizes={`(min-width: ${DESKTOP_MIN}px) 50vw, 92vw`}
               alt={Events.name}
               loading={priority ? 'eager' : 'lazy'}
               decoding="async"

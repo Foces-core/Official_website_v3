@@ -1,20 +1,13 @@
-import { useEffect, useState } from 'react';
 import './Loader.css';
 import logo from '../../assets/logo.svg';
+import { useViewportWidth } from '../../hooks/useViewportWidth.js';
 import { isSmallScreen } from '../../utils/breakpoints.js';
 
 const Loader = () => {
-  // The narrow-screen pick used to be a one-shot render-time window read
-  // (unreactive — resizing mid-navigation kept the wrong tagline). Now the
-  // POLICY lives in breakpoints.js (unit-tested); this effect just makes it
-  // reactive, same resize seam the other responsive components use.
-  const [isNarrow, setIsNarrow] = useState(() => isSmallScreen(window.innerWidth));
-
-  useEffect(() => {
-    const onResize = () => setIsNarrow(isSmallScreen(window.innerWidth));
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
+  // Narrow-screen tagline pick: policy in breakpoints.js, reactivity from
+  // the shared useViewportWidth seam (the initializer + resize listener
+  // used to be hand-rolled here).
+  const isNarrow = isSmallScreen(useViewportWidth());
 
   const textContent = isNarrow
     ? "\u00A0 \u00A0 1st Rule Of Programming: \nIf A Code Works, Don't Touch It."

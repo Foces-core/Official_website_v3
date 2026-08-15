@@ -6,12 +6,14 @@ import toggleB from '../../../assets/ButtonB.svg';
 import LogoWhite from '../../../assets/FOCES White.svg';
 import LogoGrey from '../../../assets/FOCES Black.svg';
 import useDeviceProfile from '../../../hooks/useLowPower.js';
+import { useViewportWidth } from '../../../hooks/useViewportWidth.js';
 import { isMobileViewport } from '../../../utils/breakpoints.js';
 import {
-  pickActiveSection,
+  pickOnViewport,
   resolveNavAction,
   resolveLogoAction,
   coalesceToFrame,
+  SCROLLED_THRESHOLD_PX,
 } from './navSpy.js';
 import { acquireScrollLock } from '../../../utils/scrollLock.js';
 import './Navbar.css';
@@ -27,14 +29,23 @@ const navItems = [
 
 export default function Navbar() {
   const { slowNetwork } = useDeviceProfile();
-  // Read the viewport synchronously on first render so phones never flash the
-  // desktop menu open for a frame before the resize effect kicks in.
-  const [isMobile, setIsMobile] = useState(
-    () => typeof window !== 'undefined' && isMobileViewport(window.innerWidth),
-  );
-  const [showItems, setShowItems] = useState(
-    () => typeof window !== 'undefined' && !isMobileViewport(window.innerWidth),
-  );
+  // Viewport bucket comes from the shared useViewportWidth seam (reactive to
+  // resize; policy in breakpoints.js). Reading it on first render keeps
+  // phones from flashing the desktop menu open for a frame.
+  const isMobile = isMobileViewport(useViewportWidth());
+  const [showItems, setShowItems] = useState(() => !isMobile);
+
+  // Keep the drawer in sync when the viewport bucket flips (mobile ⇄ desktop):
+  // React's documented "adjusting state when a prop changes" pattern — a
+  // guarded render-phase setState, not an effect (react-hooks forbids
+  // synchronous setState inside effects). A user who opens the drawer on
+  // mobile, widens the window, and narrows it again must not return to an
+  // open drawer.
+  const [prevIsMobile, setPrevIsMobile] = useState(isMobile);
+  if (isMobile !== prevIsMobile) {
+    setPrevIsMobile(isMobile);
+    setShowItems(!isMobile);
+  }
   const [joinPressed, setJoinPressed] = useState(false);
   const joinTimer = useRef(null);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -49,32 +60,15 @@ export default function Navbar() {
   useEffect(() => () => clearTimeout(joinTimer.current), []);
 
   // The scrollspy DECISION (which section is under the 35% reference line,
-  // near-bottom fallback, lazy-section skipping) lives in the pure
-  // pickActiveSection (navSpy.js, unit-tested); this effect only wires it to
-  // the DOM and coalesces the reads to one per animation frame so low-end
-  // devices don't pay layout-thrash per scroll tick (INP guard, ADR-0001).
+  // near-bottom fallback, lazy-section skipping, route awareness) lives in
+  // the pure pickOnViewport / pickActiveSection (navSpy.js, unit-tested);
+  // this effect only wires it to the DOM and coalesces the reads to one per
+  // animation frame so low-end devices don't pay layout-thrash per scroll
+  // tick (INP guard, ADR-0001).
   useEffect(() => {
+    const sectionIds = navItems.map((item) => item.id).filter((id) => id !== 'contact');
     const routeAwarePick = () => {
-      if (location.pathname === '/contact') {
-        setCurrentItem('contact');
-        return;
-      }
-      if (location.pathname !== '/') {
-        setCurrentItem(null);
-        return;
-      }
-
-      const sectionIds = navItems.map((item) => item.id).filter((id) => id !== 'contact');
-      const next = pickActiveSection({
-        sectionIds,
-        scrollY: window.scrollY,
-        viewportH: window.innerHeight,
-        docHeight: document.documentElement.scrollHeight,
-        getTop: (id) => {
-          const el = document.getElementById(id);
-          return el ? el.getBoundingClientRect().top : null;
-        },
-      });
+      const next = pickOnViewport({ sectionIds, pathname: location.pathname });
       // Bail out unless the active item actually changed — avoids re-rendering
       // the navbar on every scroll tick when the section hasn't moved.
       setCurrentItem((prev) => (prev === next ? prev : next));
@@ -103,62 +97,65 @@ export default function Navbar() {
 
   const toggleItems = () => {
     setShowItems(!showItems);
-  };
-
+  }; // Coalesce scroll-driven state to one update per animation frame so the
+  // navbar doesn't re-render on every scroll tick (same coalescer as the
+  // scrollspy — navSpy.js).
   useEffect(() => {
-    const handleResize = () => {
-      const mobile = isMobileViewport(window.innerWidth);
-      setIsMobile(mobile);
-      setShowItems(!mobile);
-    };
-
-    handleResize();
-    // Coalesce scroll-driven state to one update per animation frame so the
-    // navbar doesn't re-render on every scroll tick (same coalescer as the
-    // scrollspy — navSpy.js).
-    const scheduleScrolled = coalesceToFrame(() => setIsScrolled(window.scrollY > 150));
+    const scheduleScrolled = coalesceToFrame(() =>
+      setIsScrolled(window.scrollY > SCROLLED_THRESHOLD_PX),
+    );
     window.addEventListener('scroll', scheduleScrolled, { passive: true });
-    window.addEventListener('resize', handleResize, { passive: true });
 
     return () => {
       scheduleScrolled.cancel();
-      window.removeEventListener('resize', handleResize);
       window.removeEventListener('scroll', scheduleScrolled);
     };
   }, []);
 
   const handleItemClick = (id, e) => {
     // Where the click goes (route / cross-route-anchor / same-page scroll) is
-    // a pure decision — navSpy.js, unit-tested. This handler only performs the
-    // side effects.
+    // a pure decision of (id, pathname) — navSpy.js, unit-tested. This handler
+    // only performs the side effects, switching on the action type: closing
+    // the mobile drawer, navigating, and (on mobile) deferring the section
+    // scroll by a frame pair until the overlay has released the body lock.
     const action = resolveNavAction(id, window.location.pathname);
     if (isMobile) {
       setShowItems(false);
     }
-    if (action.type === 'route' || action.type === 'navigate') {
-      e.preventDefault();
-      navigate(action.to, action.type === 'navigate' ? { state: action.state } : undefined);
-      return;
-    }
-    // Same-page anchor: scroll to the section.
-    setCurrentItem(id);
-    setRovingId(id);
-    if (isMobile) {
-      // Close the overlay first; the body scroll lock is released when it
-      // unmounts, so defer the section scroll by a frame pair.
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const toggle = document.getElementById('nav-toggle');
-          if (toggle) toggle.focus();
-          const element = document.getElementById(id);
-          if (element) element.scrollIntoView({ behavior: 'smooth' });
-        });
-      });
-    } else {
-      const element = document.getElementById(id);
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+    switch (action.type) {
+      case 'route': {
+        e.preventDefault();
+        navigate(action.to);
+        return;
       }
+      case 'navigate': {
+        e.preventDefault();
+        navigate(action.to, { state: action.state });
+        return;
+      }
+      case 'scroll':
+        setCurrentItem(id);
+        setRovingId(id);
+        if (isMobile) {
+          // Close the overlay first; the body scroll lock is released when it
+          // unmounts, so defer the section scroll by a frame pair.
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              const toggle = document.getElementById('nav-toggle');
+              if (toggle) toggle.focus();
+              const element = document.getElementById(id);
+              if (element) element.scrollIntoView({ behavior: 'smooth' });
+            });
+          });
+        } else {
+          const element = document.getElementById(id);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+        return;
+      default:
+        return;
     }
   };
 

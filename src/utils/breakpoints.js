@@ -26,8 +26,10 @@ export function isDesktopViewport(width) {
   return width >= DESKTOP_MIN;
 }
 
-// Desktop-wide threshold for the Vanta hero (matches detectProfile desktop).
-const WIDE_SCREEN_MIN = 1024;
+// Desktop-wide threshold for the Vanta hero (matches detectProfile desktop);
+// also feeds the `sizes` media queries in the JSX (Events/EventCard), so the
+// number stays in lockstep with the functions and the Tailwind variants.
+export const WIDE_SCREEN_MIN = 1024;
 export function isWideScreen(width) {
   return width >= WIDE_SCREEN_MIN;
 }
