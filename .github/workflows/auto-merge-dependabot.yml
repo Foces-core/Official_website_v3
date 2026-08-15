@@ -1,0 +1,28 @@
+# Auto-merge dependabot PRs once required CI checks pass.
+#
+# GitHub has no native "auto-merge dependabot PRs" flag in dependabot.yml, so
+# this workflow arms GitHub's auto-merge on every PR authored by
+# dependabot[bot]. The merge itself still waits for all required status checks
+# (Lint & Build, E2E, Probes, Validate commit messages) via the main branch
+# protection rule — nothing merges on a red build. Squash merge keeps history
+# linear, and the PR branch is deleted after merging.
+name: Auto-merge dependabot PRs
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]' && github.event.pull_request.draft == false
+    steps:
+      - name: Enable auto-merge (squash + delete branch)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge --auto --squash --delete-branch "$PR_URL"
