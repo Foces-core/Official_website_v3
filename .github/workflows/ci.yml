@@ -5,6 +5,10 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  # Manual re-runs — GitHub sometimes drops webhook-triggered runs during
+  # incidents (Aug 2026), and dispatch lets maintainers run CI on any ref
+  # without a push.
+  workflow_dispatch:
 
 # Cancel in-progress runs when a newer commit lands on the same branch.
 concurrency:
@@ -28,7 +32,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 22.13
           cache: pnpm
 
       - name: Install dependencies
@@ -87,7 +91,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 22.13
           cache: pnpm
 
       - name: Install dependencies
@@ -123,7 +127,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 22.13
           cache: pnpm
 
       - name: Install dependencies
@@ -170,7 +174,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v7
         with:
-          node-version: 22
+          node-version: 22.13
           cache: pnpm
 
       - name: Install dependencies
