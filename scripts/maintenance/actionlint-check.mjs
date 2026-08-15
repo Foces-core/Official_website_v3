@@ -102,6 +102,22 @@ function alAssetName() {
 // shellcheck publishes `shellcheck-v0.11.0.zip` (Windows — a single
 // x86_64 build; arm64 Windows runs it under emulation) and
 // `shellcheck-v0.11.0.{linux,darwin}.{x86_64,aarch64}.tar.xz` (POSIX).
+// SHA-256 digests are taken from the v0.11.0 release notes (shellcheck
+// ships no machine-readable checksums manifest) and pinned here so the
+// archive is verified before extraction, mirroring actionlint's
+// checksums.txt check. Cross-verified against the published values and
+// recomputed from the official downloads.
+const SC_SHA256 = {
+  'shellcheck-v0.11.0.zip': '8a4e35ab0b331c85d73567b12f2a444df187f483e5079ceffa6bda1faa2e740e',
+  'shellcheck-v0.11.0.linux.x86_64.tar.xz':
+    '8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198',
+  'shellcheck-v0.11.0.linux.aarch64.tar.xz':
+    '12b331c1d2db6b9eb13cfca64306b1b157a86eb69db83023e261eaa7e7c14588',
+  'shellcheck-v0.11.0.darwin.x86_64.tar.xz':
+    '3c89db4edcab7cf1c27bff178882e0f6f27f7afdf54e859fa041fca10febe4c6',
+  'shellcheck-v0.11.0.darwin.aarch64.tar.xz':
+    '56affdd8de5527894dca6dc3d7e0a99a873b0f004d7aabc30ae407d3f48b0a79',
+};
 function scAssetName() {
   let arch;
   switch (process.arch) {
@@ -221,7 +237,30 @@ function extractTar(archive, dir, flags) {
   if (r.status !== 0) throw new Error(`extract failed: ${r.stderr}`);
 }
 
-async function ensureTool({ cacheDir, assetName, binName, binUrl, isZip, tarFlags, checksumsUrl }) {
+// Verify an archive's SHA-256 against an expected digest. On mismatch the
+// archive is deleted and an error thrown, so a corrupted or tampered
+// download is never executed. `expected` comes either from a fetched
+// manifest (actionlint's checksums.txt) or from pinned per-asset digests
+// (shellcheck's release notes) — always an explicit caller decision.
+async function verifyArchive(archive, asset, expected) {
+  const { readFileSync } = await import('fs');
+  const actual = createHash('sha256').update(readFileSync(archive)).digest('hex');
+  if (actual !== expected) {
+    rmSync(archive, { force: true });
+    throw new Error(`checksum mismatch for ${asset} (expected ${expected}, got ${actual})`);
+  }
+}
+
+async function ensureTool({
+  cacheDir,
+  assetName,
+  binName,
+  binUrl,
+  isZip,
+  tarFlags,
+  checksumsUrl,
+  digests,
+}) {
   const existing = findBinary(cacheDir, binName);
   if (existing) return existing;
 
@@ -230,26 +269,21 @@ async function ensureTool({ cacheDir, assetName, binName, binUrl, isZip, tarFlag
   mkdirSync(cacheDir, { recursive: true });
   await download(binUrl(asset), archive);
 
-  // When the caller supplies a checksumsUrl, verify the archive's SHA-256
-  // against that manifest before extracting — a corrupted or tampered
-  // download must never be executed. Verification is an explicit caller
-  // decision (passed as a param), not inferred from the asset name.
   if (checksumsUrl) {
+    // actionlint-style: fetch the release manifest and match the filename
+    // field (not a two-space separator, which could change).
     const text = await fetchChecked(checksumsUrl);
-    // Manifest lines are `<sha256>  <asset-name>` — match the filename
-    // field rather than relying on the exact two-space separator.
     const entry = text.split('\n').find((l) => {
       const fields = l.trim().split(/\s+/);
       return fields.length >= 2 && fields[1] === asset;
     });
     if (!entry) throw new Error(`no checksum entry for ${asset}`);
-    const expected = entry.trim().split(/\s+/)[0];
-    const { readFileSync } = await import('fs');
-    const actual = createHash('sha256').update(readFileSync(archive)).digest('hex');
-    if (actual !== expected) {
-      rmSync(archive, { force: true });
-      throw new Error(`checksum mismatch for ${asset} (expected ${expected}, got ${actual})`);
-    }
+    await verifyArchive(archive, asset, entry.trim().split(/\s+/)[0]);
+  } else if (digests) {
+    // shellcheck-style: pinned per-asset digests (no manifest shipped).
+    const expected = digests[asset];
+    if (!expected) throw new Error(`no pinned digest for ${asset}`);
+    await verifyArchive(archive, asset, expected);
   }
 
   if (isZip) {
@@ -363,6 +397,9 @@ async function main() {
         `https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/${asset}`,
       isZip: process.platform === 'win32',
       tarFlags: 'J',
+      // shellcheck ships no checksums manifest; verify against the pinned
+      // release-notes digests (see SC_SHA256 above).
+      digests: SC_SHA256,
     });
     // Prune stale shellcheck version dirs, mirroring the actionlint cleanup.
     for (const entry of readdirSync(SC_CACHE_DIR)) {
@@ -371,13 +408,20 @@ async function main() {
     }
     args.push(`-shellcheck=${scBin}`);
   } catch (err) {
-    if (STRICT) {
-      console.error(`[actionlint] could not obtain shellcheck (${err.message}); failing CI.`);
+    if (STRICT || !(err instanceof DownloadError)) {
+      // CI must never silently skip the gate; and locally a non-download
+      // failure (checksum mismatch, extraction error, bad pinned version)
+      // means the tool genuinely can't run — failing silently would mask
+      // a real environment problem. Only a transient download failure
+      // degrades gracefully on a local push.
+      console.error(
+        `[actionlint] could not obtain shellcheck (${err.message}); shell-injection checks unavailable.`,
+      );
       process.exitCode = 1;
       return;
     }
     console.warn(
-      `[actionlint] could not obtain shellcheck (${err.message}); shell-injection checks disabled for this run.`,
+      `[actionlint] could not download shellcheck (${err.message}); shell-injection checks disabled for this run.`,
     );
   }
 
