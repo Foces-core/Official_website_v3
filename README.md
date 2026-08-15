@@ -184,7 +184,11 @@ connection cost without benefit.
 >   project's Vercel-side settings, not in this codebase.
 >
 > Consequence: every PR shows a red **"Vercel – official-website-v3"** check.
-> It is cosmetic — that project is not the deploy path and never gates
-> merges. The clean fix is Vercel dashboard → that project → **Settings →
-> Git → Disconnect GitHub repo** (needs an account with access to the
-> `foces-cecs-projects` team). Until then, ignore that one red check.
+> It is cosmetic — that project is not the deploy path, and merges aren't
+> gated on it: `main` has no branch protection or rulesets (verified), and
+> the Dependabot auto-merge workflow explicitly ignores Vercel checks, so
+> neither humans nor bots are blocked by this red check. The clean fix is
+> Vercel dashboard → that project → **Settings → Git → Disconnect GitHub
+> repo** (needs an account with access to the `foces-cecs-projects` team).
+> Until then, ignore that one red check. If branch protection is ever
+> enabled, exclude this check from the required list.
