@@ -12,16 +12,16 @@ its docs, a beginner video, and a readable reference.
   [Install](https://git-scm.com/downloads) · [Docs](https://git-scm.com/doc) ·
   🎬 [Official videos](https://git-scm.com/videos) ·
   📖 [Pro Git book (free)](https://git-scm.com/book)
-- **Node.js ≥ 22.13** — runs Vite, Vitest, and the build (`.nvmrc` pins 22;
-  pnpm 11 requires it).
+- **Node.js ≥ 22.13** — runs Vite, Vitest, and the build (`.nvmrc` pins
+  22.13; pnpm 11 requires it).
   [Install](https://nodejs.org/en/download) ·
   [Windows version manager (nvm-windows)](https://github.com/coreybutler/nvm-windows) ·
   [Learn](https://nodejs.org/en/learn) ·
-  🎬 [YouTube: Node for beginners](https://www.youtube.com/results?search_query=node+js+for+beginners)
+  🎬 [YouTube search — Node.js for beginners](https://www.youtube.com/results?search_query=node+js+for+beginners)
 - **pnpm** — the package manager. This repo uses **pnpm only** (never
   npm/yarn): `pnpm install`, `pnpm dev`, ...
   [Install](https://pnpm.io/installation) · [Docs](https://pnpm.io/) ·
-  🎬 [YouTube: pnpm](https://www.youtube.com/results?search_query=pnpm+tutorial) ·
+  🎬 [YouTube search — pnpm tutorials](https://www.youtube.com/results?search_query=pnpm+tutorial) ·
   📖 [Why pnpm?](https://pnpm.io/motivation)
 - **VS Code** — recommended editor; the repo's settings enable ESLint
   fix-on-save + Prettier format-on-save so your edits are always formatted.
@@ -32,11 +32,11 @@ its docs, a beginner video, and a readable reference.
   its own Chromium automatically, so this is optional).
   [Install](https://www.google.com/chrome/) ·
   [DevTools docs](https://developer.chrome.com/docs/devtools) ·
-  🎬 [YouTube: DevTools for beginners](https://www.youtube.com/results?search_query=chrome+devtools+for+beginners)
+  🎬 [YouTube search — Chrome DevTools for beginners](https://www.youtube.com/results?search_query=chrome+devtools+for+beginners)
 
 **Never used React or Vite before?** Do the official [React tutorial](https://react.dev/learn)
 and skim the [Vite guide](https://vite.dev/guide/) first, then watch a full
-walkthrough: 🎬 [YouTube: build a React + Vite app from scratch](https://www.youtube.com/results?search_query=vite+react+beginner+tutorial).
+walkthrough: 🎬 [YouTube search — build a React + Vite app from scratch](https://www.youtube.com/results?search_query=vite+react+beginner+tutorial).
 
 ## Getting started
 
