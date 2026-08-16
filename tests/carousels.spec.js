@@ -158,7 +158,10 @@ test.describe('Execom mobile cube drag', () => {
       inst.autoplay.stop(); // the on-screen autoplay timer must not skip a step mid-walk
       const out = [];
       for (let i = 0; i < 11; i++) {
-        const active = swiper.querySelector('.swiper-slide-active img');
+        // :not([aria-hidden]) skips the blur LQIP placeholder — BlurImage
+        // renders it first (aria-hidden, alt=""), and only the content image
+        // carries the member's name.
+        const active = swiper.querySelector('.swiper-slide-active img:not([aria-hidden])');
         out.push(active ? active.alt : null);
         inst.slideNext();
       }
