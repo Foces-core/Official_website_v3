@@ -133,8 +133,6 @@ reviews:
         enabled: true
     oxc:
       enabled: true
-    biome:
-      enabled: true
     ast-grep:
       essential_rules: true
     semgrep:
