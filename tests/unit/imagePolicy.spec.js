@@ -1,31 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { IMAGE_WIDTH_TIERS, resolveMaxImageWidth, capSrcset } from '../../src/utils/imagePolicy.js';
+import { capSrcset } from '../../src/utils/imagePolicy.js';
 
-describe('resolveMaxImageWidth — profile → width cap', () => {
-  it('caps to the slowNetwork tier (400w) on a slow network', () => {
-    expect(resolveMaxImageWidth({ slowNetwork: true })).toBe(IMAGE_WIDTH_TIERS.slowNetwork);
-  });
-
-  it('lets slow network win over low CPU', () => {
-    expect(resolveMaxImageWidth({ slowNetwork: true, lowCPU: true })).toBe(
-      IMAGE_WIDTH_TIERS.slowNetwork,
-    );
-  });
-
-  it('caps to the lowCPU tier (800w) on low CPU only', () => {
-    expect(resolveMaxImageWidth({ lowCPU: true })).toBe(IMAGE_WIDTH_TIERS.lowCPU);
-  });
-
-  it('allows the full tier (1000w) on capable devices', () => {
-    expect(resolveMaxImageWidth({ slowNetwork: false, lowCPU: false })).toBe(
-      IMAGE_WIDTH_TIERS.full,
-    );
-    expect(resolveMaxImageWidth({})).toBe(IMAGE_WIDTH_TIERS.full);
-    expect(resolveMaxImageWidth()).toBe(IMAGE_WIDTH_TIERS.full);
-    expect(resolveMaxImageWidth(undefined)).toBe(IMAGE_WIDTH_TIERS.full);
-  });
-});
-
+// The width POLICY (which cap a device gets) moved into the experience-tier
+// matrix (utils/experienceTier.js, `imageMaxWidth` capability) — pinned by
+// tests/unit/experienceTier.spec.js. This spec covers the string mechanics
+// only.
 describe('capSrcset — enforce the cap on a srcset string', () => {
   const triplet = '/a.webp 1000w, /a-800.webp 800w, /a-400.webp 400w';
 

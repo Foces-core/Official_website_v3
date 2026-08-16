@@ -1,6 +1,7 @@
 import './SectionSkeleton.css';
 import PropTypes from 'prop-types';
 import detectProfile from '../../utils/detectProfile';
+import { resolveExperienceCapabilities } from '../../utils/experienceTier.js';
 
 /**
  * Lightweight skeleton placeholder shown while lazy-loaded sections are
@@ -21,9 +22,11 @@ export default function SectionSkeleton({
   announce = true,
 }) {
   // Use the raw detector (not the hook) because this is a Suspense fallback
-  // that may render outside a fully mounted React tree
-  const { lowPower } = detectProfile();
-  const staticClass = lowPower ? ' skeleton-bar--static' : '';
+  // that may render outside a fully mounted React tree. The lowPower → static
+  // dialect lives in the experience-tier matrix — skeletonMotion is the
+  // capability.
+  const { skeletonMotion } = resolveExperienceCapabilities(detectProfile());
+  const staticClass = skeletonMotion ? '' : ' skeleton-bar--static';
 
   return (
     <div

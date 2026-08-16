@@ -1,7 +1,7 @@
 import { useRef, useCallback, useEffect } from 'react';
 import FocesLogo from '../../assets/FOCES White.svg';
 import '../AboutUs/AboutUs.css';
-import useDeviceProfile from '../../hooks/useLowPower.js';
+import useExperienceCapabilities from '../../hooks/useExperienceCapabilities.js';
 import { useCubeDrag } from '../../hooks/useCubeDrag.js';
 import { scheduleBackgroundTask } from '../../utils/priorityScheduler.js';
 import { spinConfigFor } from './easterEggLogic.js';
@@ -59,7 +59,11 @@ const EASTER_MESSAGES = [
 ];
 
 function AboutUs() {
-  const { lowPower, slowNetwork, reducedMotion } = useDeviceProfile();
+  // The lowPower/slowNetwork/reducedMotion dialects live in the
+  // experience-tier matrix (utils/experienceTier.js): the cube's idle
+  // auto-spin (idleSpin), the celebration's wobble/confetti (celebrationMotion)
+  // and the confetti particle budget (confetti) are read as capabilities.
+  const { idleSpin, confetti, celebrationMotion } = useExperienceCapabilities();
   const confettiRaf = useRef(null);
   const lastToastRef = useRef('');
 
@@ -68,8 +72,7 @@ function AboutUs() {
   // stays stable across celebration re-creates).
   const triggerEggRef = useRef(() => {});
   const { boxRef, handlers } = useCubeDrag({
-    lowPower,
-    slowNetwork,
+    idleSpin,
     spinConfig: SPIN_CONFIG,
     onEggFire: () => triggerEggRef.current(),
   });
@@ -83,7 +86,7 @@ function AboutUs() {
     wrap.classList.remove('about-wobble');
 
     // Celebratory wobble (on the wrapper, so it never fights the cube's inline rotate)
-    if (!reducedMotion) {
+    if (celebrationMotion) {
       wrap.classList.add('about-wobble');
       setTimeout(() => wrap.classList.remove('about-wobble'), 1000);
     }
@@ -107,7 +110,7 @@ function AboutUs() {
 
     // Confetti burst + shockwave ring: scheduled with lowest background priority
     // so celebration animations never block core thread tasks.
-    if (reducedMotion) return;
+    if (!celebrationMotion) return;
 
     scheduleBackgroundTask(() => {
       const box = boxRef.current;
@@ -128,7 +131,7 @@ function AboutUs() {
       ring.className = 'about-ring';
       burst.appendChild(ring);
 
-      const count = lowPower ? 10 : 30;
+      const count = confetti ? 30 : 10;
       const particles = [];
       const frag = document.createDocumentFragment();
       for (let i = 0; i < count; i++) {
@@ -173,7 +176,7 @@ function AboutUs() {
       };
       confettiRaf.current = requestAnimationFrame(step);
     });
-  }, [lowPower, reducedMotion, boxRef]);
+  }, [confetti, celebrationMotion, boxRef]);
 
   useEffect(() => {
     triggerEggRef.current = triggerEasterEgg;

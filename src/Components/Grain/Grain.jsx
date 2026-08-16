@@ -1,4 +1,4 @@
-import useDeviceProfile from '../../hooks/useLowPower.js';
+import useExperienceCapabilities from '../../hooks/useExperienceCapabilities.js';
 import './Grain.css';
 
 /**
@@ -12,9 +12,10 @@ import './Grain.css';
  * static texture — the drift is what stops (handled in Grain.css).
  */
 function Grain() {
-  const { slowNetwork, lowCPU } = useDeviceProfile();
-
-  if (slowNetwork || lowCPU) return null;
+  // The slowNetwork || lowCPU dialect now lives in the experience-tier
+  // matrix (utils/experienceTier.js) — read the capability instead.
+  const { grain } = useExperienceCapabilities();
+  if (!grain) return null;
 
   return <div className="grain-overlay" aria-hidden="true" />;
 }

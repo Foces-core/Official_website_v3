@@ -15,20 +15,24 @@ describe('heroWavesStage', () => {
   });
 
   describe('shouldInitHeroWaves', () => {
-    it('returns false when lowPower is true regardless of width', () => {
-      expect(shouldInitHeroWaves({ lowPower: true, width: 1440 })).toBe(false);
-      expect(shouldInitHeroWaves({ lowPower: true, width: 375 })).toBe(false);
+    it('returns false when the webgl capability is off regardless of width', () => {
+      expect(shouldInitHeroWaves({ webgl: false, width: 1440 })).toBe(false);
+      expect(shouldInitHeroWaves({ webgl: false, width: 375 })).toBe(false);
     });
 
     it('returns false for mobile / tablet widths (< 1024)', () => {
-      expect(shouldInitHeroWaves({ lowPower: false, width: 375 })).toBe(false);
-      expect(shouldInitHeroWaves({ lowPower: false, width: 768 })).toBe(false);
-      expect(shouldInitHeroWaves({ lowPower: false, width: 1023 })).toBe(false);
+      expect(shouldInitHeroWaves({ webgl: true, width: 375 })).toBe(false);
+      expect(shouldInitHeroWaves({ webgl: true, width: 768 })).toBe(false);
+      expect(shouldInitHeroWaves({ webgl: true, width: 1023 })).toBe(false);
     });
 
     it('returns true for desktop-wide widths (>= 1024) on normal devices', () => {
-      expect(shouldInitHeroWaves({ lowPower: false, width: 1024 })).toBe(true);
-      expect(shouldInitHeroWaves({ lowPower: false, width: 1920 })).toBe(true);
+      expect(shouldInitHeroWaves({ webgl: true, width: 1024 })).toBe(true);
+      expect(shouldInitHeroWaves({ webgl: true, width: 1920 })).toBe(true);
+    });
+
+    it('defaults webgl on (capability profile shape)', () => {
+      expect(shouldInitHeroWaves({ width: 1200 })).toBe(true);
     });
   });
 
@@ -39,7 +43,7 @@ describe('heroWavesStage', () => {
       destroy1();
 
       const el = { addEventListener: vi.fn(), removeEventListener: vi.fn() };
-      const destroy2 = initHeroWavesStage(el, { lowPower: true, width: 1440 });
+      const destroy2 = initHeroWavesStage(el, { webgl: false, width: 1440 });
       expect(typeof destroy2).toBe('function');
       expect(el.addEventListener).not.toHaveBeenCalled();
       destroy2();
@@ -67,7 +71,7 @@ describe('heroWavesStage', () => {
       });
 
       const destroy = initHeroWavesStage(el, {
-        lowPower: false,
+        webgl: true,
         width: 1200,
         scheduler,
         loader: mockLoader,
@@ -123,7 +127,7 @@ describe('heroWavesStage', () => {
       };
 
       initHeroWavesStage(el, {
-        lowPower: false,
+        webgl: true,
         width: 1200,
         scheduler,
         loader: mockLoader,
@@ -151,7 +155,7 @@ describe('heroWavesStage', () => {
         const mockLoader = vi.fn(async () => [{}, { default: mockWavesConstructor }]);
         let scheduledTask = null;
         const destroy = initHeroWavesStage(el, {
-          lowPower: false,
+          webgl: true,
           width: 1200,
           scheduler: (fn) => {
             scheduledTask = fn;
@@ -261,7 +265,7 @@ describe('heroWavesStage', () => {
       };
 
       initHeroWavesStage(el, {
-        lowPower: false,
+        webgl: true,
         width: 1200,
         scheduler,
         loader: mockLoader,

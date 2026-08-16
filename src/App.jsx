@@ -12,7 +12,7 @@ import Navbar from './Pages/LandingPage/Navbar/Navbar';
 import { useLocation } from 'react-router';
 import { initAOS } from './utils/aosGating.js';
 import { lazyWithRetry } from './utils/lazyWithRetry.js';
-import useDeviceProfile from './hooks/useLowPower.js';
+import useExperienceCapabilities from './hooks/useExperienceCapabilities.js';
 import useAosFailsafe from './hooks/useAosFailsafe.js';
 import { scrollToSectionWhenReady, targetIdFromLocation } from './utils/navigationCoordinator.js';
 
@@ -50,9 +50,9 @@ initAOS();
 
 function App() {
   const location = useLocation();
-  // reducedMotion comes from the device-profile seam (detectProfile), not a
-  // raw matchMedia re-implementation — the same query, one owner.
-  const { reducedMotion } = useDeviceProfile();
+  // smoothScroll comes from the experience-tier matrix (which reads the
+  // device-profile seam) — not a raw matchMedia re-implementation.
+  const { smoothScroll } = useExperienceCapabilities();
   // The AOS viewport failsafe: force-show any in-view [data-aos] element AOS
   // left hidden (its JS can break or miss an element — content must never
   // stay hidden). Gated devices are already covered by the body.aos-disabled
@@ -68,8 +68,8 @@ function App() {
     const targetId = targetIdFromLocation(location.state, location.hash);
     if (!targetId) return;
 
-    return scrollToSectionWhenReady({ targetId, reducedMotion });
-  }, [location, reducedMotion]);
+    return scrollToSectionWhenReady({ targetId, reducedMotion: !smoothScroll });
+  }, [location, smoothScroll]);
 
   return (
     <div className="App bg-[#101011]">

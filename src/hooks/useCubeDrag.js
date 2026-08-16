@@ -35,14 +35,13 @@ import {
  * The celebration DOM (wobble, toasts, confetti burst) stays in AboutUs.jsx —
  * this hook only fires `onEggFire` when the rapid-spin bar is crossed.
  *
- * @param {{ lowPower: boolean, slowNetwork: boolean,
- *           spinConfig: { target: number, gap: number },
+ * @param {{ idleSpin: boolean, spinConfig: { target: number, gap: number },
  *           onEggFire: () => void }} props
  * @returns {{ boxRef: React.RefObject<HTMLElement>,
  *             handlers: { onTouchStart, onTouchMove, onTouchEnd, onTouchCancel,
  *                         onMouseDown } }} — spread handlers onto the cube
  */
-export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire }) {
+export function useCubeDrag({ idleSpin, spinConfig, onEggFire }) {
   const boxRef = useRef(null);
   const rotXRef = useRef(0);
   const rotYRef = useRef(0);
@@ -224,9 +223,10 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire }) {
   };
 
   // Idle auto-spin: rotates slowly on its own while visible and idle — unless
-  // the device is low-power/slow-network, or a manual action owns the cube.
+  // the experience tier strips it (idleSpin capability), or a manual action
+  // owns the cube.
   useEffect(() => {
-    if (lowPower || slowNetwork) return;
+    if (!idleSpin) return;
 
     let animFrame = null;
     let visible = true;
@@ -275,7 +275,7 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire }) {
       if (observer) observer.disconnect();
       stopWindDown();
     };
-  }, [lowPower, slowNetwork, stopWindDown]);
+  }, [idleSpin, stopWindDown]);
 
   // Keyboard navigation — left/right arrows only (no vertical spin).
   useEffect(() => {

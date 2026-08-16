@@ -11,7 +11,7 @@ import ErrorBoundary from './Components/ErrorBoundary/ErrorBoundary.jsx';
 import { lazyWithRetry } from './utils/lazyWithRetry.js';
 import { SPLASH_FAILSAFE_MS, skipSplash, paintReady } from './utils/bootSplashLogic.js';
 import { shouldReloadOnResume } from './utils/resumeReload.js';
-import useDeviceProfile from './hooks/useLowPower.js';
+import useExperienceCapabilities from './hooks/useExperienceCapabilities.js';
 import './assets/fonts-latin.css';
 import './index.css';
 
@@ -106,14 +106,16 @@ function ResumeReloadGuard() {
  * not painted.
  */
 function Root() {
-  const { slowNetwork } = useDeviceProfile();
+  // The slowNetwork splash gate lives in the experience-tier matrix — splash
+  // is the capability.
+  const { splash } = useExperienceCapabilities();
   const hiddenRef = useRef(false);
 
   useEffect(() => {
     const splash = document.getElementById('boot-splash');
     if (!splash) return;
 
-    if (skipSplash(slowNetwork)) {
+    if (skipSplash(!splash)) {
       // ADR-0001: slow/low-end devices get no splash — drop it immediately.
       splash.remove();
       return;
@@ -154,7 +156,7 @@ function Root() {
       clearTimeout(failsafe);
       window.removeEventListener('load', onLoad);
     };
-  }, [slowNetwork]);
+  }, [splash]);
 
   return (
     <>

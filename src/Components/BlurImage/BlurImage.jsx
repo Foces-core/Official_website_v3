@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import useDeviceProfile from '../../hooks/useLowPower.js';
+import useExperienceCapabilities from '../../hooks/useExperienceCapabilities.js';
 import { useBlurImage } from './useBlurImage.js';
-import { resolveMaxImageWidth, capSrcset } from '../../utils/imagePolicy.js';
+import { capSrcset } from '../../utils/imagePolicy.js';
 
 /**
  * BlurImage — lazy-loads an image with a blur-up placeholder.
@@ -11,11 +11,11 @@ import { resolveMaxImageWidth, capSrcset } from '../../utils/imagePolicy.js';
  * The state machine (loaded / placeholder removal / priority elevation) lives
  * in the tested useBlurImage hook (useBlurImage.js); this component is wiring.
  *
- * This is also the single seam for the image-policy cap (utils/imagePolicy.js):
- * every photo — events, echo slides, team — renders through here, so the
- * device profile is consulted once, here, and the srcset is capped before it
- * reaches the <img>. A slow-network visitor never downloads a candidate wider
- * than 400w; a low-CPU device tops out at 800w; capable devices get the full
+ * This is also the single seam for the image-policy cap: every photo —
+ * events, echo slides, team — renders through here, so the experience-tier
+ * matrix is consulted once, here, and the srcset is capped before it reaches
+ * the <img>. A slow-network visitor never downloads a candidate wider than
+ * 400w; a low-CPU device tops out at 800w; capable devices get the full
  * triplet.
  */
 export default function BlurImage({
@@ -33,14 +33,14 @@ export default function BlurImage({
   const { imgRef, loaded, removed, priorityAttr, handleLoad, handleError, handleInteraction } =
     useBlurImage({ src, blurSrc, eager: loading === 'eager' });
 
-  // Image-policy cap: consult the device profile once per image and drop
-  // srcset candidates wider than the cap. Memoized on the profile flags so a
+  // Image-policy cap: the experience-tier matrix owns the width policy
+  // (imageMaxWidth capability — 400w on slow networks, 800w on low CPU,
+  // 1000w capable) and this is the single consumer. Memoized on the cap so a
   // connection change (or unrelated re-render) doesn't re-parse the string.
-  const { slowNetwork, lowCPU } = useDeviceProfile();
+  const { imageMaxWidth } = useExperienceCapabilities();
   const cappedSrcSet = useMemo(
-    () =>
-      srcSet == null ? srcSet : capSrcset(srcSet, resolveMaxImageWidth({ slowNetwork, lowCPU })),
-    [srcSet, slowNetwork, lowCPU],
+    () => (srcSet == null ? srcSet : capSrcset(srcSet, imageMaxWidth)),
+    [srcSet, imageMaxWidth],
   );
 
   const showBlur = blurSrc && !removed;

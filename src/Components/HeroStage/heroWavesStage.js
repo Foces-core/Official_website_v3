@@ -23,14 +23,16 @@ export const VANTA_WAVES_CONFIG = {
 
 /**
  * Checks whether the hero waves 3D stage should mount for a given device & viewport.
- * @param {{ lowPower?: boolean, width?: number }} profile
+ * `webgl` is the experience-tier capability (full tier only); the width
+ * check keeps the stage off phones/tablets regardless.
+ * @param {{ webgl?: boolean, width?: number }} profile
  * @returns {boolean}
  */
 export function shouldInitHeroWaves({
-  lowPower = false,
+  webgl = true,
   width = typeof window !== 'undefined' ? window.innerWidth : 0,
 }) {
-  if (lowPower) return false;
+  if (!webgl) return false;
   return isWideScreen(width);
 }
 
@@ -51,7 +53,7 @@ async function defaultWavesLoader() {
  *
  * @param {HTMLElement} containerEl
  * @param {{
- *   lowPower?: boolean,
+ *   webgl?: boolean,
  *   width?: number,
  *   scheduler?: (fn: () => Promise<void>) => void,
  *   loader?: () => Promise<[any, any]>,
@@ -62,7 +64,7 @@ async function defaultWavesLoader() {
  */
 export function initHeroWavesStage(containerEl, options = {}) {
   const {
-    lowPower = false,
+    webgl = true,
     width = typeof window !== 'undefined' ? window.innerWidth : 0,
     scheduler = scheduleBackgroundTask,
     loader = defaultWavesLoader,
@@ -70,7 +72,7 @@ export function initHeroWavesStage(containerEl, options = {}) {
     onError,
   } = options;
 
-  if (!containerEl || !shouldInitHeroWaves({ lowPower, width })) {
+  if (!containerEl || !shouldInitHeroWaves({ webgl, width })) {
     return () => {};
   }
 

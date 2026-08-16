@@ -3,20 +3,20 @@ import { useEffect, useRef } from 'react';
 import ddd from '../../../assets/ddd.svg';
 import focespng from '../../../assets/foces.png';
 import foces1 from '../../../assets/foces1.svg';
-import useDeviceProfile from '../../../hooks/useLowPower.js';
+import useExperienceCapabilities from '../../../hooks/useExperienceCapabilities.js';
 import { initHeroWavesStage } from '../../../Components/HeroStage/heroWavesStage.js';
 
 function HeroSection() {
   const myRef = useRef(null);
-  const { lowPower } = useDeviceProfile();
+  const { webgl } = useExperienceCapabilities();
 
   useEffect(() => {
     const destroy = initHeroWavesStage(myRef.current, {
-      lowPower,
+      webgl,
       width: window.innerWidth,
     });
     return destroy;
-  }, [lowPower]);
+  }, [webgl]);
 
   return (
     <div
