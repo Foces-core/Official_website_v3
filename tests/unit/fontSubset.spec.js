@@ -54,62 +54,124 @@ function walk(dir) {
 // The tailwind weight class names this guard tracks → numeric weight.
 const WEIGHT_CLASSES = 'thin|extralight|light|normal|medium|semibold|bold|extrabold|black';
 const WEIGHT_CLASS_RE = new RegExp(`font-(${WEIGHT_CLASSES})\\b`, 'g');
-const GROTESK_CLASS_RE = /\bfont-Grotesk\b|\bfont-about\b/;
+const GROTESK_CLASS_RE = /\bfont-Grotesk\b|\bfont-about\b/; // ---- JSX scanner (depth-aware, single pass) --------------------------------
+//
+// The guard must attribute a weight class to the family it actually renders
+// with — and CSS inheritance means an element nested inside a Grotesk
+// container (font-Grotesk / font-about) renders on Space Grotesk even when its
+// own className only carries a weight class. That is the fake-bold path: a
+// font-bold (700) inside such a container would be browser-synthesized, since
+// the pinned Grotesk subset caps at 600.
+//
+// The scanner walks tag boundaries with a state machine that tracks quotes,
+// template literals, and ${...} nesting — so `>` inside an expression
+// (e.g. `${size > 0 ? 'font-bold' : ''}`) does not terminate the tag, and
+// expression-wrapped classNames (className={`...`}) are read from their raw
+// text. It returns BOTH family sets from one traversal; every weight class is
+// attributed exactly once (no double-credit to Inter).
 
-// A className attribute value: double-quoted, single-quoted, or a backtick
-// template literal (which may span lines and contain nested ${...} with inner
-// quotes — handled as one unit up to the closing backtick).
-const ATTR_VALUE_RE = /(?:"[^"]*"|'[^']*'|`[^`]*`)/y;
+// Scan forward from `i` over a value: "...", '...', `...`, or {...} (braces
+// depth-tracked so nested ${...} and objects are skipped atomically). Returns
+// the raw text of the value and the index just past it.
+function scanValue(text, i) {
+  const start = i;
+  if (text[i] === '"' || text[i] === "'" || text[i] === '`') {
+    const quote = text[i];
+    i += 1;
+    while (i < text.length && text[i] !== quote) i += 1;
+    return [text.slice(start, i + 1), i + 1];
+  }
+  if (text[i] === '{') {
+    let depth = 0;
+    let inQuote = null;
+    while (i < text.length) {
+      const c = text[i];
+      if (inQuote) {
+        if (c === inQuote) inQuote = null;
+      } else if (c === '"' || c === "'" || c === '`') {
+        inQuote = c;
+      } else if (c === '{') {
+        depth += 1;
+      } else if (c === '}') {
+        depth -= 1;
+        if (depth === 0) return [text.slice(start, i + 1), i + 1];
+      }
+      i += 1;
+    }
+  }
+  return [text.slice(start, i), i];
+}
 
-// Find the className attribute value inside a tag's attribute string, or null.
+// Find the raw className value inside a tag's attribute string, or ''.
+// Handles className="...", className='...', className={`...`}, and
+// className={cond ? 'a font-bold' : ''} — all returned as raw text so the
+// class regexes below can scan them.
 function classNameOf(attrs) {
   for (let i = 0; i < attrs.length;) {
     const eq = attrs.indexOf('=', i);
-    if (eq === -1) return null;
+    if (eq === -1) return '';
     const name = attrs.slice(i, eq).trim().split(/\s+/).pop() || '';
-    ATTR_VALUE_RE.lastIndex = eq + 1;
-    const m = ATTR_VALUE_RE.exec(attrs);
-    if (!m) return null;
-    if (name === 'className') return m[0].slice(1, -1);
-    i = m.index + m[0].length;
+    const [value, next] = scanValue(attrs, eq + 1);
+    if (name === 'className') return value;
+    i = next;
   }
-  return null;
+  return '';
 }
 
-// The set of weights that render on GROTESK inside one JSX file — computed
-// with ancestry: an element inherits Space Grotesk from any OPEN ancestor
-// element whose className carries a Grotesk marker (font-Grotesk / font-about),
-// even when the element itself only carries a weight class. This is the fake-
-// bold path: a font-bold nested inside a font-Grotesk container renders on
-// Grotesk via CSS inheritance, and the pinned Grotesk subset caps at 600.
-function jsxGroteskWeights(text) {
-  const weights = new Set();
+// One depth-aware traversal of a JSX file → { inter, grotesk } weight sets.
+function scanJsxWeights(text) {
+  const used = { inter: new Set(), grotesk: new Set() };
+  const add = (family, weight) => used[family].add(weight);
   // Stack of "does this open element carry a Grotesk marker" flags.
   const stack = [];
-  const TAG_RE = /<(\/?)([A-Za-z][\w.-]*)([^>]*?)(\/?)>/g;
-  for (const m of text.matchAll(TAG_RE)) {
-    const [, close, , attrs, selfClose] = m;
-    const isGrotesk = GROTESK_CLASS_RE.test(classNameOf(attrs) || '');
-    const inherited = isGrotesk || stack.some(Boolean);
-    if (inherited) {
-      const cls = classNameOf(attrs) || '';
-      for (const [, w] of cls.matchAll(WEIGHT_CLASS_RE)) weights.add(CLASS_WEIGHTS[w]);
+
+  for (let i = 0; i < text.length;) {
+    const lt = text.indexOf('<', i);
+    if (lt === -1) break;
+    if (text[lt + 1] === '/') {
+      // Closing tag — pop the matching open element.
+      if (stack.length > 0) stack.pop();
+      i = lt + 2;
+      continue;
     }
-    if (!close) {
-      // Opening tag (self-closing tags never enclose anything).
-      if (!selfClose) stack.push(isGrotesk);
-    } else if (stack.length > 0) {
-      stack.pop();
+    // Opening tag: read to the matching '>' (quote/brace aware).
+    let j = lt + 1;
+    let depth = 0;
+    let inQuote = null;
+    while (j < text.length) {
+      const c = text[j];
+      if (inQuote) {
+        if (c === inQuote) inQuote = null;
+      } else if (c === '"' || c === "'" || c === '`') {
+        inQuote = c;
+      } else if (c === '{') {
+        depth += 1;
+      } else if (c === '}') {
+        depth -= 1;
+      } else if (c === '>' && depth === 0) {
+        break;
+      }
+      j += 1;
     }
+    const tag = text.slice(lt + 1, j);
+    i = j + 1;
+
+    const tagName = tag.match(/^[A-Za-z][\w.-]*/)?.[0] || '';
+    if (!tagName) continue; // fragment, comment, or stray '<' — skip
+    const isGrotesk = GROTESK_CLASS_RE.test(classNameOf(tag));
+    const family = isGrotesk || stack.some(Boolean) ? 'grotesk' : 'inter';
+    const cls = classNameOf(tag);
+    for (const [, w] of cls.matchAll(WEIGHT_CLASS_RE)) add(family, CLASS_WEIGHTS[w]);
+    const selfClosing = /\/\s*>$/.test(tag);
+    if (!selfClosing) stack.push(isGrotesk);
   }
-  return weights;
+  return used;
 }
 
-// Per-family weights actually used in src/. Attribution is ancestry-aware for
-// JSX (see jsxGroteskWeights): a weight class renders on the family of its
-// element OR any enclosing Grotesk container. For CSS, the font-family is read
-// from the same rule block. A family that renders any explicit weight also
-// gets its browser default (400).
+// Per-family weights actually used in src/. JSX files use the ancestry-aware
+// scanner (every weight class attributed once, to the family it renders on);
+// CSS rules read the font-family from the same rule block. A family that
+// renders any explicit weight also gets its browser default (400).
 function collectWeights() {
   const used = { inter: new Set(), grotesk: new Set() };
   const add = (family, weight) => used[family].add(weight);
@@ -123,13 +185,9 @@ function collectWeights() {
         if (wm) add(familyKey(fam ? fam[1] : ''), Number(wm[1]));
       }
     } else {
-      for (const w of jsxGroteskWeights(text)) add('grotesk', w);
-      // Every other weight class (not inside a Grotesk container) renders on
-      // the default family, Inter.
-      for (const cn of text.matchAll(/className=["'`]([^"'`]*)["'`]/g)) {
-        if (GROTESK_CLASS_RE.test(cn[1])) continue;
-        for (const [, w] of cn[1].matchAll(WEIGHT_CLASS_RE)) add('inter', CLASS_WEIGHTS[w]);
-      }
+      const jsx = scanJsxWeights(text);
+      for (const w of jsx.inter) add('inter', w);
+      for (const w of jsx.grotesk) add('grotesk', w);
     }
   }
   // Browser default weight for any family that renders explicit weights.
@@ -171,26 +229,29 @@ describe('font subsetting — pinned weight axes', () => {
     }
   });
 
-  it('jsxGroteskWeights catches weights inherited from a Grotesk container (fake-bold path)', () => {
+  it('scanJsxWeights attributes nested weights to Grotesk exactly once (fake-bold path)', () => {
     // A weight class nested INSIDE a font-Grotesk container renders on Grotesk
     // via CSS inheritance even though the element itself has no Grotesk class.
-    // The old co-location-only attribution silently credited this to Inter,
-    // letting a font-bold (700, above Grotesk's pinned 600 cap) slip through
-    // as browser-synthesized fake-bold.
-    const inherited = jsxGroteskWeights(`
+    // A naive co-location scan would silently credit this to Inter, letting a
+    // font-bold (700, above Grotesk's pinned 600 cap) slip through as
+    // browser-synthesized fake-bold. The scan returns BOTH sets from one
+    // traversal, so a weight is never double-credited to Inter.
+    const inherited = scanJsxWeights(`
       <div className="font-Grotesk">
         <span className="font-semibold">native 600</span>
         <h3 className="font-bold">synthesized 700 — must be caught</h3>
       </div>
     `);
-    expect(inherited).toContain(600);
-    expect(inherited).toContain(700);
+    expect([...inherited.grotesk].sort()).toEqual([600, 700]);
+    expect(inherited.inter.size).toBe(0); // never double-attributed to Inter
 
     // A weight class on an element with NO Grotesk ancestry stays Inter.
-    expect(jsxGroteskWeights(`<h2 className="font-extrabold">Inter 800</h2>`)).not.toContain(800);
+    const plain = scanJsxWeights(`<h2 className="font-extrabold">Inter 800</h2>`);
+    expect(plain.grotesk.size).toBe(0);
+    expect([...plain.inter].sort()).toEqual([800]);
 
     // Self-closing + nested deeper chains still track correctly.
-    const chain = jsxGroteskWeights(`
+    const chain = scanJsxWeights(`
       <div className="font-about">
         <div>
           <span className="font-bold">inherited through two levels</span>
@@ -198,8 +259,26 @@ describe('font subsetting — pinned weight axes', () => {
         <img className="font-medium" alt="" />
       </div>
     `);
-    expect(chain).toContain(700);
-    expect(chain).toContain(500);
+    expect([...chain.grotesk].sort()).toEqual([500, 700]);
+    expect(chain.inter.size).toBe(0);
+  });
+
+  it('scanJsxWeights reads expression-wrapped classNames and ${...} expressions', () => {
+    // className={`font-Grotesk ${size > 0 ? 'font-bold' : ''}`}: the tag's '>' is
+    // inside the ${...} expression and the className is brace-wrapped — a naive
+    // tag regex terminates early and never attributes the nested weight. The
+    // depth-aware scanner must catch the 700 as Grotesk.
+    const expr = scanJsxWeights(
+      "const el = <div className={`font-Grotesk ${size > 0 ? 'font-bold' : ''}`}>text</div>;",
+    );
+    expect([...expr.grotesk].sort()).toEqual([700]);
+    expect(expr.inter.size).toBe(0);
+
+    // A Grotesk container with a plain quoted className still works.
+    const quoted = scanJsxWeights(
+      '<div className="font-Grotesk"><b className="font-bold">x</b></div>',
+    );
+    expect([...quoted.grotesk].sort()).toEqual([700]);
   });
 
   it('the CSS declared ranges match the script config (no drift)', () => {
