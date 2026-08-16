@@ -2,6 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import sharp from 'sharp';
 import { cardData, cubeSlides } from '../../src/data/team.js';
 import { validateTeam } from '../../src/utils/validateTeam.js';
 
@@ -90,13 +91,32 @@ describe('teamData integrity (src/data/team.js)', () => {
     expect(problems, problems.join('\n')).toEqual([]);
   });
 
-  it('gives every member a 400w srcset candidate and a w=20 blur LQIP', () => {
+  it('declares accurate srcset widths and ships right-sized -400 variants', async () => {
     // The whole point of the team payload work: each card must offer the
     // right-sized 400w candidate (so 1x phones/desktops don't download the
     // full-size file) and a blur placeholder for the blur-up treatment.
-    cardData.forEach((member) => {
-      expect(member.srcset, `${member.name}: missing 400w srcset candidate`).toContain('400w');
-    });
+    for (const member of cardData) {
+      const imgName = member.img.split('?')[0].split('/').pop();
+      const stem = imgName.replace(/\.webp$/, '');
+      const srcPath = join(process.cwd(), 'src', 'assets', imgName);
+      const srcWidth = (await sharp(srcPath).metadata()).width;
+      expect(srcWidth, `${member.name}: source wider than 400px`).toBeGreaterThan(400);
+
+      // srcset must be exactly {full <intrinsic width>, -400 400w} — no
+      // unrelated candidates, no width declared wider than the file is.
+      const candidates = member.srcset
+        .split(',')
+        .map((pair) => pair.trim().split(/\s+/))
+        .map(([url, w]) => [url.split('?')[0].split('/').pop(), Number.parseInt(w, 10)]);
+      expect(candidates, `${member.name}: srcset shape`).toHaveLength(2);
+      expect(candidates).toContainEqual([imgName, srcWidth]);
+      expect(candidates).toContainEqual([`${stem}-400.webp`, 400]);
+
+      // The generated variant itself must actually be ≤400px wide.
+      const variantPath = join(process.cwd(), 'src', 'assets', `${stem}-400.webp`);
+      const variantWidth = (await sharp(variantPath).metadata()).width;
+      expect(variantWidth, `${member.name}: -400 variant ≤ 400w`).toBeLessThanOrEqual(400);
+    }
     // The ?blur&w=20 query is consumed by the imagetools plugin at build
     // time, so the runtime blur value can't assert the width — scan the
     // source instead (same pattern as the AOS/font-subset guards). Exactly

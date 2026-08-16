@@ -51,13 +51,17 @@ async function generateVariants() {
       .resize({ width: TARGET_WIDTH, withoutEnlargement: true })
       .webp({ quality: 75 })
       .toBuffer();
-    // Never write a variant bigger than the source (or identical — the
-    // source may already be ≤400px wide).
+    // Never write a variant bigger than the source — and never silently
+    // skip: if the source is already ≤400px wide (or re-encoding doesn't
+    // shrink it), a stale -400.webp of a previous photo could linger and the
+    // roster import would silently point at the wrong face. Fail loudly so
+    // the asset is fixed before release.
     if (variant.length >= srcBuf.length) {
-      console.log(
-        `  ${name}: source is ${srcBuf.length} B, variant ${variant.length} B — skipping`,
+      throw new Error(
+        `cannot generate a smaller -400.webp for "${name}" ` +
+          `(source ${srcBuf.length} B, variant ${variant.length} B). ` +
+          'Supply a photo wider than 400px, or regenerate the variant manually.',
       );
-      continue;
     }
     await writeFile(out, variant);
     totalBefore += srcBuf.length;
