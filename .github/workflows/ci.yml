@@ -67,7 +67,7 @@ jobs:
         run: pnpm check:specs
 
       - name: Unit tests (Vitest) + coverage thresholds
-        run: pnpm exec vitest run --coverage
+        run: pnpm exec vitest run --coverage --bail 1
 
       - name: Build
         run: pnpm build

@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { act } from 'react';
-import { useRef } from 'react';
+import { act, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useAutoplayOnScreen, autoplayGate } from '../../src/hooks/useAutoplayOnScreen.js';
 import { createHarness } from './harness.jsx';

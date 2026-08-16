@@ -3,6 +3,7 @@ import globals from 'globals';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
+import * as importX from 'eslint-plugin-import-x';
 import prettier from 'eslint-config-prettier';
 
 export default [
@@ -13,6 +14,7 @@ export default [
   react.configs.flat['jsx-runtime'],
   reactHooks.configs.flat['recommended-latest'],
   reactRefresh.configs.vite,
+  importX.flatConfigs.recommended,
   prettier,
   {
     languageOptions: {
@@ -21,9 +23,20 @@ export default [
       globals: { ...globals.browser },
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
-    settings: { react: { version: '19.2' } },
+    settings: {
+      react: { version: '19.2' },
+      'import-x/resolver': {
+        node: {
+          extensions: ['.js', '.jsx', '.json'],
+        },
+      },
+    },
     rules: {
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
+      'import-x/no-unresolved': 'error',
+      'import-x/no-duplicates': 'error',
+      'import-x/no-named-as-default': 'off',
+      'import-x/no-named-as-default-member': 'off',
     },
   },
   {

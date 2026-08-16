@@ -1,11 +1,6 @@
-import { FaFacebookF } from 'react-icons/fa6';
-import { FaInstagram } from 'react-icons/fa6';
-import { FaXTwitter } from 'react-icons/fa6';
-import { FaLinkedinIn } from 'react-icons/fa';
-import { FaLocationDot } from 'react-icons/fa6';
-import { FaPhoneAlt } from 'react-icons/fa';
-import { IoSend } from 'react-icons/io5';
-import { IoMail } from 'react-icons/io5';
+import { FaFacebookF, FaInstagram, FaXTwitter, FaLocationDot } from 'react-icons/fa6';
+import { FaLinkedinIn, FaPhoneAlt } from 'react-icons/fa';
+import { IoSend, IoMail } from 'react-icons/io5';
 import Contactus from '../../assets/Contact us.svg';
 import Title from '../../assets/title.svg';
 import Navbar from '../../Pages/LandingPage/Navbar/Navbar';

@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { Suspense, Component } from 'react';
+import { Suspense, Component, act } from 'react';
 import PropTypes from 'prop-types';
-import { act } from 'react';
 import { lazyWithRetry } from '../../src/utils/lazyWithRetry.js';
 import { createHarness } from './harness.jsx';
 

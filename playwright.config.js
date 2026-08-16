@@ -11,11 +11,12 @@ export default defineConfig({
   testIgnore: ['**/unit/**'],
   fullyParallel: false,
   timeout: 60_000,
-  retries: 0,
+  retries: process.env.CI ? 1 : 0,
   reporter: [['list'], ['html', { open: 'never' }]],
   use: {
     baseURL: BASE_URL,
     headless: true,
+    trace: 'retain-on-failure',
   },
   // Run E2E against the PRODUCTION build (vite build + vite preview), not the
   // dev server — catches minification, code-splitting, and asset-hash issues

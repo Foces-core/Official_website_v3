@@ -1,0 +1,50 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "dev",
+      "type": "shell",
+      "command": "pnpm dev",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": {
+          "regexp": "^$"
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*VITE.*ready.*",
+          "endsPattern": ".*Local:.*"
+        }
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "check",
+      "type": "shell",
+      "command": "pnpm check",
+      "group": "test",
+      "problemMatcher": ["$eslint-compact"]
+    },
+    {
+      "label": "test:unit",
+      "type": "shell",
+      "command": "pnpm test:unit",
+      "group": "test"
+    },
+    {
+      "label": "lint",
+      "type": "shell",
+      "command": "pnpm lint",
+      "problemMatcher": ["$eslint-compact"]
+    },
+    {
+      "label": "verify",
+      "type": "shell",
+      "command": "pnpm verify",
+      "group": "test"
+    }
+  ]
+}
