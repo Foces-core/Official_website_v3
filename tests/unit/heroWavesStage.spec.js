@@ -209,6 +209,17 @@ describe('heroWavesStage', () => {
         expect(cancelAnimationFrame).toHaveBeenCalledWith(vantaEffect.req);
       });
 
+      it('pauses while visibility is UNKNOWN and resumes on the first visible callback', async () => {
+        // No observer callback has fired when the loader resolves — the
+        // unknown state must pause the loop, and the first visible callback
+        // must resume it exactly once (the unknown state is what guards the
+        // deep-link race when the loader beats the observer).
+        const { vantaEffect } = await setup();
+        expect(cancelAnimationFrame).toHaveBeenCalledWith(vantaEffect.req);
+        ioCallback([{ isIntersecting: true }]);
+        expect(vantaEffect.animationLoop).toHaveBeenCalledTimes(1);
+      });
+
       it('does not pause/resume after destroy', async () => {
         const { vantaEffect, destroy } = await setup(() => {
           // Confirm visible BEFORE the loop starts, so it is running (not
