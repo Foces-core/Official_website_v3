@@ -6,6 +6,7 @@
     "playwright.config.js",
     "scripts/probes/**/*.mjs",
     "scripts/maintenance/**/*.{cjs,mjs}",
+    "scripts/fonts/**/*.mjs",
     "tests/**/*.js",
     "tests/unit/**/*.spec.js",
     "vitest.config.js"
