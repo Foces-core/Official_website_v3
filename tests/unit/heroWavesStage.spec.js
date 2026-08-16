@@ -141,7 +141,10 @@ describe('heroWavesStage', () => {
     describe('off-screen pause (CPU)', () => {
       let ioCallback;
 
-      const setup = async () => {
+      // beforeInit runs AFTER the observer is installed (so ioCallback is the
+      // CURRENT observer's callback) but BEFORE the scheduled loader task —
+      // the window where the visibility race lives.
+      const setup = async (beforeInit) => {
         const el = { addEventListener: vi.fn(), removeEventListener: vi.fn() };
         const vantaEffect = { req: 7, animationLoop: vi.fn(), destroy: vi.fn() };
         const mockWavesConstructor = vi.fn(() => vantaEffect);
@@ -155,11 +158,13 @@ describe('heroWavesStage', () => {
           },
           loader: mockLoader,
         });
+        beforeInit?.();
         await scheduledTask();
-        return { el, vantaEffect, destroy };
+        return { el, vantaEffect, mockWavesConstructor, destroy };
       };
 
       beforeEach(() => {
+        ioCallback = null; // never leak a prior test's observer callback
         vi.stubGlobal(
           'IntersectionObserver',
           class {
@@ -198,13 +203,19 @@ describe('heroWavesStage', () => {
       });
 
       it('pauses a loop that starts while the hero is off-screen (deep-link mount)', async () => {
-        ioCallback([{ isIntersecting: false }]); // observer reports before async init
-        await setup();
-        expect(cancelAnimationFrame).toHaveBeenCalled();
+        const { vantaEffect } = await setup(() => {
+          ioCallback([{ isIntersecting: false }]); // observer reports before async init
+        });
+        expect(cancelAnimationFrame).toHaveBeenCalledWith(vantaEffect.req);
       });
 
       it('does not pause/resume after destroy', async () => {
-        const { vantaEffect, destroy } = await setup();
+        const { vantaEffect, destroy } = await setup(() => {
+          // Confirm visible BEFORE the loop starts, so it is running (not
+          // paused-at-creation) — then destroy must silence all callbacks.
+          ioCallback([{ isIntersecting: true }]);
+        });
+        expect(cancelAnimationFrame).not.toHaveBeenCalled();
         destroy();
         ioCallback([{ isIntersecting: false }]);
         ioCallback([{ isIntersecting: true }]);
@@ -214,9 +225,10 @@ describe('heroWavesStage', () => {
 
       it('no-ops when IntersectionObserver is unavailable (loop runs as today)', async () => {
         vi.stubGlobal('IntersectionObserver', undefined);
-        const { vantaEffect } = await setup();
-        expect(vantaEffect.destroy).not.toHaveBeenCalled();
-        expect(() => initHeroWavesStage).not.toThrow();
+        const { mockWavesConstructor } = await setup();
+        // The stage still mounts and starts its loop, with nothing to pause.
+        expect(mockWavesConstructor).toHaveBeenCalledTimes(1);
+        expect(cancelAnimationFrame).not.toHaveBeenCalled();
       });
     });
 

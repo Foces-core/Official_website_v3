@@ -77,6 +77,10 @@ export function initHeroWavesStage(containerEl, options = {}) {
   let vantaEffect = null;
   let cancelled = false;
   let visibilityObserver = null;
+  // Unknown (null) once an observer is installed — the first callback may
+  // arrive after the async loader resolves, so the loop must not assume the
+  // hero is visible before that. Stays true when there is no observer
+  // (fallback: loop runs as today).
   let isVisible = true;
   let paused = false;
 
@@ -103,6 +107,7 @@ export function initHeroWavesStage(containerEl, options = {}) {
   };
 
   if (typeof IntersectionObserver !== 'undefined') {
+    isVisible = null;
     visibilityObserver = new IntersectionObserver(([entry]) => {
       isVisible = entry.isIntersecting;
       if (isVisible) resumeLoop();
@@ -146,9 +151,10 @@ export function initHeroWavesStage(containerEl, options = {}) {
           vantaEffect = null;
         }
       } else {
-        // If the hero mounted off-screen (e.g. a deep link), the loop must
-        // not render until it scrolls into view.
-        if (!isVisible) pauseLoop();
+        // If the hero mounted off-screen (deep link) or the observer has not
+        // reported yet (unknown), the loop must not render until it scrolls
+        // into view — the first visible callback resumes it.
+        if (isVisible !== true) pauseLoop();
         if (typeof onInit === 'function') onInit(vantaEffect);
       }
     } catch (err) {
