@@ -65,10 +65,13 @@ Read this before touching anything.
   `keyboardLock.js`, `ariaActivation.js`, `aosGating.js` (gate + `initAOS`),
   `breakpoints.js` (viewports 500/767/768/1024), `carouselWrap.js` (shared wrap math),
   `scrollLock.js` (ref-counted body lock), `navigationCoordinator.js` (unified scroll/overlay/lock coordinator),
+  `overlayLifecycle.js` (pure focus/trap/escape helpers), `routePrefetchLogic.js` (pure route loaders),
   `DeferredAnalytics.jsx`, `lazyWithRetry.js`, `sessionCookie.js`, `scrollToSectionLogic.js`, `bootSplashLogic.js`.
 - `src/hooks/` — `useLowPower.js` (`useDeviceProfile` driving all perf degradation),
   `useViewportWidth.js` (reactive width over `breakpoints.js`),
-  `useAutoplayOnScreen.js` (on-screen autoplay gate), `useCubeDrag.js` (cube orchestration).
+  `useAutoplayOnScreen.js` (on-screen autoplay gate), `useCubeDrag.js` (cube orchestration),
+  `useOverlayLifecycle.js` (unified scroll lock/focus/trap/escape lifecycle),
+  `useRoutePrefetch.js` (idle/foresight/intent route chunk prefetching).
 - Behavior lives in pure tested modules; components are wiring (ADR-0009) — new logic lands as a
   module with its spec in the same change, and JSX specs use `tests/unit/harness.jsx`.
 - `scripts/` — puppeteer probes + Lighthouse perf tests; `scripts/maintenance/` holds the

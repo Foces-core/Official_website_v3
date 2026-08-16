@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router';
 import { createPortal } from 'react-dom';
 import toggleW from '../../../assets/ButtonW.svg';
@@ -7,6 +7,8 @@ import LogoWhite from '../../../assets/FOCES White.svg';
 import LogoGrey from '../../../assets/FOCES Black.svg';
 import useDeviceProfile from '../../../hooks/useLowPower.js';
 import { useViewportWidth } from '../../../hooks/useViewportWidth.js';
+import useOverlayLifecycle from '../../../hooks/useOverlayLifecycle.js';
+import useRoutePrefetch from '../../../hooks/useRoutePrefetch.js';
 import { isMobileViewport } from '../../../utils/breakpoints.js';
 import {
   pickOnViewport,
@@ -17,9 +19,7 @@ import {
 } from './navSpy.js';
 import {
   coordinateSectionNavigation,
-  manageOverlayScrollLock,
   sectionScrollBehavior,
-  deferToNextPaint,
 } from '../../../utils/navigationCoordinator.js';
 import './Navbar.css';
 
@@ -170,62 +170,21 @@ export default function Navbar() {
     }
   };
 
-  // While the mobile menu is open, lock the page behind it: no scrolling and
-  // no interaction with the content under the full-screen overlay (ref-counted
-  // scrollLock — safe if the event lightbox or another overlay is open).
-  useEffect(() => {
-    return manageOverlayScrollLock(isMobile && showItems);
-  }, [isMobile, showItems]);
-
-  // Move focus into the overlay when the mobile menu opens and trap Tab focus
-  // so keyboard/screen-reader users cycle inside the drawer until closed.
-  useEffect(() => {
-    if (!isMobile || !showItems) return;
-    const closeBtn = document.getElementById('nav-close');
-    if (closeBtn) closeBtn.focus();
-
-    const handleTabTrap = (e) => {
-      if (e.key !== 'Tab') return;
-      const overlay = document.getElementById('nav-items-mobile');
-      if (!overlay) return;
-      const focusables = Array.from(
-        overlay.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])'),
-      ).filter((el) => !el.hasAttribute('disabled') && el.offsetParent !== null);
-      if (!focusables.length) return;
-      const first = focusables[0];
-      const last = focusables[focusables.length - 1];
-      const active = document.activeElement;
-      if (e.shiftKey) {
-        if (active === first || !overlay.contains(active)) {
-          e.preventDefault();
-          last.focus();
-        }
-      } else if (active === last || !overlay.contains(active)) {
-        e.preventDefault();
-        first.focus();
-      }
-    };
-    window.addEventListener('keydown', handleTabTrap);
-    return () => window.removeEventListener('keydown', handleTabTrap);
-  }, [isMobile, showItems]);
+  // Unified overlay lifecycle: manages ref-counted body scroll lock, focus entry
+  // into #nav-close on open, Tab trapping within #nav-items-mobile, Escape key dismissal,
+  // and focus restore to #nav-toggle on close.
+  useOverlayLifecycle({
+    isOpen: isMobile && showItems,
+    onClose: () => setShowItems(false),
+    containerId: 'nav-items-mobile',
+    initialFocusId: 'nav-close',
+    restoreFocusId: 'nav-toggle',
+  });
 
   // Keyboard navigation: ArrowLeft/ArrowUp / ArrowRight/ArrowDown cycle focus
-  // through the nav links, Enter/Space activates the focused link, Escape
-  // closes the mobile menu.
+  // through the nav links, Enter/Space activates the focused link.
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === 'Escape') {
-        if (isMobile && showItems) {
-          e.preventDefault();
-          setShowItems(false);
-          // Focus the toggle once it re-appears after the overlay unmounts.
-          deferToNextPaint(() => {
-            const toggle = document.querySelector('#nav-toggle');
-            if (toggle) toggle.focus();
-          });
-        }
-        return;
-      }
       if (
         e.key !== 'ArrowLeft' &&
         e.key !== 'ArrowRight' &&
@@ -247,7 +206,7 @@ export default function Navbar() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [isMobile, showItems]);
+  }, []);
 
   const handleJoinFocesClick = () => {
     if (isMobile) {
@@ -272,64 +231,9 @@ export default function Navbar() {
     }
   };
 
-  // Intelligent route chunk prefetching for instant 0ms navigation
-  const handlePrefetch = useCallback((id) => {
-    if (id === 'events') {
-      import('../../EventPage/Eventpage.jsx').catch(() => {});
-    } else if (id === 'contact') {
-      import('../../../Components/ContactUs/ContactUs.jsx').catch(() => {});
-    }
-  }, []);
-
-  // Preload route chunks during browser idle time so nav clicks load
-  // instantly — but NOT on slow networks: pulling 29KB gz of route chunks
-  // nobody may visit, 1.2s into a 3G load, competes with the LCP-critical
-  // resources. js.foresight + hover prefetch cover fast connections.
-  useEffect(() => {
-    if (slowNetwork) return;
-    const idleTimer = setTimeout(() => {
-      import('../../EventPage/Eventpage.jsx').catch(() => {});
-      import('../../../Components/ContactUs/ContactUs.jsx').catch(() => {});
-    }, 1200);
-    return () => clearTimeout(idleTimer);
-  }, [slowNetwork]);
-
-  // ForesightJS: predict intent from mouse trajectory / touch / keyboard and
-  // prefetch the matching route chunk a beat BEFORE the user actually hovers.
-  // Code-split via dynamic import so it never bloats the main bundle.
-  useEffect(() => {
-    if (slowNetwork) return;
-    let cancelled = false;
-    let unregisters = [];
-    import('js.foresight')
-      .then(({ ForesightManager }) => {
-        if (cancelled) return;
-        if (!ForesightManager.isInitiated) {
-          ForesightManager.initialize({
-            enableManagerLogging: false,
-            minimumConnectionType: '3g',
-            setDataAttributes: false,
-          });
-        }
-        const manager = ForesightManager.instance;
-        const els = document.querySelectorAll('[data-foresight]');
-        els.forEach((el) => {
-          const id = el.getAttribute('data-foresight');
-          if (id !== 'events' && id !== 'contact') return;
-          manager.register({
-            element: el,
-            name: id,
-            callback: () => handlePrefetch(id),
-          });
-          unregisters.push(() => manager.unregister(el));
-        });
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-      unregisters.forEach((fn) => fn());
-    };
-  }, [slowNetwork, handlePrefetch]);
+  // Route chunk prefetch lifecycle: manages idle preload, ForesightJS ML prediction,
+  // and intent-driven (hover/touch/focus) route chunk prefetching behind a slowNetwork gate.
+  const { handlePrefetch } = useRoutePrefetch({ slowNetwork });
 
   // (Quicklink removed: it prefetched the same index.html shell for /events
   // and /contact — the real route chunks are already prefetched by js.foresight

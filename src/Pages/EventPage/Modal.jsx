@@ -1,38 +1,25 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import Lightbox from 'yet-another-react-lightbox';
 import Counter from 'yet-another-react-lightbox/plugins/counter';
 import 'yet-another-react-lightbox/styles.css';
 import 'yet-another-react-lightbox/plugins/counter.css';
 import PropTypes from 'prop-types';
-import { manageOverlayScrollLock } from '../../utils/navigationCoordinator.js';
+import useOverlayLifecycle from '../../hooks/useOverlayLifecycle.js';
 
 function Modal({ images, open, onClose }) {
   const lightboxRef = useRef(null);
   const imagesAvailable = Boolean(images && images.length > 0);
+  const isOverlayActive = open && imagesAvailable;
 
-  // Body scroll-lock while the lightbox is actually rendered (ref-counted —
-  // safe if the navbar drawer or another overlay is locked at the same
-  // time). Locking only when images are available keeps the lock in sync
-  // with the `return null` above: an open modal with no slides never locks.
-  useEffect(() => {
-    return manageOverlayScrollLock(open && imagesAvailable);
-  }, [open, imagesAvailable]);
+  // Unified overlay lifecycle: manages ref-counted body scroll-lock, initial focus
+  // entry, Escape key dismissal, and WCAG 2.4.3 focus restoration on close.
+  useOverlayLifecycle({
+    isOpen: isOverlayActive,
+    onClose,
+    containerRef: lightboxRef,
+  });
 
-  useEffect(() => {
-    if (!open || !lightboxRef.current) return;
-    const handleFocus = () => {
-      const focused = document.activeElement;
-      if (focused && focused !== lightboxRef.current?.firstChild) {
-        const firstSlide = lightboxRef.current.querySelector('.layertype-image');
-        if (firstSlide && !firstSlide.contains(focused)) {
-          firstSlide.focus();
-        }
-      }
-    };
-    requestAnimationFrame(handleFocus);
-  }, [open, lightboxRef]);
-
-  if (!open || !images || images.length === 0) return null;
+  if (!isOverlayActive) return null;
 
   // All images are local bundled webp assets (Sanity was removed — see
   // index.html). srcSet is left undefined so the lightbox uses src directly.

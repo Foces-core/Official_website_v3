@@ -16,12 +16,13 @@ Canonical domain glossary and terminology for the FOCES site codebase.
 
 ## Accessibility & Interaction
 
-| Term                     | Definition                                                                                      | Aliases to avoid                  |
-| ------------------------ | ----------------------------------------------------------------------------------------------- | --------------------------------- |
-| **ARIA activation**      | Keyboard standard where Enter or Space triggers actions on interactive `role="button"` elements | Key handler, click simulator      |
-| **Keyboard arbitration** | Priority system granting arrow-key control to exactly one active on-screen widget at a time     | Focus lock, key dispatcher        |
-| **Scroll lock**          | Reference-counted page scroll locking active while modal overlays or drawers are open           | Body freeze, modal backdrop lock  |
-| **Device profile**       | Resolved client capability state (`slowNetwork`, `lowCPU`, `reducedMotion`, `lowPower`)         | Performance profile, device flags |
+| Term                     | Definition                                                                                                                 | Aliases to avoid                 |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| **ARIA activation**      | Keyboard standard where Enter or Space triggers actions on interactive `role="button"` elements                            | Key handler, click simulator     |
+| **Keyboard arbitration** | Priority system granting arrow-key control to exactly one active on-screen widget at a time                                | Focus lock, key dispatcher       |
+| **Scroll lock**          | Reference-counted page scroll locking active while modal overlays or drawers are open                                      | Body freeze, modal backdrop lock |
+| **Overlay lifecycle**    | Unified lifecycle management for modal dialogs and drawers (scroll-lock, focus entry, tab trapping, Escape, focus restore) | Modal manager, popup controller  |
+| **Route prefetch**       | Intelligent intent, idle, and ML-trajectory prediction loading of route chunks, gated by network profile                   | Page preload, quick loader       |
 
 ## Content & Media
 

@@ -9,12 +9,7 @@ import { useLocation } from 'react-router';
 import { initAOS } from './utils/aosGating.js';
 import { lazyWithRetry } from './utils/lazyWithRetry.js';
 import useDeviceProfile from './hooks/useLowPower.js';
-import {
-  targetIdFromLocation,
-  shouldScrollToTarget,
-  timedOut,
-  sectionScrollBehavior,
-} from './utils/scrollToSectionLogic.js';
+import { scrollToSectionWhenReady, targetIdFromLocation } from './utils/navigationCoordinator.js';
 
 // Below-the-fold sections are code-split: the heavy Swiper chunk (used by
 // Featuring + Execom) and the cube logic only download once the user scrolls
@@ -54,52 +49,13 @@ function App() {
 
   const pageH1 = <h1 className="sr-only">FOCES - Forum of Computer Engineering Students</h1>;
 
+  // Cross-route anchor scroll: delegates try-now, mutation observation for
+  // lazy chunks, failsafe polling, and reduced-motion policy to navigationCoordinator.
   useEffect(() => {
     const targetId = targetIdFromLocation(location.state, location.hash);
     if (!targetId) return;
 
-    let cancelled = false;
-    let scrolled = false; // closure-local, not state — no re-render, no polling re-run
-    let observer = null;
-    let intervalRef = null;
-    const startTime = Date.now();
-
-    const scrollToTarget = () => {
-      const el = document.getElementById(targetId);
-      if (shouldScrollToTarget(el, scrolled)) {
-        el.scrollIntoView({ behavior: sectionScrollBehavior(reducedMotion) });
-        scrolled = true;
-        return true;
-      }
-      return false;
-    };
-
-    // 1. Try scrolling immediately if component is already mounted
-    if (scrollToTarget()) return;
-
-    // 2. Observe DOM mutations when lazy-loaded Suspense chunks mount
-    const mainContainer = document.getElementById('main-content') || document.body;
-    observer = new MutationObserver(() => {
-      if (scrollToTarget() && observer) {
-        observer.disconnect();
-      }
-    });
-    observer.observe(mainContainer, { childList: true, subtree: true });
-
-    // 3. Failsafe polling for up to 5 seconds across slow network chunk downloads
-    intervalRef = setInterval(() => {
-      if (cancelled) return;
-      if (scrollToTarget() || timedOut(startTime, Date.now(), 5000)) {
-        clearInterval(intervalRef);
-        if (observer) observer.disconnect();
-      }
-    }, 100);
-
-    return () => {
-      cancelled = true;
-      clearInterval(intervalRef);
-      if (observer) observer.disconnect();
-    };
+    return scrollToSectionWhenReady({ targetId, reducedMotion });
   }, [location, reducedMotion]);
 
   return (
