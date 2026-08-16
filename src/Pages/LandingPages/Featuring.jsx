@@ -6,6 +6,7 @@ import 'swiper/css';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 import useDeviceProfile from '../../hooks/useLowPower.js';
 import { useAutoplayOnScreen } from '../../hooks/useAutoplayOnScreen.js';
+import BlurImage from '../../Components/BlurImage/BlurImage';
 import featuring from '../../assets/featuring.svg';
 import { echoSlides, carouselSlides } from '../../data/echoSlides.js';
 import { featuringSlidesPerView, DESKTOP_MIN, SMALL_SCREEN_MAX } from '../../utils/breakpoints.js';
@@ -134,19 +135,24 @@ function Featuring() {
           onTransitionEnd={handleWrap}
           className="feat-swiper bg-transparent h-fit"
         >
-          {carouselSlides.map(({ image, imageSet, alt }, index) => (
+          {carouselSlides.map(({ image, imageSet, blur, alt }, index) => (
             <SwiperSlide key={index} className="px-3 pt-9 pb-8 bg-transparent">
-              <img
-                className="h-full w-full rounded-2xl object-cover transition-all duration-300 shadow-xl hover:scale-105 hover:ring-2 hover:ring-white/50 hover:shadow-[0_0_25px_6px_rgba(255,255,255,0.25)]"
-                src={image}
-                srcSet={imageSet}
-                sizes={`(min-width: ${DESKTOP_MIN}px) 33vw, (min-width: ${SMALL_SCREEN_MAX}px) 50vw, 90vw`}
-                alt={alt}
-                loading="lazy"
-                decoding="async"
-                data-aos="flip-right"
-                data-aos-duration="1000"
-              />
+              {/* data-aos lives on the wrapper, not the img: AOS's [data-aos]
+                  opacity rules would override the blur-up fade (higher CSS
+                  specificity than Tailwind's opacity-0/100), so the reveal
+                  animates the whole card while BlurImage fades independently. */}
+              <div data-aos="flip-right" data-aos-duration="1000">
+                <BlurImage
+                  className="h-full w-full rounded-2xl object-cover transition-all duration-300 shadow-xl hover:scale-105 hover:ring-2 hover:ring-white/50 hover:shadow-[0_0_25px_6px_rgba(255,255,255,0.25)]"
+                  src={image}
+                  srcSet={imageSet}
+                  sizes={`(min-width: ${DESKTOP_MIN}px) 33vw, (min-width: ${SMALL_SCREEN_MAX}px) 50vw, 90vw`}
+                  blurSrc={blur}
+                  alt={alt}
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
             </SwiperSlide>
           ))}
         </Swiper>

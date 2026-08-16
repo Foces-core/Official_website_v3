@@ -11,7 +11,7 @@ import { isNonEmptyString, checkUniqueKey } from './validationRules.js';
  * webp files exist is enforced by the bundler (a missing import fails the
  * build); the srcset width rules are owned by the srcset module.
  *
- * @param {Array<{image: string, imageSet: string, alt: string}>} slides
+ * @param {Array<{image: string, imageSet: string, blur: string, alt: string}>} slides
  * @returns {string[]}
  */
 export function validateEchoSlides(slides) {
@@ -33,6 +33,12 @@ export function validateEchoSlides(slides) {
 
     if (!isNonEmptyString(slide.imageSet)) {
       problems.push(`${label}: missing imageSet`);
+    }
+
+    // Blur placeholder is required (blur-up lazy loading, like the Execom
+    // cards) — a slide without one silently falls back to a plain load.
+    if (!isNonEmptyString(slide.blur)) {
+      problems.push(`${label}: missing blur`);
     }
   });
 

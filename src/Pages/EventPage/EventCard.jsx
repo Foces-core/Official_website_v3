@@ -91,6 +91,9 @@ function EventCard({ Events, priority, reverse }) {
               src={primary.url}
               srcSet={primary.srcset}
               sizes={`(min-width: ${DESKTOP_MIN}px) 50vw, 92vw`}
+              // Only the first event's primary carries an LQIP (see
+              // src/data/events.js); every other photo lazy-loads plainly.
+              blurSrc={priority ? primary.blur : undefined}
               alt={Events.name}
               loading={priority ? 'eager' : 'lazy'}
               decoding="async"

@@ -52,6 +52,21 @@
     -webkit-animation: coffee 2s infinite;
     animation: coffee 2s infinite;
 }
+
+/* FOCES wordmark on the mug face — centered, above the coffee bars and the
+   white cup background (z-index), but small enough that the cup and its bars
+   stay visible around it. Absolute positioning also removes it from the
+   coffee grid, so the 5 bars keep their columns. */
+.coffee-logo {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 38px;
+    height: auto;
+    z-index: 2;
+    pointer-events: none;
+}
 .coffee div:nth-child(1) {
     -webkit-animation-delay: 0.4s;
     animation-delay: 0.4s;

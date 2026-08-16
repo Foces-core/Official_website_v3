@@ -4,38 +4,59 @@ import { validateTeam } from '../../src/utils/validateTeam.js';
 
 // Guard for the live team roster (src/data/team.js). Runs in CI via
 // `pnpm test:unit`, so a malformed entry — duplicate name, missing role, or
-// a missing img/blur pairing — fails the build. Mirrors eventsData.spec.js.
+// a missing img — fails the build. Mirrors eventsData.spec.js.
 
 describe('validateTeam — shape rules', () => {
   it('accepts a well-formed member', () => {
-    const member = { name: 'A Member', img: '/a.webp', blur: '/a-blur.webp', role: 'Lead' };
+    const member = { name: 'A Member', img: '/a.webp', role: 'Lead' };
     expect(validateTeam([member])).toEqual([]);
   });
 
   it('flags a missing role', () => {
-    const member = { name: 'A Member', img: '/a.webp', blur: '/a-blur.webp' };
+    const member = { name: 'A Member', img: '/a.webp' };
     expect(validateTeam([member]).join('\n')).toContain('missing role');
   });
 
   it('flags a missing name', () => {
-    const member = { img: '/a.webp', blur: '/a-blur.webp', role: 'Lead' };
+    const member = { img: '/a.webp', role: 'Lead' };
     expect(validateTeam([member]).join('\n')).toContain('missing name');
   });
 
   it('flags a missing img', () => {
-    const member = { name: 'A Member', blur: '/a-blur.webp', role: 'Lead' };
+    const member = { name: 'A Member', role: 'Lead' };
     expect(validateTeam([member]).join('\n')).toContain('missing img');
   });
 
   it('flags duplicate names', () => {
-    const member = { name: 'A Member', img: '/a.webp', blur: '/a-blur.webp', role: 'Lead' };
+    const member = { name: 'A Member', img: '/a.webp', role: 'Lead' };
     const problems = validateTeam([member, { ...member, role: 'Other' }]);
     expect(problems.join('\n')).toContain('duplicate name');
   });
 
-  it('flags a missing img/blur pairing', () => {
-    const member = { name: 'A Member', img: '/a.webp', role: 'Lead' };
-    expect(validateTeam([member]).join('\n')).toContain('missing blur');
+  it('accepts an optional blur LQIP on lead images', () => {
+    const member = { name: 'A Member', img: '/a.webp', blur: '/a-blur.webp', role: 'Lead' };
+    expect(validateTeam([member])).toEqual([]);
+  });
+
+  it('flags a blur that is present but empty', () => {
+    const member = { name: 'A Member', img: '/a.webp', blur: '', role: 'Lead' };
+    expect(validateTeam([member]).join('\n')).toContain('blur must be a non-empty string');
+  });
+
+  it('rejects an explicit blur: null (supplied but invalid)', () => {
+    const member = { name: 'A Member', img: '/a.webp', blur: null, role: 'Lead' };
+    expect(validateTeam([member]).join('\n')).toContain('blur must be a non-empty string');
+  });
+
+  it('ignores a blur inherited through the prototype (not an own property)', () => {
+    // Regression: `'blur' in member` would validate an inherited blur and
+    // reject an invalid one that the member never supplied. Only own
+    // properties count.
+    const member = Object.create({ blur: '' });
+    member.name = 'A Member';
+    member.img = '/a.webp';
+    member.role = 'Lead';
+    expect(validateTeam([member])).toEqual([]);
   });
 });
 

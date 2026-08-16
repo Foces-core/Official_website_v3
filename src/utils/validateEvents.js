@@ -56,8 +56,10 @@ export function validateEvents(events) {
       problems.push(`${label}: websiteUrl must be a non-empty string when present`);
     }
 
-    // photos are { url, srcset } pairs (src/utils/eventPhotos.js) — the pairing
-    // is structural, so no parity check is needed; only shape + width accuracy.
+    // photos are { url, srcset, blur? } objects (src/utils/eventPhotos.js) —
+    // the pairing is structural, so no parity check is needed; only shape +
+    // width accuracy. `blur` is optional (only the first event's primary
+    // carries an LQIP) but must be a non-empty string when present.
     const photosValid =
       Array.isArray(event.photos) &&
       event.photos.length > 0 &&
@@ -72,7 +74,16 @@ export function validateEvents(events) {
     if (!photosValid) {
       problems.push(`${label}: photos must be a non-empty array of { url, srcset }`);
     } else {
-      event.photos.forEach((photo) => {
+      event.photos.forEach((photo, photoIndex) => {
+        // Dedicated diagnostic (not folded into the generic photos error) so
+        // a bad blur is reported as what it is. Own-property check: an
+        // explicit null is a supplied-but-invalid value and must be rejected;
+        // an omitted blur stays valid.
+        if (Object.hasOwn(photo, 'blur') && !isNonEmptyString(photo.blur)) {
+          problems.push(
+            `${label}: photo #${photoIndex + 1} blur must be a non-empty string when present`,
+          );
+        }
         const dup = findDuplicateWidth(photo.srcset);
         if (dup) {
           problems.push(`${label}: photo "${dup[0]}" declared at both ${dup[1]}w and ${dup[2]}w`);

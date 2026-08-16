@@ -18,6 +18,10 @@ import codingArenaPhoto800 from '../assets/coding_arena-800.webp';
 import promptParadoxPoster from '../assets/the_prompt_paradox_2_0_insta.webp';
 import promptParadoxPoster400 from '../assets/the_prompt_paradox_2_0_insta-400.webp';
 import promptParadoxPoster800 from '../assets/the_prompt_paradox_2_0_insta-800.webp';
+// The FIRST event's primary photo is the only events image with a blur-up
+// placeholder. w=128 (vs the team's w=20) keeps enough minimal detail to
+// read as a poster while it loads — still a sub-1KB LQIP.
+import promptParadoxPosterBlur from '../assets/the_prompt_paradox_2_0_insta.webp?blur&w=128';
 
 // High resolution event photos & video frame extractions
 import agenticMentor from '../assets/events/agentic_workshop_mentor.webp';
@@ -49,7 +53,12 @@ export const featuredEvents = [
     tag: 'AI & Prompt Engineering',
     date: '21st June 2026',
     photos: [
-      photoTriplet(promptParadoxPoster, promptParadoxPoster800, promptParadoxPoster400),
+      photoTriplet(
+        promptParadoxPoster,
+        promptParadoxPoster800,
+        promptParadoxPoster400,
+        promptParadoxPosterBlur,
+      ),
       photoTriplet(promptParadoxWinners, promptParadoxWinners800, promptParadoxWinners400),
       photoTriplet(
         promptParadoxLeaderboard,

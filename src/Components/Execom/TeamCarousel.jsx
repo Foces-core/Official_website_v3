@@ -156,7 +156,6 @@ function TeamCarousel({
                   d.name === 'Sebin Mathew' ? 'object-center' : 'object-top'
                 } w-full h-full ${isDesktop ? 'card-hover' : ''} grayscale group-hover:filter-none transition-all duration-300`}
                 src={d.img}
-                blurSrc={d.blur}
                 alt={d.name}
                 loading="lazy"
                 decoding="async"

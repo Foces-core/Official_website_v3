@@ -10,6 +10,7 @@ describe('validateEchoSlides — shape rules', () => {
   const slide = (overrides = {}) => ({
     image: '/episode.webp',
     imageSet: '/episode.webp 1280w, /episode-960.webp 960w',
+    blur: '/episode-blur.webp',
     alt: 'ECHO - Episode 1',
     ...overrides,
   });
@@ -31,6 +32,18 @@ describe('validateEchoSlides — shape rules', () => {
   it('flags a missing imageSet (srcset)', () => {
     const problems = validateEchoSlides([slide({ imageSet: '' })]);
     expect(problems.join('\n')).toContain('missing imageSet');
+  });
+
+  it('flags an empty blur placeholder', () => {
+    const problems = validateEchoSlides([slide({ blur: '' })]);
+    expect(problems.join('\n')).toContain('missing blur');
+  });
+
+  it('flags a slide with the blur field omitted entirely', () => {
+    const { blur, ...noBlur } = slide();
+    expect(blur).toBeTruthy(); // guard: the factory still carries one
+    const problems = validateEchoSlides([noBlur]);
+    expect(problems.join('\n')).toContain('missing blur');
   });
 
   it('flags duplicate alts', () => {
