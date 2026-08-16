@@ -4,20 +4,19 @@ import Counter from 'yet-another-react-lightbox/plugins/counter';
 import 'yet-another-react-lightbox/styles.css';
 import 'yet-another-react-lightbox/plugins/counter.css';
 import PropTypes from 'prop-types';
-import useOverlayLifecycle from '../../hooks/useOverlayLifecycle.js';
+import useScrollLock from '../../hooks/useScrollLock.js';
+import useFocusRestore from '../../hooks/useFocusRestore.js';
 
 function Modal({ images, open, onClose }) {
   const lightboxRef = useRef(null);
   const imagesAvailable = Boolean(images && images.length > 0);
   const isOverlayActive = open && imagesAvailable;
 
-  // Unified overlay lifecycle: manages ref-counted body scroll-lock, initial focus
-  // entry, Escape key dismissal, and WCAG 2.4.3 focus restoration on close.
-  useOverlayLifecycle({
-    isOpen: isOverlayActive,
-    onClose,
-    containerRef: lightboxRef,
-  });
+  // The lightbox vendor (yet-another-react-lightbox) handles Escape keydown and
+  // internal focus trapping. We supply the missing pieces: ref-counted body
+  // scroll locking and WCAG 2.4.3 focus restoration back to the trigger button on close.
+  useScrollLock(isOverlayActive);
+  useFocusRestore({ isOpen: isOverlayActive });
 
   if (!isOverlayActive) return null;
 

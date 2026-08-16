@@ -70,8 +70,9 @@ Read this before touching anything.
 - `src/hooks/` — `useLowPower.js` (`useDeviceProfile` driving all perf degradation),
   `useViewportWidth.js` (reactive width over `breakpoints.js`),
   `useAutoplayOnScreen.js` (on-screen autoplay gate), `useCubeDrag.js` (cube orchestration),
-  `useOverlayLifecycle.js` (unified scroll lock/focus/trap/escape lifecycle),
-  `useRoutePrefetch.js` (idle/foresight/intent route chunk prefetching).
+  `useScrollLock.js` (body scroll lock lifecycle), `useEscapeClose.js` (escape key dismissal),
+  `useFocusTrap.js` (tab key focus trap), `useFocusRestore.js` (entry focus & next-paint restore),
+  `useRoutePrefetch.js` (idle/foresight/intent route chunk prefetch wiring).
 - Behavior lives in pure tested modules; components are wiring (ADR-0009) — new logic lands as a
   module with its spec in the same change, and JSX specs use `tests/unit/harness.jsx`.
 - `scripts/` — puppeteer probes + Lighthouse perf tests; `scripts/maintenance/` holds the

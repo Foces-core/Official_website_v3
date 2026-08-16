@@ -1,12 +1,18 @@
 import { useEffect, useCallback } from 'react';
-import { prefetchRoute, prefetchDefaultRoutes } from '../utils/routePrefetchLogic.js';
+import {
+  prefetchRoute,
+  scheduleIdlePrefetch,
+  initForesightPrefetch,
+} from '../utils/routePrefetchLogic.js';
 
 /**
- * Encapsulates the entire route prefetching subsystem:
- * - Intent-driven prefetching (hover/touch/focus/pointerdown)
- * - Browser idle time preloading
+ * Thin React hook wiring route prefetching to the component lifecycle:
+ * - Direct intent prefetch handler (hover / focus / touch)
+ * - Idle background route preloading (delayed timer)
  * - ForesightJS machine-learning trajectory prediction
- * - Centralized slow-network gating (never prefetch on slow/metered connections)
+ *
+ * Gating policy (slowNetwork, Data-Saver, effective connection type)
+ * lives in the pure routePrefetchLogic manager (ADR-0009 / ADR-0010).
  *
  * @param {{
  *   slowNetwork?: boolean,
@@ -17,60 +23,30 @@ import { prefetchRoute, prefetchDefaultRoutes } from '../utils/routePrefetchLogi
  * }}
  */
 export default function useRoutePrefetch({ slowNetwork = false, idleDelayMs = 1200 } = {}) {
-  // 1. Direct intent prefetch handler
   const handlePrefetch = useCallback(
     (id) => {
-      if (slowNetwork) return;
-      prefetchRoute(id);
+      prefetchRoute(id, { slowNetwork });
     },
     [slowNetwork],
   );
 
-  // 2. Idle preload (skipped on slow network)
+  // 1. Idle route preloading (pure manager handles network check and timeout)
   useEffect(() => {
-    if (slowNetwork) return;
-    const timer = setTimeout(() => {
-      prefetchDefaultRoutes();
-    }, idleDelayMs);
-    return () => clearTimeout(timer);
+    const cancel = scheduleIdlePrefetch({
+      delayMs: idleDelayMs,
+      slowNetwork,
+    });
+    return cancel;
   }, [slowNetwork, idleDelayMs]);
 
-  // 3. ForesightJS prediction integration (skipped on slow network)
+  // 2. ForesightJS prediction integration (pure manager handles network check and registration)
   useEffect(() => {
-    if (slowNetwork) return;
-    let cancelled = false;
-    let unregisters = [];
-
-    import('js.foresight')
-      .then(({ ForesightManager }) => {
-        if (cancelled) return;
-        if (!ForesightManager.isInitiated) {
-          ForesightManager.initialize({
-            enableManagerLogging: false,
-            minimumConnectionType: '3g',
-            setDataAttributes: false,
-          });
-        }
-        const manager = ForesightManager.instance;
-        const elements = document.querySelectorAll('[data-foresight]');
-        elements.forEach((el) => {
-          const id = el.getAttribute('data-foresight');
-          if (id === 'events' || id === 'contact') {
-            manager.register({
-              element: el,
-              name: id,
-              callback: () => handlePrefetch(id),
-            });
-            unregisters.push(() => manager.unregister(el));
-          }
-        });
-      })
-      .catch(() => {});
-
-    return () => {
-      cancelled = true;
-      unregisters.forEach((fn) => fn());
-    };
+    const cleanup = initForesightPrefetch({
+      routeIds: ['events', 'contact'],
+      slowNetwork,
+      onPrefetch: handlePrefetch,
+    });
+    return cleanup;
   }, [slowNetwork, handlePrefetch]);
 
   return { handlePrefetch };

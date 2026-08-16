@@ -56,25 +56,29 @@ export function trapTabFocus(event, container) {
  * Handles Escape key to close the overlay and trigger focus restoration.
  *
  * @param {KeyboardEvent} event
- * @param {{
- *   isOpen: boolean,
+ * @param {(() => void) | {
+ *   isOpen?: boolean,
  *   onClose?: () => void,
  *   onRestoreFocus?: () => void
- * }} options
+ * }} optionsOrOnClose
  * @returns {boolean} true if Escape was handled
  */
-export function handleOverlayEscape(event, { isOpen, onClose, onRestoreFocus }) {
-  if (!event || event.key !== 'Escape' || !isOpen) return false;
+export function handleOverlayEscape(event, optionsOrOnClose) {
+  if (!event || event.key !== 'Escape') return false;
   if (typeof event.preventDefault === 'function') {
     event.preventDefault();
   }
+  if (typeof optionsOrOnClose === 'function') {
+    optionsOrOnClose();
+    return true;
+  }
+  const { isOpen = true, onClose, onRestoreFocus } = optionsOrOnClose || {};
+  if (!isOpen) return false;
   if (typeof onClose === 'function') {
     onClose();
   }
   if (typeof onRestoreFocus === 'function') {
-    deferToNextPaint(() => {
-      onRestoreFocus();
-    });
+    deferToNextPaint(onRestoreFocus);
   }
   return true;
 }

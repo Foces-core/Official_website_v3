@@ -7,7 +7,10 @@ import LogoWhite from '../../../assets/FOCES White.svg';
 import LogoGrey from '../../../assets/FOCES Black.svg';
 import useDeviceProfile from '../../../hooks/useLowPower.js';
 import { useViewportWidth } from '../../../hooks/useViewportWidth.js';
-import useOverlayLifecycle from '../../../hooks/useOverlayLifecycle.js';
+import useScrollLock from '../../../hooks/useScrollLock.js';
+import useEscapeClose from '../../../hooks/useEscapeClose.js';
+import useFocusTrap from '../../../hooks/useFocusTrap.js';
+import useFocusRestore from '../../../hooks/useFocusRestore.js';
 import useRoutePrefetch from '../../../hooks/useRoutePrefetch.js';
 import { isMobileViewport } from '../../../utils/breakpoints.js';
 import {
@@ -170,13 +173,13 @@ export default function Navbar() {
     }
   };
 
-  // Unified overlay lifecycle: manages ref-counted body scroll lock, focus entry
-  // into #nav-close on open, Tab trapping within #nav-items-mobile, Escape key dismissal,
-  // and focus restore to #nav-toggle on close.
-  useOverlayLifecycle({
-    isOpen: isMobile && showItems,
-    onClose: () => setShowItems(false),
-    containerId: 'nav-items-mobile',
+  // Mobile navigation drawer lifecycle: composed from focused hooks
+  const isDrawerOpen = isMobile && showItems;
+  useScrollLock(isDrawerOpen);
+  useEscapeClose({ isActive: isDrawerOpen, onClose: () => setShowItems(false) });
+  useFocusTrap({ isActive: isDrawerOpen, containerId: 'nav-items-mobile' });
+  useFocusRestore({
+    isOpen: isDrawerOpen,
     initialFocusId: 'nav-close',
     restoreFocusId: 'nav-toggle',
   });

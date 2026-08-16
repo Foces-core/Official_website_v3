@@ -1,6 +1,5 @@
 /* eslint-disable react/prop-types -- test fixtures use plain props without full schemas */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { act } from 'react';
 import { createHarness } from './harness.jsx';
 import useRoutePrefetch from '../../src/hooks/useRoutePrefetch.js';
 import * as routePrefetchLogic from '../../src/utils/routePrefetchLogic.js';
@@ -32,34 +31,26 @@ describe('useRoutePrefetch hook', () => {
     vi.restoreAllMocks();
   });
 
-  it('does NOT trigger idle preload or intent prefetch on slowNetwork', () => {
+  it('wires handlePrefetch with slowNetwork flag and prefetchRoute', () => {
     const prefetchSpy = vi.spyOn(routePrefetchLogic, 'prefetchRoute');
-    const defaultRoutesSpy = vi.spyOn(routePrefetchLogic, 'prefetchDefaultRoutes');
 
     harness.render(<TestPrefetchComponent slowNetwork={true} idleDelayMs={500} />);
 
-    act(() => {
-      vi.advanceTimersByTime(600);
-    });
-    expect(defaultRoutesSpy).not.toHaveBeenCalled();
-
     const eventsBtn = document.getElementById('prefetch-events');
     eventsBtn.click();
-    expect(prefetchSpy).not.toHaveBeenCalled();
+
+    expect(prefetchSpy).toHaveBeenCalledWith('events', { slowNetwork: true });
   });
 
-  it('triggers idle preloading on fast network after delay', () => {
-    const defaultRoutesSpy = vi.spyOn(routePrefetchLogic, 'prefetchDefaultRoutes');
+  it('triggers idle preloading via scheduleIdlePrefetch', () => {
+    const scheduleSpy = vi.spyOn(routePrefetchLogic, 'scheduleIdlePrefetch');
 
-    harness.render(<TestPrefetchComponent slowNetwork={false} idleDelayMs={500} />);
+    harness.render(<TestPrefetchComponent slowNetwork={false} idleDelayMs={600} />);
 
-    expect(defaultRoutesSpy).not.toHaveBeenCalled();
-
-    act(() => {
-      vi.advanceTimersByTime(550);
+    expect(scheduleSpy).toHaveBeenCalledWith({
+      delayMs: 600,
+      slowNetwork: false,
     });
-
-    expect(defaultRoutesSpy).toHaveBeenCalledTimes(1);
   });
 
   it('triggers direct prefetch on fast network when handlePrefetch is called', () => {
@@ -70,6 +61,6 @@ describe('useRoutePrefetch hook', () => {
     const contactBtn = document.getElementById('prefetch-contact');
     contactBtn.click();
 
-    expect(prefetchSpy).toHaveBeenCalledWith('contact');
+    expect(prefetchSpy).toHaveBeenCalledWith('contact', { slowNetwork: false });
   });
 });
