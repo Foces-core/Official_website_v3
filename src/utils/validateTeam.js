@@ -34,10 +34,11 @@ export function validateTeam(members) {
     }
 
     // `blur` is optional (only the lead images carry an LQIP) but must be a
-    // non-empty string when present. Own-property check (not `!= null`): an
-    // explicit null is a supplied-but-invalid value and must be rejected,
-    // while an omitted blur stays valid.
-    if ('blur' in member && !isNonEmptyString(member.blur)) {
+    // non-empty string when present. Own-property check (not `in`, which also
+    // sees inherited properties, and not `!= null`, which lets explicit null
+    // slip through): an explicit null is a supplied-but-invalid value and
+    // must be rejected, while an omitted blur stays valid.
+    if (Object.prototype.hasOwnProperty.call(member, 'blur') && !isNonEmptyString(member.blur)) {
       problems.push(`${label}: blur must be a non-empty string when present`);
     }
   });

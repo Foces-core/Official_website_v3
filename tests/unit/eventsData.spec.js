@@ -53,4 +53,9 @@ describe('validateEvents — optional photo blur', () => {
     const problems = validateEvents([event([photo({ blur: '' })])]);
     expect(problems.join('\n')).toContain('blur must be a non-empty string when present');
   });
+
+  it('rejects an explicit photo blur: null (supplied but invalid)', () => {
+    const problems = validateEvents([event([photo({ blur: null })])]);
+    expect(problems.join('\n')).toContain('blur must be a non-empty string when present');
+  });
 });

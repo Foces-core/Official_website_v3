@@ -76,8 +76,10 @@ export function validateEvents(events) {
     } else {
       event.photos.forEach((photo, photoIndex) => {
         // Dedicated diagnostic (not folded into the generic photos error) so
-        // a bad blur is reported as what it is.
-        if (photo.blur != null && !isNonEmptyString(photo.blur)) {
+        // a bad blur is reported as what it is. Own-property check: an
+        // explicit null is a supplied-but-invalid value and must be rejected;
+        // an omitted blur stays valid.
+        if (Object.hasOwn(photo, 'blur') && !isNonEmptyString(photo.blur)) {
           problems.push(
             `${label}: photo #${photoIndex + 1} blur must be a non-empty string when present`,
           );

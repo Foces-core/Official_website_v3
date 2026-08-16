@@ -47,6 +47,17 @@ describe('validateTeam — shape rules', () => {
     const member = { name: 'A Member', img: '/a.webp', blur: null, role: 'Lead' };
     expect(validateTeam([member]).join('\n')).toContain('blur must be a non-empty string');
   });
+
+  it('ignores a blur inherited through the prototype (not an own property)', () => {
+    // Regression: `'blur' in member` would validate an inherited blur and
+    // reject an invalid one that the member never supplied. Only own
+    // properties count.
+    const member = Object.create({ blur: '' });
+    member.name = 'A Member';
+    member.img = '/a.webp';
+    member.role = 'Lead';
+    expect(validateTeam([member])).toEqual([]);
+  });
 });
 
 describe('teamData integrity (src/data/team.js)', () => {
