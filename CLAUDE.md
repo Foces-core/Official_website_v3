@@ -4,6 +4,7 @@ Instructions and invariants for Claude working in this repository.
 
 ## Critical Pointers
 
+- **Live Production URL:** [https://focess-five.vercel.app/](https://focess-five.vercel.app/)
 - **Architecture decisions:** [`docs/adr/`](docs/adr/README.md) (ADR-0001 through ADR-0010).
 - **Agent instructions & map:** [`AGENTS.md`](AGENTS.md).
 - **Domain glossary:** [`CONTEXT.md`](CONTEXT.md) and [`UBIQUITOUS_LANGUAGE.md`](UBIQUITOUS_LANGUAGE.md).

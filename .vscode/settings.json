@@ -1,0 +1,20 @@
+{
+  // Auto-fix ESLint issues (including formatting it can fix) on save.
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "eslint.validate": ["javascript", "javascriptreact"],
+  // Prettier is the single source of truth for formatting (single quotes,
+  // 100-col, 4-space CSS). eslint-config-prettier turns prettier-owned rules
+  // OFF in eslint, so only prettier can fix them — hence format-on-save with
+  // prettier as the default formatter, not eslint alone.
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "[javascript][javascriptreact][typescript][typescriptreact][css][json][jsonc][markdown][html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  // Match .editorconfig / .gitattributes: LF everywhere, no trailing whitespace.
+  "files.eol": "\n",
+  "files.trimTrailingWhitespace": true,
+  "editor.tabSize": 2
+}

@@ -5,6 +5,7 @@ Read this before touching anything.
 
 ## 🛑 Critical Rules
 
+- **Live Production URL:** [https://focess-five.vercel.app/](https://focess-five.vercel.app/) — deployed continuously from `main` via Vercel edge.
 - **Read first:** architecture/decisions live in `docs/adr/` and the
   performance/a11y contract is in `CONTRIBUTING.md`. Do not duplicate those —
   reference them.

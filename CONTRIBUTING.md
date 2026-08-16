@@ -180,6 +180,13 @@ your pre-flight for that gate: it lists the same commands CI runs, so if
 you ticked every box honestly, the checks should be green on the first
 push.
 
+### Production Deployment
+
+- **Live URL:** [https://focess-five.vercel.app/](https://focess-five.vercel.app/)
+- Deploys automatically on every push to `main` via the canonical Vercel Git integration (`focces` project).
+- PRs generate automatic ephemeral preview deployments.
+- Edge headers (security headers + immutable static asset caching) are declared centrally in `vercel.json`.
+
 ## Questions?
 
 Open a discussion or an issue — there are no dumb questions, only unasked ones.

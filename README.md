@@ -1,6 +1,8 @@
 # FOCES Official Website
 
-Official website for **FOCES** (Foundation of Computer Engineering Students), College of Engineering Chengannur — built with React + Vite.
+Official website for **FOCES** (Forum of Computer Engineering Students), College of Engineering Chengannur — built with React + Vite.
+
+🌐 **Live Production Site:** [https://focess-five.vercel.app/](https://focess-five.vercel.app/)
 
 ## Prerequisites — install the tools
 

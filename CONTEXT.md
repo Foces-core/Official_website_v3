@@ -92,3 +92,4 @@ lowPower }` from `detectProfile`. One seam, two entries: components
   built-in `zlib` (ADR-0012).
 - **Staging crawler exclusion** — crawler blocking via `<meta name="robots" content="noindex, nofollow" />`
   and `public/robots.txt` for the upstream repository until formal release forks (ADR-0012).
+- **Canonical production deployment** — [https://focess-five.vercel.app/](https://focess-five.vercel.app/): the continuous deployment edge target linked to `main` with immutable asset caching and security headers via `vercel.json`.
