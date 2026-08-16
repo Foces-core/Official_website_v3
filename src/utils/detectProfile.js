@@ -70,7 +70,11 @@ function detectNetwork() {
     if (conn.saveData) return true;
 
     const type = (conn.effectiveType || '').toLowerCase();
-    if (type === 'slow-2g' || type === '2g') return true;
+    // '3g' counts as slow: the browser only reports it for genuinely degraded
+    // connections (RTT > ~270ms or downlink < ~2.5 Mbps) — not just slow-2g/2g.
+    // A desktop on Fast 3G otherwise still downloads the 724KB three.js chunk
+    // and fires route prefetches (measured via ?perf=slow: identical profile).
+    if (type === 'slow-2g' || type === '2g' || type === '3g') return true;
 
     if (typeof conn.downlink === 'number' && conn.downlink > 0 && conn.downlink < 1.2) return true;
   } catch {
