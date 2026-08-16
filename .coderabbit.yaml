@@ -41,7 +41,7 @@ reviews:
   review_status: true
   review_details: true
   collapse_walkthrough: false
-  sequence_diagrams: false
+  sequence_diagrams: true
   abort_on_close: true
   disable_cache: false
 
@@ -91,6 +91,16 @@ reviews:
         - src/data/events.js is the single source of truth for events — the
           home section and /events share it. Keep fields minimal: remove
           anything nothing consumes.
+    - path: "src/utils/**"
+      instructions: |
+        - Pure decision modules with zero JSX (ADR-0009).
+        - Every pure module must have a corresponding unit spec in tests/unit/
+          (enforced by scripts/maintenance/check-specs.mjs).
+        - Keep modules deep: simple interfaces, hiding timing/state complexity.
+    - path: "src/Components/HeroStage/**"
+      instructions: |
+        - Encapsulates 3D Three.js / Vanta lifecycle with graceful low-power fallback.
+        - Must never throw on WebGL context loss (iOS background tab eviction guard).
     - path: "vite.config.js"
       instructions: |
         - The PWA precache is app-shell only. Photos must ship via the
@@ -115,19 +125,33 @@ reviews:
         - Architecture decisions live in docs/adr/ following the template
           there. Do not duplicate decisions in prose.
 
-  # Static analysis tools that add context to reviews. Security scanners
-  # (semgrep, opengrep), workflow hardening (zizmor, actionlint) and
-  # language/grammar (languagetool) are all on — the strictest review posture.
+  # Static analysis tools that add context to reviews.
   tools:
     eslint:
       enabled: true
       e18e:
         enabled: true
+    oxc:
+      enabled: true
+    biome:
+      enabled: true
+    ast-grep:
+      essential_rules: true
     semgrep:
       enabled: true
     opengrep:
       enabled: true
     zizmor:
+      enabled: true
+    checkov:
+      enabled: true
+    trivy:
+      enabled: true
+    presidio:
+      enabled: true
+    htmlhint:
+      enabled: true
+    stylelint:
       enabled: true
     languagetool:
       enabled: true
@@ -162,12 +186,22 @@ reviews:
 
 chat:
   auto_reply: true
+  allow_non_org_members: true
   art: false
 
 knowledge_base:
   opt_out: false
   web_search:
     enabled: true
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - "AGENTS.md"
+      - "CLAUDE.md"
+      - "CONTRIBUTING.md"
+      - "CONTEXT.md"
+      - "UBIQUITOUS_LANGUAGE.md"
+      - "docs/adr/*.md"
   learnings:
     scope: "local"
     approval_delay: 0
@@ -175,6 +209,17 @@ knowledge_base:
     scope: "local"
   pull_requests:
     scope: "local"
+
+code_generation:
+  unit_tests:
+    path_instructions:
+      - path: "src/utils/**/*.js"
+        instructions: |
+          Generate unit tests using Vitest (describe, it, expect, vi).
+          Follow ADR-0009: pure logic test seams with deterministic mocks.
+      - path: "src/hooks/**/*.js"
+        instructions: |
+          Generate unit tests using @testing-library/react (renderHook, act) with Vitest.
 
 issue_enrichment:
   auto_enrich:
