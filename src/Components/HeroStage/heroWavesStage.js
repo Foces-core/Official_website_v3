@@ -76,6 +76,45 @@ export function initHeroWavesStage(containerEl, options = {}) {
 
   let vantaEffect = null;
   let cancelled = false;
+  let visibilityObserver = null;
+  // Unknown (null) once an observer is installed — the first callback may
+  // arrive after the async loader resolves, so the loop must not assume the
+  // hero is visible before that. Stays true when there is no observer
+  // (fallback: loop runs as today).
+  let isVisible = true;
+  let paused = false;
+
+  // The hero's WebGL render loop is the site's biggest continuous CPU cost —
+  // it used to render every frame for the entire session on every capable
+  // desktop. Pause it whenever the hero leaves the viewport and resume on
+  // return. (Background tabs already throttle rAF, so this covers in-page
+  // scrolling — the gap.) Vanta drives the loop via its own rAF chain with
+  // the pending frame id on `vantaEffect.req`; cancelling that frame stops
+  // the chain, and calling `animationLoop()` restarts it. The observer is
+  // only attached where the stage actually mounts (wide screens, not
+  // lowPower), so mobile / low-end devices are unaffected — same behavior on
+  // every desktop size.
+  const pauseLoop = () => {
+    if (paused || !vantaEffect || typeof vantaEffect.req !== 'number') return;
+    cancelAnimationFrame(vantaEffect.req);
+    paused = true;
+  };
+
+  const resumeLoop = () => {
+    if (!paused || !vantaEffect || typeof vantaEffect.animationLoop !== 'function') return;
+    vantaEffect.animationLoop();
+    paused = false;
+  };
+
+  if (typeof IntersectionObserver !== 'undefined') {
+    isVisible = null;
+    visibilityObserver = new IntersectionObserver(([entry]) => {
+      isVisible = entry.isIntersecting;
+      if (isVisible) resumeLoop();
+      else pauseLoop();
+    });
+    visibilityObserver.observe(containerEl);
+  }
 
   const onContextLost = (event) => {
     if (event && typeof event.preventDefault === 'function') {
@@ -111,8 +150,12 @@ export function initHeroWavesStage(containerEl, options = {}) {
           vantaEffect.destroy();
           vantaEffect = null;
         }
-      } else if (typeof onInit === 'function') {
-        onInit(vantaEffect);
+      } else {
+        // If the hero mounted off-screen (deep link) or the observer has not
+        // reported yet (unknown), the loop must not render until it scrolls
+        // into view — the first visible callback resumes it.
+        if (isVisible !== true) pauseLoop();
+        if (typeof onInit === 'function') onInit(vantaEffect);
       }
     } catch (err) {
       if (typeof onError === 'function') {
@@ -125,6 +168,10 @@ export function initHeroWavesStage(containerEl, options = {}) {
 
   return () => {
     cancelled = true;
+    if (visibilityObserver) {
+      visibilityObserver.disconnect();
+      visibilityObserver = null;
+    }
     containerEl.removeEventListener('webglcontextlost', onContextLost, true);
     if (vantaEffect && typeof vantaEffect.destroy === 'function') {
       try {
