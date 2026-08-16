@@ -51,7 +51,7 @@ pnpm build      # production build (image optimizer + PWA precache)
    you actually ran (`pnpm verify`, `pnpm knip`, `pnpm lint:workflows` for
    workflow changes). Then push freely — the checks comment on the PR
    instead of blocking locally: CI runs lint, format, unit
-   (coverage-thresholded), spec/assets/SW guards, build, E2E and the axe
+   tests, spec/assets/SW guards, build, E2E and the axe
    WCAG scan; CodeRabbit reviews automatically; and a **notify-on-failure**
    job comments once the run finishes if any check failed, mentioning
    `github.actor` (the user who triggered the run, usually whoever pushed).
