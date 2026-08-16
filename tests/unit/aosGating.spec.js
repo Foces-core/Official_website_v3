@@ -1,5 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { aosDisabled, initAOS } from '../../src/utils/aosGating.js';
+import {
+  aosDisabled,
+  initAOS,
+  shouldForceShowAos,
+  stuckAosInView,
+  startAosFailsafe,
+  stopAosFailsafe,
+} from '../../src/utils/aosGating.js';
 
 vi.mock('aos', () => ({ default: { init: vi.fn() } }));
 import AOS from 'aos';
@@ -123,5 +130,67 @@ describe('initAOS — gate + init in one owner', () => {
       if (bodyDesc) Object.defineProperty(document, 'body', bodyDesc);
       else delete document.body;
     }
+  });
+});
+
+describe('AOS failsafe — content can never stay hidden on capable devices', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '';
+    document.body.classList.remove('aos-disabled');
+    stopAosFailsafe(); // clear any watch an initAOS test left running
+  });
+
+  afterEach(() => {
+    stopAosFailsafe();
+  });
+
+  const addStuck = (id, top, height = 100) => {
+    const el = document.createElement('div');
+    el.setAttribute('data-aos', 'fade-up');
+    el.id = id;
+    // jsdom does no layout, so getBoundingClientRect is all zeros — stub it
+    // to the element's declared top/height so viewport math is testable.
+    el.getBoundingClientRect = () => ({ top, bottom: top + height, left: 0, right: 0 });
+    document.body.appendChild(el);
+    return el;
+  };
+
+  it('force-shows a [data-aos] element that is in the viewport but lacks .aos-animate', () => {
+    const el = addStuck('in-view', 100);
+    expect(shouldForceShowAos(el, 800)).toBe(true);
+    startAosFailsafe();
+    expect(el.classList.contains('aos-animate')).toBe(true);
+  });
+
+  it('leaves below-the-fold elements hidden (AOS still owns the scroll reveal)', () => {
+    const el = addStuck('below-fold', 5000);
+    expect(shouldForceShowAos(el, 800)).toBe(false);
+    stuckAosInView(800);
+    expect(el.classList.contains('aos-animate')).toBe(false);
+  });
+
+  it('ignores elements AOS already revealed', () => {
+    const el = addStuck('already-animated', 100);
+    el.classList.add('aos-animate');
+    expect(shouldForceShowAos(el, 800)).toBe(false);
+  });
+
+  it('stuckAosInView returns exactly the in-view, unrevealed elements', () => {
+    const inView = addStuck('a', 100);
+    addStuck('b', 5000);
+    const done = addStuck('c', 200);
+    done.classList.add('aos-animate');
+    expect(stuckAosInView(800).map((el) => el.id)).toEqual(['a']);
+    expect(inView.classList.contains('aos-animate')).toBe(false);
+  });
+
+  it('the cleanup handle detaches the listeners (no force-show after cleanup)', () => {
+    const cleanup = startAosFailsafe();
+    cleanup();
+    // Added AFTER the watch started and stopped: the boot run never saw it,
+    // and a synthetic scroll must not reveal it either.
+    const el = addStuck('in-view', 100);
+    window.dispatchEvent(new Event('scroll'));
+    expect(el.classList.contains('aos-animate')).toBe(false);
   });
 });
