@@ -42,9 +42,11 @@ const used = {
 
 for (const text of sources) {
   for (const attr of ['data-aos', 'data-aos-duration', 'data-aos-easing', 'data-aos-delay']) {
-    const re = new RegExp(`${attr}="([^"]*)"`, 'g');
+    // Match both single- and double-quoted JSX attributes; group 1 captures the
+    // quote so group 2 is always the attribute value.
+    const re = new RegExp(`${attr}\\s*=\\s*(['"])([^'"]*)\\1`, 'g');
     for (const match of text.matchAll(re)) {
-      const value = match[1];
+      const value = match[2];
       if (attr === 'data-aos') used.animations.add(value);
       else if (attr === 'data-aos-duration') used.durations.add(value);
       else if (attr === 'data-aos-easing') used.easings.add(value);

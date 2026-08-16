@@ -9,7 +9,8 @@
  *   durations:  300, 750, 1000 explicitly; 400 is the AOS default (no
  *               data-aos-duration attribute → body[data-aos-duration="400"]).
  *
- * Rules below are copied verbatim from aos/dist/aos.css (v3). The guard in
+ * Rules below are copied verbatim from aos/dist/aos.css (the v2.3.4 the
+ * project pins). The guard in
  * tests/unit/aosCss.spec.js scans src/ for data-aos attribute values and
  * fails if any new value falls outside this subset — so adding a new
  * animation/duration requires extending this file in the same change.

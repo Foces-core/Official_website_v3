@@ -126,9 +126,10 @@ describe('detectProfile — network heuristics', () => {
   });
 
   it('a 3g effective type marks the profile slow even at high downlink', () => {
-    // The browser only reports '3g' for degraded connections (RTT/downlink
-    // thresholds), so the effective type alone is the slow signal — a desktop
-    // on Fast 3G would otherwise still pull the 724KB three.js chunk.
+    // Treating '3g' as slow is an application performance-policy decision — the
+    // UA reports it only for degraded connections, so the effective type alone
+    // is the slow signal, regardless of the reported downlink. A desktop on
+    // Fast 3G would otherwise still pull the 724KB three.js chunk.
     stubNavigator({ connection: { saveData: false, effectiveType: '3g', downlink: 20 } });
     expect(detectProfile().slowNetwork).toBe(true);
     expect(detectProfile().lowPower).toBe(true);
