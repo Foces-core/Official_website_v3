@@ -33,30 +33,30 @@
     <link rel="icon" type="image/svg+xml" href="/foces.svg" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="mask-icon" href="/foces.svg" color="#101011" />
-    <link rel="canonical" href="https://foces.org.in/" />
+    <link rel="canonical" href="https://focess-five.vercel.app/" />
 
     <!-- Open Graph / Facebook / WhatsApp -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://foces.org.in/" />
+    <meta property="og:url" content="https://focess-five.vercel.app/" />
     <meta property="og:title" content="FOCES - Forum of Computer Engineering Students | CEC" />
     <meta
       property="og:description"
       content="Official website of FOCES at College of Engineering Chengannur. Explore events, team members, R&D initiatives, and student projects."
     />
-    <meta property="og:image" content="https://foces.org.in/og-image.jpg" />
+    <meta property="og:image" content="https://focess-five.vercel.app/og-image.jpg" />
     <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://foces.org.in/" />
+    <meta property="twitter:url" content="https://focess-five.vercel.app/" />
     <meta property="twitter:title" content="FOCES - Forum of Computer Engineering Students | CEC" />
     <meta
       property="twitter:description"
       content="Official website of FOCES at College of Engineering Chengannur. Explore events, team members, R&D initiatives, and student projects."
     />
-    <meta property="twitter:image" content="https://foces.org.in/og-image.jpg" />
+    <meta property="twitter:image" content="https://focess-five.vercel.app/og-image.jpg" />
 
     <!-- Performance & Preloading Optimization Hints -->
     <meta http-equiv="x-dns-prefetch-control" content="on" />
@@ -99,30 +99,166 @@
           opacity 0.7s ease,
           visibility 0.7s ease;
       }
-      #boot-splash img {
-        width: 96px;
-        height: 96px;
+      #boot-splash .coffee-wrap {
+        position: relative;
       }
+      #boot-splash .coffee {
+        background: #fff;
+        display: grid;
+        border-radius: 4px;
+        grid-template-columns: repeat(5, 1fr);
+        grid-template-rows: 1fr;
+        height: 60px;
+        position: relative;
+        width: 60px;
+        padding: 2px;
+        justify-items: center;
+      }
+      #boot-splash .coffee:before {
+        box-sizing: border-box;
+        content: '';
+        height: 20px;
+        width: 20px;
+        border: 4px solid #fff;
+        position: absolute;
+        top: 50%;
+        margin-top: -13px;
+        margin-left: -10px;
+        left: 100%;
+        border-radius: 4px;
+      }
+      #boot-splash .coffee div {
+        height: 30px;
+        width: 8px;
+        background: #fff;
+        opacity: 0.6;
+        animation: boot-coffee 2s infinite;
+      }
+      #boot-splash .coffee div:nth-child(1) {
+        animation-delay: 0.4s;
+      }
+      #boot-splash .coffee div:nth-child(2) {
+        animation-delay: 0.8s;
+      }
+      #boot-splash .coffee div:nth-child(3) {
+        animation-delay: 1.2s;
+      }
+      #boot-splash .coffee div:nth-child(4) {
+        animation-delay: 1.6s;
+      }
+      #boot-splash .coffee div:nth-child(5) {
+        animation-delay: 2s;
+      }
+
+      @keyframes boot-coffee {
+        100% {
+          opacity: 0;
+          transform: translateY(-200%);
+        }
+      }
+      @keyframes boot-steam {
+        0% {
+          opacity: 0;
+          transform: translateY(0) scale(0.6);
+        }
+        20% {
+          opacity: 0.5;
+        }
+        80% {
+          opacity: 0.15;
+        }
+        100% {
+          opacity: 0;
+          transform: translateY(-38px) scale(1);
+        }
+      }
+      #boot-splash .steam-container {
+        position: absolute;
+        top: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 48px;
+        height: 40px;
+        pointer-events: none;
+      }
+      #boot-splash .steam-dot {
+        position: absolute;
+        bottom: 0;
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.35);
+        opacity: 0;
+        animation: boot-steam 2.8s ease-out infinite;
+      }
+      #boot-splash .steam-dot:nth-child(1) {
+        left: 8px;
+        animation-delay: 0s;
+      }
+      #boot-splash .steam-dot:nth-child(2) {
+        left: 22px;
+        animation-delay: 0.7s;
+      }
+      #boot-splash .steam-dot:nth-child(3) {
+        left: 36px;
+        animation-delay: 1.4s;
+      }
+      #boot-splash .steam-dot:nth-child(4) {
+        left: 15px;
+        animation-delay: 2.1s;
+      }
+
       #boot-splash .status {
-        margin-top: 1rem;
+        margin-top: 1.25rem;
         font-size: 0.72rem;
         letter-spacing: 0.2em;
         text-transform: uppercase;
         color: #22d3ee;
         font-weight: 600;
       }
+      #boot-splash .quote {
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+        color: #d1d5db;
+        padding: 0 1rem;
+        text-align: center;
+      }
       #boot-splash.is-fading {
         opacity: 0;
         visibility: hidden;
         pointer-events: none;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #boot-splash .coffee div {
+          animation: none !important;
+        }
+        #boot-splash .steam-dot {
+          animation: none !important;
+          opacity: 0;
+        }
       }
     </style>
   </head>
   <body class="bg-[#101011] text-white">
     <div id="root"></div>
     <div id="boot-splash" role="status" aria-live="polite">
-      <img src="/foces.svg" width="96" height="96" alt="FOCES" decoding="async" />
+      <div class="coffee-wrap">
+        <div class="steam-container" aria-hidden="true">
+          <span class="steam-dot"></span>
+          <span class="steam-dot"></span>
+          <span class="steam-dot"></span>
+          <span class="steam-dot"></span>
+        </div>
+        <div class="coffee">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      </div>
       <span class="status">Loading...</span>
+      <span class="quote">1st Rule Of Programming: If A Code Works, Don't Touch It.</span>
     </div>
     <div id="portal"></div>
     <script type="module" src="/src/main.jsx"></script>

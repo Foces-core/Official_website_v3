@@ -12,7 +12,7 @@ Only the latest deployment (Vercel production) receives security fixes.
    **Security → Advisories → New advisory** (visible to repo admins), or open
    a draft advisory and mention the core team.
 2. **Email:** the FOCES core team via the contact page
-   (https://foces.org.in/contact) and ask for the security contact.
+   (https://focess-five.vercel.app/contact) and ask for the security contact.
 
 Include, if possible:
 

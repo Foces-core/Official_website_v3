@@ -1,5 +1,5 @@
 blank_issues_enabled: true
 contact_links:
-  - name: FOCES team
-    url: https://foces.org.in/contact
-    about: Reach the FOCES team directly via the contact page
+  - name: Contact FOCES
+    url: https://focess-five.vercel.app/contact
+    about: Please use our official contact page for general inquiries.

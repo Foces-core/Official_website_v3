@@ -2,7 +2,8 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import SectionSkeleton from '../SectionSkeleton/SectionSkeleton';
 import { isDesktopViewport } from '../../utils/breakpoints.js';
-import { shouldMountSection } from './scrollGateLogic.js';
+import useDeviceProfile from '../../hooks/useLowPower.js';
+import { shouldMountSection, scheduleIdleMount } from './scrollGateLogic.js';
 
 // Real section heights, cached after first mount so the placeholder matches
 // the real content on subsequent visits (no layout shift on return). Keyed by
@@ -18,26 +19,21 @@ function viewportBucket() {
 
 /**
  * ScrollGate — keep an expensive lazy section unmounted until it approaches
- * the viewport, so its chunk (and its transitive deps, e.g. swiper-vendor)
- * is never downloaded or evaluated at boot.
- *
- * The section's id lives on THIS wrapper, not on the inner section — the
- * wrapper is always present, so anchor navigation, the navbar scrollspy, and
- * tests that query `#sectionId` all find a real element. The real section
- * must NOT repeat the id (duplicate ids broke the earlier attempt).
+ * the viewport or until the initial above-the-fold content settles and the
+ * browser is idle, so initial LCP/FCP is instantaneous while background sections
+ * are ready without delay.
  *
  * Triggers:
- *   - IntersectionObserver with a generous rootMargin, so the chunk starts
- *     downloading ~1 viewport before the section is actually visible
- *   - a rAF-throttled scroll listener as a fallback: an instant programmatic
- *     jump (e.g. scrollTo(0, max)) can pass a sentinel in one frame and
- *     IntersectionObserver can miss it — the scroll check cannot.
+ *   - IntersectionObserver with a generous rootMargin
+ *   - a rAF-throttled scroll listener as an instant jump fallback
+ *   - idle callback pre-mount once on-screen resources finish loading
  *
  * Once mounted, the section stays mounted (no un-mount on scroll-away).
  */
 export default function ScrollGate({ id, placeholderHeight = '110vh', label, children }) {
   const [mounted, setMounted] = useState(false);
   const wrapRef = useRef(null);
+  const { slowNetwork } = useDeviceProfile();
 
   useEffect(() => {
     if (mounted) return;
@@ -47,20 +43,13 @@ export default function ScrollGate({ id, placeholderHeight = '110vh', label, chi
       return;
     }
 
-    // Load once the section's top is within ~1.5 viewports of the top of the
-    // page. This is deliberately TIGHT: Featuring starts at ~200vh (hero 100vh
-    // + about ~100vh), so a wide margin would mount it at boot — defeating the
-    // whole point. 0.5 viewport below the fold gives the chunk ~half a viewport
-    // of scroll to download while the skeleton fallback holds the space.
-    // (The geometry rule lives in scrollGateLogic.js, unit-tested.)
     const MOUNT_MARGIN_VIEWPORTS = 0.5;
     const MOUNT_MARGIN_PX = window.innerHeight * MOUNT_MARGIN_VIEWPORTS;
 
     let io = null;
     const mount = () => setMounted(true);
 
-    // IntersectionObserver: fires reliably during real (incremental) scrolling
-    // and catches anchor-jump cases where the wrapper lands in the margin band.
+    // 1. IntersectionObserver: fires reliably during real (incremental) scrolling
     io = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -72,14 +61,10 @@ export default function ScrollGate({ id, placeholderHeight = '110vh', label, chi
     );
     io.observe(el);
 
-    // Fallback: instant programmatic jumps can skip the IO margin band in one
-    // frame (measured in the earlier scroll-gate attempt). A scroll listener
-    // always fires at the final position, so check the geometry directly.
+    // 2. Programmatic jump fallback
     let rafId = 0;
     const checkPosition = () => {
       const rect = el.getBoundingClientRect();
-      // Mount when the section top is within the margin below the fold OR
-      // already above it (user scrolled past — catch up and mount anyway).
       if (shouldMountSection(rect.top, window.innerHeight, MOUNT_MARGIN_VIEWPORTS)) mount();
     };
     const onScroll = () => {
@@ -87,19 +72,25 @@ export default function ScrollGate({ id, placeholderHeight = '110vh', label, chi
       rafId = requestAnimationFrame(checkPosition);
     };
     window.addEventListener('scroll', onScroll, { passive: true });
-    // Also catch layout changes (e.g. a lazy section above shifts this one down)
     window.addEventListener('resize', onScroll);
 
-    // Initial check — a section already near the fold at load mounts at once.
     checkPosition();
+
+    // 3. Idle background pre-mounting once on-screen content is loaded
+    const cancelIdle = scheduleIdleMount({
+      onMount: mount,
+      delayMs: 2200,
+      slowNetwork,
+    });
 
     return () => {
       io?.disconnect();
       if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
+      cancelIdle();
     };
-  }, [mounted]);
+  }, [mounted, slowNetwork]);
 
   // Cache the real height once the section's content lands. ResizeObserver —
   // not a mount-timed read — because when `mounted` flips, the inner lazy
