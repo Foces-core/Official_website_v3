@@ -68,14 +68,20 @@ export function validateEvents(events) {
           photo &&
           typeof photo === 'object' &&
           isNonEmptyString(photo.url) &&
-          isNonEmptyString(photo.srcset) &&
-          (photo.blur == null || isNonEmptyString(photo.blur)),
+          isNonEmptyString(photo.srcset),
       );
 
     if (!photosValid) {
       problems.push(`${label}: photos must be a non-empty array of { url, srcset }`);
     } else {
-      event.photos.forEach((photo) => {
+      event.photos.forEach((photo, photoIndex) => {
+        // Dedicated diagnostic (not folded into the generic photos error) so
+        // a bad blur is reported as what it is.
+        if (photo.blur != null && !isNonEmptyString(photo.blur)) {
+          problems.push(
+            `${label}: photo #${photoIndex + 1} blur must be a non-empty string when present`,
+          );
+        }
         const dup = findDuplicateWidth(photo.srcset);
         if (dup) {
           problems.push(`${label}: photo "${dup[0]}" declared at both ${dup[1]}w and ${dup[2]}w`);

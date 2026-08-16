@@ -14,6 +14,15 @@ describe('featuredEvents data integrity', () => {
   it('has at least one event', () => {
     expect(featuredEvents.length).toBeGreaterThan(0);
   });
+
+  it('first event primary photo carries the blur LQIP', () => {
+    // Production wiring guard: the home Events banner and the /events first
+    // card both read photos[0].blur — if the field ever stops being wired
+    // to an LQIP, this fails.
+    const blur = featuredEvents[0].photos[0].blur;
+    expect(typeof blur).toBe('string');
+    expect(blur.length).toBeGreaterThan(0);
+  });
 });
 
 describe('validateEvents — optional photo blur', () => {
@@ -42,6 +51,6 @@ describe('validateEvents — optional photo blur', () => {
 
   it('flags a photo whose blur is present but empty', () => {
     const problems = validateEvents([event([photo({ blur: '' })])]);
-    expect(problems.join('\n')).toContain('photos must be a non-empty array of { url, srcset }');
+    expect(problems.join('\n')).toContain('blur must be a non-empty string when present');
   });
 });

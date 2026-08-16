@@ -42,6 +42,11 @@ describe('validateTeam — shape rules', () => {
     const member = { name: 'A Member', img: '/a.webp', blur: '', role: 'Lead' };
     expect(validateTeam([member]).join('\n')).toContain('blur must be a non-empty string');
   });
+
+  it('rejects an explicit blur: null (supplied but invalid)', () => {
+    const member = { name: 'A Member', img: '/a.webp', blur: null, role: 'Lead' };
+    expect(validateTeam([member]).join('\n')).toContain('blur must be a non-empty string');
+  });
 });
 
 describe('teamData integrity (src/data/team.js)', () => {

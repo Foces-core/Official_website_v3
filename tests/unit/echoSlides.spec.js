@@ -34,8 +34,15 @@ describe('validateEchoSlides — shape rules', () => {
     expect(problems.join('\n')).toContain('missing imageSet');
   });
 
-  it('flags a missing blur placeholder', () => {
+  it('flags an empty blur placeholder', () => {
     const problems = validateEchoSlides([slide({ blur: '' })]);
+    expect(problems.join('\n')).toContain('missing blur');
+  });
+
+  it('flags a slide with the blur field omitted entirely', () => {
+    const { blur, ...noBlur } = slide();
+    expect(blur).toBeTruthy(); // guard: the factory still carries one
+    const problems = validateEchoSlides([noBlur]);
     expect(problems.join('\n')).toContain('missing blur');
   });
 

@@ -20,6 +20,9 @@ export function photoTriplet(full, s800, s400, blur) {
       [s800, 800],
       [s400, 400],
     ]),
-    ...(blur ? { blur } : {}),
+    // Nullish check (not truthiness): an explicitly supplied invalid value
+    // (e.g. '') must survive into the photo object so validateEvents can
+    // flag it instead of silently treating the photo as blur-less.
+    ...(blur == null ? {} : { blur }),
   };
 }
