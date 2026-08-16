@@ -19,8 +19,8 @@ import {
 import './Featuring.css';
 
 function Featuring() {
-  const { reducedMotion } = useDeviceProfile();
-  const disableAutoplay = reducedMotion;
+  const { reducedMotion, lowPower } = useDeviceProfile();
+  const disableAutoplay = reducedMotion || lowPower;
   const noSlides = featuringSlidesPerView(useViewportWidth());
   const [activeSlide, setActiveSlide] = useState(0);
   const elRef = useRef(null);
@@ -127,7 +127,12 @@ function Featuring() {
         <div ref={elRef} className="feat-swiper bg-transparent h-fit">
           <div ref={trackRef} className="swiper-wrapper">
             {carouselSlides.map(({ image, imageSet, blur, alt }, index) => (
-              <div key={index} className="swiper-slide px-3 pt-9 pb-8 bg-transparent">
+              <div
+                key={index}
+                role="group"
+                aria-roledescription="slide"
+                className="swiper-slide px-3 pt-9 pb-8 bg-transparent"
+              >
                 {/* data-aos lives on the wrapper, not the img: AOS's [data-aos]
                     opacity rules would override the blur-up fade (higher CSS
                     specificity than Tailwind's opacity-0/100), so the reveal

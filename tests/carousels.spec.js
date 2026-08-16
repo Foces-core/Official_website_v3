@@ -109,7 +109,12 @@ test.describe('Execom mobile cube drag', () => {
   test('dragging the cube advances to the next member', async ({ page }) => {
     await gotoHome(page);
     await page.locator('#execom').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(800);
+    // The cube is only interactive once the hook applied the first transforms
+    // — wait for the readiness signal instead of a fixed sleep, so slow/low-
+    // power profiles can't flake the test.
+    await page.locator('.execom-cube-swiper[data-carousel-ready]').waitFor({
+      state: 'attached',
+    });
 
     const activeIndex = () =>
       page.evaluate(() =>
@@ -134,7 +139,9 @@ test.describe('Execom mobile cube drag', () => {
   }) => {
     await gotoHome(page);
     await page.locator('#execom').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(800);
+    await page.locator('.execom-cube-swiper[data-carousel-ready]').waitFor({
+      state: 'attached',
+    });
 
     // A real phone fires pointer events for a touch drag — the hand-rolled
     // carousel drives its gesture entirely from pointer events, so synthetic

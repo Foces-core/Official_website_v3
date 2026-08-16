@@ -99,6 +99,10 @@ export default function useCarousel({
       const firstCard = t.firstElementChild?.firstElementChild;
       const h = firstCard ? firstCard.offsetHeight : 0;
       if (h) t.style.height = `${h}px`;
+      // Face transforms depend only on each index and the measured face width
+      // — neither changes during a drag, so write them once here (NOT in the
+      // pointermove hot path, which only re-rotates the track).
+      applyFaceTransforms();
     } else {
       const first = t.firstElementChild;
       s.slideWidth = first ? first.getBoundingClientRect().width : 0;
@@ -120,14 +124,22 @@ export default function useCarousel({
     });
   }
 
+  // Cube faces: rotateY(i * 90°) translateZ(radius). Written from measure /
+  // styleTrack (index + faceWidth only) — kept out of applyTransforms so a
+  // pointer drag re-rotates the track without rewriting all faces every move.
+  function applyFaceTransforms() {
+    const t = track();
+    if (!t || p().mode !== 'cube') return;
+    Array.from(t.children).forEach((slide, i) => {
+      slide.style.transform = cubeFaceTransform(i, s.faceWidth / 2);
+    });
+  }
+
   function applyTransforms() {
     const t = track();
     if (!t) return;
     const { mode: m } = p();
     if (m === 'cube') {
-      Array.from(t.children).forEach((slide, i) => {
-        slide.style.transform = cubeFaceTransform(i, s.faceWidth / 2);
-      });
       t.style.transform = cubeTrackTransform(
         s.raw,
         s.dragging ? cubeDragAngle(s.dragOffset, s.faceWidth) : 0,
@@ -249,6 +261,17 @@ export default function useCarousel({
   function onPointerUp() {
     if (!s.dragging) return;
     s.dragging = false;
+    // Release the capture BEFORE the settle animation starts, so the browser
+    // stops delivering move events to a track that is about to animate.
+    const pid = s.pointerId;
+    try {
+      track()?.releasePointerCapture?.(pid);
+    } catch {
+      // ignore
+    }
+    // Clear the stored id — a later pointercancel for a different pointer
+    // must not release a stale capture.
+    s.pointerId = null;
     const { mode: m } = p();
     const step = m === 'cube' ? s.faceWidth : s.step;
     const snap = dragSnap(s.dragOffset, step, s.velocity);
@@ -260,11 +283,6 @@ export default function useCarousel({
     if (s.autoplayTimer) {
       stopAutoplay();
       startAutoplay();
-    }
-    try {
-      track()?.releasePointerCapture?.(s.pointerId);
-    } catch {
-      // ignore
     }
   }
 
@@ -357,11 +375,16 @@ export default function useCarousel({
         slide.style.backfaceVisibility = 'hidden';
         slide.style.flex = '';
       });
+      applyFaceTransforms();
     } else {
       t.style.display = 'flex';
       t.style.alignItems = 'center';
       t.style.columnGap = `${gap}px`;
       t.style.transformStyle = '';
+      // Clear the cube-mode scaffolding: a flat fallback must not keep the
+      // cube's pinned pixel height or perspective when mode switches.
+      t.style.height = '';
+      r.style.perspective = '';
       Array.from(t.children).forEach((slide) => {
         slide.style.position = '';
         slide.style.inset = '';
@@ -392,15 +415,23 @@ export default function useCarousel({
     t.addEventListener('pointerup', handlersRef.current.onPointerUp);
     t.addEventListener('pointercancel', handlersRef.current.onPointerUp);
     t.addEventListener('transitionend', handlersRef.current.onTransitionEnd);
+    // rAF-throttled: a drag-resize fires resize dozens of times per second,
+    // and measure() forces layout — coalesce to at most one per frame.
+    let resizeRaf = 0;
     const onResize = () => {
-      handlersRef.current.measure();
-      handlersRef.current.applyTransforms();
+      if (resizeRaf) return;
+      resizeRaf = requestAnimationFrame(() => {
+        resizeRaf = 0;
+        handlersRef.current.measure();
+        handlersRef.current.applyTransforms();
+      });
     };
     window.addEventListener('resize', onResize);
 
     return () => {
       stopAutoplay();
       disableKeyboard();
+      if (resizeRaf) cancelAnimationFrame(resizeRaf);
       t.removeEventListener('pointerdown', handlersRef.current.onPointerDown);
       t.removeEventListener('pointermove', handlersRef.current.onPointerMove);
       t.removeEventListener('pointerup', handlersRef.current.onPointerUp);
@@ -413,8 +444,15 @@ export default function useCarousel({
 
   // Re-style when the layout-affecting props change (e.g. Featuring's
   // responsive slidesPerView) without re-attaching listeners. Only refs are
-  // touched, so the dep array is exactly the layout-affecting props.
+  // touched, so the dep array is exactly the layout-affecting props. The
+  // mount run is skipped — the layout effect above already did the initial
+  // styleTrack/measure/applyTransforms on first paint.
+  const mountedRef = useRef(false);
   useEffect(() => {
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      return;
+    }
     handlersRef.current.styleTrack();
     handlersRef.current.measure();
     handlersRef.current.applyTransforms();

@@ -4,8 +4,6 @@ import {
   initAOS,
   shouldForceShowAos,
   stuckAosInView,
-  startAosFailsafe,
-  stopAosFailsafe,
 } from '../../src/utils/aosGating.js';
 
 vi.mock('aos', () => ({ default: { init: vi.fn() } }));
@@ -131,17 +129,31 @@ describe('initAOS — gate + init in one owner', () => {
       else delete document.body;
     }
   });
+
+  it('survives AOS.init throwing — the app must boot and the failsafe still covers reveals', () => {
+    // AOS.init runs at module scope; a throw there would take the whole app
+    // down. Catch it, keep the body tag, and return the gate so callers know
+    // (the viewport failsafe in useAosFailsafe force-shows in-view content).
+    const err = new Error('AOS broke');
+    AOS.init.mockImplementation(() => {
+      throw err;
+    });
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      expect(() => initAOS()).not.toThrow();
+      expect(initAOS()).toBe(false);
+      expect(document.body.classList.contains('aos-disabled')).toBe(false);
+      expect(console.error).toHaveBeenCalled();
+    } finally {
+      spy.mockRestore();
+    }
+  });
 });
 
-describe('AOS failsafe — content can never stay hidden on capable devices', () => {
+describe('AOS failsafe decisions — pure viewport math', () => {
   beforeEach(() => {
     document.body.innerHTML = '';
     document.body.classList.remove('aos-disabled');
-    stopAosFailsafe(); // clear any watch an initAOS test left running
-  });
-
-  afterEach(() => {
-    stopAosFailsafe();
   });
 
   const addStuck = (id, top, height = 100) => {
@@ -155,11 +167,9 @@ describe('AOS failsafe — content can never stay hidden on capable devices', ()
     return el;
   };
 
-  it('force-shows a [data-aos] element that is in the viewport but lacks .aos-animate', () => {
+  it('identifies a [data-aos] element that is in the viewport but lacks .aos-animate', () => {
     const el = addStuck('in-view', 100);
     expect(shouldForceShowAos(el, 800)).toBe(true);
-    startAosFailsafe();
-    expect(el.classList.contains('aos-animate')).toBe(true);
   });
 
   it('leaves below-the-fold elements hidden (AOS still owns the scroll reveal)', () => {
@@ -184,13 +194,17 @@ describe('AOS failsafe — content can never stay hidden on capable devices', ()
     expect(inView.classList.contains('aos-animate')).toBe(false);
   });
 
-  it('the cleanup handle detaches the listeners (no force-show after cleanup)', () => {
-    const cleanup = startAosFailsafe();
-    cleanup();
-    // Added AFTER the watch started and stopped: the boot run never saw it,
-    // and a synthetic scroll must not reveal it either.
-    const el = addStuck('in-view', 100);
-    window.dispatchEvent(new Event('scroll'));
-    expect(el.classList.contains('aos-animate')).toBe(false);
+  it('does not read window in default parameters (server-side calls return [] instead of throwing)', () => {
+    // shouldForceShowAos/stuckAosInView must not touch window before the
+    // environment guard — a SSR call used to throw ReferenceError at the
+    // default-parameter evaluation.
+    const savedWindow = globalThis.window;
+    delete globalThis.window;
+    try {
+      expect(shouldForceShowAos(null, undefined)).toBe(false);
+      expect(stuckAosInView()).toEqual([]);
+    } finally {
+      globalThis.window = savedWindow;
+    }
   });
 });

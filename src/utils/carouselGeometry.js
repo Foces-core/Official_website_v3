@@ -33,9 +33,14 @@ export function cubeFaceTransform(index, radius) {
 }
 
 // The cube track: rotate the whole cube by -90° per active face. dragAngle
-// (degrees, from a pointer drag) previews the motion when non-zero.
+// (degrees, from a pointer drag) previews the motion when non-zero: the base
+// rotation is negative (faces advance left), so a NEGATIVE dragAngle (finger
+// dragging left) must push it further negative — toward the next face, the
+// same direction dragSnap settles on. Adding the angle inside the negation
+// would invert the preview (drag left → previous face flashes, then the cube
+// jumps forward on release).
 export function cubeTrackTransform(activeIndex, dragAngle = 0) {
-  return `rotateY(${-(activeIndex * CUBE_ANGLE + dragAngle)}deg)`;
+  return `rotateY(${-activeIndex * CUBE_ANGLE + dragAngle}deg)`;
 }
 
 // A pointer delta (px) converted to cube drag degrees: a full face width of
@@ -53,9 +58,14 @@ export function cubeDragAngle(deltaX, faceWidth) {
 // Returns -1 (previous), 1 (next) or 0 (snap back in place).
 export function dragSnap(deltaX, step, velocity, thresholdRatio = 1 / 3) {
   const threshold = step * thresholdRatio;
-  // Flick beats distance: a fast swipe overrides a short drag.
+  // Flick beats distance — but only once the finger actually travelled. A
+  // stationary tap's micro-jitter reports a huge velocity (px / ms with
+  // ms→0), which would otherwise turn a face the user meant as a tap.
   const FLICK_PX_PER_MS = 0.5;
-  if (Math.abs(velocity) > FLICK_PX_PER_MS) return velocity < 0 ? 1 : -1;
+  const FLICK_MIN_PX = 10;
+  if (Math.abs(velocity) > FLICK_PX_PER_MS && Math.abs(deltaX) > FLICK_MIN_PX) {
+    return velocity < 0 ? 1 : -1;
+  }
   if (deltaX < -threshold) return 1;
   if (deltaX > threshold) return -1;
   return 0;

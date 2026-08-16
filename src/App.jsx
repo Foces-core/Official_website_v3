@@ -9,6 +9,7 @@ import { useLocation } from 'react-router';
 import { initAOS } from './utils/aosGating.js';
 import { lazyWithRetry } from './utils/lazyWithRetry.js';
 import useDeviceProfile from './hooks/useLowPower.js';
+import useAosFailsafe from './hooks/useAosFailsafe.js';
 import { scrollToSectionWhenReady, targetIdFromLocation } from './utils/navigationCoordinator.js';
 
 // Below-the-fold sections are code-split: the carousel sections (Featuring +
@@ -39,6 +40,8 @@ const Footer = lazyWithRetry(() => import('./Pages/LandingPage/Footer/Footer'));
 // unhide and never registers its observer — leaving every [data-aos] element
 // stuck invisible. So when gated, initAOS tags <body> and CSS force-shows all
 // [data-aos] content (including anything mounted later, e.g. lazy routes).
+// Capable devices get the viewport failsafe via useAosFailsafe (below) so a
+// broken AOS can never leave in-view content hidden.
 initAOS();
 
 function App() {
@@ -46,6 +49,12 @@ function App() {
   // reducedMotion comes from the device-profile seam (detectProfile), not a
   // raw matchMedia re-implementation — the same query, one owner.
   const { reducedMotion } = useDeviceProfile();
+  // The AOS viewport failsafe: force-show any in-view [data-aos] element AOS
+  // left hidden (its JS can break or miss an element — content must never
+  // stay hidden). Gated devices are already covered by the body.aos-disabled
+  // CSS net, so the hook is a no-op there. Lives in App: AOS only runs on the
+  // landing page (initAOS is module-scoped here).
+  useAosFailsafe();
 
   const pageH1 = <h1 className="sr-only">FOCES - Forum of Computer Engineering Students</h1>;
 

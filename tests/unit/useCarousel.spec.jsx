@@ -16,7 +16,14 @@ import { createHarness } from './harness.jsx';
 
 let harness;
 
-function TrackProbe({ total = 4, mode = 'flat', onActiveChange, autoplayDelay = 0, initialIndex }) {
+function TrackProbe({
+  total = 4,
+  mode = 'flat',
+  onActiveChange,
+  autoplayDelay = 0,
+  initialIndex,
+  faceWidth,
+}) {
   const elRef = useRef(null);
   const { trackRef } = useCarousel({
     elRef,
@@ -28,7 +35,18 @@ function TrackProbe({ total = 4, mode = 'flat', onActiveChange, autoplayDelay = 
   });
   return (
     <div ref={elRef} className="probe-root">
-      <div ref={trackRef} className="swiper-wrapper">
+      <div
+        ref={(node) => {
+          // jsdom does no layout (clientWidth is 0), so a cube drag's face
+          // width must be injected before the hook's measure() runs (refs
+          // attach before layout effects). Only the cube test needs it.
+          trackRef.current = node;
+          if (node && faceWidth) {
+            Object.defineProperty(node, 'clientWidth', { configurable: true, value: faceWidth });
+          }
+        }}
+        className="swiper-wrapper"
+      >
         {Array.from({ length: total * 3 }, (_, i) => (
           <div key={i} className="swiper-slide">
             slide {i % total}
@@ -45,6 +63,7 @@ TrackProbe.propTypes = {
   onActiveChange: PropTypes.func,
   autoplayDelay: PropTypes.number,
   initialIndex: PropTypes.number,
+  faceWidth: PropTypes.number,
 };
 
 const slideEls = (root) => [...root.querySelectorAll('.swiper-slide')];
@@ -58,6 +77,10 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  // Always restore real timers here — if an autoplay/wrap test's fake timers
+  // are still active when an assertion fails mid-test, every later test in
+  // this file would inherit them.
+  vi.useRealTimers();
   vi.unstubAllGlobals();
   harness.unmount();
 });
@@ -116,7 +139,6 @@ describe('useCarousel — instance contract', () => {
     inst(harness).autoplay.stop();
     vi.advanceTimersByTime(300);
     expect(inst(harness).activeIndex).toBe(6);
-    vi.useRealTimers();
   });
 });
 
@@ -155,6 +177,66 @@ describe('useCarousel — cube mode', () => {
   });
 });
 
+describe('useCarousel — pointer drag', () => {
+  // jsdom may lack PointerEvent (it landed in later jsdom releases) — fall
+  // back to a MouseEvent subclass carrying the pointer fields the hook reads.
+  const PointerEventCtor =
+    globalThis.PointerEvent ||
+    class PointerEvent extends MouseEvent {
+      constructor(type, init = {}) {
+        super(type, init);
+        this.pointerId = init.pointerId ?? 0;
+        this.pointerType = init.pointerType ?? 'touch';
+      }
+    };
+
+  // Dispatch pointerdown + pointermove, and hand back the move (for preview
+  // assertions) plus a finish() that dispatches pointerup.
+  const dragStart = (root, fromX, toX) => {
+    const track = root.querySelector('.swiper-wrapper');
+    const pointer = (type, x) =>
+      new PointerEventCtor(type, {
+        pointerId: 1,
+        pointerType: 'touch',
+        clientX: x,
+        bubbles: true,
+        cancelable: true,
+      });
+    track.dispatchEvent(pointer('pointerdown', fromX));
+    const move = pointer('pointermove', toX);
+    track.dispatchEvent(move);
+    return { track, move, finish: () => track.dispatchEvent(pointer('pointerup', toX)) };
+  };
+
+  it('flat: drag previews the offset during the move, prevents the browser default, and settles on the next index', () => {
+    harness.render(<TrackProbe total={4} mode="flat" />);
+    const root = harness.container.querySelector('.probe-root');
+    const { track, move, finish } = dragStart(root, 400, 320); // 80px left
+    // During the drag the track previews the gesture (content follows the
+    // finger) and owns it (preventDefault — ADR-0007 gesture ownership).
+    expect(track.style.transform).toContain('translate3d(-80px, 0, 0)');
+    expect(move.defaultPrevented).toBe(true);
+    finish();
+    // Release: a left drag settles on the next slide (raw 4 → 5).
+    expect(inst(harness).activeIndex).toBe(5);
+  });
+
+  it('cube: drag left previews toward the NEXT face and settles there (sign regression)', () => {
+    harness.render(<TrackProbe total={4} mode="cube" faceWidth={300} />);
+    const root = harness.container.querySelector('.probe-root');
+    const { track, move, finish } = dragStart(root, 400, 320); // 80px left
+    // faceWidth 300 → cubeDragAngle(-80, 300) = -24°. Base -4×90 = -360°, so
+    // the preview must read rotateY(-384deg) — MORE negative, toward the next
+    // face, the same direction dragSnap settles on. (The old sign negated the
+    // drag term and previewed the previous face, making the cube jump on
+    // release.)
+    expect(track.style.transform).toContain('rotateY(-384deg)');
+    expect(move.defaultPrevented).toBe(true);
+    finish();
+    expect(inst(harness).activeIndex).toBe(5);
+  });
+});
+
 describe('useCarousel — seamless 3-copy wrap', () => {
   it('jumps back one copy when advancing past the last copy', () => {
     vi.useFakeTimers();
@@ -172,7 +254,6 @@ describe('useCarousel — seamless 3-copy wrap', () => {
       .dispatchEvent(new Event('transitionend', { bubbles: true }));
     // wrapTarget(9, 4) = 9 - 4 = 5 — same normalized slide, no visible jump
     expect(inst(harness).activeIndex).toBe(5);
-    vi.useRealTimers();
   });
 
   it('jumps forward one copy when going before the first copy', () => {

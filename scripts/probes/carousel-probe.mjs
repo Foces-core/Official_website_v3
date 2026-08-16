@@ -47,7 +47,9 @@ console.log('FEATURING:', JSON.stringify(feat));
 const loopInfo = await p.evaluate(() => {
   const sec = document.getElementById('featuring');
   const carouselEl = sec.querySelector('.feat-swiper');
-  const carousel = carouselEl.__carousel__;
+  // The carousel root may not have mounted yet (lazy chunk) — keep the
+  // diagnostic result instead of dereferencing null and aborting the probe.
+  const carousel = carouselEl?.__carousel__;
   return { hasApi: !!carousel && typeof carousel.slideNext === 'function' };
 });
 console.log('FEATURING API access:', JSON.stringify(loopInfo));

@@ -45,8 +45,13 @@ describe('cube transforms (match Swiper EffectCube orientation)', () => {
     expect(cubeTrackTransform(4)).toBe('rotateY(-360deg)');
   });
 
-  it('combines the active face with a drag angle', () => {
-    expect(cubeTrackTransform(2, 18)).toBe('rotateY(-198deg)');
+  it('previews drag toward the NEXT face when dragging left (negative angle makes the rotation more negative — the direction dragSnap settles on)', () => {
+    expect(cubeTrackTransform(2, -18)).toBe('rotateY(-198deg)');
+    expect(cubeTrackTransform(4, -24)).toBe('rotateY(-384deg)');
+  });
+
+  it('previews drag toward the PREVIOUS face when dragging right', () => {
+    expect(cubeTrackTransform(2, 18)).toBe('rotateY(-162deg)');
   });
 
   it('a full face width of drag equals one 90° turn', () => {
@@ -72,6 +77,15 @@ describe('dragSnap', () => {
   it('a fast flick overrides a short drag', () => {
     expect(dragSnap(-40, 350, -1.2)).toBe(1);
     expect(dragSnap(40, 350, 1.2)).toBe(-1);
+  });
+
+  it('a fast flick does NOT advance on a stationary tap (micro-jitter < 10px)', () => {
+    // An 8px jitter 1ms after the last move reads 8px/ms — well over the
+    // flick threshold — but must not turn a face the user meant as a tap.
+    expect(dragSnap(-8, 350, -8)).toBe(0);
+    expect(dragSnap(8, 350, 8)).toBe(0);
+    // A genuine short flick still wins.
+    expect(dragSnap(-12, 350, -8)).toBe(1);
   });
 
   it('uses the custom threshold ratio', () => {
