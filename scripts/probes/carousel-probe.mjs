@@ -25,7 +25,7 @@ await new Promise((r) => setTimeout(r, 1000));
 
 const feat = await p.evaluate(() => {
   const sec = document.getElementById('featuring');
-  const swiper = sec.querySelector('.swiper');
+  const carousel = sec.querySelector('.feat-swiper');
   const slides = sec.querySelectorAll('.swiper-slide');
   const arrows = Array.from(sec.querySelectorAll('button[aria-label]')).map((b) =>
     b.getAttribute('aria-label'),
@@ -33,22 +33,24 @@ const feat = await p.evaluate(() => {
   const img = sec.querySelector('.swiper-slide img');
   const imgCls = img ? img.className : '';
   return {
-    hasSwiper: !!swiper,
+    hasCarousel: !!carousel,
+    mode: carousel ? carousel.getAttribute('data-carousel-mode') : null,
     slideCount: slides.length,
     arrows,
-    loop: !!swiper && swiper.classList.contains('swiper-initialized'),
     hoverRing: imgCls.includes('hover:ring-white/50'),
     hoverGlow: imgCls.includes('shadow-[0_0_25px_6px_rgba(255,255,255,0.25)]'),
   };
 });
 console.log('FEATURING:', JSON.stringify(feat));
 
-// test infinite loop: record realIndex before/after slideNext
+// test infinite loop: record active index before/after slideNext
 const loopInfo = await p.evaluate(() => {
   const sec = document.getElementById('featuring');
-  const swiperEl = sec.querySelector('.swiper');
-  const swiper = swiperEl.__swiper__ || Object.values(swiperEl).find((v) => v && v.slideNext);
-  return { hasApi: !!swiper };
+  const carouselEl = sec.querySelector('.feat-swiper');
+  // The carousel root may not have mounted yet (lazy chunk) — keep the
+  // diagnostic result instead of dereferencing null and aborting the probe.
+  const carousel = carouselEl?.__carousel__;
+  return { hasApi: !!carousel && typeof carousel.slideNext === 'function' };
 });
 console.log('FEATURING API access:', JSON.stringify(loopInfo));
 
@@ -119,7 +121,8 @@ const reg = await p2.evaluate(() => {
 });
 console.log('EVENTS register buttons:', JSON.stringify(reg));
 
-// open modal, check loop + arrows
+// open modal, check it renders slides + counter (the lightbox is
+// yet-another-react-lightbox, not a swiper — just confirm it opens)
 await p2.evaluate(() => {
   const poster = document.querySelector(
     'div[class*="relative"][class*="rounded-2xl"][class*="cursor-pointer"]',
@@ -133,12 +136,12 @@ await new Promise((r) => setTimeout(r, 1000));
 const modal = await p2.evaluate(() => {
   const d = document.querySelector('[role="dialog"]');
   if (!d) return null;
-  const nav = d.querySelectorAll('.swiper-button-prev, .swiper-button-next');
-  const swiperEl = d.querySelector('.swiper');
+  const imgs = d.querySelectorAll('img').length;
+  const counter = d.querySelector('.yarl\\.\\.counter, [class*="counter"]');
   return {
-    loop: swiperEl ? swiperEl.classList.contains('swiper-initialized') : false,
-    arrows: nav.length,
-    arrowVisible: nav.length ? getComputedStyle(nav[1]).display !== 'none' : false,
+    open: true,
+    imgs,
+    hasCounter: !!counter,
   };
 });
 console.log('MODAL:', JSON.stringify(modal));

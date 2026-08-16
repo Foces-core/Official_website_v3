@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { aosDisabled, initAOS } from '../../src/utils/aosGating.js';
+import {
+  aosDisabled,
+  initAOS,
+  shouldForceShowAos,
+  stuckAosInView,
+} from '../../src/utils/aosGating.js';
 
 vi.mock('aos', () => ({ default: { init: vi.fn() } }));
 import AOS from 'aos';
@@ -122,6 +127,84 @@ describe('initAOS — gate + init in one owner', () => {
     } finally {
       if (bodyDesc) Object.defineProperty(document, 'body', bodyDesc);
       else delete document.body;
+    }
+  });
+
+  it('survives AOS.init throwing — the app must boot and the failsafe still covers reveals', () => {
+    // AOS.init runs at module scope; a throw there would take the whole app
+    // down. Catch it, keep the body tag, and return the gate so callers know
+    // (the viewport failsafe in useAosFailsafe force-shows in-view content).
+    const err = new Error('AOS broke');
+    AOS.init.mockImplementation(() => {
+      throw err;
+    });
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      expect(() => initAOS()).not.toThrow();
+      expect(initAOS()).toBe(false);
+      expect(document.body.classList.contains('aos-disabled')).toBe(false);
+      expect(console.error).toHaveBeenCalled();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+});
+
+describe('AOS failsafe decisions — pure viewport math', () => {
+  beforeEach(() => {
+    document.body.innerHTML = '';
+    document.body.classList.remove('aos-disabled');
+  });
+
+  const addStuck = (id, top, height = 100) => {
+    const el = document.createElement('div');
+    el.setAttribute('data-aos', 'fade-up');
+    el.id = id;
+    // jsdom does no layout, so getBoundingClientRect is all zeros — stub it
+    // to the element's declared top/height so viewport math is testable.
+    el.getBoundingClientRect = () => ({ top, bottom: top + height, left: 0, right: 0 });
+    document.body.appendChild(el);
+    return el;
+  };
+
+  it('identifies a [data-aos] element that is in the viewport but lacks .aos-animate', () => {
+    const el = addStuck('in-view', 100);
+    expect(shouldForceShowAos(el, 800)).toBe(true);
+  });
+
+  it('leaves below-the-fold elements hidden (AOS still owns the scroll reveal)', () => {
+    const el = addStuck('below-fold', 5000);
+    expect(shouldForceShowAos(el, 800)).toBe(false);
+    stuckAosInView(800);
+    expect(el.classList.contains('aos-animate')).toBe(false);
+  });
+
+  it('ignores elements AOS already revealed', () => {
+    const el = addStuck('already-animated', 100);
+    el.classList.add('aos-animate');
+    expect(shouldForceShowAos(el, 800)).toBe(false);
+  });
+
+  it('stuckAosInView returns exactly the in-view, unrevealed elements', () => {
+    const inView = addStuck('a', 100);
+    addStuck('b', 5000);
+    const done = addStuck('c', 200);
+    done.classList.add('aos-animate');
+    expect(stuckAosInView(800).map((el) => el.id)).toEqual(['a']);
+    expect(inView.classList.contains('aos-animate')).toBe(false);
+  });
+
+  it('does not read window in default parameters (server-side calls return [] instead of throwing)', () => {
+    // shouldForceShowAos/stuckAosInView must not touch window before the
+    // environment guard — a SSR call used to throw ReferenceError at the
+    // default-parameter evaluation.
+    const savedWindow = globalThis.window;
+    delete globalThis.window;
+    try {
+      expect(shouldForceShowAos(null, undefined)).toBe(false);
+      expect(stuckAosInView()).toEqual([]);
+    } finally {
+      globalThis.window = savedWindow;
     }
   });
 });

@@ -20,8 +20,8 @@ lowPower }` from `detectProfile`. One seam, two entries: components
   `detectProfile()` once. Never re-implement a heuristic or override
   elsewhere.
 - **ScrollGate** — mounts a lazy section only when it approaches the
-  viewport, so swiper-vendor never evaluates at boot. The mount decision is
-  the pure `shouldMountSection`.
+  viewport, so the carousel sections' code never evaluates at boot. The
+  mount decision is the pure `shouldMountSection`.
 - **Cube easter egg** — the About-cube rapid-spin celebration. Spin
   counting lives in the pure `createSpinTracker` (`easterEggLogic.js`):
   fires after `target` spins within `gap` ms, gap-reset so casual spinning
@@ -30,7 +30,9 @@ lowPower }` from `detectProfile`. One seam, two entries: components
   Touch-first phones get an easier bar (8/1.5s vs 20/0.8s desktop); the
   cube owns its touch gesture (`touch-action: none`) so rotating never
   scrolls the page. The same touch-ownership rule applies to the Execom
-  team carousel (`.execom-swiper` / `.execom-cube-swiper`).
+  team carousel (`.execom-swiper` / `.execom-cube-swiper`), which is
+  hand-rolled (`useCarousel` + `carouselGeometry`) — the old Swiper was
+  replaced to drop the ~104 KB vendor chunk.
 - **Team roster** — the Execom member cards. Single source of truth:
   `src/data/team.js` (`cardData`, `cubeSlides`, `advisor`), shape-guarded
   by `validateTeam` in CI. Each member has a **role** (Chairperson,

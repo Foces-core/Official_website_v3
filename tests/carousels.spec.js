@@ -42,9 +42,9 @@ test.describe('Featuring carousel', () => {
 });
 
 test.describe('Execom / Meet the team carousel', () => {
-  // The Swiper-based team carousel only mounts on desktop (mobile renders a
-  // static grid with the cube disabled), so its interactions are desktop-only.
-  test.skip(({ isMobile }) => isMobile, 'team carousel only mounts on desktop');
+  // The Execom carousel runs both a desktop and a mobile variant; the mobile
+  // cube is hidden on desktop (CSS), so these interactions are desktop-only.
+  test.skip(({ isMobile }) => isMobile, 'team carousel interactions are desktop-only');
 
   test.beforeEach(async ({ page }) => {
     await gotoHome(page);
@@ -60,8 +60,8 @@ test.describe('Execom / Meet the team carousel', () => {
     );
 
   test('dot indicator navigates the team carousel', async ({ page }) => {
-    // Both cube and flat modes render the custom 11-dot indicator (Swiper's
-    // loop + pagination were replaced by duplicated slides + wrap).
+    // Both cube and flat modes render the custom 11-dot indicator (the
+    // 3-copy wrap replaces a true loop, so the dots are hand-rolled).
     const before = await activeIndex(page);
     await page.locator('.execom-swiper + div button[aria-label]').nth(2).click();
     await expect.poll(() => activeIndex(page), { timeout: 5000 }).not.toBe(before);
@@ -80,8 +80,8 @@ test.describe('Execom / Meet the team carousel', () => {
   test('arrow keys still work after clicking a dot (dots are part of the widget)', async ({
     page,
   }) => {
-    // The dots sit OUTSIDE the swiper element (direct sibling). If the widget
-    // boundary were the swiper alone, focusing a dot would withhold the arrow
+    // The dots sit OUTSIDE the carousel root (direct sibling). If the widget
+    // boundary were the root alone, focusing a dot would withhold the arrow
     // keys from the carousel. Click a dot, then verify arrows still advance.
     await page.locator('.execom-swiper + div button[aria-label]').nth(3).click();
     await page.waitForTimeout(300);
@@ -109,7 +109,12 @@ test.describe('Execom mobile cube drag', () => {
   test('dragging the cube advances to the next member', async ({ page }) => {
     await gotoHome(page);
     await page.locator('#execom').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(800);
+    // The cube is only interactive once the hook applied the first transforms
+    // — wait for the readiness signal instead of a fixed sleep, so slow/low-
+    // power profiles can't flake the test.
+    await page.locator('.execom-cube-swiper[data-carousel-ready]').waitFor({
+      state: 'attached',
+    });
 
     const activeIndex = () =>
       page.evaluate(() =>
@@ -129,20 +134,56 @@ test.describe('Execom mobile cube drag', () => {
     await expect.poll(activeIndex, { timeout: 5000 }).not.toBe(before);
   });
 
-  test('rotating the cube never scrolls the page (touch-action none + Swiper preventDefault)', async ({
+  test('every member shows on the front face as the cube advances (3-copy overlap is class-gated)', async ({
     page,
   }) => {
     await gotoHome(page);
     await page.locator('#execom').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(800);
+    await page.locator('.execom-cube-swiper[data-carousel-ready]').waitFor({
+      state: 'attached',
+    });
 
-    // A real phone fires pointer events for a touch drag — Swiper v14 only
-    // drives its gesture from pointer events (its touchstart handler just
-    // records the touchId and returns), so synthetic PointerEvents are the
-    // faithful stand-in. The swiper must own the gesture (computed
-    // touch-action none, overriding Swiper's pan-y) and Swiper must engage
-    // and preventDefault the horizontal drag — either alone would let a
-    // diagonal drag scroll the page mid-rotation.
+    // The 3 copies of 11 slides share the four cube faces (children i, i±4,
+    // ... sit at the same angle) — the class-gated visibility CSS decides
+    // which child actually shows. Walk every logical member and read the
+    // visible (active) member each step to prove the correct one is always
+    // front-facing.
+    // The active class toggles synchronously inside slideNext (no transition
+    // or settle needed for the read) — keeping this synchronous makes the
+    // walk deterministic across device profiles instead of racing a fixed
+    // timeout.
+    const seen = await page.evaluate(() => {
+      const swiper = document.querySelector('.execom-cube-swiper');
+      const inst = swiper.__carousel__;
+      inst.autoplay.stop(); // the on-screen autoplay timer must not skip a step mid-walk
+      const out = [];
+      for (let i = 0; i < 11; i++) {
+        const active = swiper.querySelector('.swiper-slide-active img');
+        out.push(active ? active.alt : null);
+        inst.slideNext();
+      }
+      return out;
+    });
+    // All 11 distinct members, in roster order (the wrap repeats content).
+    expect(new Set(seen).size).toBe(11);
+    expect(seen.every((name) => typeof name === 'string' && name.length > 0)).toBe(true);
+  });
+
+  test('rotating the cube never scrolls the page (touch-action none + preventDefault)', async ({
+    page,
+  }) => {
+    await gotoHome(page);
+    await page.locator('#execom').scrollIntoViewIfNeeded();
+    await page.locator('.execom-cube-swiper[data-carousel-ready]').waitFor({
+      state: 'attached',
+    });
+
+    // A real phone fires pointer events for a touch drag — the hand-rolled
+    // carousel drives its gesture entirely from pointer events, so synthetic
+    // PointerEvents are the faithful stand-in. The cube must own the gesture
+    // (computed touch-action none) and the hook must engage and preventDefault
+    // the horizontal drag — either alone would let a diagonal drag scroll the
+    // page mid-rotation.
     const result = await page.evaluate(() => {
       const swiper = document.querySelector('.execom-cube-swiper');
       const slide =

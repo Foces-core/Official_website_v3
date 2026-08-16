@@ -178,9 +178,6 @@ export default defineConfig({
             ) {
               return 'react-vendor';
             }
-            if (id.includes('/node_modules/swiper/')) {
-              return 'swiper-vendor';
-            }
             // NOTE: no react-icons grouping on purpose. Every react-icons
             // consumer (ContactUs, Footer, Featuring) is lazy, so forcing an
             // eager 'icons-vendor' chunk hoisted its shared React core into

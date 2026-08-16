@@ -13,19 +13,20 @@ import { useLocation } from 'react-router';
 import { initAOS } from './utils/aosGating.js';
 import { lazyWithRetry } from './utils/lazyWithRetry.js';
 import useDeviceProfile from './hooks/useLowPower.js';
+import useAosFailsafe from './hooks/useAosFailsafe.js';
 import { scrollToSectionWhenReady, targetIdFromLocation } from './utils/navigationCoordinator.js';
 
-// Below-the-fold sections are code-split: the heavy Swiper chunk (used by
-// Featuring + Execom) and the cube logic only download once the user scrolls
-// to them, shrinking the first-load bundle. AOS picks up the newly-mounted
-// [data-aos] elements via its built-in MutationObserver.
+// Below-the-fold sections are code-split: the carousel sections (Featuring +
+// Execom) and the cube logic only download once the user scrolls to them,
+// shrinking the first-load bundle. AOS picks up the newly-mounted [data-aos]
+// elements via its built-in MutationObserver.
 //
 // IMPORTANT: lazy sections must NOT all share one <Suspense> boundary — React
 // resolves every child of a suspended boundary in parallel, so a single
-// boundary would fire ALL the dynamic imports (including swiper-vendor) at
-// boot. Each section gets its own boundary; the two Swiper sections are
-// additionally wrapped in <ScrollGate>, which keeps them unmounted (and their
-// chunks undownloaded) until the user scrolls near them.
+// boundary would fire ALL the dynamic imports at boot. Each section gets its
+// own boundary; the two carousel sections are additionally wrapped in
+// <ScrollGate>, which keeps them unmounted (and their chunks undownloaded)
+// until the user scrolls near them.
 // Below-the-fold sections load through lazyWithRetry (same as the routes): a
 // chunk that fails to load — stale deployment hash, a network blip, or a
 // backgrounded tab that iOS evicted from memory — is retried once and then
@@ -43,6 +44,8 @@ const Footer = lazyWithRetry(() => import('./Pages/LandingPage/Footer/Footer'));
 // unhide and never registers its observer — leaving every [data-aos] element
 // stuck invisible. So when gated, initAOS tags <body> and CSS force-shows all
 // [data-aos] content (including anything mounted later, e.g. lazy routes).
+// Capable devices get the viewport failsafe via useAosFailsafe (below) so a
+// broken AOS can never leave in-view content hidden.
 initAOS();
 
 function App() {
@@ -50,6 +53,12 @@ function App() {
   // reducedMotion comes from the device-profile seam (detectProfile), not a
   // raw matchMedia re-implementation — the same query, one owner.
   const { reducedMotion } = useDeviceProfile();
+  // The AOS viewport failsafe: force-show any in-view [data-aos] element AOS
+  // left hidden (its JS can break or miss an element — content must never
+  // stay hidden). Gated devices are already covered by the body.aos-disabled
+  // CSS net, so the hook is a no-op there. Lives in App: AOS only runs on the
+  // landing page (initAOS is module-scoped here).
+  useAosFailsafe();
 
   const pageH1 = <h1 className="sr-only">FOCES - Forum of Computer Engineering Students</h1>;
 
@@ -74,7 +83,7 @@ function App() {
         <Suspense fallback={<SectionSkeleton height="100vh" label="Loading about" />}>
           <AboutUs />
         </Suspense>
-        {/* Swiper sections are scroll-gated: the chunk (swiper-vendor, ~300KB)
+        {/* Carousel sections are scroll-gated: the hand-rolled carousel chunk
             only downloads when the section approaches the viewport. The wrapper
             owns the section id, so anchors/scrollspy/tests still find it. */}
         <ScrollGate id="featuring" placeholderHeight="95vh" label="Loading featuring">
