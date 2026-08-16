@@ -56,7 +56,6 @@ function Execom() {
               <BlurImage
                 className="object-cover object-top w-full h-full grayscale group-hover:filter-none transition-all duration-500"
                 src={advisor.img}
-                blurSrc={advisor.blur}
                 alt={advisor.name}
                 loading="lazy"
                 decoding="async"

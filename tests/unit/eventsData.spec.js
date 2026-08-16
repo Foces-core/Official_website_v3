@@ -15,3 +15,33 @@ describe('featuredEvents data integrity', () => {
     expect(featuredEvents.length).toBeGreaterThan(0);
   });
 });
+
+describe('validateEvents — optional photo blur', () => {
+  const photo = (overrides = {}) => ({
+    url: '/poster.webp',
+    srcset: '/poster.webp 1000w, /poster-800.webp 800w',
+    ...overrides,
+  });
+
+  const event = (photos) => ({
+    id: 1,
+    name: 'Test Event',
+    tag: 'Tag',
+    date: '1st Jan 2026',
+    desc: 'Description',
+    photos,
+  });
+
+  it('accepts photos without a blur (plain lazy load)', () => {
+    expect(validateEvents([event([photo()])])).toEqual([]);
+  });
+
+  it('accepts a photo with a blur LQIP', () => {
+    expect(validateEvents([event([photo({ blur: '/poster-blur.webp' })])])).toEqual([]);
+  });
+
+  it('flags a photo whose blur is present but empty', () => {
+    const problems = validateEvents([event([photo({ blur: '' })])]);
+    expect(problems.join('\n')).toContain('photos must be a non-empty array of { url, srcset }');
+  });
+});

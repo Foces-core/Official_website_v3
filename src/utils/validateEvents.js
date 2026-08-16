@@ -56,8 +56,10 @@ export function validateEvents(events) {
       problems.push(`${label}: websiteUrl must be a non-empty string when present`);
     }
 
-    // photos are { url, srcset } pairs (src/utils/eventPhotos.js) — the pairing
-    // is structural, so no parity check is needed; only shape + width accuracy.
+    // photos are { url, srcset, blur? } objects (src/utils/eventPhotos.js) —
+    // the pairing is structural, so no parity check is needed; only shape +
+    // width accuracy. `blur` is optional (only the first event's primary
+    // carries an LQIP) but must be a non-empty string when present.
     const photosValid =
       Array.isArray(event.photos) &&
       event.photos.length > 0 &&
@@ -66,7 +68,8 @@ export function validateEvents(events) {
           photo &&
           typeof photo === 'object' &&
           isNonEmptyString(photo.url) &&
-          isNonEmptyString(photo.srcset),
+          isNonEmptyString(photo.srcset) &&
+          (photo.blur == null || isNonEmptyString(photo.blur)),
       );
 
     if (!photosValid) {
