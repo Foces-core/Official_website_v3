@@ -12,7 +12,8 @@
 // Gated devices are skipped — they already get the CSS net, so the JS watch
 // would be redundant there. The decision functions (shouldForceShowAos /
 // stuckAosInView / aosDisabled) live in utils/aosGating.js; this hook owns
-// only the browser lifecycle (listeners, rAF, cleanup) per ADR-0009.
+// only the browser lifecycle (listeners, rAF, MutationObserver, cleanup) per
+// ADR-0009.
 import { useEffect } from 'react';
 import { aosDisabled, stuckAosInView } from '../utils/aosGating.js';
 
@@ -33,10 +34,18 @@ export default function useAosFailsafe() {
     };
     window.addEventListener('scroll', schedule, { passive: true });
     window.addEventListener('resize', schedule);
+    // Scroll-gated lazy sections mount their [data-aos] elements AFTER boot.
+    // AOS's own MutationObserver would catch them, but if AOS is broken a
+    // mounted in-view element could stay hidden with no scroll/resize ever
+    // firing — so observe child-list mutations and re-scan. rAF coalescing
+    // keeps this at most one scan per frame.
+    const observer = new MutationObserver(schedule);
+    observer.observe(document.body, { childList: true, subtree: true });
     forceShow(); // elements already in the viewport at boot
 
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
+      observer.disconnect();
       window.removeEventListener('scroll', schedule);
       window.removeEventListener('resize', schedule);
     };

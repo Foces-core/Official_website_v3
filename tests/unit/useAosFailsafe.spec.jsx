@@ -84,10 +84,23 @@ describe('useAosFailsafe — capable device', () => {
     expect(el.classList.contains('aos-animate')).toBe(false);
   });
 
-  it('a scroll reveals a stuck element that was added after boot', () => {
+  it('observes post-boot insertions — an in-view [data-aos] element is revealed without any viewport event', async () => {
     harness.render(<FailsafeProbe />);
+    // The boot run already passed, so this element is only caught by the
+    // MutationObserver (scroll-gated lazy sections mount their elements
+    // after boot; no scroll/resize may ever fire for them).
     const el = addStuck('late', 100);
-    expect(el.classList.contains('aos-animate')).toBe(false); // boot run already passed
+    expect(el.classList.contains('aos-animate')).toBe(false);
+    // MutationObserver delivers asynchronously — let the microtask run.
+    await new Promise((r) => setTimeout(r, 0));
+    expect(el.classList.contains('aos-animate')).toBe(true);
+  });
+
+  it('a scroll reveals a stuck below-fold element once it enters the viewport', () => {
+    const el = addStuck('below-fold', 5000);
+    harness.render(<FailsafeProbe />);
+    expect(el.classList.contains('aos-animate')).toBe(false);
+    el.getBoundingClientRect = () => ({ top: 100, bottom: 200, left: 0, right: 0 });
     window.dispatchEvent(new Event('scroll'));
     expect(el.classList.contains('aos-animate')).toBe(true);
   });

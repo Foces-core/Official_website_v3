@@ -225,6 +225,9 @@ export default function useCarousel({
   // --- drag (pointer events; touch-action: none owns the gesture) ----------
 
   function onPointerDown(e) {
+    // Only the first pointer owns the drag — a second finger (or a stray
+    // pointer) must not overwrite s.pointerId and hijack the gesture.
+    if (s.dragging) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     s.dragging = true;
     s.pointerId = e.pointerId;
@@ -243,7 +246,9 @@ export default function useCarousel({
   }
 
   function onPointerMove(e) {
-    if (!s.dragging) return;
+    // Ignore moves from any pointer that is not the one that started the
+    // drag (multi-touch: only the owning pointer moves the carousel).
+    if (!s.dragging || e.pointerId !== s.pointerId) return;
     // Gesture ownership (ADR-0007): the carousel owns the drag, so the page
     // must not scroll from it. preventDefault + touch-action: none (CSS).
     e.preventDefault();
@@ -258,8 +263,10 @@ export default function useCarousel({
     applyTransforms();
   }
 
-  function onPointerUp() {
-    if (!s.dragging) return;
+  function onPointerUp(e) {
+    // Only the owning pointer may end the drag (also fired for pointercancel,
+    // which carries the same pointerId).
+    if (!s.dragging || e.pointerId !== s.pointerId) return;
     s.dragging = false;
     // Release the capture BEFORE the settle animation starts, so the browser
     // stops delivering move events to a track that is about to animate.
