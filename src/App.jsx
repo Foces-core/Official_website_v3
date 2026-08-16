@@ -1,5 +1,9 @@
 import './App.css';
-import 'aos/dist/aos.css';
+// Minimal AOS stylesheet — the full aos/dist/aos.css (~26KB) enumerates every
+// duration/easing variant; this site uses 5 animations × 4 durations. The
+// subset is guarded by tests/unit/aosCss.spec.js (any new data-aos value must
+// extend src/assets/aos-min.css in the same change).
+import './assets/aos-min.css';
 import { Suspense, useEffect } from 'react';
 import SectionSkeleton from './Components/SectionSkeleton/SectionSkeleton';
 import ScrollGate from './Components/ScrollGate/ScrollGate';
