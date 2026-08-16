@@ -20,6 +20,6 @@ export async function waitForLoaderGone(page) {
 }
 
 export async function gotoHome(page) {
-  await page.goto('/', { waitUntil: 'networkidle' });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
   await waitForLoaderGone(page);
 }

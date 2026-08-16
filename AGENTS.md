@@ -60,12 +60,13 @@ Read this before touching anything.
   `advisor`).
 - `src/data/echoSlides.js` — **single source of truth** for the Featuring slides
   (`echoSlides` + 3× `carouselSlides`), shape-guarded by `validateEchoSlides`.
+- `src/Components/HeroStage/` — 3D WebGL stage adapter: `heroWavesStage.js` (dynamic Three.js/Vanta loader, WebGL context loss recovery, lowPower gating).
 - `src/utils/` — helpers: `srcset.js`, `eventPhotos.js`, `validateContactForm.js`,
   `contactDraft.js`, `validateEvents.js`, `validateTeam.js`, `validateEchoSlides.js`,
   `keyboardLock.js`, `ariaActivation.js`, `aosGating.js` (gate + `initAOS`),
   `breakpoints.js` (viewports 500/767/768/1024), `carouselWrap.js` (shared wrap math),
-  `scrollLock.js` (ref-counted body lock), `DeferredAnalytics.jsx`, `lazyWithRetry.js`,
-  `sessionCookie.js`, `scrollToSectionLogic.js`, `bootSplashLogic.js`.
+  `scrollLock.js` (ref-counted body lock), `navigationCoordinator.js` (unified scroll/overlay/lock coordinator),
+  `DeferredAnalytics.jsx`, `lazyWithRetry.js`, `sessionCookie.js`, `scrollToSectionLogic.js`, `bootSplashLogic.js`.
 - `src/hooks/` — `useLowPower.js` (`useDeviceProfile` driving all perf degradation),
   `useViewportWidth.js` (reactive width over `breakpoints.js`),
   `useAutoplayOnScreen.js` (on-screen autoplay gate), `useCubeDrag.js` (cube orchestration).

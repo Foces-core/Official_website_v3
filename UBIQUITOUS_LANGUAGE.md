@@ -4,13 +4,15 @@ Canonical domain glossary and terminology for the FOCES site codebase.
 
 ## Navigation & Viewport
 
-| Term                      | Definition                                                                                                                           | Aliases to avoid                         |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
-| **Scrollspy**             | Viewport-geometry evaluation that marks which section is currently active                                                            | Nav watcher, section highlighter         |
-| **Section scroll policy** | Rule determining whether section transitions animate smoothly or scroll instantly based on user motion preferences (`reducedMotion`) | Smooth scroll flag, animation setting    |
-| **Next-paint deferral**   | Two-frame requestAnimationFrame delay ensuring overlay DOM unmount and body scroll-lock release settle before focus/scroll           | Delay timer, setTimeout hack, double rAF |
-| **Roving tabindex**       | APG pattern where exactly one item in a composite widget owns `tabindex="0"` while inactive siblings hold `tabindex="-1"`            | Tab manager, focus switcher              |
-| **Viewport seam**         | Reactive window width classification against standard breakpoint thresholds (500, 767, 768, 1024)                                    | Screen size watcher, media query helper  |
+| Term                       | Definition                                                                                                                           | Aliases to avoid                         |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| **Scrollspy**              | Viewport-geometry evaluation that marks which section is currently active                                                            | Nav watcher, section highlighter         |
+| **Section scroll policy**  | Rule determining whether section transitions animate smoothly or scroll instantly based on user motion preferences (`reducedMotion`) | Smooth scroll flag, animation setting    |
+| **Next-paint deferral**    | Two-frame requestAnimationFrame delay ensuring overlay DOM unmount and body scroll-lock release settle before focus/scroll           | Delay timer, setTimeout hack, double rAF |
+| **Navigation coordinator** | Deep orchestration module unifying section scroll, overlay dismissal, body lock release, and paint deferral                          | Scroll manager, nav helper               |
+| **Hero waves stage**       | Deep WebGL lifecycle adapter encapsulating Three.js / Vanta Waves loading, context-loss recovery, and cleanup                        | 3D background, canvas effect             |
+| **Roving tabindex**        | APG pattern where exactly one item in a composite widget owns `tabindex="0"` while inactive siblings hold `tabindex="-1"`            | Tab manager, focus switcher              |
+| **Viewport seam**          | Reactive window width classification against standard breakpoint thresholds (500, 767, 768, 1024)                                    | Screen size watcher, media query helper  |
 
 ## Accessibility & Interaction
 

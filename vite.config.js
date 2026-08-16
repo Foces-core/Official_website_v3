@@ -1,7 +1,4 @@
 import { defineConfig } from 'vite';
-import fs from 'node:fs';
-import path from 'node:path';
-import zlib from 'node:zlib';
 import react from '@vitejs/plugin-react-swc';
 import { ViteImageOptimizer } from 'vite-plugin-image-optimizer';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -9,48 +6,6 @@ import { sentryVitePlugin } from '@sentry/vite-plugin';
 import { imagetools } from 'vite-imagetools';
 
 const PORT = 5173;
-
-/**
- * Pre-compresses static text assets (.js, .css, .html, .svg, .json) with Gzip
- * and Brotli at build time. Zero-dependency (uses Node built-in zlib).
- */
-function precompressAssets() {
-  return {
-    name: 'precompress-assets',
-    apply: 'build',
-    enforce: 'post',
-    closeBundle() {
-      const distDir = path.resolve('dist');
-      if (!fs.existsSync(distDir)) return;
-
-      const walk = (dir) => {
-        const entries = fs.readdirSync(dir, { withFileTypes: true });
-        for (const entry of entries) {
-          const fullPath = path.join(dir, entry.name);
-          if (entry.isDirectory()) {
-            walk(fullPath);
-          } else if (
-            entry.isFile() &&
-            /\.(?:js|css|html|svg|json|xml|txt)$/.test(entry.name) &&
-            !/\.(?:gz|br)$/.test(entry.name)
-          ) {
-            const content = fs.readFileSync(fullPath);
-            const gz = zlib.gzipSync(content, { level: 9 });
-            fs.writeFileSync(`${fullPath}.gz`, gz);
-            const br = zlib.brotliCompressSync(content, {
-              params: {
-                [zlib.constants.BROTLI_PARAM_QUALITY]: 11,
-              },
-            });
-            fs.writeFileSync(`${fullPath}.br`, br);
-          }
-        }
-      };
-
-      walk(distDir);
-    },
-  };
-}
 
 // The hero PNG is the LCP element. It only mounts after React renders, so
 // without a hint its fetch waits for the JS bundle — on 3G that's seconds.
@@ -203,7 +158,6 @@ export default defineConfig({
         ],
       },
     }),
-    precompressAssets(),
   ],
   resolve: {
     dedupe: ['react', 'react-dom'],

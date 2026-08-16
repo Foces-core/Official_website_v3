@@ -1,7 +1,8 @@
+import process from 'node:process';
 import { defineConfig, devices } from '@playwright/test';
 
-const PORT = 5173;
-const BASE_URL = `http://localhost:${PORT}`;
+const PORT = process.env.PLAYWRIGHT_PORT || 5174;
+const BASE_URL = `http://127.0.0.1:${PORT}`;
 
 export default defineConfig({
   testDir: './tests',
@@ -21,9 +22,9 @@ export default defineConfig({
   // that never surface in dev. Locally, a preview server can be started
   // manually and this will reuse it (reuseExistingServer).
   webServer: {
-    command: `pnpm build && pnpm exec vite preview --port ${PORT} --strictPort`,
+    command: `pnpm build && node scripts/static-server.mjs`,
     url: BASE_URL,
-    reuseExistingServer: true,
+    reuseExistingServer: !process.env.CI,
     timeout: 180_000,
   },
   projects: [

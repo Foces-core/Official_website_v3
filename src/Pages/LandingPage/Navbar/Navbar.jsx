@@ -13,11 +13,14 @@ import {
   resolveNavAction,
   resolveLogoAction,
   coalesceToFrame,
-  deferToNextPaint,
   SCROLLED_THRESHOLD_PX,
 } from './navSpy.js';
-import { acquireScrollLock } from '../../../utils/scrollLock.js';
-import { sectionScrollBehavior } from '../../../utils/scrollToSectionLogic.js';
+import {
+  coordinateSectionNavigation,
+  manageOverlayScrollLock,
+  sectionScrollBehavior,
+  deferToNextPaint,
+} from '../../../utils/navigationCoordinator.js';
 import './Navbar.css';
 
 const navItems = [
@@ -138,21 +141,17 @@ export default function Navbar() {
       case 'scroll':
         setCurrentItem(id);
         setRovingId(id);
-        if (isMobile) {
-          // Close the overlay first; the body scroll lock is released when it
-          // unmounts, so defer the section scroll by a frame pair.
-          deferToNextPaint(() => {
-            const toggle = document.getElementById('nav-toggle');
-            if (toggle) toggle.focus();
-            const element = document.getElementById(id);
-            if (element) element.scrollIntoView({ behavior: sectionScrollBehavior(reducedMotion) });
-          });
-        } else {
-          const element = document.getElementById(id);
-          if (element) {
-            element.scrollIntoView({ behavior: sectionScrollBehavior(reducedMotion) });
-          }
-        }
+        coordinateSectionNavigation({
+          targetId: id,
+          reducedMotion,
+          closeOverlay: isMobile ? () => setShowItems(false) : undefined,
+          onComplete: isMobile
+            ? () => {
+                const toggle = document.getElementById('nav-toggle');
+                if (toggle) toggle.focus();
+              }
+            : undefined,
+        });
         return;
       default:
         return;
@@ -175,9 +174,7 @@ export default function Navbar() {
   // no interaction with the content under the full-screen overlay (ref-counted
   // scrollLock — safe if the event lightbox or another overlay is open).
   useEffect(() => {
-    if (!isMobile || !showItems) return;
-    const release = acquireScrollLock();
-    return release;
+    return manageOverlayScrollLock(isMobile && showItems);
   }, [isMobile, showItems]);
 
   // Move focus into the overlay when the mobile menu opens and trap Tab focus

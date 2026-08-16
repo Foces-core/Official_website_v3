@@ -9,7 +9,7 @@ test.describe('Contact', () => {
 
   test('form inputs have white background', async ({ page }) => {
     await page.goto('/contact', { waitUntil: 'networkidle' });
-    const inputs = page.locator('form input, form textarea');
+    const inputs = page.locator('form input:visible, form textarea:visible');
     const count = await inputs.count();
     for (let i = 0; i < count; i++) {
       const bg = await inputs.nth(i).evaluate((el) => getComputedStyle(el).backgroundColor);

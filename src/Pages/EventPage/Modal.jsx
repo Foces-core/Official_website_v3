@@ -4,7 +4,7 @@ import Counter from 'yet-another-react-lightbox/plugins/counter';
 import 'yet-another-react-lightbox/styles.css';
 import 'yet-another-react-lightbox/plugins/counter.css';
 import PropTypes from 'prop-types';
-import { acquireScrollLock } from '../../utils/scrollLock.js';
+import { manageOverlayScrollLock } from '../../utils/navigationCoordinator.js';
 
 function Modal({ images, open, onClose }) {
   const lightboxRef = useRef(null);
@@ -15,9 +15,7 @@ function Modal({ images, open, onClose }) {
   // time). Locking only when images are available keeps the lock in sync
   // with the `return null` above: an open modal with no slides never locks.
   useEffect(() => {
-    if (!open || !imagesAvailable) return;
-    const release = acquireScrollLock();
-    return release;
+    return manageOverlayScrollLock(open && imagesAvailable);
   }, [open, imagesAvailable]);
 
   useEffect(() => {
