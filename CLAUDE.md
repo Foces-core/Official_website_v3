@@ -17,6 +17,7 @@ Instructions and invariants for Claude working in this repository.
 4. **Pure module seam contract (ADR-0009):** Logic lives in pure tested `.js` modules under `src/utils/`, `src/data/`, `src/hooks/`, `src/Components/`, and `src/Pages/`. Components are JSX wiring. Every pure module must be imported by a unit test in `tests/unit/` (`pnpm check:specs`).
 5. **Performance & accessibility:** Performance degrades gracefully on low-end devices via `useDeviceProfile()` (`slowNetwork`, `lowPower`, `reducedMotion`). Respect WCAG 2.2 keyboard and motion contracts.
 6. **No dead code:** Clean up unused imports, dead exports, and unused styles (`pnpm knip`).
+7. **CodeRabbit review enforcement:** Automated assertive reviews run on all PRs with `request_changes_workflow: true`. Critical findings must be resolved before merging.
 
 ## Verification Commands
 

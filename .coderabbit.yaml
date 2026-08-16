@@ -7,29 +7,21 @@
 # falls back to defaults (CHILL profile), which is how reviews lost their
 # strictness. Verify with `@coderabbitai configuration` on any PR.
 #
-# ⚠️  NO WRITE ACCESS (2026-08-15): The CodeRabbit GitHub App only has read
-# permissions. Features requiring write access are disabled to prevent infinite
-# retry loops ("This command requires write access" every ~15s). Disabled:
-#   - request_changes_workflow (can't submit "Request Changes" reviews)
-#   - slop_detection label (can't add labels to PRs)
-#   - early_access / Change Stack (can't create branches)
-# If an org owner grants write access later, re-enable these and set
-# early_access: true. If the retry loop recurs:
-#   1. Lock the affected PR/issue to stop the spam
-#   2. Fix permissions at:
-#      github.com/organizations/Foces-core/settings/installations → CodeRabbit
+# ✅ WRITE ACCESS ENABLED: CodeRabbit GitHub App has read & write permissions.
+# - request_changes_workflow is enabled to block merges when critical issues exist.
+# - early_access is enabled for latest features.
 language: "en-US"
 tone_instructions: >-
   Be concise, specific, and demanding. Lead with file:line. Offer concrete
-  fixes. Never repeat what other linters already report.
-early_access: false
+  fixes. Never repeat what ESLint, Vitest, or Playwright already report.
+early_access: true
 enable_free_tier: true
 
 reviews:
   # assertive is the strictest review profile CodeRabbit offers (quiet < chill
   # < assertive) — most feedback, correctness/security/a11y/perf focused.
   profile: "assertive"
-  request_changes_workflow: false # OFF: needs write access (bot still comments, just can't formally block)
+  request_changes_workflow: true # ON: blocks merge until critical findings are resolved
   auto_approve: false # never auto-approve; every merge needs human eyes
   high_level_summary: true
   high_level_summary_in_walkthrough: true
