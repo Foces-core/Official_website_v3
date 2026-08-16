@@ -13,11 +13,11 @@ import useFocusTrap from '../../../hooks/useFocusTrap.js';
 import useFocusRestore from '../../../hooks/useFocusRestore.js';
 import useRoutePrefetch from '../../../hooks/useRoutePrefetch.js';
 import { isMobileViewport } from '../../../utils/breakpoints.js';
+import { coalesceToFrame } from '../../../utils/frameScheduler.js';
 import {
   pickOnViewport,
   resolveNavAction,
   resolveLogoAction,
-  coalesceToFrame,
   SCROLLED_THRESHOLD_PX,
 } from './navSpy.js';
 import {

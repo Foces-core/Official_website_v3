@@ -7,6 +7,41 @@ import { onActivationKey } from '../../utils/ariaActivation.js';
 import BlurImage from '../../Components/BlurImage/BlurImage';
 
 /**
+ * Accessible interactive trigger for photo gallery expansion.
+ * Coordinates role="button", tabIndex, keyboard activation (Enter/Space), and accessible labels.
+ */
+function GalleryTrigger({ onOpen, label, hasPopup, className, children }) {
+  const handleKeyDown = onActivationKey(onOpen);
+  return (
+    <div
+      role="button"
+      tabIndex={0}
+      aria-haspopup={hasPopup ? 'dialog' : undefined}
+      aria-label={label}
+      onClick={onOpen}
+      onKeyDown={handleKeyDown}
+      className={className}
+    >
+      {children}
+    </div>
+  );
+}
+
+GalleryTrigger.propTypes = {
+  onOpen: PropTypes.func.isRequired,
+  label: PropTypes.string.isRequired,
+  hasPopup: PropTypes.bool,
+  className: PropTypes.string,
+  children: PropTypes.node,
+};
+
+GalleryTrigger.defaultProps = {
+  hasPopup: false,
+  className: '',
+  children: null,
+};
+
+/**
  * EventCard — one responsive card for every breakpoint.
  *
  * Previously there were three near-duplicate components (EventCardLeft /
@@ -17,7 +52,7 @@ import BlurImage from '../../Components/BlurImage/BlurImage';
  */
 function EventCard({ Events, priority, reverse }) {
   const [Expanding, setExpanding] = useState(false);
-  const openGallery = onActivationKey(() => setExpanding(true));
+  const handleOpenGallery = () => setExpanding(true);
 
   // photos are { url, srcset } pairs (see src/utils/eventPhotos.js) — no more
   // parallel images[i] ↔ imageSets[i] index math to get wrong.
@@ -45,14 +80,11 @@ function EventCard({ Events, priority, reverse }) {
     >
       {/* Poster / Image Section */}
       <div className="w-full md:w-1/2 flex flex-col gap-3">
-        <div
+        <GalleryTrigger
+          onOpen={handleOpenGallery}
+          hasPopup
+          label={`Open photo gallery for ${Events.name}`}
           className="relative w-full rounded-xl md:rounded-2xl overflow-hidden bg-[#0b0b0c] border border-white/10 shadow-md md:shadow-xl cursor-pointer group"
-          role="button"
-          tabIndex={0}
-          aria-haspopup="dialog"
-          aria-label={`Open photo gallery for ${Events.name}`}
-          onClick={() => setExpanding(true)}
-          onKeyDown={openGallery}
         >
           {primary && (
             <BlurImage
@@ -75,19 +107,16 @@ function EventCard({ Events, priority, reverse }) {
               🔍 Click to View Gallery ({photos.length} Photos)
             </span>
           </div>
-        </div>
+        </GalleryTrigger>
 
         {photos.length > 1 && (
           <div className="hidden md:flex gap-2 overflow-x-auto pb-1">
             {photos.slice(1, 4).map((photo, idx) => (
-              <div
+              <GalleryTrigger
                 key={idx}
-                role="button"
-                tabIndex={0}
-                aria-label={`View photo ${idx + 2}`}
+                onOpen={handleOpenGallery}
+                label={`View photo ${idx + 2}`}
                 className="w-20 h-16 rounded-xl overflow-hidden border border-white/10 cursor-pointer hover:opacity-80 transition-opacity flex-none"
-                onClick={() => setExpanding(true)}
-                onKeyDown={openGallery}
               >
                 <BlurImage
                   src={photo.url}
@@ -98,7 +127,7 @@ function EventCard({ Events, priority, reverse }) {
                   decoding="async"
                   className="w-full h-full object-cover"
                 />
-              </div>
+              </GalleryTrigger>
             ))}
           </div>
         )}

@@ -1,4 +1,4 @@
-import { deferToNextPaint } from '../Pages/LandingPage/Navbar/navSpy.js';
+import { deferToNextPaint } from './frameScheduler.js';
 
 const FOCUSABLE_SELECTOR =
   'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';

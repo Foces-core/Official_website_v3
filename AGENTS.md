@@ -60,9 +60,9 @@ Read this before touching anything.
 - `src/data/echoSlides.js` — **single source of truth** for the Featuring slides
   (`echoSlides` + 3× `carouselSlides`), shape-guarded by `validateEchoSlides`.
 - `src/Components/HeroStage/` — 3D WebGL stage adapter: `heroWavesStage.js` (dynamic Three.js/Vanta loader, WebGL context loss recovery, lowPower gating).
-- `src/utils/` — helpers: `srcset.js`, `eventPhotos.js`, `validateContactForm.js`,
-  `contactDraft.js`, `validateEvents.js`, `validateTeam.js`, `validateEchoSlides.js`,
-  `keyboardLock.js`, `ariaActivation.js`, `aosGating.js` (gate + `initAOS`),
+- `src/utils/` — helpers: `frameScheduler.js` (coalesceToFrame & deferToNextPaint), `contactSubmitLogic.js` (pure submit outcome resolver),
+  `srcset.js`, `eventPhotos.js`, `validateContactForm.js`, `contactDraft.js`, `validateEvents.js`, `validateTeam.js`,
+  `validateEchoSlides.js`, `keyboardLock.js`, `ariaActivation.js`, `aosGating.js` (gate + `initAOS`),
   `breakpoints.js` (viewports 500/767/768/1024), `carouselWrap.js` (shared wrap math),
   `scrollLock.js` (ref-counted body lock), `navigationCoordinator.js` (unified scroll/overlay/lock coordinator),
   `overlayLifecycle.js` (pure focus/trap/escape helpers), `routePrefetchLogic.js` (pure route loaders),

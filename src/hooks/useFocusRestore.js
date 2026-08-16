@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { deferToNextPaint } from '../Pages/LandingPage/Navbar/navSpy.js';
+import { deferToNextPaint } from '../utils/frameScheduler.js';
 import { findFocusableElements } from '../utils/overlayLifecycle.js';
 
 /**

@@ -1,5 +1,5 @@
 import { acquireScrollLock } from './scrollLock.js';
-import { deferToNextPaint } from '../Pages/LandingPage/Navbar/navSpy.js';
+import { deferToNextPaint } from './frameScheduler.js';
 import {
   sectionScrollBehavior,
   targetIdFromLocation,
