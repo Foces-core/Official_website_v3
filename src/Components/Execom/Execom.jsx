@@ -53,9 +53,13 @@ function Execom() {
           {/* Framed portrait — grayscale by default, colour on hover */}
           <div className="relative w-28 sm:w-40 md:w-52 shrink-0 p-3 sm:p-4">
             <div className="relative h-full min-h-28 overflow-hidden rounded-2xl ring-1 ring-white/15 shadow-[0_12px_32px_rgba(0,0,0,0.5)]">
+              {/* Portrait widths: w-28/sm:w-40/md:w-52 (~112-208px) — 1x
+                  viewports download the 400w srcset candidate. */}
               <BlurImage
                 className="object-cover object-top w-full h-full grayscale group-hover:filter-none transition-all duration-500"
                 src={advisor.img}
+                srcSet={advisor.srcset}
+                sizes="(min-width: 768px) 220px, (min-width: 640px) 170px, 130px"
                 blurSrc={advisor.blur}
                 alt={advisor.name}
                 loading="lazy"

@@ -1,4 +1,7 @@
+/* global process */
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { cardData, cubeSlides } from '../../src/data/team.js';
 import { validateTeam } from '../../src/utils/validateTeam.js';
 
@@ -58,12 +61,49 @@ describe('validateTeam — shape rules', () => {
     member.role = 'Lead';
     expect(validateTeam([member])).toEqual([]);
   });
+
+  it('accepts an optional srcset alongside blur', () => {
+    const member = {
+      name: 'A Member',
+      img: '/a.webp',
+      srcset: '/a.webp 800w, /a-400.webp 400w',
+      blur: '/a-blur.webp',
+      role: 'Lead',
+    };
+    expect(validateTeam([member])).toEqual([]);
+  });
+
+  it('flags a srcset that is present but empty', () => {
+    const member = { name: 'A Member', img: '/a.webp', srcset: '', role: 'Lead' };
+    expect(validateTeam([member]).join('\n')).toContain('srcset must be a non-empty string');
+  });
+
+  it('rejects an explicit srcset: null (supplied but invalid)', () => {
+    const member = { name: 'A Member', img: '/a.webp', srcset: null, role: 'Lead' };
+    expect(validateTeam([member]).join('\n')).toContain('srcset must be a non-empty string');
+  });
 });
 
 describe('teamData integrity (src/data/team.js)', () => {
   it('is valid per validateTeam rules', () => {
     const problems = validateTeam(cardData);
     expect(problems, problems.join('\n')).toEqual([]);
+  });
+
+  it('gives every member a 400w srcset candidate and a w=20 blur LQIP', () => {
+    // The whole point of the team payload work: each card must offer the
+    // right-sized 400w candidate (so 1x phones/desktops don't download the
+    // full-size file) and a blur placeholder for the blur-up treatment.
+    cardData.forEach((member) => {
+      expect(member.srcset, `${member.name}: missing 400w srcset candidate`).toContain('400w');
+    });
+    // The ?blur&w=20 query is consumed by the imagetools plugin at build
+    // time, so the runtime blur value can't assert the width — scan the
+    // source instead (same pattern as the AOS/font-subset guards). Exactly
+    // one w=20 blur import per card; the advisor keeps w=128.
+    const teamSource = readFileSync(join(process.cwd(), 'src', 'data', 'team.js'), 'utf8');
+    const w20Blurs = teamSource.match(/\?blur&w=20/g) ?? [];
+    expect(w20Blurs).toHaveLength(cardData.length);
   });
 
   it('has at least one member', () => {
