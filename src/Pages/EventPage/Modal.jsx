@@ -48,8 +48,8 @@ function Modal({ images, open, onClose }) {
       slides={slides}
       plugins={[Counter]}
       controller={{ closeOnBackdropClick: true }}
-      carousel={{ finite: slides.length <= 1 }}
-      animation={{ fade: 200 }}
+      carousel={{ finite: slides.length <= 1, preload: 1, swipe: true }}
+      animation={{ swipe: 250, fade: 200 }}
       styles={{
         container: { backgroundColor: 'rgba(5, 5, 6, 0.92)', backdropFilter: 'blur(10px)' },
         slide: {

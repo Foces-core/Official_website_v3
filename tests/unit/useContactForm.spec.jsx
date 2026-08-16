@@ -29,9 +29,10 @@ const VALID_VALUES = {
   email: 'ada@example.com',
   subject: 'Hello',
   message: 'Nice site!',
+  website: '',
 };
 
-const EMPTY_VALUES = { name: '', email: '', subject: '', message: '' };
+const EMPTY_VALUES = { name: '', email: '', subject: '', message: '', website: '' };
 
 // The seam is the hook's public interface, observed through a probe that
 // renders it into the DOM (same pattern as useLowPower.spec.jsx): the test
@@ -43,6 +44,7 @@ function Probe() {
       <input name="name" onChange={setField} />
       <input name="email" onChange={setField} />
       <input name="subject" onChange={setField} />
+      <input name="website" onChange={setField} />
       <textarea name="message" onChange={setField} />
       <output id="values">{JSON.stringify(values)}</output>
       <output id="submitting">{String(isSubmitting)}</output>
@@ -156,6 +158,16 @@ describe('buildMailtoHref', () => {
 });
 
 describe('useContactForm submit flow', () => {
+  it('silently drops spam submissions when honeypot is populated', async () => {
+    fill({ ...VALID_VALUES, website: 'http://spam-bot.com' });
+    await clickSubmit();
+    expect(toast.success).toHaveBeenCalledWith('Message sent successfully!', expect.anything());
+    expect(emailjs.send).not.toHaveBeenCalled();
+    expect(mailtoClick).not.toHaveBeenCalled();
+    expect(readValues()).toEqual(EMPTY_VALUES);
+    expect(readSubmitting()).toBe('false');
+  });
+
   it('rejects an invalid form with a toast and never touches EmailJS', async () => {
     fill({ ...VALID_VALUES, email: 'not-an-email' });
     await clickSubmit();
@@ -251,5 +263,17 @@ describe('useContactForm submit flow', () => {
       resolveSend({});
     });
     expect(readSubmitting()).toBe('false');
+  });
+
+  it('saves typing changes to sessionStorage and restores draft on mount', () => {
+    type('name', 'Margaret Hamilton');
+    expect(readValues().name).toBe('Margaret Hamilton');
+
+    harness.unmount();
+    const newHarness = createHarness();
+    newHarness.render(<Probe />);
+    const loaded = JSON.parse(newHarness.container.querySelector('#values').textContent);
+    expect(loaded.name).toBe('Margaret Hamilton');
+    newHarness.unmount();
   });
 });

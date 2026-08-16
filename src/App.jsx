@@ -13,6 +13,7 @@ import {
   targetIdFromLocation,
   shouldScrollToTarget,
   timedOut,
+  sectionScrollBehavior,
 } from './utils/scrollToSectionLogic.js';
 
 // Below-the-fold sections are code-split: the heavy Swiper chunk (used by
@@ -66,7 +67,7 @@ function App() {
     const scrollToTarget = () => {
       const el = document.getElementById(targetId);
       if (shouldScrollToTarget(el, scrolled)) {
-        el.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' });
+        el.scrollIntoView({ behavior: sectionScrollBehavior(reducedMotion) });
         scrolled = true;
         return true;
       }

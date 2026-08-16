@@ -153,3 +153,30 @@ export function coalesceToFrame(run) {
   };
   return schedule;
 }
+
+/**
+ * Defer a callback until after the next paint (two requestAnimationFrame ticks).
+ * The mobile menu releases the body scroll-lock when unmounted, so restoring
+ * focus to the toggle or performing a section scroll must wait two frames for
+ * layout and the body lock release to settle.
+ *
+ * @param {() => void} fn — the callback to run after the next paint
+ * @returns {() => void} cancel handle
+ */
+export function deferToNextPaint(fn) {
+  let firstId = null;
+  let secondId = null;
+  firstId = requestAnimationFrame(() => {
+    firstId = null;
+    secondId = requestAnimationFrame(() => {
+      secondId = null;
+      fn();
+    });
+  });
+  return () => {
+    if (firstId != null) cancelAnimationFrame(firstId);
+    if (secondId != null) cancelAnimationFrame(secondId);
+    firstId = null;
+    secondId = null;
+  };
+}

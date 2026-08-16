@@ -5,6 +5,7 @@ import {
   resolveNavAction,
   resolveLogoAction,
   coalesceToFrame,
+  deferToNextPaint,
 } from '../../src/Pages/LandingPage/Navbar/navSpy.js';
 
 describe('pickActiveSection — the navbar scrollspy decision', () => {
@@ -307,5 +308,63 @@ describe('coalesceToFrame — one run per animation frame', () => {
     schedule();
     fireFrame();
     expect(run).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('deferToNextPaint — two-frame deferred execution for unmount/focus', () => {
+  let rafId;
+  let rafCallbacks;
+
+  beforeEach(() => {
+    rafId = 0;
+    rafCallbacks = new Map();
+    vi.stubGlobal('requestAnimationFrame', (cb) => {
+      rafCallbacks.set(++rafId, cb);
+      return rafId;
+    });
+    vi.stubGlobal('cancelAnimationFrame', (id) => {
+      rafCallbacks.delete(id);
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  const fireFrame = () => {
+    const cbs = [...rafCallbacks.values()];
+    rafCallbacks.clear();
+    cbs.forEach((cb) => cb());
+  };
+
+  it('runs callback only after two animation frames', () => {
+    const cb = vi.fn();
+    deferToNextPaint(cb);
+
+    expect(cb).not.toHaveBeenCalled();
+    fireFrame(); // frame 1
+    expect(cb).not.toHaveBeenCalled();
+    fireFrame(); // frame 2
+    expect(cb).toHaveBeenCalledTimes(1);
+  });
+
+  it('cancel handle stops execution when cancelled on frame 1', () => {
+    const cb = vi.fn();
+    const cancel = deferToNextPaint(cb);
+
+    cancel();
+    fireFrame();
+    fireFrame();
+    expect(cb).not.toHaveBeenCalled();
+  });
+
+  it('cancel handle stops execution when cancelled between frame 1 and frame 2', () => {
+    const cb = vi.fn();
+    const cancel = deferToNextPaint(cb);
+
+    fireFrame(); // frame 1 scheduled frame 2
+    cancel();
+    fireFrame(); // frame 2
+    expect(cb).not.toHaveBeenCalled();
   });
 });

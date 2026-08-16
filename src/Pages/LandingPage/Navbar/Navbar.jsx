@@ -13,9 +13,11 @@ import {
   resolveNavAction,
   resolveLogoAction,
   coalesceToFrame,
+  deferToNextPaint,
   SCROLLED_THRESHOLD_PX,
 } from './navSpy.js';
 import { acquireScrollLock } from '../../../utils/scrollLock.js';
+import { sectionScrollBehavior } from '../../../utils/scrollToSectionLogic.js';
 import './Navbar.css';
 
 const navItems = [
@@ -28,7 +30,7 @@ const navItems = [
 ];
 
 export default function Navbar() {
-  const { slowNetwork } = useDeviceProfile();
+  const { slowNetwork, reducedMotion } = useDeviceProfile();
   // Viewport bucket comes from the shared useViewportWidth seam (reactive to
   // resize; policy in breakpoints.js). Reading it on first render keeps
   // phones from flashing the desktop menu open for a frame.
@@ -139,18 +141,16 @@ export default function Navbar() {
         if (isMobile) {
           // Close the overlay first; the body scroll lock is released when it
           // unmounts, so defer the section scroll by a frame pair.
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              const toggle = document.getElementById('nav-toggle');
-              if (toggle) toggle.focus();
-              const element = document.getElementById(id);
-              if (element) element.scrollIntoView({ behavior: 'smooth' });
-            });
+          deferToNextPaint(() => {
+            const toggle = document.getElementById('nav-toggle');
+            if (toggle) toggle.focus();
+            const element = document.getElementById(id);
+            if (element) element.scrollIntoView({ behavior: sectionScrollBehavior(reducedMotion) });
           });
         } else {
           const element = document.getElementById(id);
           if (element) {
-            element.scrollIntoView({ behavior: 'smooth' });
+            element.scrollIntoView({ behavior: sectionScrollBehavior(reducedMotion) });
           }
         }
         return;
@@ -167,7 +167,7 @@ export default function Navbar() {
     if (action.type === 'navigate') {
       navigate('/');
     } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.scrollTo({ top: 0, behavior: sectionScrollBehavior(reducedMotion) });
     }
   };
 
@@ -222,11 +222,9 @@ export default function Navbar() {
           e.preventDefault();
           setShowItems(false);
           // Focus the toggle once it re-appears after the overlay unmounts.
-          requestAnimationFrame(() => {
-            requestAnimationFrame(() => {
-              const toggle = document.querySelector('#nav-toggle');
-              if (toggle) toggle.focus();
-            });
+          deferToNextPaint(() => {
+            const toggle = document.querySelector('#nav-toggle');
+            if (toggle) toggle.focus();
           });
         }
         return;

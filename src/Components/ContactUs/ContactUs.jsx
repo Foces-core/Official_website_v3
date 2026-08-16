@@ -152,6 +152,19 @@ function ContactUs() {
                     submit, which would swallow our custom toast + messaging.
                     Validation + submission live in useContactForm (JS). */}
                 <form className="flex flex-col space-y-1 text-black" onSubmit={submit} noValidate>
+                  {/* Honeypot field for automated spam protection — hidden from users */}
+                  <div className="hidden" aria-hidden="true">
+                    <label htmlFor="website">Website</label>
+                    <input
+                      type="text"
+                      name="website"
+                      id="website"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={values.website || ''}
+                      onChange={setField}
+                    />
+                  </div>
                   <div>
                     <label htmlFor="name" className="text-sm text-white">
                       Name

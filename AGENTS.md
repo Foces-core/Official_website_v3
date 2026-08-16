@@ -53,7 +53,7 @@ Read this before touching anything.
 - `src/Components/Execom/` — team carousel: `TeamCarousel.jsx`; the wrap math
   (`normalizeIndex`/`wrapTarget`/`copyFor`) is shared from `src/utils/carouselWrap.js`
   with Featuring. The roster lives in `src/data/team.js` (shape-guarded by `validateTeam`).
-- `src/Pages/LandingPage/Navbar/` — navbar: scrollspy + nav-action decisions in pure
+- `src/Pages/LandingPage/Navbar/` — navbar: scrollspy, next-paint deferral, and nav-action decisions in pure
   `navSpy.js`; viewport buckets come from `breakpoints.js`.
 - `src/data/events.js` — **single source of truth** for events (home section + `/events` share it).
 - `src/data/team.js` — **single source of truth** for the team roster (`cardData`, `cubeSlides`,
@@ -61,11 +61,11 @@ Read this before touching anything.
 - `src/data/echoSlides.js` — **single source of truth** for the Featuring slides
   (`echoSlides` + 3× `carouselSlides`), shape-guarded by `validateEchoSlides`.
 - `src/utils/` — helpers: `srcset.js`, `eventPhotos.js`, `validateContactForm.js`,
-  `validateEvents.js`, `validateTeam.js`, `validateEchoSlides.js`, `keyboardLock.js`,
-  `aosGating.js` (gate + `initAOS`), `breakpoints.js` (viewports 500/767/768/1024),
-  `carouselWrap.js` (shared wrap math), `scrollLock.js` (ref-counted body lock),
-  `DeferredAnalytics.jsx`, `lazyWithRetry.js`, `sessionCookie.js`, `scrollToSectionLogic.js`,
-  `bootSplashLogic.js`.
+  `contactDraft.js`, `validateEvents.js`, `validateTeam.js`, `validateEchoSlides.js`,
+  `keyboardLock.js`, `ariaActivation.js`, `aosGating.js` (gate + `initAOS`),
+  `breakpoints.js` (viewports 500/767/768/1024), `carouselWrap.js` (shared wrap math),
+  `scrollLock.js` (ref-counted body lock), `DeferredAnalytics.jsx`, `lazyWithRetry.js`,
+  `sessionCookie.js`, `scrollToSectionLogic.js`, `bootSplashLogic.js`.
 - `src/hooks/` — `useLowPower.js` (`useDeviceProfile` driving all perf degradation),
   `useViewportWidth.js` (reactive width over `breakpoints.js`),
   `useAutoplayOnScreen.js` (on-screen autoplay gate), `useCubeDrag.js` (cube orchestration).

@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Modal from './Modal';
 import { prioritizeAssetFetch } from '../../utils/priorityScheduler.js';
 import { DESKTOP_MIN } from '../../utils/breakpoints.js';
+import { onActivationKey } from '../../utils/ariaActivation.js';
 import BlurImage from '../../Components/BlurImage/BlurImage';
 
 /**
@@ -16,6 +17,7 @@ import BlurImage from '../../Components/BlurImage/BlurImage';
  */
 function EventCard({ Events, priority, reverse }) {
   const [Expanding, setExpanding] = useState(false);
+  const openGallery = onActivationKey(() => setExpanding(true));
 
   // photos are { url, srcset } pairs (see src/utils/eventPhotos.js) — no more
   // parallel images[i] ↔ imageSets[i] index math to get wrong.
@@ -50,12 +52,7 @@ function EventCard({ Events, priority, reverse }) {
           aria-haspopup="dialog"
           aria-label={`Open photo gallery for ${Events.name}`}
           onClick={() => setExpanding(true)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              setExpanding(true);
-            }
-          }}
+          onKeyDown={openGallery}
         >
           {primary && (
             <BlurImage
@@ -90,12 +87,7 @@ function EventCard({ Events, priority, reverse }) {
                 aria-label={`View photo ${idx + 2}`}
                 className="w-20 h-16 rounded-xl overflow-hidden border border-white/10 cursor-pointer hover:opacity-80 transition-opacity flex-none"
                 onClick={() => setExpanding(true)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    setExpanding(true);
-                  }
-                }}
+                onKeyDown={openGallery}
               >
                 <BlurImage
                   src={photo.url}

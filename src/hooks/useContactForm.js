@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import emailjs from '@emailjs/browser';
-import { validateContactForm } from '../utils/validateContactForm.js';
+import { validateContactForm, isSpamSubmission } from '../utils/validateContactForm.js';
+import { loadContactDraft, saveContactDraft, clearContactDraft } from '../utils/contactDraft.js';
 
 // The club inbox. Single source of truth — the contact-info link in
 // ContactUs.jsx and the mailto fallback both read it, so an email change is
 // one edit instead of two.
 export const CONTACT_EMAIL = 'Sebinmathew543@gmail.com';
 
-const EMPTY_VALUES = { name: '', email: '', subject: '', message: '' };
+const EMPTY_VALUES = { name: '', email: '', subject: '', message: '', website: '' };
 
 const TOAST_STYLE = { className: 'toast-custom' };
 
@@ -54,17 +55,28 @@ function openMailto(values) {
  * lives behind this interface: { values, setField, submit, isSubmitting }.
  */
 export default function useContactForm() {
-  const [values, setValues] = useState(EMPTY_VALUES);
+  const [values, setValues] = useState(() => loadContactDraft());
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const setField = (e) => {
     const { name, value } = e.target;
-    setValues((prev) => ({ ...prev, [name]: value }));
+    setValues((prev) => {
+      const next = { ...prev, [name]: value };
+      saveContactDraft(next);
+      return next;
+    });
   };
 
   const submit = async (e) => {
     e.preventDefault();
     if (isSubmitting) return;
+
+    if (isSpamSubmission(values)) {
+      clearContactDraft();
+      setValues(EMPTY_VALUES);
+      toast.success('Message sent successfully!', { autoClose: 2000, ...TOAST_STYLE });
+      return;
+    }
 
     const validationError = validateContactForm(values);
     if (validationError) {
@@ -111,6 +123,7 @@ export default function useContactForm() {
 
     try {
       await emailjs.send(serviceId, templateId, templateParams, publicKey);
+      clearContactDraft();
       setValues(EMPTY_VALUES);
       toast.dismiss();
       toast.success('Message sent successfully!', { autoClose: 2000, ...TOAST_STYLE });

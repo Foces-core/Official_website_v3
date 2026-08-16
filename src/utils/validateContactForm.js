@@ -27,3 +27,16 @@ export function validateContactForm(form) {
   }
   return null;
 }
+
+/**
+ * Pure spam honeypot check: automated bots populate hidden fields.
+ * If the honeypot field is filled, the submission is flagged as spam.
+ *
+ * @param {{ website?: string, botField?: string }} form
+ * @returns {boolean}
+ */
+export function isSpamSubmission(form) {
+  if (!form) return false;
+  const honeypot = form.website || form.botField;
+  return Boolean(honeypot && String(honeypot).trim().length > 0);
+}

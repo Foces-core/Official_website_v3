@@ -3,6 +3,7 @@ import {
   targetIdFromLocation,
   shouldScrollToTarget,
   timedOut,
+  sectionScrollBehavior,
 } from '../../src/utils/scrollToSectionLogic.js';
 
 // The seam is the pure decision logic behind App.jsx's cross-route anchor
@@ -49,5 +50,17 @@ describe('timedOut', () => {
   it('is true at and after the deadline (failsafe must always fire)', () => {
     expect(timedOut(1000, 6000, 5000)).toBe(true);
     expect(timedOut(1000, 6001, 5000)).toBe(true);
+  });
+});
+
+describe('sectionScrollBehavior', () => {
+  it('returns "auto" when reduced motion is preferred', () => {
+    expect(sectionScrollBehavior(true)).toBe('auto');
+  });
+
+  it('returns "smooth" when reduced motion is false, null, or undefined', () => {
+    expect(sectionScrollBehavior(false)).toBe('smooth');
+    expect(sectionScrollBehavior(undefined)).toBe('smooth');
+    expect(sectionScrollBehavior(null)).toBe('smooth');
   });
 });

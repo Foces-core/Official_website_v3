@@ -21,3 +21,7 @@ export function shouldScrollToTarget(el, alreadyScrolled) {
 export function timedOut(startTime, now, limitMs) {
   return now - startTime >= limitMs;
 }
+
+export function sectionScrollBehavior(reducedMotion) {
+  return reducedMotion ? 'auto' : 'smooth';
+}

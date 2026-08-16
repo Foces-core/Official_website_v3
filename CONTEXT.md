@@ -67,3 +67,28 @@ lowPower }` from `detectProfile`. One seam, two entries: components
   globs, plus `src/Pages/**/*.js`) must be imported by a unit spec,
   enforced in CI — structural enforcement of ADR-0009, so an untested
   extraction fails the PR that introduces it.
+- **Section scroll policy** — `src/utils/scrollToSectionLogic.js`
+  (`sectionScrollBehavior`): maps `reducedMotion` to `'auto'` vs `'smooth'`,
+  unifying cross-route and in-page anchor transitions across `App.jsx` and
+  `Navbar.jsx` to respect WCAG 2.2 motion preferences.
+- **Next-paint deferral** — `src/Pages/LandingPage/Navbar/navSpy.js`
+  (`deferToNextPaint`): wraps the two-frame requestAnimationFrame contract so
+  focus restoration and scroll actions execute after mobile drawer unmount
+  and body scroll-lock release have settled.
+- **ARIA activation** — `src/utils/ariaActivation.js` (`isActivationKey`,
+  `onActivationKey`): standardizes Enter and Space key activation for
+  `role="button"` elements while preventing spacebar page scroll.
+- **Honeypot spam defense** — `src/utils/validateContactForm.js`
+  (`isSpamSubmission`) + `src/hooks/useContactForm.js` (ADR-0011): silently
+  drops automated bot submissions with synthetic success toasts when hidden
+  honeypot inputs are populated, preserving EmailJS quotas with zero external
+  dependencies.
+- **Contact draft persistence** — `src/utils/contactDraft.js`
+  (`loadContactDraft`, `saveContactDraft`, `clearContactDraft`): auto-saves
+  unsubmitted contact form input in `sessionStorage` and restores it on mount
+  to prevent accidental data loss on reloads (ADR-0012).
+- **Static pre-compression** — build-time generation of `.br` (Brotli) and
+  `.gz` (Gzip) compressed siblings for all static text bundles via Node.js
+  built-in `zlib` (ADR-0012).
+- **Staging crawler exclusion** — crawler blocking via `<meta name="robots" content="noindex, nofollow" />`
+  and `public/robots.txt` for the upstream repository until formal release forks (ADR-0012).

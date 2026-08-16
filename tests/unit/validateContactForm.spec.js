@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateContactForm } from '../../src/utils/validateContactForm.js';
+import { validateContactForm, isSpamSubmission } from '../../src/utils/validateContactForm.js';
 
 describe('validateContactForm', () => {
   const valid = {
@@ -40,5 +40,23 @@ describe('validateContactForm', () => {
     expect(validateContactForm({ ...valid, name: '', email: 'not-an-email' })).toBe(
       'Please fill in all fields.',
     );
+  });
+});
+
+describe('isSpamSubmission', () => {
+  it('returns false for normal submissions without honeypot fields', () => {
+    expect(isSpamSubmission({ name: 'User', email: 'u@example.com' })).toBe(false);
+    expect(isSpamSubmission({ website: '', botField: '' })).toBe(false);
+    expect(isSpamSubmission({ website: '   ' })).toBe(false);
+    expect(isSpamSubmission(null)).toBe(false);
+    expect(isSpamSubmission(undefined)).toBe(false);
+  });
+
+  it('returns true when honeypot field website is populated', () => {
+    expect(isSpamSubmission({ website: 'http://spam-link.com' })).toBe(true);
+  });
+
+  it('returns true when honeypot field botField is populated', () => {
+    expect(isSpamSubmission({ botField: 'spam content' })).toBe(true);
   });
 });
