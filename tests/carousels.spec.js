@@ -148,7 +148,11 @@ test.describe('Execom mobile cube drag', () => {
     // which child actually shows. Walk every logical member and read the
     // visible (active) member each step to prove the correct one is always
     // front-facing.
-    const seen = await page.evaluate(async () => {
+    // The active class toggles synchronously inside slideNext (no transition
+    // or settle needed for the read) — keeping this synchronous makes the
+    // walk deterministic across device profiles instead of racing a fixed
+    // timeout.
+    const seen = await page.evaluate(() => {
       const swiper = document.querySelector('.execom-cube-swiper');
       const inst = swiper.__carousel__;
       inst.autoplay.stop(); // the on-screen autoplay timer must not skip a step mid-walk
@@ -157,7 +161,6 @@ test.describe('Execom mobile cube drag', () => {
         const active = swiper.querySelector('.swiper-slide-active img');
         out.push(active ? active.alt : null);
         inst.slideNext();
-        await new Promise((r) => setTimeout(r, 250)); // settle the rotation
       }
       return out;
     });

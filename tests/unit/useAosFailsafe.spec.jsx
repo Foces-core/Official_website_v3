@@ -48,17 +48,28 @@ function FailsafeProbe() {
 
 let harness;
 
+// The watch schedules force-show via rAF. Capture the callbacks into a queue
+// instead of running them synchronously — tests flush explicitly, and the
+// teardown test can prove an in-flight frame is cancelled on unmount.
+let rafQueue = [];
+const flushRaf = () => {
+  const q = rafQueue;
+  rafQueue = [];
+  q.forEach((cb) => cb && cb());
+};
+
 beforeEach(() => {
   setUrl('');
   stubNavigator();
   stubReducedMotion(false);
-  // The scroll/resize path schedules force-show via rAF; run it synchronously
-  // so scroll-driven reveals are deterministic in jsdom.
+  rafQueue = [];
   vi.stubGlobal('requestAnimationFrame', (cb) => {
-    cb();
-    return 1;
+    rafQueue.push(cb);
+    return rafQueue.length;
   });
-  vi.stubGlobal('cancelAnimationFrame', () => {});
+  vi.stubGlobal('cancelAnimationFrame', (id) => {
+    rafQueue[id - 1] = null; // a cancelled frame must not run on flush
+  });
   document.body.innerHTML = '';
   harness = createHarness();
 });
@@ -91,8 +102,10 @@ describe('useAosFailsafe — capable device', () => {
     // after boot; no scroll/resize may ever fire for them).
     const el = addStuck('late', 100);
     expect(el.classList.contains('aos-animate')).toBe(false);
-    // MutationObserver delivers asynchronously — let the microtask run.
-    await new Promise((r) => setTimeout(r, 0));
+    // MutationObserver delivers asynchronously — let the microtask run, then
+    // flush the rAF frame the observer scheduled.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    flushRaf();
     expect(el.classList.contains('aos-animate')).toBe(true);
   });
 
@@ -102,6 +115,7 @@ describe('useAosFailsafe — capable device', () => {
     expect(el.classList.contains('aos-animate')).toBe(false);
     el.getBoundingClientRect = () => ({ top: 100, bottom: 200, left: 0, right: 0 });
     window.dispatchEvent(new Event('scroll'));
+    flushRaf();
     expect(el.classList.contains('aos-animate')).toBe(true);
   });
 });
@@ -119,14 +133,19 @@ describe('useAosFailsafe — gated device', () => {
 });
 
 describe('useAosFailsafe — teardown', () => {
-  it('detaches the listeners AND the MutationObserver on unmount (no force-show after cleanup)', async () => {
+  it('cancels work queued while mounted AND stops catching new insertions after unmount', async () => {
     harness.render(<FailsafeProbe />);
-    harness.unmount();
-    // Added AFTER the watch stopped: neither a boot run, a scroll, nor the
-    // MutationObserver may reveal it.
-    const el = addStuck('in-view', 100);
+    // Queue a force-show frame while the watch is still alive: an in-view
+    // stuck element plus a scroll. The frame must be CANCELLED by cleanup.
+    const before = addStuck('queued-before-unmount', 100);
     window.dispatchEvent(new Event('scroll'));
-    await new Promise((r) => setTimeout(r, 0)); // drain observer + rAF queues
-    expect(el.classList.contains('aos-animate')).toBe(false);
+    expect(rafQueue.some(Boolean)).toBe(true); // work really was scheduled
+    harness.unmount();
+    // Added AFTER the watch stopped: the MutationObserver must be gone too.
+    const after = addStuck('inserted-after-unmount', 100);
+    await new Promise((resolve) => setTimeout(resolve, 0)); // drain observer
+    flushRaf(); // the cancelled frame must be a no-op
+    expect(before.classList.contains('aos-animate')).toBe(false);
+    expect(after.classList.contains('aos-animate')).toBe(false);
   });
 });
