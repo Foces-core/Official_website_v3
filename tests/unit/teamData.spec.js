@@ -1,4 +1,8 @@
+/* global process */
 import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import sharp from 'sharp';
 import { cardData, cubeSlides } from '../../src/data/team.js';
 import { validateTeam } from '../../src/utils/validateTeam.js';
 
@@ -58,12 +62,68 @@ describe('validateTeam — shape rules', () => {
     member.role = 'Lead';
     expect(validateTeam([member])).toEqual([]);
   });
+
+  it('accepts an optional srcset alongside blur', () => {
+    const member = {
+      name: 'A Member',
+      img: '/a.webp',
+      srcset: '/a.webp 800w, /a-400.webp 400w',
+      blur: '/a-blur.webp',
+      role: 'Lead',
+    };
+    expect(validateTeam([member])).toEqual([]);
+  });
+
+  it('flags a srcset that is present but empty', () => {
+    const member = { name: 'A Member', img: '/a.webp', srcset: '', role: 'Lead' };
+    expect(validateTeam([member]).join('\n')).toContain('srcset must be a non-empty string');
+  });
+
+  it('rejects an explicit srcset: null (supplied but invalid)', () => {
+    const member = { name: 'A Member', img: '/a.webp', srcset: null, role: 'Lead' };
+    expect(validateTeam([member]).join('\n')).toContain('srcset must be a non-empty string');
+  });
 });
 
 describe('teamData integrity (src/data/team.js)', () => {
   it('is valid per validateTeam rules', () => {
     const problems = validateTeam(cardData);
     expect(problems, problems.join('\n')).toEqual([]);
+  });
+
+  it('declares accurate srcset widths and ships right-sized -400 variants', async () => {
+    // The whole point of the team payload work: each card must offer the
+    // right-sized 400w candidate (so 1x phones/desktops don't download the
+    // full-size file) and a blur placeholder for the blur-up treatment.
+    for (const member of cardData) {
+      const imgName = member.img.split('?')[0].split('/').pop();
+      const stem = imgName.replace(/\.webp$/, '');
+      const srcPath = join(process.cwd(), 'src', 'assets', imgName);
+      const srcWidth = (await sharp(srcPath).metadata()).width;
+      expect(srcWidth, `${member.name}: source wider than 400px`).toBeGreaterThan(400);
+
+      // srcset must be exactly {full <intrinsic width>, -400 400w} — no
+      // unrelated candidates, no width declared wider than the file is.
+      const candidates = member.srcset
+        .split(',')
+        .map((pair) => pair.trim().split(/\s+/))
+        .map(([url, w]) => [url.split('?')[0].split('/').pop(), Number.parseInt(w, 10)]);
+      expect(candidates, `${member.name}: srcset shape`).toHaveLength(2);
+      expect(candidates).toContainEqual([imgName, srcWidth]);
+      expect(candidates).toContainEqual([`${stem}-400.webp`, 400]);
+
+      // The generated variant itself must actually be ≤400px wide.
+      const variantPath = join(process.cwd(), 'src', 'assets', `${stem}-400.webp`);
+      const variantWidth = (await sharp(variantPath).metadata()).width;
+      expect(variantWidth, `${member.name}: -400 variant ≤ 400w`).toBeLessThanOrEqual(400);
+    }
+    // The ?blur&w=20 query is consumed by the imagetools plugin at build
+    // time, so the runtime blur value can't assert the width — scan the
+    // source instead (same pattern as the AOS/font-subset guards). Exactly
+    // one w=20 blur import per card; the advisor keeps w=128.
+    const teamSource = readFileSync(join(process.cwd(), 'src', 'data', 'team.js'), 'utf8');
+    const w20Blurs = teamSource.match(/\?blur&w=20/g) ?? [];
+    expect(w20Blurs).toHaveLength(cardData.length);
   });
 
   it('has at least one member', () => {

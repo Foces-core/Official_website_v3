@@ -101,6 +101,11 @@ function TeamCarousel({
     ? `hidden sm:block ${flatCube ? '' : 'max-w-[360px] mx-auto py-4'}`
     : 'block sm:hidden max-w-[320px] mx-auto py-4';
 
+  // Card widths: desktop cube caps at 360px, mobile cube at 320px, desktop
+  // flat scales 2-4 per view (~240-300px each). These sizes make 1x viewports
+  // download the 400w srcset candidate and 2x retina the full-size file.
+  const TEAM_CARD_SIZES = '(min-width: 1280px) 280px, (min-width: 640px) 360px, 320px';
+
   const showNavArrows = isDesktop && flatCube;
 
   const goToSlide = useCallback(
@@ -129,11 +134,13 @@ function TeamCarousel({
                   isDesktop ? 'group' : ''
                 }`}
               >
+                {' '}
                 <BlurImage
-                  className={`object-cover ${
-                    d.name === 'Sebin Mathew' ? 'object-center' : 'object-top'
-                  } w-full h-full ${isDesktop ? 'card-hover' : ''} grayscale group-hover:filter-none transition-all duration-300`}
+                  className={`object-cover ${d.name === 'Sebin Mathew' ? 'object-center' : 'object-top'} w-full h-full ${isDesktop ? 'card-hover' : ''} grayscale group-hover:filter-none transition-all duration-300`}
                   src={d.img}
+                  srcSet={d.srcset}
+                  sizes={TEAM_CARD_SIZES}
+                  blurSrc={d.blur}
                   alt={d.name}
                   loading="lazy"
                   decoding="async"

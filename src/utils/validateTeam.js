@@ -9,7 +9,7 @@ import { isNonEmptyString, checkUniqueKey } from './validationRules.js';
  * validateEvents.js: shape only. Whether the referenced webp files exist is
  * enforced by the bundler (a missing import fails the build).
  *
- * @param {Array<{name: string, img: string, blur?: string, role: string}>} members
+ * @param {Array<{name: string, img: string, srcset?: string, blur?: string, role: string}>} members
  * @returns {string[]}
  */
 export function validateTeam(members) {
@@ -31,6 +31,17 @@ export function validateTeam(members) {
 
     if (!isNonEmptyString(member.img)) {
       problems.push(`${label}: missing img`);
+    }
+
+    // `srcset` is optional (members without responsive candidates are plain
+    // lazy loads) but must be a non-empty string when present. Same own-
+    // property semantics as `blur` below: an explicit null is supplied-but-
+    // invalid and must be rejected; an omitted srcset stays valid.
+    if (
+      Object.prototype.hasOwnProperty.call(member, 'srcset') &&
+      !isNonEmptyString(member.srcset)
+    ) {
+      problems.push(`${label}: srcset must be a non-empty string when present`);
     }
 
     // `blur` is optional (only the lead images carry an LQIP) but must be a
