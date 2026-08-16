@@ -32,6 +32,16 @@ describe('validateTeam — shape rules', () => {
     const problems = validateTeam([member, { ...member, role: 'Other' }]);
     expect(problems.join('\n')).toContain('duplicate name');
   });
+
+  it('accepts an optional blur LQIP on lead images', () => {
+    const member = { name: 'A Member', img: '/a.webp', blur: '/a-blur.webp', role: 'Lead' };
+    expect(validateTeam([member])).toEqual([]);
+  });
+
+  it('flags a blur that is present but empty', () => {
+    const member = { name: 'A Member', img: '/a.webp', blur: '', role: 'Lead' };
+    expect(validateTeam([member]).join('\n')).toContain('blur must be a non-empty string');
+  });
 });
 
 describe('teamData integrity (src/data/team.js)', () => {

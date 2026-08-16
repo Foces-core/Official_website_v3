@@ -51,6 +51,10 @@ function Events() {
                   src={evt.photos[0].url}
                   srcSet={evt.photos[0].srcset}
                   sizes={`(min-width: ${WIDE_SCREEN_MIN}px) 30vw, (min-width: ${DESKTOP_MIN}px) 45vw, 90vw`}
+                  // Only the FIRST event's banner carries an LQIP (see
+                  // src/data/events.js) — the other cards lazy-load plainly,
+                  // matching the events page first-card behavior.
+                  blurSrc={index === 0 ? evt.photos[0].blur : undefined}
                   alt={evt.name}
                   loading={index === 0 ? 'eager' : 'lazy'}
                   decoding="async"
