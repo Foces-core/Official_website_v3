@@ -14,12 +14,11 @@ claimed any vertical component of the gesture and scrolled mid-rotation
 
 Every interactive rotation/carousel widget owns its touch gesture entirely:
 `touch-action: none` on the draggable element (About cube, `.execom-swiper`,
-`.execom-cube-swiper`), plus — where the widget has no native handler — a
-non-passive `touchmove` preventDefault while dragging (React's delegated
-touchmove is passive, so `e.preventDefault()` there would no-op). Swiper
-already preventDefaults its own swipes with non-passive listeners; it only
-lacked the CSS ownership. See the code comments in `AboutUs.css`,
-`Execom/custom.css`, and `AboutUs.jsx`.
+`.execom-cube-swiper`), plus a non-passive pointermove preventDefault while
+dragging (the carousels are hand-rolled — `useCarousel` registers its
+pointer handlers non-passive, so `e.preventDefault()` works; React's
+delegated events are passive and would no-op). See the code comments in
+`AboutUs.css`, `Execom/custom.css`, and `AboutUs.jsx`.
 
 ## Consequences
 

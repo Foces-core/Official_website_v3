@@ -1,21 +1,8 @@
-/* Featuring carousel — Swiper pagination theming and centering */
+/* Featuring carousel — the hand-rolled flat slider. The hook styles the
+   track (flex, gap) and slides (flex-basis) inline; this file only carries
+   the fixed paddings that frame the carousel inside the section. */
 .feat-swiper {
     padding-left: 3.5rem;
     padding-right: 3.5rem;
     padding-bottom: 2.5rem;
-    --swiper-pagination-color: white;
-    --swiper-pagination-bullet-inactive-opacity: 0.5;
-    --swiper-pagination-bullet-inactive-color: white;
-    --swiper-pagination-bottom: 0px;
-}
-
-.feat-swiper .swiper-wrapper {
-    display: flex !important;
-    align-items: center !important;
-}
-
-.feat-swiper .swiper-slide {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
 }

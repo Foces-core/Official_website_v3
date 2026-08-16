@@ -69,7 +69,9 @@ open/review/merge PRs too. The checks you'll see: `Lint & Build`, `E2E
 
 - **[React 19](https://react.dev/)** + **[Vite 8](https://vite.dev/)** (SWC plugin)
 - **[Tailwind CSS](https://tailwindcss.com/)** for styling
-- **[Swiper](https://swiperjs.com/)** carousels (Featuring, event galleries, execom)
+- **Hand-rolled carousels** (`useCarousel` + `carouselGeometry.js`): the
+  Featuring flat slider and the Execom 3D cube (rotateY 90° per face) —
+  replaced Swiper to drop the ~104 KB vendor chunk
 - **[Three.js](https://threejs.org/) / [Vanta](https://www.vantajs.com/)** hero background
 - **[react-router](https://reactrouter.com/)** for `/events` and `/contact` routes
 - **PWA** ([`vite-plugin-pwa`](https://vite-pwa-org.netlify.app/)) with service-worker precaching

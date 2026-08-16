@@ -6,21 +6,34 @@
     width: 250px;
 }
 
-/* Desktop/tablet carousel pagination sits in the swiper's bottom padding,
-   below the member cards — never over the photo/gradient overlay. The
-   padding lives here (not Tailwind utilities) because Swiper's own
-   `.swiper { padding: 0 }` overrides utilities due to stylesheet order. */
+/* The hand-rolled carousel owns its touch gesture (same rule as the About
+   cube): rotating the cube / dragging the flat slider must never scroll the
+   page, and a pan-y allowance would let diagonal drags jump the viewport.
+   The hook's pointer handlers preventDefault non-passive pointermoves to
+   cover the gesture in JS (ADR-0007). */
 .execom-swiper {
-    /* The carousel owns its touch gesture (same rule as the About cube):
-       rotating the cube must never scroll the page, and a pan-y allowance
-       would let diagonal drags jump the viewport. Swiper's own non-passive
-       touchmove preventDefault then covers the gesture in JS. */
     touch-action: none;
-    padding-bottom: 52px;
-    --swiper-pagination-bottom: 4px;
-    --swiper-pagination-color: white;
-    --swiper-pagination-bullet-inactive-opacity: 0.5;
-    --swiper-pagination-bullet-inactive-color: white;
+}
+
+/* Cube visibility: every face is absolutely positioned by the hook; only the
+   active/next/prev faces are interactive and painted (the rest are rotated
+   away — same policy Swiper's cube CSS had).
+
+   Failsafe: the hiding is gated on data-carousel-ready, which the hook sets
+   ONLY after it has applied the first transforms + active classes. If the
+   carousel chunk fails or the hook errors before that point, the faces stay
+   visible (stacked, unrotated) instead of the whole section going blank —
+   content must never be hidden by a JS failure. */
+[data-carousel-mode='cube'][data-carousel-ready] .swiper-slide {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+[data-carousel-mode='cube'][data-carousel-ready] .swiper-slide-active,
+[data-carousel-mode='cube'][data-carousel-ready] .swiper-slide-next,
+[data-carousel-mode='cube'][data-carousel-ready] .swiper-slide-prev {
+    visibility: visible;
+    pointer-events: auto;
 }
 
 .container-execom {
@@ -66,11 +79,11 @@
 }
 
 /* GPU-friendly compositing for the 3D cube (smoother swipes on low-end devices) */
-.execom-cube-swiper .swiper-slide {
+[data-carousel-mode='cube'] .swiper-slide {
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
 }
 
-.execom-cube-swiper .swiper-wrapper {
+[data-carousel-mode='cube'] .swiper-wrapper {
     will-change: transform;
 }

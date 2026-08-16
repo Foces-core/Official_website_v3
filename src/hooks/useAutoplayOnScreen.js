@@ -3,7 +3,9 @@ import { useEffect } from 'react';
 // Autoplay-on-screen gating — one seam for both carousels (Featuring and
 // Execom's TeamCarousel used to implement the identical IntersectionObserver
 // effect; the "two implementations of one behavior" signal). The decision is
-// pure; the hook wires it to the DOM.
+// pure; the hook wires it to the DOM. The `swiperRef` name is legacy — it now
+// holds the hand-rolled useCarousel instance, which keeps the same
+// autoplay.start/stop shape.
 //
 //   autoplayGate(visible, disable)  — 'start' | 'stop'
 //   useAutoplayOnScreen(...)        — observe the carousel wrapper; start

@@ -104,11 +104,13 @@ export function subscribeKeyboardArbitration(fn) {
 }
 
 // Carousels call this whenever ownership may have changed (focus, scroll,
-// interaction) to enable/disable their Swiper keyboard.
-export function syncCarouselKeyboard(swiper, ownId) {
-  if (!swiper?.keyboard) return;
-  if (getArrowOwner() === ownId) swiper.keyboard.enable();
-  else swiper.keyboard.disable();
+// interaction) to enable/disable their keyboard. The `carousel` is the
+// useCarousel instance — it exposes the same keyboard.enable/disable shape
+// the old Swiper instances did, so this seam is unchanged.
+export function syncCarouselKeyboard(carousel, ownId) {
+  if (!carousel?.keyboard) return;
+  if (getArrowOwner() === ownId) carousel.keyboard.enable();
+  else carousel.keyboard.disable();
 }
 
 // True when an element's box intersects the viewport (with an optional

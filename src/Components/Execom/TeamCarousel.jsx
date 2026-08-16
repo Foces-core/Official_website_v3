@@ -1,10 +1,8 @@
 import { useRef, useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Navigation, EffectCube, Keyboard } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/effect-cube';
-import 'swiper/css/navigation';
+import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
+import useCarousel from '../../hooks/useCarousel.js';
+import { useViewportWidth } from '../../hooks/useViewportWidth.js';
 import BlurImage from '../BlurImage/BlurImage';
 import {
   syncCarouselKeyboard,
@@ -12,24 +10,24 @@ import {
   registerWidget,
   rectIsOnScreen,
 } from '../../utils/keyboardLock.js';
-import { normalizeIndex, wrapTarget } from '../../utils/carouselWrap.js';
+import { copyFor } from '../../utils/carouselWrap.js';
 import { useAutoplayOnScreen } from '../../hooks/useAutoplayOnScreen.js';
 import '../Execom/custom.css';
 
 /**
- * TeamCarousel — one swiper for both Execom variants.
+ * TeamCarousel — one hand-rolled carousel for both Execom variants.
  *
- * Previously Execom carried two near-duplicate swiper blocks (desktop
- * cube/slider + mobile cube) differing only in a handful of props, plus two
- * identical 11-dot indicators and two identical slide renderers. This
- * component owns all of that: the swiper, the slide cards, the dots, the
- * seamless-wrap handler, the arrow-key arbitration registration, and the
- * on-screen autoplay gate. Execom just renders two instances with the
- * variant-specific props.
+ * Previously this was two near-duplicate Swiper blocks (desktop cube/slider +
+ * mobile cube) — now both render through the shared useCarousel seam, which
+ * owns the 3D cube (rotateY 90° per face, no shadows — they smear on the dark
+ * bg), the flat fallback (low-power/reduced-motion), swipe/touch drag with
+ * gesture ownership (touch-action: none + preventDefault), the arrow-key
+ * arbitration registration, and the on-screen autoplay gate.
  *
- * Both instances stay in the DOM (the other is hidden via CSS), so the E2E
- * selectors — .execom-swiper, .execom-cube-swiper, .container-execom and the
- * dots div as the swiper's direct sibling — are unchanged.
+ * The DOM contract the E2E suite and CSS rely on is unchanged: the root keeps
+ * .execom-swiper / .execom-cube-swiper, slides keep .swiper-slide (with
+ * .swiper-slide-active toggled), cards keep .container-execom, and the dots
+ * div stays the root's direct sibling.
  */
 function TeamCarousel({
   widgetId,
@@ -41,150 +39,149 @@ function TeamCarousel({
   activeIndex,
   onActiveChange,
 }) {
-  const swiperRef = useRef(null);
+  const elRef = useRef(null);
   const wrapRef = useRef(null);
+  const width = useViewportWidth();
 
   const total = slidesData.length;
   const isDesktop = variant === 'desktop';
 
-  // No swipe-shadows: they are the cube's #1 GPU cost and read as a black
-  // smear on the near-black site background.
-  const cubeEffectConfig = { shadow: false, slideShadows: false };
+  // Desktop flat mode is responsive (2/3/4 per view, like Swiper's
+  // breakpoints); everything else is 1 per view. Re-computed reactively via
+  // useViewportWidth, then fed to the hook (its re-style effect re-applies).
+  const perView =
+    flatCube && isDesktop ? (width >= 1280 ? 4 : width >= 1024 ? 3 : width >= 640 ? 2 : 1) : 1;
+  const gap = flatCube ? (isDesktop ? (width >= 1024 ? 24 : 20) : 20) : 0;
 
-  // Seamless infinite wrap (math in carouselWrap.js): the cube rotates 90°
-  // per face, so Swiper's loop mode can't be used — 3 copies of the cards are
-  // rendered and a 0ms jump between copies makes the wrap invisible (index 0
-  // and 32 share the same cube orientation). The flat slider uses the same
-  // copies instead of loop mode: Swiper's loop with only ~3× slidesPerView
-  // jams at its append boundary (autoplay/keyboard advance a few times, then
-  // freeze).
-  const handleWrap = useCallback(
-    (swiper) => {
-      if (!swiper) return;
-      const idx = swiper.activeIndex;
-      onActiveChange(normalizeIndex(idx, total));
-
-      const target = wrapTarget(idx, total);
-      if (target !== null) {
-        swiper.slideTo(target, 0);
-        // The 0ms jump fires no DOM transitionend, so Swiper autoplay's
-        // transition-wait would stay paused forever — nudge it back on.
-        swiper.autoplay?.resume();
-      }
-    },
-    [onActiveChange, total],
-  );
+  const { instanceRef, trackRef } = useCarousel({
+    elRef,
+    total,
+    mode: flatCube ? 'flat' : 'cube',
+    slidesPerView: perView,
+    spaceBetween: gap,
+    autoplayDelay: disableAutoplay ? 0 : isDesktop ? 3500 : 2500,
+    initialIndex: total,
+    speed: flatCube ? 250 : 400,
+    onActiveChange,
+  });
 
   // Arrow-key arbitration (see utils/keyboardLock.js): this carousel counts
-  // as "on screen" only while its swiper is actually rendered/visible (the
+  // as "on screen" only while its root is actually rendered/visible (the
   // other variant is hidden via CSS, which rectIsOnScreen detects), and it
   // enables its keyboard only while it owns the arrows. The widget's `el` is
-  // the WRAPPER div (parent of both the swiper AND the dots) — that way the
+  // the WRAPPER div (parent of both the root AND the dots) — that way the
   // dots are "inside" the widget, so clicking one keeps the arrow keys
   // driving the carousel (same containment the original Execom had).
   useEffect(() => {
     const unregister = registerWidget(
       widgetId,
-      () => rectIsOnScreen(swiperRef.current?.el, 60),
+      () => rectIsOnScreen(instanceRef.current?.el, 60),
       wrapRef.current,
     );
-    const sync = () => syncCarouselKeyboard(swiperRef.current, widgetId);
+    const sync = () => syncCarouselKeyboard(instanceRef.current, widgetId);
     sync(); // ownership may already be decided before this runs
     const unsub = subscribeKeyboardArbitration(sync);
     return () => {
       unregister();
       unsub();
     };
-  }, [widgetId]);
+  }, [widgetId, instanceRef]);
 
   // Only run autoplay while the carousel is actually on screen — at high CPU
   // throttle (or on low-end phones), a slider spinning off-screen is pure
   // wasted frames. Shared seam (useAutoplayOnScreen) — same hook Featuring
   // uses.
-  useAutoplayOnScreen({ elementRef: wrapRef, swiperRef, disable: disableAutoplay });
+  useAutoplayOnScreen({
+    elementRef: wrapRef,
+    swiperRef: instanceRef,
+    disable: disableAutoplay,
+  });
 
   const containerClass = isDesktop
     ? `hidden sm:block ${flatCube ? '' : 'max-w-[360px] mx-auto py-4'}`
     : 'block sm:hidden max-w-[320px] mx-auto py-4';
 
-  const autoplay = disableAutoplay
-    ? false
-    : { delay: isDesktop ? 3500 : 2500, disableOnInteraction: false };
+  const showNavArrows = isDesktop && flatCube;
+
+  const goToSlide = useCallback(
+    (i) => {
+      const sw = instanceRef.current;
+      if (!sw) return;
+      const copy = copyFor(sw.activeIndex, total);
+      sw.slideTo(copy * total + i, 350);
+    },
+    [instanceRef, total],
+  );
 
   return (
     <div ref={wrapRef} className={containerClass}>
-      <Swiper
-        onSwiper={(swiper) => {
-          swiperRef.current = swiper;
-          syncCarouselKeyboard(swiper, widgetId);
-        }}
-        modules={[Autoplay, Navigation, EffectCube, Keyboard]}
-        effect={flatCube ? 'slide' : 'cube'}
-        speed={flatCube ? 250 : 400}
-        cubeEffect={cubeEffectConfig}
-        grabCursor={isDesktop ? !flatCube : true}
-        spaceBetween={flatCube ? 20 : 0}
-        slidesPerView={1}
-        initialSlide={total}
-        autoplay={autoplay}
-        navigation={isDesktop && flatCube}
-        keyboard={{ enabled: true, onlyInViewport: false }}
-        // Wrap on transition END (not slideChange): the 0ms wrap jump emits
-        // no transitionend, which would leave Swiper autoplay paused forever.
-        onTouchEnd={handleWrap}
-        onTransitionEnd={handleWrap}
-        breakpoints={
-          flatCube && isDesktop
-            ? {
-                640: { slidesPerView: 2, spaceBetween: 20 },
-                1024: { slidesPerView: 3, spaceBetween: 24 },
-                1280: { slidesPerView: 4, spaceBetween: 24 },
-              }
-            : undefined
-        }
-        className={isDesktop ? 'execom-swiper pb-12' : 'execom-cube-swiper'}
+      <div
+        ref={elRef}
+        className={`${isDesktop ? 'execom-swiper pb-12' : 'execom-cube-swiper'} relative ${
+          flatCube ? '' : 'cursor-grab active:cursor-grabbing'
+        }`}
       >
-        {slides.map((d, index) => (
-          <SwiperSlide key={index}>
-            <div
-              className={`container-execom bg-[#161618] border-box relative rounded-3xl overflow-hidden ${
-                isDesktop ? 'group' : ''
-              }`}
-            >
-              <BlurImage
-                className={`object-cover ${
-                  d.name === 'Sebin Mathew' ? 'object-center' : 'object-top'
-                } w-full h-full ${isDesktop ? 'card-hover' : ''} grayscale group-hover:filter-none transition-all duration-300`}
-                src={d.img}
-                alt={d.name}
-                loading="lazy"
-                decoding="async"
-              />
-              <div className="absolute rounded-b-3xl bottom-0 w-full bg-gradient-to-t from-black via-black/85 to-transparent p-4 text-left">
-                <div className="text-white text-base font-semibold italic">{d.name}</div>
-                <div className="text-gray-300 text-xs font-light">{d.role}</div>
+        <div ref={trackRef} className="swiper-wrapper">
+          {slides.map((d, index) => (
+            <div key={index} className="swiper-slide">
+              <div
+                className={`container-execom bg-[#161618] border-box relative rounded-3xl overflow-hidden ${
+                  isDesktop ? 'group' : ''
+                }`}
+              >
+                <BlurImage
+                  className={`object-cover ${
+                    d.name === 'Sebin Mathew' ? 'object-center' : 'object-top'
+                  } w-full h-full ${isDesktop ? 'card-hover' : ''} grayscale group-hover:filter-none transition-all duration-300`}
+                  src={d.img}
+                  alt={d.name}
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div className="absolute rounded-b-3xl bottom-0 w-full bg-gradient-to-t from-black via-black/85 to-transparent p-4 text-left">
+                  <div className="text-white text-base font-semibold italic">{d.name}</div>
+                  <div className="text-gray-300 text-xs font-light">{d.role}</div>
+                </div>
               </div>
             </div>
-          </SwiperSlide>
-        ))}
-      </Swiper>
+          ))}
+        </div>
+        {/* Flat desktop mode keeps prev/next arrows (Swiper's navigation was
+            rendered by the library; here they're plain buttons). */}
+        {showNavArrows && (
+          <>
+            <button
+              type="button"
+              aria-label="Previous team member"
+              onClick={() => instanceRef.current?.slidePrev()}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-colors duration-200 backdrop-blur-sm"
+            >
+              <FaChevronLeft />
+            </button>
+            <button
+              type="button"
+              aria-label="Next team member"
+              onClick={() => instanceRef.current?.slideNext()}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-colors duration-200 backdrop-blur-sm"
+            >
+              <FaChevronRight />
+            </button>
+          </>
+        )}
+      </div>
 
-      {/* Custom 11-dot indicator — Swiper's loop was replaced with duplicated
-          slides, so its pagination (which would render 3× bullets) can't be
-          used. Sits as the swiper's direct sibling (selectors in the E2E
-          suite depend on .execom-swiper + div / .execom-cube-swiper + div). */}
+      {/* Custom 11-dot indicator — the 3-copy wrap means the dots can't be
+          generated from the raw index; they map to the logical slides and
+          jump within the current copy. Sits as the root's direct sibling
+          (selectors in the E2E suite depend on .execom-swiper + div /
+          .execom-cube-swiper + div). */}
       <div className="flex justify-center gap-2 mt-2 pb-1">
         {slidesData.map((d, i) => (
           <button
             key={i}
             type="button"
             aria-label={`Go to ${d.name}`}
-            onClick={() => {
-              const sw = swiperRef.current;
-              if (!sw) return;
-              const copy = Math.floor(sw.activeIndex / total);
-              sw.slideTo(copy * total + i, 350);
-            }}
+            onClick={() => goToSlide(i)}
             // 8px dot on a 24px hit area (WCAG 2.2.8 target size): the button
             // is a genuine 24×24 box (min-w-6/min-h-6) with the visible dot
             // centered inside — no padding/margin tricks, which axe reads as

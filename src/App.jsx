@@ -11,17 +11,17 @@ import { lazyWithRetry } from './utils/lazyWithRetry.js';
 import useDeviceProfile from './hooks/useLowPower.js';
 import { scrollToSectionWhenReady, targetIdFromLocation } from './utils/navigationCoordinator.js';
 
-// Below-the-fold sections are code-split: the heavy Swiper chunk (used by
-// Featuring + Execom) and the cube logic only download once the user scrolls
-// to them, shrinking the first-load bundle. AOS picks up the newly-mounted
-// [data-aos] elements via its built-in MutationObserver.
+// Below-the-fold sections are code-split: the carousel sections (Featuring +
+// Execom) and the cube logic only download once the user scrolls to them,
+// shrinking the first-load bundle. AOS picks up the newly-mounted [data-aos]
+// elements via its built-in MutationObserver.
 //
 // IMPORTANT: lazy sections must NOT all share one <Suspense> boundary — React
 // resolves every child of a suspended boundary in parallel, so a single
-// boundary would fire ALL the dynamic imports (including swiper-vendor) at
-// boot. Each section gets its own boundary; the two Swiper sections are
-// additionally wrapped in <ScrollGate>, which keeps them unmounted (and their
-// chunks undownloaded) until the user scrolls near them.
+// boundary would fire ALL the dynamic imports at boot. Each section gets its
+// own boundary; the two carousel sections are additionally wrapped in
+// <ScrollGate>, which keeps them unmounted (and their chunks undownloaded)
+// until the user scrolls near them.
 // Below-the-fold sections load through lazyWithRetry (same as the routes): a
 // chunk that fails to load — stale deployment hash, a network blip, or a
 // backgrounded tab that iOS evicted from memory — is retried once and then
@@ -70,7 +70,7 @@ function App() {
         <Suspense fallback={<SectionSkeleton height="100vh" label="Loading about" />}>
           <AboutUs />
         </Suspense>
-        {/* Swiper sections are scroll-gated: the chunk (swiper-vendor, ~300KB)
+        {/* Carousel sections are scroll-gated: the hand-rolled carousel chunk
             only downloads when the section approaches the viewport. The wrapper
             owns the section id, so anchors/scrollspy/tests still find it. */}
         <ScrollGate id="featuring" placeholderHeight="95vh" label="Loading featuring">

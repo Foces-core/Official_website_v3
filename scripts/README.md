@@ -82,8 +82,8 @@ profiler (1ms sampling during load) inflates absolute timings under throttle
 build. Use its output to answer "which chunk is costing boot CPU?"
 (per-chunk eval ms), not "how fast is the page?". For wall-clock numbers use
 `perf-test.mjs` / Lighthouse. The boot-behavioral regression it guards
-(swiper-vendor must not be fetched at boot) is enforced in CI by the E2E
-spec `tests/swiper-lazy.spec.js`, so no CI wiring is needed here.
+(the carousel sections must not mount/fetch at boot) is enforced in CI by
+the E2E spec `tests/carousel-lazy.spec.js`, so no CI wiring is needed here.
 
 ### Shared Constants
 

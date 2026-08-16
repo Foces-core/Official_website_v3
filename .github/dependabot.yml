@@ -33,7 +33,6 @@ updates:
           - "prop-types"
       rendering-and-animation:
         patterns:
-          - "swiper"
           - "aos"
       dev-tooling:
         patterns:
