@@ -1,6 +1,7 @@
 import './Loader.css';
 import { useViewportWidth } from '../../hooks/useViewportWidth.js';
 import { isSmallScreen } from '../../utils/breakpoints.js';
+import LogoBlack from '../../assets/FOCES Black.svg';
 
 const Loader = () => {
   // Narrow-screen tagline pick: policy in breakpoints.js, reactivity from
@@ -27,6 +28,18 @@ const Loader = () => {
           <span className="steam-dot" />
         </div>
         <div className="coffee">
+          {/* FOCES wordmark on the mug face. Absolutely positioned (taken out
+              of the coffee grid) and sized so the cup + bars stay visible
+              around it — the mug must not disappear behind the logo. Black
+              variant: the mug face is white. */}
+          <img
+            src={LogoBlack}
+            alt=""
+            aria-hidden="true"
+            loading="eager"
+            decoding="async"
+            className="coffee-logo"
+          />
           <div></div>
           <div></div>
           <div></div>
