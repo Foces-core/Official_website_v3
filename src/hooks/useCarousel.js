@@ -76,6 +76,7 @@ export default function useCarousel({
     lastMoveT: 0,
     velocity: 0,
     autoplayTimer: null,
+    dragAutoplayWasOn: false,
     keyboardOn: false,
     faceWidth: 0,
     slideWidth: 0,
@@ -200,6 +201,13 @@ export default function useCarousel({
 
   // --- keyboard (arbitrated by keyboardLock.js via enable/disable) ---------
 
+  // onKeyDown is re-created every render, so the handler actually registered
+  // on window must be stored — removeEventListener must drop THAT exact
+  // function. Otherwise a re-render before disableKeyboard() would remove the
+  // new closure while the original stayed registered, and arrow keys would
+  // keep driving (and preventDefault-ing on) a stale/unmounted instance.
+  const keydownHandler = useRef(null);
+
   function onKeyDown(e) {
     if (e.key === 'ArrowLeft') {
       e.preventDefault();
@@ -213,13 +221,17 @@ export default function useCarousel({
   function enableKeyboard() {
     if (s.keyboardOn) return;
     s.keyboardOn = true;
-    window.addEventListener('keydown', onKeyDown);
+    keydownHandler.current = onKeyDown;
+    window.addEventListener('keydown', keydownHandler.current);
   }
 
   function disableKeyboard() {
     if (!s.keyboardOn) return;
     s.keyboardOn = false;
-    window.removeEventListener('keydown', onKeyDown);
+    if (keydownHandler.current) {
+      window.removeEventListener('keydown', keydownHandler.current);
+      keydownHandler.current = null;
+    }
   }
 
   // --- drag (pointer events; touch-action: none owns the gesture) ----------
@@ -230,6 +242,12 @@ export default function useCarousel({
     if (s.dragging) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     s.dragging = true;
+    // Pause autoplay for the duration of the drag: the interval must not fire
+    // a goTo() mid-gesture (it would move the track under the user's finger
+    // and corrupt the release snap). Remember it was running so onPointerUp
+    // can resume it.
+    s.dragAutoplayWasOn = !!s.autoplayTimer;
+    if (s.autoplayTimer) stopAutoplay();
     s.pointerId = e.pointerId;
     s.dragStartX = e.clientX;
     s.dragOffset = 0;
@@ -285,10 +303,10 @@ export default function useCarousel({
     s.dragOffset = 0;
     s.velocity = 0;
     goTo(s.raw + snap, true);
-    // Interaction resets the autoplay timer but doesn't stop it
-    // (disableOnInteraction: false — same policy Swiper had).
-    if (s.autoplayTimer) {
-      stopAutoplay();
+    // Resume autoplay if the drag paused it (disableOnInteraction: false —
+    // interaction resets the timer but doesn't stop autoplay permanently).
+    if (s.dragAutoplayWasOn) {
+      s.dragAutoplayWasOn = false;
       startAutoplay();
     }
   }

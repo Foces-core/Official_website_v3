@@ -119,13 +119,14 @@ describe('useAosFailsafe — gated device', () => {
 });
 
 describe('useAosFailsafe — teardown', () => {
-  it('detaches the listeners on unmount (no force-show after cleanup)', () => {
+  it('detaches the listeners AND the MutationObserver on unmount (no force-show after cleanup)', async () => {
     harness.render(<FailsafeProbe />);
     harness.unmount();
-    // Added AFTER the watch stopped: neither a boot run nor a scroll may
-    // reveal it.
+    // Added AFTER the watch stopped: neither a boot run, a scroll, nor the
+    // MutationObserver may reveal it.
     const el = addStuck('in-view', 100);
     window.dispatchEvent(new Event('scroll'));
+    await new Promise((r) => setTimeout(r, 0)); // drain observer + rAF queues
     expect(el.classList.contains('aos-animate')).toBe(false);
   });
 });

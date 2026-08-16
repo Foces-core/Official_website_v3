@@ -134,6 +134,38 @@ test.describe('Execom mobile cube drag', () => {
     await expect.poll(activeIndex, { timeout: 5000 }).not.toBe(before);
   });
 
+  test('every member shows on the front face as the cube advances (3-copy overlap is class-gated)', async ({
+    page,
+  }) => {
+    await gotoHome(page);
+    await page.locator('#execom').scrollIntoViewIfNeeded();
+    await page.locator('.execom-cube-swiper[data-carousel-ready]').waitFor({
+      state: 'attached',
+    });
+
+    // The 3 copies of 11 slides share the four cube faces (children i, i±4,
+    // ... sit at the same angle) — the class-gated visibility CSS decides
+    // which child actually shows. Walk every logical member and read the
+    // visible (active) member each step to prove the correct one is always
+    // front-facing.
+    const seen = await page.evaluate(async () => {
+      const swiper = document.querySelector('.execom-cube-swiper');
+      const inst = swiper.__carousel__;
+      inst.autoplay.stop(); // the on-screen autoplay timer must not skip a step mid-walk
+      const out = [];
+      for (let i = 0; i < 11; i++) {
+        const active = swiper.querySelector('.swiper-slide-active img');
+        out.push(active ? active.alt : null);
+        inst.slideNext();
+        await new Promise((r) => setTimeout(r, 250)); // settle the rotation
+      }
+      return out;
+    });
+    // All 11 distinct members, in roster order (the wrap repeats content).
+    expect(new Set(seen).size).toBe(11);
+    expect(seen.every((name) => typeof name === 'string' && name.length > 0)).toBe(true);
+  });
+
   test('rotating the cube never scrolls the page (touch-action none + preventDefault)', async ({
     page,
   }) => {

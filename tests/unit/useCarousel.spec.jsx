@@ -14,6 +14,18 @@ import { createHarness } from './harness.jsx';
 // handle the carousel-probe uses) — capturing a ref during render trips the
 // react-hooks lint rules.
 
+// jsdom may lack PointerEvent (it landed in later jsdom releases) — fall
+// back to a MouseEvent subclass carrying the pointer fields the hook reads.
+const PointerEventCtor =
+  globalThis.PointerEvent ||
+  class PointerEvent extends MouseEvent {
+    constructor(type, init = {}) {
+      super(type, init);
+      this.pointerId = init.pointerId ?? 0;
+      this.pointerType = init.pointerType ?? 'touch';
+    }
+  };
+
 let harness;
 
 function TrackProbe({
@@ -23,6 +35,7 @@ function TrackProbe({
   autoplayDelay = 0,
   initialIndex,
   faceWidth,
+  rerenderKey,
 }) {
   const elRef = useRef(null);
   const { trackRef } = useCarousel({
@@ -45,7 +58,7 @@ function TrackProbe({
             Object.defineProperty(node, 'clientWidth', { configurable: true, value: faceWidth });
           }
         }}
-        className="swiper-wrapper"
+        className={`swiper-wrapper ${rerenderKey}`}
       >
         {Array.from({ length: total * 3 }, (_, i) => (
           <div key={i} className="swiper-slide">
@@ -64,6 +77,7 @@ TrackProbe.propTypes = {
   autoplayDelay: PropTypes.number,
   initialIndex: PropTypes.number,
   faceWidth: PropTypes.number,
+  rerenderKey: PropTypes.number,
 };
 
 const slideEls = (root) => [...root.querySelectorAll('.swiper-slide')];
@@ -128,6 +142,18 @@ describe('useCarousel — instance contract', () => {
     expect(inst(harness).activeIndex).toBe(5); // unchanged — listener removed
   });
 
+  it('disableKeyboard removes the EXACT registered listener even after a re-render', () => {
+    // onKeyDown is re-created every render; disableKeyboard must drop the
+    // function that was actually added (a naive remove of the current closure
+    // would leave the original on window, driving a stale instance forever).
+    harness.render(<TrackProbe total={4} rerenderKey={1} />);
+    inst(harness).keyboard.enable();
+    harness.render(<TrackProbe total={4} rerenderKey={2} />); // new closure
+    inst(harness).keyboard.disable();
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', cancelable: true }));
+    expect(inst(harness).activeIndex).toBe(4); // stale listener must be gone
+  });
+
   it('autoplay.start advances on the delay; stop halts it', () => {
     vi.useFakeTimers();
     harness.render(<TrackProbe total={4} autoplayDelay={100} />);
@@ -138,6 +164,33 @@ describe('useCarousel — instance contract', () => {
     expect(inst(harness).activeIndex).toBe(6);
     inst(harness).autoplay.stop();
     vi.advanceTimersByTime(300);
+    expect(inst(harness).activeIndex).toBe(6);
+  });
+
+  it('pauses autoplay during a pointer drag and resumes on release', () => {
+    vi.useFakeTimers();
+    harness.render(<TrackProbe total={4} autoplayDelay={100} />);
+    const root = harness.container.querySelector('.probe-root');
+    const track = root.querySelector('.swiper-wrapper');
+    inst(harness).autoplay.start();
+    const pointer = (type, x) =>
+      new PointerEventCtor(type, {
+        pointerId: 1,
+        pointerType: 'touch',
+        clientX: x,
+        bubbles: true,
+        cancelable: true,
+      });
+    track.dispatchEvent(pointer('pointerdown', 400));
+    // While the finger is down, the interval must NOT fire a goTo() — it
+    // would move the track under the user and corrupt the release snap.
+    vi.advanceTimersByTime(300);
+    expect(inst(harness).activeIndex).toBe(4);
+    track.dispatchEvent(pointer('pointermove', 350));
+    track.dispatchEvent(pointer('pointerup', 350));
+    expect(inst(harness).activeIndex).toBe(5); // release snap (left drag)
+    // Autoplay resumed: the next tick advances again.
+    vi.advanceTimersByTime(100);
     expect(inst(harness).activeIndex).toBe(6);
   });
 });
@@ -178,18 +231,6 @@ describe('useCarousel — cube mode', () => {
 });
 
 describe('useCarousel — pointer drag', () => {
-  // jsdom may lack PointerEvent (it landed in later jsdom releases) — fall
-  // back to a MouseEvent subclass carrying the pointer fields the hook reads.
-  const PointerEventCtor =
-    globalThis.PointerEvent ||
-    class PointerEvent extends MouseEvent {
-      constructor(type, init = {}) {
-        super(type, init);
-        this.pointerId = init.pointerId ?? 0;
-        this.pointerType = init.pointerType ?? 'touch';
-      }
-    };
-
   // Dispatch pointerdown + pointermove, and hand back the move (for preview
   // assertions) plus a finish() that dispatches pointerup.
   const dragStart = (root, fromX, toX) => {
@@ -234,6 +275,26 @@ describe('useCarousel — pointer drag', () => {
     expect(move.defaultPrevented).toBe(true);
     finish();
     expect(inst(harness).activeIndex).toBe(5);
+  });
+});
+
+describe('useCarousel — cube face gating across the 3-copy wrap', () => {
+  it('marks exactly active/next/prev on every raw position (the copies share 4 faces; classes decide which child is visible)', () => {
+    // TeamCarousel renders 3 copies of 11 slides; cubeFaceTransform(i) puts
+    // children i, i±4, ... on the SAME face. The CSS shows only the child
+    // carrying swiper-slide-active/next/prev — walk the whole wrap and assert
+    // exactly one child carries each class, at the correct raw position, so
+    // the visible member always matches the active index.
+    harness.render(<TrackProbe total={4} mode="cube" faceWidth={300} />);
+    const root = harness.container.querySelector('.probe-root');
+    const els = slideEls(root);
+    for (let raw = 0; raw < 12; raw++) {
+      inst(harness).slideTo(raw, 0);
+      const withClass = (name) => els.filter((el) => el.classList.contains(name));
+      expect(withClass('swiper-slide-active')).toEqual([els[raw]]);
+      expect(withClass('swiper-slide-next')).toEqual(raw + 1 < els.length ? [els[raw + 1]] : []);
+      expect(withClass('swiper-slide-prev')).toEqual(raw - 1 >= 0 ? [els[raw - 1]] : []);
+    }
   });
 });
 
