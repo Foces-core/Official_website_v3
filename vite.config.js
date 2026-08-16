@@ -29,6 +29,21 @@ function preloadHeroImage() {
   };
 }
 
+// Build-time font subsetting (scripts/fonts/subset-fonts.mjs): restrict the
+// wght axis of the two variable fonts to the weights the site uses. Runs on
+// EVERY build and dev-server start — automatic for all devs and CI with no
+// manual step. Pure JS (subset-font / harfbuzz wasm), falls back to the full
+// font on error so a build never breaks.
+function subsetFontsPlugin() {
+  return {
+    name: 'subset-fonts',
+    async buildStart() {
+      const { subsetFonts } = await import('./scripts/fonts/subset-fonts.mjs');
+      await subsetFonts();
+    },
+  };
+}
+
 // Preloads the two self-hosted woff2 fonts in the HTML so the browser starts
 // the fetch as soon as the document is parsed — instead of waiting for the
 // CSS bundle (which carries the @font-face) to download + parse. Inter is used
@@ -40,7 +55,7 @@ function preloadFonts() {
     apply: 'build',
     generateBundle(_opts, bundle) {
       fontUrls = Object.keys(bundle)
-        .filter((n) => /-(latin)-wght-normal-.*\.woff2$/.test(n))
+        .filter((n) => /-(latin)-wght-normal(?:\.subset)?-?.*\.woff2$/.test(n))
         .map((n) => bundle[n].fileName);
     },
     transformIndexHtml(html) {
@@ -61,6 +76,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    subsetFontsPlugin(),
     // imagetools: generates LQIP placeholders and responsive variants at build time.
     // Import params like ?blur=20&w=20 to get a tiny blurred data-URL.
     imagetools(),
