@@ -1,0 +1,85 @@
+/*
+ * Minimal AOS stylesheet — hand-picked subset of aos/dist/aos.css.
+ *
+ * The full AOS stylesheet (~26 KB) enumerates every duration (50→3000ms),
+ * easing, and animation variant so users can pick any combination at runtime.
+ * This site uses only 5 animations × 4 durations, no easings, no delays:
+ *
+ *   animations: flip-up (×7), fade-up (×3), zoom-in (×1), flip-right (×1), fade-down (×1)
+ *   durations:  300, 750, 1000 explicitly; 400 is the AOS default (no
+ *               data-aos-duration attribute → body[data-aos-duration="400"]).
+ *
+ * Rules below are copied verbatim from aos/dist/aos.css (the v2.3.4 the
+ * project pins). The guard in
+ * tests/unit/aosCss.spec.js scans src/ for data-aos attribute values and
+ * fails if any new value falls outside this subset — so adding a new
+ * animation/duration requires extending this file in the same change.
+ *
+ * The safety nets live in App.css (body.aos-disabled / prefers-reduced-motion
+ * force-shows); AOS's own JS (aos/dist/aos.js) still drives .aos-animate.
+ */
+
+/* ---- flip ---- */
+[data-aos^='flip'][data-aos^='flip'] {
+    backface-visibility: hidden;
+    transition-property: transform;
+}
+[data-aos='flip-up'] {
+    transform: perspective(2500px) rotateX(-100deg);
+}
+[data-aos='flip-up'].aos-animate {
+    transform: perspective(2500px) rotateX(0);
+}
+[data-aos='flip-right'] {
+    transform: perspective(2500px) rotateY(100deg);
+}
+[data-aos='flip-right'].aos-animate {
+    transform: perspective(2500px) rotateY(0);
+}
+
+/* ---- fade ---- */
+[data-aos^='fade'][data-aos^='fade'] {
+    opacity: 0;
+    transition-property: opacity, transform;
+}
+[data-aos^='fade'][data-aos^='fade'].aos-animate {
+    opacity: 1;
+    transform: translateZ(0);
+}
+[data-aos='fade-up'] {
+    transform: translate3d(0, 100px, 0);
+}
+[data-aos='fade-down'] {
+    transform: translate3d(0, -100px, 0);
+}
+
+/* ---- zoom ---- */
+[data-aos^='zoom'][data-aos^='zoom'] {
+    opacity: 0;
+    transition-property: opacity, transform;
+}
+[data-aos^='zoom'][data-aos^='zoom'].aos-animate {
+    opacity: 1;
+    transform: translateZ(0) scale(1);
+}
+[data-aos='zoom-in'] {
+    transform: scale(0.6);
+}
+
+/* ---- durations (300 / 400 default / 750 / 1000) ---- */
+[data-aos][data-aos][data-aos-duration='300'],
+body[data-aos-duration='300'] [data-aos] {
+    transition-duration: 0.3s;
+}
+[data-aos][data-aos][data-aos-duration='400'],
+body[data-aos-duration='400'] [data-aos] {
+    transition-duration: 0.4s;
+}
+[data-aos][data-aos][data-aos-duration='750'],
+body[data-aos-duration='750'] [data-aos] {
+    transition-duration: 0.75s;
+}
+[data-aos][data-aos][data-aos-duration='1000'],
+body[data-aos-duration='1000'] [data-aos] {
+    transition-duration: 1s;
+}
