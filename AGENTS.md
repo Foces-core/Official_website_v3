@@ -61,10 +61,11 @@ Read this before touching anything.
   (`echoSlides` + 3× `carouselSlides`), shape-guarded by `validateEchoSlides`.
 - `src/Components/HeroStage/` — 3D WebGL stage adapter: `heroWavesStage.js` (dynamic Three.js/Vanta loader, WebGL context loss recovery, lowPower gating).
 - `src/utils/` — helpers: `frameScheduler.js` (coalesceToFrame & deferToNextPaint), `contactSubmitLogic.js` (pure submit outcome resolver),
-  `srcset.js`, `eventPhotos.js`, `validateContactForm.js`, `contactDraft.js`, `validateEvents.js`, `validateTeam.js`,
-  `validateEchoSlides.js`, `keyboardLock.js`, `ariaActivation.js`, `aosGating.js` (gate + `initAOS`),
-  `breakpoints.js` (viewports 500/767/768/1024), `carouselWrap.js` (shared wrap math),
-  `scrollLock.js` (ref-counted body lock), `navigationCoordinator.js` (unified scroll/overlay/lock coordinator),
+  `safeStorage.js` (fault-tolerant storage primitives), `errorRecoveryLogic.js` (pure auto-reload & chunk recovery policies),
+  `validationRules.js` (shared schema validation primitives), `srcset.js`, `eventPhotos.js`, `validateContactForm.js`,
+  `contactDraft.js`, `validateEvents.js`, `validateTeam.js`, `validateEchoSlides.js`, `keyboardLock.js`,
+  `ariaActivation.js`, `aosGating.js` (gate + `initAOS`), `breakpoints.js` (viewports 500/767/768/1024),
+  `carouselWrap.js` (shared wrap math), `scrollLock.js` (ref-counted body lock), `navigationCoordinator.js` (unified scroll/overlay/lock coordinator),
   `overlayLifecycle.js` (pure focus/trap/escape helpers), `routePrefetchLogic.js` (pure route loaders),
   `DeferredAnalytics.jsx`, `lazyWithRetry.js`, `sessionCookie.js`, `scrollToSectionLogic.js`, `bootSplashLogic.js`.
 - `src/hooks/` — `useLowPower.js` (`useDeviceProfile` driving all perf degradation),

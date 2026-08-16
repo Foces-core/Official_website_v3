@@ -1,6 +1,4 @@
-function isNonEmptyString(value) {
-  return typeof value === 'string' && value.trim() !== '';
-}
+import { isNonEmptyString, checkUniqueKey } from './validationRules.js';
 
 /**
  * Validates the Featuring carousel slide shape (src/data/echoSlides.js).
@@ -25,10 +23,8 @@ export function validateEchoSlides(slides) {
 
     if (!isNonEmptyString(slide.alt)) {
       problems.push(`${label}: missing alt`);
-    } else if (seenAlts.has(slide.alt)) {
-      problems.push(`${label}: duplicate alt "${slide.alt}"`);
     } else {
-      seenAlts.add(slide.alt);
+      checkUniqueKey(seenAlts, slide.alt, `${label}: duplicate alt "${slide.alt}"`, problems);
     }
 
     if (!isNonEmptyString(slide.image)) {

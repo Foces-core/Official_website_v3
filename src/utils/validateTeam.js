@@ -1,6 +1,4 @@
-function isNonEmptyString(value) {
-  return typeof value === 'string' && value.trim() !== '';
-}
+import { isNonEmptyString, checkUniqueKey } from './validationRules.js';
 
 /**
  * Validates the team roster shape (src/data/team.js). Returns an array of
@@ -23,10 +21,8 @@ export function validateTeam(members) {
 
     if (!isNonEmptyString(member.name)) {
       problems.push(`${label}: missing name`);
-    } else if (seenNames.has(member.name)) {
-      problems.push(`${label}: duplicate name "${member.name}"`);
     } else {
-      seenNames.add(member.name);
+      checkUniqueKey(seenNames, member.name, `${label}: duplicate name "${member.name}"`, problems);
     }
 
     if (!isNonEmptyString(member.role)) {

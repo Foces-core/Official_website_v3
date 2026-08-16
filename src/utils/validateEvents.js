@@ -1,28 +1,13 @@
+import {
+  isNonEmptyString,
+  isNumber,
+  findDuplicateWidth,
+  checkUniqueKey,
+} from './validationRules.js';
+
 // 'name' is handled separately (it has its own uniqueness check), so it is
 // deliberately not in this list.
 const STRING_FIELDS = ['tag', 'date', 'desc'];
-
-function isNonEmptyString(value) {
-  return typeof value === 'string' && value.trim() !== '';
-}
-
-// Parses a srcset string like "/a.webp 1000w, /a-800.webp 800w" and returns
-// the first URL that is declared with two DIFFERENT width descriptors (e.g. a
-// 576px file reused as both the 800w and 1000w candidates — browsers would
-// upscale it). Returns null when every URL has a single consistent width.
-function findDuplicateWidth(srcsetString) {
-  const widthsByUrl = new Map();
-  for (const part of srcsetString.split(',')) {
-    const match = part.trim().match(/^(\S+)\s+(\d+)w$/);
-    if (!match) continue;
-    const [, url, width] = match;
-    if (widthsByUrl.has(url) && widthsByUrl.get(url) !== width) {
-      return [url, widthsByUrl.get(url), width];
-    }
-    widthsByUrl.set(url, width);
-  }
-  return null;
-}
 
 /**
  * Validates the event data shape (src/data/events.js). Returns an array of
@@ -49,20 +34,16 @@ export function validateEvents(events) {
 
     if (event.id == null) {
       problems.push(`${label}: missing id`);
-    } else if (typeof event.id !== 'number') {
+    } else if (!isNumber(event.id)) {
       problems.push(`${label}: id must be a number`);
-    } else if (seenIds.has(event.id)) {
-      problems.push(`${label}: duplicate id ${event.id}`);
     } else {
-      seenIds.add(event.id);
+      checkUniqueKey(seenIds, event.id, `${label}: duplicate id ${event.id}`, problems);
     }
 
     if (!isNonEmptyString(event.name)) {
       problems.push(`${label}: missing name`);
-    } else if (seenNames.has(event.name)) {
-      problems.push(`${label}: duplicate name "${event.name}"`);
     } else {
-      seenNames.add(event.name);
+      checkUniqueKey(seenNames, event.name, `${label}: duplicate name "${event.name}"`, problems);
     }
 
     STRING_FIELDS.forEach((field) => {
