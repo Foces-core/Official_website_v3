@@ -10,20 +10,16 @@ import {
 import { normalizeIndex, wrapTarget } from '../utils/carouselWrap.js';
 
 /**
- * Hand-rolled carousel — replaces Swiper (react) for the two carousels on the
- * site (Featuring's flat slider and Execom's 3D cube), keeping the behaviors
- * the site relied on: the cube rotates 90° per face (matching EffectCube with
- * shadows off), swipe/touch drag with `touch-action: none` + preventDefault
- * gesture ownership, arrow-key arbitration through keyboardLock.js, autoplay
- * gated by useAutoplayOnScreen, and the seamless 3-copy wrap (carouselWrap).
+ * Hand-rolled carousel engine — replaces Swiper for the two carousels on the
+ * site (Featuring's flat slider and Execom's 3D cube). The instance IS the
+ * engine — no compat seam. Consumers call the real interface:
+ * `slideTo/slidePrev/slideNext`, `enableKeyboard/disableKeyboard`,
+ * `startAutoplay/stopAutoplay`. Slide states live on data attributes
+ * (`data-slide-active`, `data-slide-next`, `data-slide-prev`). The root
+ * carries `__carouselEngine__`.
  *
- * The instance is swiper-shaped on purpose — the seams that consumed Swiper
- * (syncCarouselKeyboard, useAutoplayOnScreen, rectIsOnScreen, the E2E suite)
- * keep working unchanged: it exposes `el`, `slides`, `activeIndex`,
- * `slideTo/slidePrev/slideNext`, `keyboard.enable/disable` and
- * `autoplay.start/stop/resume`. The DOM keeps the `.swiper-slide` /
- * `.swiper-wrapper` class names (they are the stable hooks the E2E suite and
- * CSS use) — only the engine is gone.
+ * Autoplay owns its own visibility gating (IntersectionObserver on wrapperRef),
+ * drag-pause/resume is internal, and the seamless 3-copy wrap (carouselWrap).
  *
  * Geometry (pure math in carouselGeometry.js):
  *   flat — track translate3d(-activeIndex * step); slides flex-sized
@@ -31,15 +27,15 @@ import { normalizeIndex, wrapTarget } from '../utils/carouselWrap.js';
  *          `-activeIndex * 90deg` around the face-center origin
  *
  * @param {object} opts
- * @param {React.RefObject<HTMLElement>} opts.elRef — the carousel root (the
- *   element carrying .feat-swiper / .execom-swiper / .execom-cube-swiper)
+ * @param {React.RefObject<HTMLElement>} opts.elRef — the carousel root
+ * @param {React.RefObject<HTMLElement>} [opts.wrapperRef] — outer wrapper for
+ *   autoplay visibility gating (IntersectionObserver, threshold 0.1)
  * @param {number} opts.total — logical slide count (before the 3-copy wrap)
  * @param {'flat' | 'cube'} opts.mode
  * @param {number} [opts.slidesPerView=1] — flat mode visible slides
  * @param {number} [opts.spaceBetween=0] — flat mode gap between slides (px)
  * @param {number} [opts.autoplayDelay=0] — ms between autoplay turns (0 = off)
- * @param {number} [opts.initialIndex] — raw index to start at (default: the
- *   middle copy, `total`, so the wrap never trips on mount)
+ * @param {number} [opts.initialIndex] — raw index to start at
  * @param {number} [opts.speed=350] — transition ms for animated moves
  * @param {(normalizedIndex: number) => void} [opts.onActiveChange] — fired
  *   with the normalized (0..total-1) index on every settle
@@ -47,6 +43,7 @@ import { normalizeIndex, wrapTarget } from '../utils/carouselWrap.js';
  */
 export default function useCarousel({
   elRef,
+  wrapperRef,
   total,
   mode,
   slidesPerView = 1,
@@ -59,8 +56,6 @@ export default function useCarousel({
   const trackRef = useRef(null);
   const instanceRef = useRef(null);
 
-  // The instance + handlers are created once and read the latest props/DOM
-  // through refs — no stale closures, no re-created listeners.
   const propsRef = useRef({ total, mode, slidesPerView, spaceBetween, autoplayDelay, speed });
   propsRef.current = { total, mode, slidesPerView, spaceBetween, autoplayDelay, speed };
   const onActiveChangeRef = useRef(onActiveChange);
@@ -95,14 +90,9 @@ export default function useCarousel({
     const { mode: m, spaceBetween: gap } = p();
     if (m === 'cube') {
       s.faceWidth = t.clientWidth || root()?.clientWidth || 0;
-      // Slides are absolutely positioned (no in-flow height), so the track
-      // must be sized explicitly — the card inside has a fixed CSS height.
       const firstCard = t.firstElementChild?.firstElementChild;
       const h = firstCard ? firstCard.offsetHeight : 0;
       if (h) t.style.height = `${h}px`;
-      // Face transforms depend only on each index and the measured face width
-      // — neither changes during a drag, so write them once here (NOT in the
-      // pointermove hot path, which only re-rotates the track).
       applyFaceTransforms();
     } else {
       const first = t.firstElementChild;
@@ -119,15 +109,12 @@ export default function useCarousel({
     const children = Array.from(t.children);
     const raw = s.raw;
     children.forEach((slide, i) => {
-      slide.classList.toggle('swiper-slide-active', i === raw);
-      slide.classList.toggle('swiper-slide-next', i === raw + 1);
-      slide.classList.toggle('swiper-slide-prev', i === raw - 1);
+      slide.toggleAttribute('data-slide-active', i === raw);
+      slide.toggleAttribute('data-slide-next', i === raw + 1);
+      slide.toggleAttribute('data-slide-prev', i === raw - 1);
     });
   }
 
-  // Cube faces: rotateY(i * 90°) translateZ(radius). Written from measure /
-  // styleTrack (index + faceWidth only) — kept out of applyTransforms so a
-  // pointer drag re-rotates the track without rewriting all faces every move.
   function applyFaceTransforms() {
     const t = track();
     if (!t || p().mode !== 'cube') return;
@@ -149,11 +136,6 @@ export default function useCarousel({
       t.style.transform = flatTrackTransform(s.raw, s.step, s.dragging ? s.dragOffset : 0);
     }
     syncActiveClasses();
-    // Failsafe gate (see Execom/custom.css): only once the first transforms
-    // and active classes are in place may the cube CSS hide the non-visible
-    // faces. Reaching here means the hook is alive — before this point the
-    // faces stay visible (stacked) rather than the section going blank on a
-    // chunk/JS failure.
     root()?.setAttribute('data-carousel-ready', '');
   }
 
@@ -199,13 +181,8 @@ export default function useCarousel({
     }
   }
 
-  // --- keyboard (arbitrated by keyboardLock.js via enable/disable) ---------
+  // --- keyboard ------------------------------------------------------------
 
-  // onKeyDown is re-created every render, so the handler actually registered
-  // on window must be stored — removeEventListener must drop THAT exact
-  // function. Otherwise a re-render before disableKeyboard() would remove the
-  // new closure while the original stayed registered, and arrow keys would
-  // keep driving (and preventDefault-ing on) a stale/unmounted instance.
   const keydownHandler = useRef(null);
 
   function onKeyDown(e) {
@@ -234,18 +211,12 @@ export default function useCarousel({
     }
   }
 
-  // --- drag (pointer events; touch-action: none owns the gesture) ----------
+  // --- drag ----------------------------------------------------------------
 
   function onPointerDown(e) {
-    // Only the first pointer owns the drag — a second finger (or a stray
-    // pointer) must not overwrite s.pointerId and hijack the gesture.
     if (s.dragging) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     s.dragging = true;
-    // Pause autoplay for the duration of the drag: the interval must not fire
-    // a goTo() mid-gesture (it would move the track under the user's finger
-    // and corrupt the release snap). Remember it was running so onPointerUp
-    // can resume it.
     s.dragAutoplayWasOn = !!s.autoplayTimer;
     if (s.autoplayTimer) stopAutoplay();
     s.pointerId = e.pointerId;
@@ -254,21 +225,15 @@ export default function useCarousel({
     s.lastMoveX = e.clientX;
     s.lastMoveT = performance.now();
     s.velocity = 0;
-    // Guarded: synthetic PointerEvents (E2E probes) have no active pointer,
-    // and setPointerCapture would throw NotFoundError for their pointerId.
     try {
       track()?.setPointerCapture?.(e.pointerId);
     } catch {
-      // ignore — the drag still tracks via clientX deltas
+      /* ignore */
     }
   }
 
   function onPointerMove(e) {
-    // Ignore moves from any pointer that is not the one that started the
-    // drag (multi-touch: only the owning pointer moves the carousel).
     if (!s.dragging || e.pointerId !== s.pointerId) return;
-    // Gesture ownership (ADR-0007): the carousel owns the drag, so the page
-    // must not scroll from it. preventDefault + touch-action: none (CSS).
     e.preventDefault();
     const dx = e.clientX - s.dragStartX;
     const now = performance.now();
@@ -282,20 +247,14 @@ export default function useCarousel({
   }
 
   function onPointerUp(e) {
-    // Only the owning pointer may end the drag (also fired for pointercancel,
-    // which carries the same pointerId).
     if (!s.dragging || e.pointerId !== s.pointerId) return;
     s.dragging = false;
-    // Release the capture BEFORE the settle animation starts, so the browser
-    // stops delivering move events to a track that is about to animate.
     const pid = s.pointerId;
     try {
       track()?.releasePointerCapture?.(pid);
     } catch {
-      // ignore
+      /* ignore */
     }
-    // Clear the stored id — a later pointercancel for a different pointer
-    // must not release a stale capture.
     s.pointerId = null;
     const { mode: m } = p();
     const step = m === 'cube' ? s.faceWidth : s.step;
@@ -303,8 +262,6 @@ export default function useCarousel({
     s.dragOffset = 0;
     s.velocity = 0;
     goTo(s.raw + snap, true);
-    // Resume autoplay if the drag paused it (disableOnInteraction: false —
-    // interaction resets the timer but doesn't stop autoplay permanently).
     if (s.dragAutoplayWasOn) {
       s.dragAutoplayWasOn = false;
       startAutoplay();
@@ -313,8 +270,6 @@ export default function useCarousel({
 
   function onTransitionEnd(e) {
     if (e.target !== track()) return;
-    // A settle that crossed a copy boundary: jump 0ms to the equivalent slide
-    // in the adjacent copy (same normalized content → invisible).
     const { total: n } = p();
     const target = wrapTarget(s.raw, n);
     if (target != null) {
@@ -347,7 +302,7 @@ export default function useCarousel({
     onTransitionEnd,
   };
 
-  // The swiper-shaped instance — created once, delegates through handlersRef.
+  // The engine instance — created once, delegates through handlersRef.
   if (!instanceRef.current) {
     instanceRef.current = {
       get el() {
@@ -362,31 +317,20 @@ export default function useCarousel({
       slideTo: (i, ms) => handlersRef.current.slideTo(i, ms),
       slidePrev: () => handlersRef.current.slidePrev(),
       slideNext: () => handlersRef.current.slideNext(),
-      keyboard: {
-        enable: () => handlersRef.current.enableKeyboard(),
-        disable: () => handlersRef.current.disableKeyboard(),
-      },
-      autoplay: {
-        start: () => handlersRef.current.startAutoplay(),
-        stop: () => handlersRef.current.stopAutoplay(),
-        resume: () => handlersRef.current.startAutoplay(),
-      },
+      enableKeyboard: () => handlersRef.current.enableKeyboard(),
+      disableKeyboard: () => handlersRef.current.disableKeyboard(),
+      startAutoplay: () => handlersRef.current.startAutoplay(),
+      stopAutoplay: () => handlersRef.current.stopAutoplay(),
     };
   }
 
-  // Style the track/slides for the current mode + slidesPerView. Called on
-  // mount and whenever the layout-affecting props change (Featuring's
-  // responsive slidesPerView re-sizes the slides; Execom's flat/cube switch
-  // re-positions them).
   function styleTrack() {
     const t = track();
     const r = root();
     if (!t || !r) return;
     const { mode: m, slidesPerView: spv, spaceBetween: gap } = p();
     r.setAttribute('data-carousel-mode', m);
-    // Debug/probe handle (the carousel-probe reads it the way it read
-    // Swiper's __swiper__). Not part of the app contract.
-    r.__carousel__ = instanceRef.current;
+    r.__carouselEngine__ = instanceRef.current;
     if (m === 'cube') {
       r.style.perspective = '1200px';
       t.style.display = '';
@@ -406,8 +350,6 @@ export default function useCarousel({
       t.style.alignItems = 'center';
       t.style.columnGap = `${gap}px`;
       t.style.transformStyle = '';
-      // Clear the cube-mode scaffolding: a flat fallback must not keep the
-      // cube's pinned pixel height or perspective when mode switches.
       t.style.height = '';
       r.style.perspective = '';
       Array.from(t.children).forEach((slide) => {
@@ -423,8 +365,7 @@ export default function useCarousel({
 
   handlersRef.current.styleTrack = styleTrack;
 
-  // Mount: style the track/slides for the mode, measure, position at the
-  // initial (middle-copy) index, attach listeners. Runs once.
+  // Mount
   useLayoutEffect(() => {
     const t = track();
     const r = root();
@@ -440,8 +381,6 @@ export default function useCarousel({
     t.addEventListener('pointerup', handlersRef.current.onPointerUp);
     t.addEventListener('pointercancel', handlersRef.current.onPointerUp);
     t.addEventListener('transitionend', handlersRef.current.onTransitionEnd);
-    // rAF-throttled: a drag-resize fires resize dozens of times per second,
-    // and measure() forces layout — coalesce to at most one per frame.
     let resizeRaf = 0;
     const onResize = () => {
       if (resizeRaf) return;
@@ -467,11 +406,7 @@ export default function useCarousel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Re-style when the layout-affecting props change (e.g. Featuring's
-  // responsive slidesPerView) without re-attaching listeners. Only refs are
-  // touched, so the dep array is exactly the layout-affecting props. The
-  // mount run is skipped — the layout effect above already did the initial
-  // styleTrack/measure/applyTransforms on first paint.
+  // Re-style when layout-affecting props change
   const mountedRef = useRef(false);
   useEffect(() => {
     if (!mountedRef.current) {
@@ -482,6 +417,28 @@ export default function useCarousel({
     handlersRef.current.measure();
     handlersRef.current.applyTransforms();
   }, [slidesPerView, spaceBetween, mode, total]);
+
+  // Autoplay visibility gating: observe wrapperRef and start/stop autoplay
+  // as the carousel enters/leaves the viewport. Only active when
+  // autoplayDelay > 0. Replaces the external useAutoplayOnScreen hook.
+  useEffect(() => {
+    if (!p().autoplayDelay) return;
+    if (typeof IntersectionObserver === 'undefined') return;
+    const el = wrapperRef?.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          handlersRef.current.startAutoplay();
+        } else {
+          handlersRef.current.stopAutoplay();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [wrapperRef]);
 
   return { instanceRef, trackRef };
 }

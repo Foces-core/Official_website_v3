@@ -3,19 +3,13 @@ import { useViewportWidth } from '../../hooks/useViewportWidth.js';
 import useCarousel from '../../hooks/useCarousel.js';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 import useDeviceProfile from '../../hooks/useLowPower.js';
-import { useAutoplayOnScreen } from '../../hooks/useAutoplayOnScreen.js';
+
 import BlurImage from '../../Components/BlurImage/BlurImage';
 import featuring from '../../assets/featuring.svg';
 import { echoSlides, carouselSlides } from '../../data/echoSlides.js';
 import { featuringSlidesPerView, DESKTOP_MIN, SMALL_SCREEN_MAX } from '../../utils/breakpoints.js';
 import { copyFor } from '../../utils/carouselWrap.js';
-import {
-  syncCarouselKeyboard,
-  subscribeKeyboardArbitration,
-  registerWidget,
-  markInteracted,
-  rectIsOnScreen,
-} from '../../utils/keyboardLock.js';
+import useCarouselKeyboard from '../../hooks/useCarouselKeyboard.js';
 import './Featuring.css';
 
 function Featuring() {
@@ -29,6 +23,7 @@ function Featuring() {
 
   const { instanceRef, trackRef } = useCarousel({
     elRef,
+    wrapperRef: sectionRef,
     total: echoSlides.length,
     mode: 'flat',
     slidesPerView: noSlides,
@@ -38,36 +33,11 @@ function Featuring() {
     onActiveChange: setActiveSlide,
   });
 
-  // Arrow-key arbitration (see utils/keyboardLock.js): register the carousel
-  // as a widget and enable its keyboard only while it owns the arrows (on
-  // screen + last interacted). Pointer use on the carousel area (slides,
-  // arrows, dots) marks it — not clicks on the section heading.
-  useEffect(() => {
-    const id = 'featuring';
-    const unregister = registerWidget(
-      id,
-      () => rectIsOnScreen(instanceRef.current?.el, 60),
-      sectionRef.current, // section wrapper includes the arrows AND the dot indicator
-    );
-    const sync = () => syncCarouselKeyboard(instanceRef.current, id);
-    const mark = () => markInteracted(id);
-    sync(); // ownership may already be decided before this runs
-    const carouselEl = carouselRef.current;
-    carouselEl?.addEventListener('pointerdown', mark, true);
-    const unsub = subscribeKeyboardArbitration(sync);
-    return () => {
-      unregister();
-      unsub();
-      carouselEl?.removeEventListener('pointerdown', mark, true);
-    };
-  }, [instanceRef]);
-
-  // Only run autoplay while the carousel is on screen (shared seam —
-  // useAutoplayOnScreen, same hook TeamCarousel uses).
-  useAutoplayOnScreen({
-    elementRef: carouselRef,
-    swiperRef: instanceRef,
-    disable: disableAutoplay,
+  // Arrow-key arbitration: one deep module, one line (see hooks/useCarouselKeyboard.js).
+  useCarouselKeyboard({
+    widgetId: 'featuring',
+    instanceRef,
+    wrapperRef: sectionRef,
   });
 
   // The seamless loop renders 3 copies of the slides; label each copy with

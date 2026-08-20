@@ -1,14 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { useAutoplayOnScreen, autoplayGate } from '../../src/hooks/useAutoplayOnScreen.js';
+import useCarousel from '../../src/hooks/useCarousel.js';
 import { createHarness } from './harness.jsx';
-
-// The autoplay-on-screen gating policy used to be two near-identical
-// IntersectionObserver effects (Featuring.jsx and TeamCarousel.jsx) — the
-// "two implementations of one behavior" seam signal. This seam owns the
-// decision (autoplayGate) and the observer wiring; the carousels keep only
-// their swiper setup.
 
 let ioCallback;
 let observedEl;
@@ -34,101 +28,75 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('autoplayGate — the pure decision', () => {
-  it('starts when visible and not disabled', () => {
-    expect(autoplayGate(true, false)).toBe('start');
+const fireIntersection = (isIntersecting) =>
+  act(() => {
+    ioCallback([{ isIntersecting }]);
   });
 
-  it('stops when visible but disabled', () => {
-    expect(autoplayGate(true, true)).toBe('stop');
-  });
-
-  it('stops when off screen regardless of the disable flag', () => {
-    expect(autoplayGate(false, false)).toBe('stop');
-    expect(autoplayGate(false, true)).toBe('stop');
-  });
-});
-
-describe('useAutoplayOnScreen — observer wiring', () => {
+describe('autoplay visibility gating — internal to useCarousel', () => {
   let harness;
 
-  function Probe({ disable = false }) {
-    const elementRef = useRef(null);
-    const swiperRef = useRef({
-      autoplay: { start: vi.fn(), stop: vi.fn() },
-    });
-    useAutoplayOnScreen({ elementRef, swiperRef, disable });
-    return <div ref={elementRef} data-testid="probe" />;
+  function CarouselProbe({ autoplayDelay = 3500 }) {
+    const elRef = useRef(null);
+    const wrapperRef = useRef(null);
+    const { trackRef } = useCarousel({ elRef, wrapperRef, total: 4, mode: 'flat', autoplayDelay });
+    return (
+      <div ref={wrapperRef}>
+        <div ref={elRef}>
+          <div ref={trackRef} className="swiper-wrapper">
+            {Array.from({ length: 12 }, (_, i) => (
+              <div key={i} className="swiper-slide">
+                slide {i % 4}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
+  CarouselProbe.propTypes = { autoplayDelay: PropTypes.number };
 
-  Probe.propTypes = {
-    disable: PropTypes.bool,
-  };
-
-  const fireIntersection = (isIntersecting) =>
-    act(() => {
-      ioCallback([{ isIntersecting }]);
-    });
+  const inst = (h) => h.container.querySelector('[data-carousel-mode]').__carouselEngine__;
 
   beforeEach(() => {
     harness = createHarness();
   });
-
   afterEach(() => {
+    vi.useRealTimers();
     harness.unmount();
   });
 
-  it('starts autoplay when the carousel scrolls into view', () => {
-    const refs = {};
-    function SpyingProbe() {
-      const elementRef = useRef(null);
-      const swiperRef = useRef({ autoplay: { start: vi.fn(), stop: vi.fn() } });
-      refs.swiper = swiperRef.current;
-      useAutoplayOnScreen({ elementRef, swiperRef, disable: false });
-      return <div ref={elementRef} />;
-    }
-    harness.render(<SpyingProbe />);
+  it('observes wrapperRef when autoplayDelay > 0', () => {
+    harness.render(<CarouselProbe autoplayDelay={3500} />);
     expect(observedEl).not.toBeNull();
-
-    fireIntersection(true);
-    expect(refs.swiper.autoplay.start).toHaveBeenCalledTimes(1);
-    expect(refs.swiper.autoplay.stop).not.toHaveBeenCalled();
   });
 
-  it('stops autoplay when the carousel leaves the viewport', () => {
-    const refs = {};
-    function SpyingProbe() {
-      const elementRef = useRef(null);
-      const swiperRef = useRef({ autoplay: { start: vi.fn(), stop: vi.fn() } });
-      refs.swiper = swiperRef.current;
-      useAutoplayOnScreen({ elementRef, swiperRef, disable: false });
-      return <div ref={elementRef} />;
-    }
-    harness.render(<SpyingProbe />);
+  it('does NOT observe when autoplayDelay is 0', () => {
+    harness.render(<CarouselProbe autoplayDelay={0} />);
+    expect(observedEl).toBeNull();
+  });
 
+  it('starts autoplay when carousel scrolls into view', () => {
+    vi.useFakeTimers();
+    harness.render(<CarouselProbe autoplayDelay={100} />);
     fireIntersection(true);
+    vi.advanceTimersByTime(100);
+    expect(inst(harness).activeIndex).toBe(5);
+  });
+
+  it('stops autoplay when carousel leaves viewport', () => {
+    vi.useFakeTimers();
+    harness.render(<CarouselProbe autoplayDelay={100} />);
+    fireIntersection(true);
+    vi.advanceTimersByTime(100);
+    expect(inst(harness).activeIndex).toBe(5);
     fireIntersection(false);
-    expect(refs.swiper.autoplay.stop).toHaveBeenCalledTimes(1);
+    vi.advanceTimersByTime(300);
+    expect(inst(harness).activeIndex).toBe(5);
   });
 
-  it('never starts when autoplay is disabled (reduced motion)', () => {
-    const refs = {};
-    function SpyingProbe() {
-      const elementRef = useRef(null);
-      const swiperRef = useRef({ autoplay: { start: vi.fn(), stop: vi.fn() } });
-      refs.swiper = swiperRef.current;
-      useAutoplayOnScreen({ elementRef, swiperRef, disable: true });
-      return <div ref={elementRef} />;
-    }
-    harness.render(<SpyingProbe />);
-
-    fireIntersection(true);
-    expect(refs.swiper.autoplay.start).not.toHaveBeenCalled();
-    expect(refs.swiper.autoplay.stop).toHaveBeenCalledTimes(1);
-  });
-
-  it('is a no-op when IntersectionObserver is unavailable', () => {
+  it('is a no-op when IntersectionObserver unavailable', () => {
     vi.stubGlobal('IntersectionObserver', undefined);
-    expect(() => harness.render(<Probe />)).not.toThrow();
+    expect(() => harness.render(<CarouselProbe />)).not.toThrow();
   });
 });

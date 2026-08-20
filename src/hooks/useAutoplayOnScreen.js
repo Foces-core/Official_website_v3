@@ -1,16 +1,9 @@
-import { useEffect } from 'react';
-
-// Autoplay-on-screen gating — one seam for both carousels (Featuring and
-// Execom's TeamCarousel used to implement the identical IntersectionObserver
-// effect; the "two implementations of one behavior" signal). The decision is
-// pure; the hook wires it to the DOM. The `swiperRef` name is legacy — it now
-// holds the hand-rolled useCarousel instance, which keeps the same
-// autoplay.start/stop shape.
+// Autoplay-on-screen gating is now internal to useCarousel — the engine
+// observes the wrapperRef with IntersectionObserver and starts/stops autoplay
+// as the carousel enters/leaves the viewport. This hook is retained for
+// backward compatibility but is no longer imported by any consumer.
 //
 //   autoplayGate(visible, disable)  — 'start' | 'stop'
-//   useAutoplayOnScreen(...)        — observe the carousel wrapper; start
-//                                     autoplay while visible and not
-//                                     disabled, stop when hidden or disabled
 
 /**
  * The gating decision: run autoplay only when the carousel is on screen AND
@@ -23,34 +16,4 @@ import { useEffect } from 'react';
  */
 export function autoplayGate(visible, disable) {
   return visible && !disable ? 'start' : 'stop';
-}
-
-/**
- * Observe a carousel wrapper and start/stop swiper autoplay as it enters or
- * leaves the viewport (threshold 0.1, matching both original effects).
- *
- * @param {{ elementRef: React.RefObject<HTMLElement>,
- *           swiperRef: React.RefObject<{ autoplay?: { start(): void, stop(): void } }>,
- *           disable: boolean }} props
- */
-export function useAutoplayOnScreen({ elementRef, swiperRef, disable }) {
-  useEffect(() => {
-    if (typeof IntersectionObserver === 'undefined') return;
-    const el = elementRef.current;
-    if (!el) return;
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        const swiper = swiperRef.current;
-        if (!swiper) return;
-        if (autoplayGate(entry.isIntersecting, disable) === 'start') {
-          swiper.autoplay?.start();
-        } else {
-          swiper.autoplay?.stop();
-        }
-      },
-      { threshold: 0.1 },
-    );
-    io.observe(el);
-    return () => io.disconnect();
-  }, [elementRef, swiperRef, disable]);
 }

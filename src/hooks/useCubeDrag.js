@@ -6,15 +6,15 @@ import {
   isWindStopped,
   resolveWindDown,
   splitSpins,
-} from '../Components/AboutUs/cubePhysics.js';
+  emaVelocity,
+} from '../utils/cubePhysics.js';
 import {
   SNAP_GRACE_MS,
   WIND_DOWN_OVERRIDE_MS,
   ARROW_SPIN_GRACE_MS,
   DRAG_OVERRIDE_MS,
   isManualOverrideActive,
-} from '../Components/AboutUs/cubeTiming.js';
-import { emaVelocity } from '../Components/AboutUs/easterEggCelebration.js';
+} from '../utils/cubeTiming.js';
 import { createSpinTracker } from '../Components/AboutUs/easterEggLogic.js';
 import {
   registerWidget,
@@ -37,12 +37,13 @@ import {
  *
  * @param {{ lowPower: boolean, slowNetwork: boolean,
  *           spinConfig: { target: number, gap: number },
- *           onEggFire: () => void }} props
+ *           onEggFire: () => void,
+ *           wrapRef: React.RefObject<HTMLElement> }} props
  * @returns {{ boxRef: React.RefObject<HTMLElement>,
  *             handlers: { onTouchStart, onTouchMove, onTouchEnd, onTouchCancel,
  *                         onMouseDown } }} — spread handlers onto the cube
  */
-export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire }) {
+export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrapRef }) {
   const boxRef = useRef(null);
   const rotXRef = useRef(0);
   const rotYRef = useRef(0);
@@ -309,14 +310,14 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire }) {
   // the arrow keys over any on-screen carousel.
   useEffect(() => {
     const unregister = registerWidget('cube', () => rectIsOnScreen(boxRef.current, 40));
-    const wrap = document.getElementById('mainDiv-about');
+    const wrap = wrapRef?.current;
     const mark = () => markInteracted('cube');
     wrap?.addEventListener('pointerdown', mark, true);
     return () => {
       unregister();
       wrap?.removeEventListener('pointerdown', mark, true);
     };
-  }, []);
+  }, [wrapRef]);
 
   // Own the touch gesture: once a drag starts on the cube, native scrolling
   // is suppressed for the rest of the gesture — rotating must never scroll

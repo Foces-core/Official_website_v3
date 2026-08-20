@@ -11,7 +11,7 @@ test.describe('Featuring carousel', () => {
   const activeIndex = (page) =>
     page.evaluate(() =>
       [...document.querySelectorAll('.feat-swiper .swiper-slide')].findIndex((s) =>
-        s.classList.contains('swiper-slide-active'),
+        s.hasAttribute('data-slide-active'),
       ),
     );
 
@@ -22,9 +22,7 @@ test.describe('Featuring carousel', () => {
   });
 
   test('keyboard arrows navigate when carousel owns focus', async ({ page }) => {
-    // Click the visible slide so it claims arrow ownership (the carousel
-    // starts mid-way through duplicated copies; earlier slides are off-screen).
-    await page.locator('.feat-swiper .swiper-slide-active').click({ force: true });
+    await page.locator('.feat-swiper [data-slide-active]').click({ force: true });
     await page.waitForTimeout(300);
     const before = await activeIndex(page);
     await page.keyboard.press('ArrowRight');
@@ -42,8 +40,6 @@ test.describe('Featuring carousel', () => {
 });
 
 test.describe('Execom / Meet the team carousel', () => {
-  // The Execom carousel runs both a desktop and a mobile variant; the mobile
-  // cube is hidden on desktop (CSS), so these interactions are desktop-only.
   test.skip(({ isMobile }) => isMobile, 'team carousel interactions are desktop-only');
 
   test.beforeEach(async ({ page }) => {
@@ -55,34 +51,25 @@ test.describe('Execom / Meet the team carousel', () => {
   const activeIndex = (page) =>
     page.evaluate(() =>
       [...document.querySelectorAll('.execom-swiper .swiper-slide')].findIndex((s) =>
-        s.classList.contains('swiper-slide-active'),
+        s.hasAttribute('data-slide-active'),
       ),
     );
 
   test('dot indicator navigates the team carousel', async ({ page }) => {
-    // Both cube and flat modes render the custom 11-dot indicator (the
-    // 3-copy wrap replaces a true loop, so the dots are hand-rolled).
     const before = await activeIndex(page);
     await page.locator('.execom-swiper + div button[aria-label]').nth(2).click();
     await expect.poll(() => activeIndex(page), { timeout: 5000 }).not.toBe(before);
   });
 
   test('keyboard arrows navigate the team carousel', async ({ page }) => {
-    // Click the visible slide so it claims arrow ownership (the swiper starts
-    // mid-way through duplicated copies; earlier slides are off-screen).
-    await page.locator('.execom-swiper .swiper-slide-active').click({ force: true });
+    await page.locator('.execom-swiper [data-slide-active]').click({ force: true });
     await page.waitForTimeout(300);
     const before = await activeIndex(page);
     await page.keyboard.press('ArrowRight');
     await expect.poll(() => activeIndex(page), { timeout: 5000 }).not.toBe(before);
   });
 
-  test('arrow keys still work after clicking a dot (dots are part of the widget)', async ({
-    page,
-  }) => {
-    // The dots sit OUTSIDE the carousel root (direct sibling). If the widget
-    // boundary were the root alone, focusing a dot would withhold the arrow
-    // keys from the carousel. Click a dot, then verify arrows still advance.
+  test('arrow keys still work after clicking a dot', async ({ page }) => {
     await page.locator('.execom-swiper + div button[aria-label]').nth(3).click();
     await page.waitForTimeout(300);
     const before = await activeIndex(page);
@@ -109,9 +96,6 @@ test.describe('Execom mobile cube drag', () => {
   test('dragging the cube advances to the next member', async ({ page }) => {
     await gotoHome(page);
     await page.locator('#execom').scrollIntoViewIfNeeded();
-    // The cube is only interactive once the hook applied the first transforms
-    // — wait for the readiness signal instead of a fixed sleep, so slow/low-
-    // power profiles can't flake the test.
     await page.locator('.execom-cube-swiper[data-carousel-ready]').waitFor({
       state: 'attached',
     });
@@ -119,12 +103,12 @@ test.describe('Execom mobile cube drag', () => {
     const activeIndex = () =>
       page.evaluate(() =>
         [...document.querySelectorAll('.execom-cube-swiper .swiper-slide')].findIndex((s) =>
-          s.classList.contains('swiper-slide-active'),
+          s.hasAttribute('data-slide-active'),
         ),
       );
     const before = await activeIndex();
 
-    const slide = page.locator('.execom-cube-swiper .swiper-slide-active');
+    const slide = page.locator('.execom-cube-swiper [data-slide-active]');
     const box = await slide.boundingBox();
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.down();
@@ -134,63 +118,40 @@ test.describe('Execom mobile cube drag', () => {
     await expect.poll(activeIndex, { timeout: 5000 }).not.toBe(before);
   });
 
-  test('every member shows on the front face as the cube advances (3-copy overlap is class-gated)', async ({
-    page,
-  }) => {
+  test('every member shows on the front face as the cube advances', async ({ page }) => {
     await gotoHome(page);
     await page.locator('#execom').scrollIntoViewIfNeeded();
     await page.locator('.execom-cube-swiper[data-carousel-ready]').waitFor({
       state: 'attached',
     });
 
-    // The 3 copies of 11 slides share the four cube faces (children i, i±4,
-    // ... sit at the same angle) — the class-gated visibility CSS decides
-    // which child actually shows. Walk every logical member and read the
-    // visible (active) member each step to prove the correct one is always
-    // front-facing.
-    // The active class toggles synchronously inside slideNext (no transition
-    // or settle needed for the read) — keeping this synchronous makes the
-    // walk deterministic across device profiles instead of racing a fixed
-    // timeout.
     const seen = await page.evaluate(() => {
       const swiper = document.querySelector('.execom-cube-swiper');
-      const inst = swiper.__carousel__;
-      inst.autoplay.stop(); // the on-screen autoplay timer must not skip a step mid-walk
+      const inst = swiper.__carouselEngine__;
+      inst.stopAutoplay();
       const out = [];
       for (let i = 0; i < 11; i++) {
-        // :not([aria-hidden]) skips the blur LQIP placeholder — BlurImage
-        // renders it first (aria-hidden, alt=""), and only the content image
-        // carries the member's name.
-        const active = swiper.querySelector('.swiper-slide-active img:not([aria-hidden])');
+        const active = swiper.querySelector('[data-slide-active] img:not([aria-hidden])');
         out.push(active ? active.alt : null);
         inst.slideNext();
       }
       return out;
     });
-    // All 11 distinct members, in roster order (the wrap repeats content).
     expect(new Set(seen).size).toBe(11);
     expect(seen.every((name) => typeof name === 'string' && name.length > 0)).toBe(true);
   });
 
-  test('rotating the cube never scrolls the page (touch-action none + preventDefault)', async ({
-    page,
-  }) => {
+  test('rotating the cube never scrolls the page', async ({ page }) => {
     await gotoHome(page);
     await page.locator('#execom').scrollIntoViewIfNeeded();
     await page.locator('.execom-cube-swiper[data-carousel-ready]').waitFor({
       state: 'attached',
     });
 
-    // A real phone fires pointer events for a touch drag — the hand-rolled
-    // carousel drives its gesture entirely from pointer events, so synthetic
-    // PointerEvents are the faithful stand-in. The cube must own the gesture
-    // (computed touch-action none) and the hook must engage and preventDefault
-    // the horizontal drag — either alone would let a diagonal drag scroll the
-    // page mid-rotation.
     const result = await page.evaluate(() => {
       const swiper = document.querySelector('.execom-cube-swiper');
       const slide =
-        swiper.querySelector('.swiper-slide-active') || swiper.querySelector('.swiper-slide');
+        swiper.querySelector('[data-slide-active]') || swiper.querySelector('.swiper-slide');
       const rect = slide.getBoundingClientRect();
       const x0 = rect.left + rect.width / 2;
       const y0 = rect.top + rect.height / 2;

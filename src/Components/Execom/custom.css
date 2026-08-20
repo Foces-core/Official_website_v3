@@ -29,9 +29,9 @@
     pointer-events: none;
 }
 
-[data-carousel-mode='cube'][data-carousel-ready] .swiper-slide-active,
-[data-carousel-mode='cube'][data-carousel-ready] .swiper-slide-next,
-[data-carousel-mode='cube'][data-carousel-ready] .swiper-slide-prev {
+[data-carousel-mode='cube'][data-carousel-ready] [data-slide-active],
+[data-carousel-mode='cube'][data-carousel-ready] [data-slide-next],
+[data-carousel-mode='cube'][data-carousel-ready] [data-slide-prev] {
     visibility: visible;
     pointer-events: auto;
 }
@@ -79,7 +79,9 @@
 }
 
 /* GPU-friendly compositing for the 3D cube (smoother swipes on low-end devices) */
-[data-carousel-mode='cube'] .swiper-slide {
+[data-carousel-mode='cube'] [data-slide-active],
+[data-carousel-mode='cube'] [data-slide-next],
+[data-carousel-mode='cube'] [data-slide-prev] {
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
 }

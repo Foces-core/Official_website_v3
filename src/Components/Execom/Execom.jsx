@@ -2,7 +2,6 @@ import React from 'react';
 import BlurImage from '../BlurImage/BlurImage';
 import useDeviceProfile from '../../hooks/useLowPower.js';
 import TeamCarousel from './TeamCarousel';
-import { markInteracted } from '../../utils/keyboardLock.js';
 import { cardData, cubeSlides, advisor } from '../../data/team.js';
 
 import MeetTheTeam from '../../assets/MeetTheTeam.svg';
@@ -12,22 +11,7 @@ function Execom() {
   const disableAutoplay = reducedMotion;
   const flatCube = lowPower || reducedMotion;
   const [activeCube, setActiveCube] = React.useState(0);
-  // The carousel wrapper: pointer use anywhere on it (slides OR dots) marks
-  // both TeamCarousel widgets as interacted for arrow-key arbitration.
-  const carouselRef = React.useRef(null);
-
-  // Pointer use on the carousel area marks BOTH widgets interacted — the
-  // arrow-key arbitration (inside each TeamCarousel) then hands the keys to
-  // whichever is actually on screen and last-interacted.
-  React.useEffect(() => {
-    const mark = () => {
-      markInteracted('execom-desk');
-      markInteracted('execom-mobile');
-    };
-    const carouselEl = carouselRef.current;
-    carouselEl?.addEventListener('pointerdown', mark, true);
-    return () => carouselEl?.removeEventListener('pointerdown', mark, true);
-  }, []);
+  // Each TeamCarousel marks itself interacted on pointer use via useCarouselKeyboard.
 
   // The section id lives on the ScrollGate wrapper in App.jsx, not here —
   // the wrapper is always present, so anchors/scrollspy always find it.
@@ -113,7 +97,7 @@ function Execom() {
           one (sm:block / sm:hidden). E2E selectors (.execom-swiper,
           .execom-cube-swiper, dots as the swiper's direct sibling) rely on
           this structure. */}
-      <div ref={carouselRef} className="m-auto w-[90%] sm:w-5/6 md:w-4/5 px-2 relative">
+      <div className="m-auto w-[90%] sm:w-5/6 md:w-4/5 px-2 relative">
         <TeamCarousel
           widgetId="execom-desk"
           variant="desktop"

@@ -8,56 +8,75 @@ import {
   isDesktopViewport,
   isWideScreen,
   featuringSlidesPerView,
+  teamSlidesPerView,
+  teamGap,
+  TEAM_CARD_SIZES,
 } from '../../src/utils/breakpoints.js';
 
-// Viewport breakpoint hygiene: the numbers 500/767/768/1024 used to be
-// scattered as magic literals across Loader, Navbar, ScrollGate, HeroSection
-// and Featuring. This module is the single source of truth. Two DISTINCT
-// thresholds are at play, and the tests pin both:
-//   - 767/768 — the app's own layout bucket (mobile menu, ScrollGate cache)
-//   - 1024    — detectProfile's desktop query (min-width: 1024px), used by
-//     the Vanta hero. NOT the same boundary as DESKTOP_MIN.
-// The 767 mobile edge matches detectProfile's `(max-width: 767px)`.
-
 describe('breakpoint constants agree with detectProfile CSS queries', () => {
-  it('mobile boundary is 767px (max-width: 767px)', () => {
+  it('mobile boundary is 767px', () => {
     expect(MOBILE_MAX).toBe(767);
   });
-
-  it('layout-desktop bucket is 768px (app-internal, not detectProfile)', () => {
+  it('layout-desktop bucket is 768px', () => {
     expect(DESKTOP_MIN).toBe(768);
   });
-
-  it('detectProfile-desktop is 1024px, distinct from the 768px layout bucket', () => {
+  it('detectProfile-desktop is 1024px', () => {
     expect(isWideScreen(1023)).toBe(false);
     expect(isWideScreen(1024)).toBe(true);
   });
 });
 
-describe('isSmallScreen — the Loader/Featuring 500px narrow heuristic', () => {
-  it('is true below 500 and false from 500 up', () => {
+describe('isSmallScreen', () => {
+  it('true below 500, false from 500 up', () => {
     expect(isSmallScreen(499)).toBe(true);
     expect(isSmallScreen(SMALL_SCREEN_MAX)).toBe(false);
     expect(isSmallScreen(640)).toBe(false);
   });
 });
 
-describe('isMobileViewport / isDesktopViewport — Navbar + ScrollGate buckets', () => {
-  it('partition at 768 with no gap (767 mobile, 768 desktop)', () => {
+describe('isMobileViewport / isDesktopViewport', () => {
+  it('partition at 768', () => {
     expect(isMobileViewport(767)).toBe(true);
     expect(isMobileViewport(768)).toBe(false);
     expect(isDesktopViewport(767)).toBe(false);
     expect(isDesktopViewport(768)).toBe(true);
-    expect(isDesktopViewport(1024)).toBe(true);
   });
 });
 
-describe('featuringSlidesPerView — the ECHO carousel column policy', () => {
-  it('1 slide below 500px, 2 from 500px through 749px, 3 from 750px', () => {
+describe('featuringSlidesPerView', () => {
+  it('1 below 500, 2 from 500-749, 3 from 750', () => {
     expect(featuringSlidesPerView(400)).toBe(1);
     expect(featuringSlidesPerView(500)).toBe(2);
     expect(featuringSlidesPerView(749)).toBe(2);
     expect(featuringSlidesPerView(750)).toBe(3);
     expect(featuringSlidesPerView(1280)).toBe(3);
+  });
+});
+
+describe('teamSlidesPerView', () => {
+  it('1 below 640, 2 at 640, 3 at 1024, 4 at 1280', () => {
+    expect(teamSlidesPerView(400)).toBe(1);
+    expect(teamSlidesPerView(639)).toBe(1);
+    expect(teamSlidesPerView(640)).toBe(2);
+    expect(teamSlidesPerView(1023)).toBe(2);
+    expect(teamSlidesPerView(1024)).toBe(3);
+    expect(teamSlidesPerView(1279)).toBe(3);
+    expect(teamSlidesPerView(1280)).toBe(4);
+  });
+});
+
+describe('teamGap', () => {
+  it('24px at 1024+, 20px below', () => {
+    expect(teamGap(1023)).toBe(20);
+    expect(teamGap(1024)).toBe(24);
+    expect(teamGap(1280)).toBe(24);
+  });
+});
+
+describe('TEAM_CARD_SIZES', () => {
+  it('contains 1280px, 640px, and 320px', () => {
+    expect(TEAM_CARD_SIZES).toContain('1280px');
+    expect(TEAM_CARD_SIZES).toContain('640px');
+    expect(TEAM_CARD_SIZES).toContain('320px');
   });
 });
