@@ -5,8 +5,8 @@ import { createParticleSpec, stepParticle } from './confettiSim.js';
 // easterEggLogic.js owns the DETECTION; this module owns what happens when
 // it does: message pick, capped toast, confetti burst, rAF loop.
 
-export const TOAST_MS = 1700;
-export const MAX_TOASTS = 4;
+const TOAST_MS = 1700;
+const MAX_TOASTS = 4;
 
 export const PARTICLE_COLORS = [
   '#22d3ee',

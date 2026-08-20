@@ -37,7 +37,7 @@ export function featuringSlidesPerView(width) {
 
 // Team carousel (Execom) column policy — flat desktop mode only; cube mode
 // is always 1. Derived from the same breakpoint constants.
-export const TEAM_WIDE_MIN = 1280;
+const TEAM_WIDE_MIN = 1280;
 const TEAM_3COL_MIN = 1024;
 const TEAM_2COL_MIN = 640;
 export function teamSlidesPerView(width) {

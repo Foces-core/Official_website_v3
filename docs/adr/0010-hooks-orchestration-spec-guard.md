@@ -18,10 +18,10 @@ without a spec — coverage thresholds only catch the aggregate drop.
 ## Decision
 
 1. **Effect orchestration may live in hooks** (`useCubeDrag`,
-   `useViewportWidth`, `useAutoplayOnScreen`), as long as every decision
+   `useViewportWidth`, `useCarousel`), as long as every decision
    inside stays a pure tested module behind the hook's seam
    (`cubePhysics`/`cubeTiming`/`easterEggLogic`, `breakpoints`,
-   `autoplayGate`). This is a locality move: no module gets deeper, the
+   `carouselGeometry`/`carouselWrap`). This is a locality move: no module gets deeper, the
    render component gets smaller. Pure modules remain the only place
    decisions are computed.
 2. **ADR-0009 is structurally enforced.** `pnpm check:specs`

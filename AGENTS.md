@@ -44,10 +44,11 @@ Read this before touching anything.
 - `src/Components/` — shared UI (AboutUs, BlurImage, ContactUs, Execom, Grain, InstallPrompt,
   Loader, ScrollGate, SectionSkeleton).
 - `src/Components/AboutUs/` — the cube: `easterEggLogic.js` (spin tracker + `SPIN_BARS`),
-  `cubePhysics.js` (wind-down), `cubeTiming.js` (timing windows +
-  `isManualOverrideActive`), `confettiSim.js` (particles), `easterEggCelebration.js`
-  (toast/message/EMA policies) — pure modules, the JSX is wiring. The motion
-  orchestration (drag/wind-down/snap, spin tracking, arrow keys) is `useCubeDrag`.
+  `confettiSim.js` (particles), `easterEggCelebration.js`
+  (toast/message/EMA policies) — pure modules, the JSX is wiring. Wind-down
+  physics live in `src/utils/cubePhysics.js` and timing windows in
+  `src/utils/cubeTiming.js`. The motion orchestration (drag/wind-down/snap,
+  spin tracking, arrow keys) is `useCubeDrag`.
 - `src/Components/BlurImage/` — shared image primitive: `BlurImage.jsx` + `useBlurImage.js`
   (loaded/placeholder/fetch-priority state machine).
 - `src/Components/Execom/` — team carousel: `TeamCarousel.jsx`; the wrap math
@@ -71,7 +72,7 @@ Read this before touching anything.
   `DeferredAnalytics.jsx`, `lazyWithRetry.js`, `sessionCookie.js`, `scrollToSectionLogic.js`, `bootSplashLogic.js`.
 - `src/hooks/` — `useLowPower.js` (`useDeviceProfile` driving all perf degradation),
   `useViewportWidth.js` (reactive width over `breakpoints.js`),
-  `useAutoplayOnScreen.js` (on-screen autoplay gate), `useCubeDrag.js` (cube orchestration),
+  `useCarousel.js` (hand-rolled carousel engine with internal autoplay visibility gating), `useCubeDrag.js` (cube orchestration),
   `useScrollLock.js` (body scroll lock lifecycle), `useEscapeClose.js` (escape key dismissal),
   `useFocusTrap.js` (tab key focus trap), `useFocusRestore.js` (entry focus & next-paint restore),
   `useRoutePrefetch.js` (idle/foresight/intent route chunk prefetch wiring).

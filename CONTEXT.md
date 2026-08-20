@@ -53,10 +53,9 @@ lowPower }` from `detectProfile`. One seam, two entries: components
   `ARROW_SPIN_GRACE_MS`, `DRAG_OVERRIDE_MS`) gated by
   `isManualOverrideActive`, spin accumulation is `splitSpins`.
 - **Autoplay gating** — carousels autoplay only while on screen and not
-  disabled (`reducedMotion`/`lowPower`): `useAutoplayOnScreen` + the pure
-  `autoplayGate(visible, disable)`. One owner for both Featuring and
-  TeamCarousel; the duplicated IntersectionObserver effects were the
-  evidence.
+  disabled (`reducedMotion`/`lowPower`): the visibility gating is internal
+  to `useCarousel` (IntersectionObserver on the wrapper, threshold 0.1),
+  with autoplay pauses on drag and on the off-screen state.
 - **Viewport seam** — reactive width for components (`useViewportWidth`)
   over the named `breakpoints.js` constants (`SMALL_SCREEN_MAX` 500,
   `MOBILE_MAX` 767, `DESKTOP_MIN` 768, `WIDE_SCREEN_MIN` 1024). `sizes`
