@@ -255,7 +255,9 @@ jobs:
           echo "all checks passed"
       - name: notify vercel
         if: always()
-        uses: vercel/repository-dispatch/actions/status@v1
+        # Pinned to a commit using the node24 runtime — the v1 tag still ships
+        # node20, which is deprecated on GH runners (renovate can digest-bump).
+        uses: vercel/repository-dispatch/actions/status@61881006269f0b5ac2cb186b198c54be6afe90e1
         with:
           name: 'Vercel - focces: lint'
 
