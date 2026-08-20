@@ -24,12 +24,25 @@ function stubIdleCallback() {
   vi.stubGlobal('cancelIdleCallback', () => {});
 }
 
+// The /_vercel/ script-route probes gate mounting (only Vercel serves them).
+function stubVercelFetch() {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(() =>
+      Promise.resolve({
+        headers: { get: (h) => (h === 'content-type' ? 'application/javascript' : null) },
+      }),
+    ),
+  );
+}
+
 function renderAnalytics() {
   harness.render(<DeferredAnalytics />);
 }
 
 beforeEach(() => {
   harness = createHarness();
+  stubVercelFetch();
 });
 
 afterEach(() => {
@@ -50,7 +63,11 @@ describe('DeferredAnalytics — one vendor import fails', () => {
     await act(async () => {
       idleCb({ didTimeout: false, timeRemaining: () => 50 });
     });
-    await act(async () => {});
+    // The platform-probe gate adds extra promise hops before the vendor
+    // imports land; act only drains React's own work loop, so flush them.
+    await act(async () => {
+      for (let i = 0; i < 8; i++) await Promise.resolve();
+    });
 
     expect(document.getElementById('speed-insights')).not.toBeNull();
     expect(document.getElementById('vercel-analytics')).toBeNull();

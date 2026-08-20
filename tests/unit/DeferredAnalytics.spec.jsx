@@ -20,6 +20,18 @@ let harness;
 let idleCb;
 let idleOpts;
 
+// The /_vercel/ script-route probes gate mounting (only Vercel serves them).
+function stubVercelFetch(contentType = 'application/javascript') {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(() =>
+      Promise.resolve({
+        headers: { get: (h) => (h === 'content-type' ? contentType : null) },
+      }),
+    ),
+  );
+}
+
 function stubIdleCallback() {
   idleCb = null;
   idleOpts = null;
@@ -44,16 +56,26 @@ function interact() {
   });
 }
 
+// The platform-probe gate adds extra promise hops before the vendor imports
+// land; act only drains React's own work loop, so flush them explicitly.
+async function flushChain() {
+  await act(async () => {
+    for (let i = 0; i < 8; i++) await Promise.resolve();
+  });
+}
+
 async function fireIdle() {
   await act(async () => {
     idleCb?.({ didTimeout: false, timeRemaining: () => 50 });
   });
+  await flushChain();
 }
 
 async function mountAt(t) {
   await act(async () => {
     vi.advanceTimersByTime(t);
   });
+  await flushChain();
 }
 
 function insightsRendered() {
@@ -66,6 +88,7 @@ function analyticsRendered() {
 
 beforeEach(() => {
   harness = createHarness();
+  stubVercelFetch();
 });
 
 afterEach(() => {
@@ -139,6 +162,18 @@ describe('DeferredAnalytics — idle boot path', () => {
     interact();
     await fireIdle();
     expect(insightsRendered()).toBe(true);
+  });
+
+  it('stays unmounted off Vercel: an SPA-fallback response never mounts the SDKs', async () => {
+    stubVercelFetch('text/html'); // static host answering /_vercel/* with index.html
+    stubIdleCallback();
+    renderAnalytics();
+    interact();
+    await fireIdle();
+    await act(async () => {});
+    expect(insightsRendered()).toBe(false);
+    expect(analyticsRendered()).toBe(false);
+    expect(harness.container.textContent).toBe('');
   });
 });
 

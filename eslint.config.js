@@ -8,7 +8,7 @@ import prettier from 'eslint-config-prettier';
 
 export default [
   // node_modules and .git are ignored by default in flat config.
-  { ignores: ['dist', 'foces-webv23'] },
+  { ignores: ['dist', 'foces-webv23', 'test-results', 'playwright-report'] },
   js.configs.recommended,
   react.configs.flat.recommended,
   react.configs.flat['jsx-runtime'],

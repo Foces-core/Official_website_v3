@@ -53,17 +53,43 @@ export default function DeferredAnalytics() {
   useEffect(() => {
     if (!ready || (Insights && Analytics)) return;
     let cancelled = false;
-    // allSettled, not all: a failed vendor chunk must never discard the
-    // integration that loaded fine (best-effort per integration).
-    Promise.allSettled([
-      import('@vercel/speed-insights/react'),
-      import('@vercel/analytics/react'),
-    ]).then(([speedResult, analyticsResult]) => {
-      if (cancelled) return;
-      if (speedResult.status === 'fulfilled') setInsights(() => speedResult.value.SpeedInsights);
-      if (analyticsResult.status === 'fulfilled')
-        setAnalytics(() => analyticsResult.value.Analytics);
-    });
+
+    // Only Vercel serves the /_vercel/ analytics script routes. On any other
+    // static host the SPA fallback answers with index.html, and the injected
+    // <script> then throws a parse error ("Unexpected token '<'"). Probe each
+    // route and only boot the integration whose script the platform actually
+    // serves — best-effort per integration, never an app error.
+    const probe = (url) =>
+      typeof fetch === 'function'
+        ? fetch(url, { method: 'HEAD' })
+            .then((r) => (r.headers.get('content-type') || '').includes('javascript'))
+            .catch(() => false)
+        : Promise.resolve(false);
+
+    const mountIfServed = (url, importVendor, setter) => {
+      probe(url)
+        .then((served) => {
+          if (!served || cancelled) return null;
+          return importVendor();
+        })
+        .then((mod) => {
+          if (!mod || cancelled) return;
+          setter(() => mod);
+        })
+        .catch(() => undefined);
+    };
+
+    mountIfServed(
+      '/_vercel/speed-insights/script.js',
+      () => import('@vercel/speed-insights/react').then((m) => m.SpeedInsights),
+      setInsights,
+    );
+    mountIfServed(
+      '/_vercel/insights/script.js',
+      () => import('@vercel/analytics/react').then((m) => m.Analytics),
+      setAnalytics,
+    );
+
     return () => {
       cancelled = true;
     };
