@@ -53,19 +53,43 @@ test.describe('Cube easter egg', () => {
 
   test('no consecutive duplicate toast messages', async ({ page }) => {
     await scrollToCube(page);
+
+    // Toast creation is a background-priority task (scheduleBackgroundTask),
+    // so under load the second toast can land AFTER the first expired
+    // (TOAST_MS = 1700ms). Capturing every toast ADD as it happens — not the
+    // live DOM at one instant — is immune to that scheduling jitter.
+    await page.evaluate(() => {
+      window.__toastTexts = [];
+      const obs = new MutationObserver((muts) => {
+        for (const m of muts) {
+          for (const n of m.addedNodes) {
+            if (n.nodeType === 1 && n.classList.contains('about-toast')) {
+              window.__toastTexts.push(n.textContent);
+            }
+          }
+        }
+      });
+      obs.observe(document.body, { childList: true, subtree: true });
+      window.__toastObs = obs;
+    });
+
     await pressArrowRapidly(page, 'ArrowRight', 20);
-    await expect(page.locator('.about-toast').first()).toBeVisible();
     await pressArrowRapidly(page, 'ArrowRight', 20);
 
+    // Both bursts must fire (touch bar fires 2x per burst; desktop once at
+    // the 20th press). The collected ADD order IS the fire order.
+    await expect
+      .poll(async () => page.evaluate(() => window.__toastTexts.length))
+      .toBeGreaterThanOrEqual(2);
+
     // Assert the picker's real invariant directly: consecutive fires never
-    // repeat, so no two ADJACENT toasts in the stack may be equal. Comparing
-    // "last toast of burst 1 vs first new toast of burst 2" instead is
-    // flaky: on the touch bar (target 8) a 20-press burst fires twice (at 8
-    // and 16), and wind-down inertia keeps registering spins after the burst
-    // ends (within the 1500ms gap), so bursts blur together and the index
-    // math lands on a stale toast. Adjacent-pair checking over the whole
-    // live stack is immune to that timing.
-    const texts = (await page.locator('.about-toast').allTextContents()).map((t) => t.trim());
+    // repeat, so no two ADJACENT toasts may be equal. Comparing "last toast
+    // of burst 1 vs first new toast of burst 2" instead is flaky: on the
+    // touch bar (target 8) a 20-press burst fires twice (at 8 and 16), and
+    // wind-down inertia keeps registering spins after the burst ends (within
+    // the 1500ms gap), so bursts blur together and the index math lands on a
+    // stale toast. Adjacent-pair checking over the whole ADD log is immune.
+    const texts = (await page.evaluate(() => window.__toastTexts)).map((t) => t.trim());
     expect(texts.length).toBeGreaterThanOrEqual(2);
     for (let i = 1; i < texts.length; i += 1) {
       expect(texts[i]).not.toBe(texts[i - 1]);
