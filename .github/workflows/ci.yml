@@ -212,6 +212,53 @@ jobs:
       contents: read
       pull-requests: read
 
+  # Tell Vercel when the GitHub checks finish so deployments that "wait for
+  # CI" don't hang. The `name` below must match the check name configured in
+  # Vercel → Project → Settings → Git → Deployment settings → "Wait for CI
+  # to pass (GitHub Checks)". Runs even on failure so Vercel marks the
+  # deployment as failed instead of waiting forever.
+  notify-vercel:
+    name: Notify Vercel
+    if: always()
+    needs: [lint-and-build, e2e, probes, commitlint]
+    runs-on: ubuntu-latest
+    permissions:
+      # The status action calls the Actions jobs API (actions: read) and
+      # creates commit statuses (statuses: write) — contents: write is NOT
+      # what it needs.
+      actions: read
+      statuses: write
+    steps:
+      # The action derives the posted state from THIS job's step conclusions
+      # (main stage posts "pending", post stage the final state), so a guard
+      # step fails the job — and only the job — when any dependency check
+      # failed. Without it Vercel would always receive "success". Skipped
+      # jobs (e.g. commitlint on push) count as green.
+      - name: Guard - fail when any dependency check failed
+        if: always()
+        shell: bash
+        run: |
+          failed=""
+          for r in \
+            "${{ needs.lint-and-build.result }}" \
+            "${{ needs.e2e.result }}" \
+            "${{ needs.probes.result }}" \
+            "${{ needs.commitlint.result }}"; do
+            if [ "$r" != "success" ] && [ "$r" != "skipped" ]; then
+              failed=1
+            fi
+          done
+          if [ -n "$failed" ]; then
+            echo "one or more checks failed — reporting failure to Vercel"
+            exit 1
+          fi
+          echo "all checks passed"
+      - name: notify vercel
+        if: always()
+        uses: vercel/repository-dispatch/actions/status@v1
+        with:
+          name: 'Vercel - focces: lint'
+
   # The merge gate stays closed until every check is green; once the run
   # finishes red, mention `github.actor` (the user who triggered the run,
   # usually whoever pushed). GitHub emails PR participants only per their
