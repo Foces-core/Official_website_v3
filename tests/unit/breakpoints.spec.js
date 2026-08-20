@@ -10,7 +10,10 @@ import {
   featuringSlidesPerView,
   teamSlidesPerView,
   teamGap,
-  TEAM_CARD_SIZES,
+  TEAM_WIDE_MIN,
+  TEAM_3COL_MIN,
+  TEAM_2COL_MIN,
+  FEATURING_2COL_MAX,
 } from '../../src/utils/breakpoints.js';
 
 describe('breakpoint constants agree with detectProfile CSS queries', () => {
@@ -73,10 +76,14 @@ describe('teamGap', () => {
   });
 });
 
-describe('TEAM_CARD_SIZES', () => {
-  it('contains 1280px, 640px, and 320px', () => {
-    expect(TEAM_CARD_SIZES).toContain('1280px');
-    expect(TEAM_CARD_SIZES).toContain('640px');
-    expect(TEAM_CARD_SIZES).toContain('320px');
+describe('column-policy breakpoints are exported for the sizes strings', () => {
+  it('featuring switches to 2 columns at 500, 3 at 750', () => {
+    expect(FEATURING_2COL_MAX).toBe(750);
+    expect(SMALL_SCREEN_MAX).toBe(500);
+  });
+  it('team columns switch at 640, 1024, and 1280', () => {
+    expect(TEAM_2COL_MIN).toBe(640);
+    expect(TEAM_3COL_MIN).toBe(1024);
+    expect(TEAM_WIDE_MIN).toBe(1280);
   });
 });
