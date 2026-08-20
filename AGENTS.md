@@ -135,9 +135,11 @@ For UI/a11y changes, run the relevant probes in `scripts/` against
   through a PR.
 - **Flow:** `git fetch origin` → branch off an up-to-date `main` →
   commit (`conventional` only) → push the branch → open a PR with `gh pr
-create` → **wait for every gate to finish** (CI Lint & Build, E2E, Probes,
-  CodeQL, plus the CodeRabbit review) → resolve any failures/findings with
-  follow-up commits → merge when all green.
+create` → **wait for every gate to finish** — the four required checks
+  (Lint & Build, E2E (Playwright), Probes (structural checks), Validate
+  commit messages), GitHub's default code scanning (CodeQL), and the
+  CodeRabbit review → resolve any failures/findings with follow-up commits
+  → merge when all green.
 - **The remote moves on its own** (Dependabot, Renovate, other agents push
   daily). Before pushing anything, `git fetch origin` and rebase/merge the
   latest `main`; never force-push. If a push is rejected, fetch + rebase +
@@ -146,8 +148,10 @@ create` → **wait for every gate to finish** (CI Lint & Build, E2E, Probes,
   no automated review. If a fix was already pushed straight to main, the only
   way to get it reviewed is to re-issue it through a PR.
 - **Never merge your own PR without CI + CodeQL + CodeRabbit passing** —
-  `request_changes_workflow: true` blocks merges with critical findings; do
-  not dismiss CodeRabbit findings without a reason.
+  `.coderabbit.yaml` sets `request_changes_workflow: true`, so CodeRabbit
+  submits a formal "Changes Requested" review for critical findings and its
+  title/description checks run in `error` mode — both block the merge until
+  resolved. Do not dismiss findings without a reason.
 
 ## Docs / ADR
 
