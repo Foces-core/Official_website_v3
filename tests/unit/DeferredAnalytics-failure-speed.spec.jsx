@@ -30,6 +30,7 @@ function stubVercelFetch() {
     'fetch',
     vi.fn(() =>
       Promise.resolve({
+        ok: true,
         headers: { get: (h) => (h === 'content-type' ? 'application/javascript' : null) },
       }),
     ),

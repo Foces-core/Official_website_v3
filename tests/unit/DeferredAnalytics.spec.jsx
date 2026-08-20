@@ -26,6 +26,7 @@ function stubVercelFetch(contentType = 'application/javascript') {
     'fetch',
     vi.fn(() =>
       Promise.resolve({
+        ok: true,
         headers: { get: (h) => (h === 'content-type' ? contentType : null) },
       }),
     ),
@@ -174,6 +175,31 @@ describe('DeferredAnalytics — idle boot path', () => {
     expect(insightsRendered()).toBe(false);
     expect(analyticsRendered()).toBe(false);
     expect(harness.container.textContent).toBe('');
+  });
+
+  it('probes exactly the two Vercel script routes with a HEAD request', async () => {
+    stubIdleCallback();
+    renderAnalytics();
+    interact();
+    await fireIdle();
+    expect(globalThis.fetch).toHaveBeenCalledWith('/_vercel/speed-insights/script.js', {
+      method: 'HEAD',
+    });
+    expect(globalThis.fetch).toHaveBeenCalledWith('/_vercel/insights/script.js', {
+      method: 'HEAD',
+    });
+    expect(globalThis.fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('stays unmounted when no fetch global exists (probe cannot run)', async () => {
+    vi.stubGlobal('fetch', undefined);
+    stubIdleCallback();
+    renderAnalytics();
+    interact();
+    await fireIdle();
+    await act(async () => {});
+    expect(insightsRendered()).toBe(false);
+    expect(analyticsRendered()).toBe(false);
   });
 });
 
