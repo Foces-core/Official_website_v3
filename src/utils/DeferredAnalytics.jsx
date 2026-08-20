@@ -1,4 +1,10 @@
 import { useEffect, useState } from 'react';
+import {
+  VERCEL_INSIGHTS_ROUTE,
+  VERCEL_ANALYTICS_ROUTE,
+  isVercelScriptResponse,
+  mountAnalyticsIfServed,
+} from './analyticsProbe.js';
 
 /**
  * Analytics must never compete with the real page for network or CPU on first
@@ -7,12 +13,17 @@ import { useEffect, useState } from 'react';
  * when the safety timer fires, or once the browser is idle — whichever comes
  * first — so on 2G/3G the FOCES content wins the critical path.
  *
+ * Each integration mounts only when Vercel actually serves its /_vercel/
+ * script route (decisions live in the pure module analyticsProbe.js): off
+ * Vercel the SPA fallback would answer with index.html and the injected
+ * <script> would throw a parse error ("Unexpected token '<'").
+ *
  * Only the Vercel vendor module code (speed-insights/react and
  * analytics/react) is code-split behind the dynamic imports below — React
  * itself is statically imported above and is already part of the app
- * bundle. Each integration loads independently (Promise.allSettled): a
- * failure in one never blocks the other from mounting, and a failed vendor
- * chunk is best-effort — never an app error.
+ * bundle. Each integration loads independently; a failure in one never
+ * blocks the other from mounting, and a failed vendor chunk is
+ * best-effort — never an app error.
  */
 export default function DeferredAnalytics() {
   const [ready, setReady] = useState(false);
@@ -51,49 +62,38 @@ export default function DeferredAnalytics() {
   }, []);
 
   useEffect(() => {
-    if (!ready || (Insights && Analytics)) return;
+    if (!ready) return;
     let cancelled = false;
 
-    // Only Vercel serves the /_vercel/ analytics script routes. On any other
-    // static host the SPA fallback answers with index.html, and the injected
-    // <script> then throws a parse error ("Unexpected token '<'"). Probe each
-    // route and only boot the integration whose script the platform actually
-    // serves — best-effort per integration, never an app error.
-    const probe = (url) =>
-      typeof fetch === 'function'
-        ? fetch(url, { method: 'HEAD' })
-            .then((r) => (r.headers.get('content-type') || '').includes('javascript'))
-            .catch(() => false)
-        : Promise.resolve(false);
-
-    const mountIfServed = (url, importVendor, setter) => {
-      probe(url)
-        .then((served) => {
-          if (!served || cancelled) return null;
-          return importVendor();
-        })
-        .then((mod) => {
-          if (!mod || cancelled) return;
-          setter(() => mod);
-        })
-        .catch(() => undefined);
+    // Network I/O lives here at the wiring layer (ADR-0009); the probe result
+    // decision is made by the pure module.
+    const probe = (url) => {
+      const fetchFn = globalThis.fetch;
+      if (typeof fetchFn !== 'function') return Promise.resolve(false);
+      return fetchFn(url, { method: 'HEAD' })
+        .then(isVercelScriptResponse)
+        .catch(() => false);
     };
 
-    mountIfServed(
-      '/_vercel/speed-insights/script.js',
-      () => import('@vercel/speed-insights/react').then((m) => m.SpeedInsights),
-      setInsights,
-    );
-    mountIfServed(
-      '/_vercel/insights/script.js',
-      () => import('@vercel/analytics/react').then((m) => m.Analytics),
-      setAnalytics,
-    );
+    mountAnalyticsIfServed({
+      url: VERCEL_INSIGHTS_ROUTE,
+      probe,
+      importVendor: () => import('@vercel/speed-insights/react').then((m) => m.SpeedInsights),
+      setter: setInsights,
+      isCancelled: () => cancelled,
+    });
+    mountAnalyticsIfServed({
+      url: VERCEL_ANALYTICS_ROUTE,
+      probe,
+      importVendor: () => import('@vercel/analytics/react').then((m) => m.Analytics),
+      setter: setAnalytics,
+      isCancelled: () => cancelled,
+    });
 
     return () => {
       cancelled = true;
     };
-  }, [ready, Insights, Analytics]);
+  }, [ready]);
 
   if (!ready || (!Insights && !Analytics)) return null;
   return (

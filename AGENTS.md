@@ -69,6 +69,7 @@ Read this before touching anything.
   `ariaActivation.js`, `aosGating.js` (gate + `initAOS`), `breakpoints.js` (viewports 500/767/768/1024),
   `carouselWrap.js` (shared wrap math), `scrollLock.js` (ref-counted body lock), `navigationCoordinator.js` (unified scroll/overlay/lock coordinator),
   `overlayLifecycle.js` (pure focus/trap/escape helpers), `routePrefetchLogic.js` (pure route loaders),
+  `analyticsProbe.js` (pure Vercel-script gate behind DeferredAnalytics),
   `DeferredAnalytics.jsx`, `lazyWithRetry.js`, `sessionCookie.js`, `scrollToSectionLogic.js`, `bootSplashLogic.js`.
 - `src/hooks/` — `useLowPower.js` (`useDeviceProfile` driving all perf degradation),
   `useViewportWidth.js` (reactive width over `breakpoints.js`),
