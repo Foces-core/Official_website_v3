@@ -127,6 +127,28 @@ queues a run.
 For UI/a11y changes, run the relevant probes in `scripts/` against
 `pnpm preview` (per `CONTRIBUTING.md`).
 
+## Push / PR (how changes land)
+
+- **Never push straight to `main`.** The remote enforces branch protection
+  ("changes must be made through a pull request") — a direct push bypasses
+  CodeRabbit, the PR-time checks, and the review gate entirely. Always ship
+  through a PR.
+- **Flow:** `git fetch origin` → branch off an up-to-date `main` →
+  commit (`conventional` only) → push the branch → open a PR with `gh pr
+create` → **wait for every gate to finish** (CI Lint & Build, E2E, Probes,
+  CodeQL, plus the CodeRabbit review) → resolve any failures/findings with
+  follow-up commits → merge when all green.
+- **The remote moves on its own** (Dependabot, Renovate, other agents push
+  daily). Before pushing anything, `git fetch origin` and rebase/merge the
+  latest `main`; never force-push. If a push is rejected, fetch + rebase +
+  push again.
+- **CodeRabbit reviews PRs only** — a commit pushed directly to `main` gets
+  no automated review. If a fix was already pushed straight to main, the only
+  way to get it reviewed is to re-issue it through a PR.
+- **Never merge your own PR without CI + CodeQL + CodeRabbit passing** —
+  `request_changes_workflow: true` blocks merges with critical findings; do
+  not dismiss CodeRabbit findings without a reason.
+
 ## Docs / ADR
 
 - Any meaningful architecture decision → add a record in `docs/adr/` using the
