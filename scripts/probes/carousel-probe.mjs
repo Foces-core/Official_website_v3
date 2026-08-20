@@ -49,7 +49,7 @@ const loopInfo = await p.evaluate(() => {
   const carouselEl = sec.querySelector('.feat-swiper');
   // The carousel root may not have mounted yet (lazy chunk) — keep the
   // diagnostic result instead of dereferencing null and aborting the probe.
-  const carousel = carouselEl?.__carousel__;
+  const carousel = carouselEl?.__carouselEngine__;
   return { hasApi: !!carousel && typeof carousel.slideNext === 'function' };
 });
 console.log('FEATURING API access:', JSON.stringify(loopInfo));
@@ -61,7 +61,7 @@ for (let i = 0; i < 6; i++) {
   await new Promise((r) => setTimeout(r, 600));
   const t = await p.evaluate(() => {
     const sec = document.getElementById('featuring');
-    const active = sec.querySelector('.swiper-slide-active img');
+    const active = sec.querySelector('[data-slide-active] img');
     return active ? active.getAttribute('alt') : 'none';
   });
   activeTexts.push(t);
@@ -75,26 +75,20 @@ await p.click('button[aria-label="Previous ECHO photos"]').catch(() => {});
 await new Promise((r) => setTimeout(r, 600));
 const prevT = await p.evaluate(() => {
   const sec = document.getElementById('featuring');
-  const active = sec.querySelector('.swiper-slide-active img');
+  const active = sec.querySelector('[data-slide-active] img');
   return active ? active.getAttribute('alt') : 'none';
 });
 console.log('AFTER PREV:', prevT);
 
-// hover glow: simulate hover and check box-shadow on image
-await p.evaluate(() => {
-  const sec = document.getElementById('featuring');
-  const img = sec.querySelector('.swiper-slide-active img');
-  img.dispatchEvent(new MouseEvent('mouseover', { bubbles: true }));
-  img.classList.add(
-    'hover\\:shadow-\\[0_0_25px_6px_rgba\\(255\\,255\\,255\\,0\\.25\\)\\]',
-    'hover\\:ring-white\\/50',
-    'hover\\:scale-105',
-  );
+// hover glow: real pointer hover triggers Tailwind's hover: classes on the
+// active slide's image (mouseover events + manual class-add would not).
+const hoverBox = await p.$eval('[data-slide-active] img', (img) => {
+  const r = img.getBoundingClientRect();
+  return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
 });
+await p.mouse.move(hoverBox.x, hoverBox.y);
 await new Promise((r) => setTimeout(r, 300));
-const hoverState = await p.evaluate(() => {
-  const sec = document.getElementById('featuring');
-  const img = sec.querySelector('.swiper-slide-active img');
+const hoverState = await p.$eval('[data-slide-active] img', (img) => {
   const cs = getComputedStyle(img);
   const r = img.getBoundingClientRect();
   return {
