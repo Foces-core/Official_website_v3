@@ -158,8 +158,10 @@ org/github-workflow.json` for workflows). `pnpm-workspace.yaml`
   usually whoever pushed). GitHub emails PR participants only per their
   own notification settings, so the author is pinged too in most setups —
   the same channel CodeRabbit review comments use.
-- **CodeRabbit** reviews every PR in read-only mode (comments/summaries only —
-  it can't formally block merges; see `.coderabbit.yaml` header).
+- **CodeRabbit** reviews every PR with the assertive profile. With
+  `request_changes_workflow: true` it submits a formal "Changes Requested"
+  review for critical findings and its title/description checks run in
+  `error` mode — both block merges until resolved (see `.coderabbit.yaml`).
 - A **stale bot** closes abandoned issues/PRs so the backlog stays clean.
 - The **nightly perf run** (`.github/workflows/perf-nightly.yml`) audits
   Lighthouse across eight profiles; a budget breach opens a regression
