@@ -11,7 +11,6 @@ permissions:
 jobs:
   coverage:
     runs-on: ubuntu-latest
-    if: ${{ secrets.CODECOV_TOKEN != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -20,6 +19,9 @@ jobs:
       - run: npm install || true
       - run: npm run test --if-present || true
       - uses: codecov/codecov-action@v4
+        if: env.CODECOV_TOKEN != ''
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
