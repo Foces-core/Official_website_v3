@@ -90,13 +90,16 @@ export default function useCarousel({
     const { mode: m, spaceBetween: gap } = p();
     if (m === 'cube') {
       s.faceWidth = t.clientWidth || root()?.clientWidth || 0;
+      if (!s.faceWidth) return;
       const firstCard = t.firstElementChild?.firstElementChild;
       const h = firstCard ? firstCard.offsetHeight : 0;
       if (h) t.style.height = `${h}px`;
       applyFaceTransforms();
     } else {
       const first = t.firstElementChild;
-      s.slideWidth = first ? first.getBoundingClientRect().width : 0;
+      if (!first || first.offsetParent === null) return;
+      s.slideWidth = first.getBoundingClientRect().width;
+      if (!s.slideWidth) return;
       s.step = slideStep(s.slideWidth, gap);
     }
   }
@@ -422,8 +425,14 @@ export default function useCarousel({
   // as the carousel enters/leaves the viewport. Only active when
   // autoplayDelay > 0. Replaces the external useAutoplayOnScreen hook.
   useEffect(() => {
-    if (!p().autoplayDelay) return;
-    if (typeof IntersectionObserver === 'undefined') return;
+    if (!p().autoplayDelay) {
+      handlersRef.current.stopAutoplay();
+      return;
+    }
+    if (typeof IntersectionObserver === 'undefined') {
+      handlersRef.current.startAutoplay();
+      return;
+    }
     const el = wrapperRef?.current;
     if (!el) return;
     const io = new IntersectionObserver(
@@ -438,7 +447,7 @@ export default function useCarousel({
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [wrapperRef]);
+  }, [wrapperRef, autoplayDelay]);
 
   return { instanceRef, trackRef };
 }
