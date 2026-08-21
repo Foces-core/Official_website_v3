@@ -27,8 +27,10 @@ export function isWideScreen(width) {
 }
 
 // ECHO carousel column policy (Featuring): 1 slide under 500px, 2 up to
-// 750px, 3 beyond.
-const FEATURING_2COL_MAX = 750;
+// 750px, 3 beyond. The breakpoint is exported too so the responsive sizes
+// string in Featuring.jsx matches the column count exactly (a mismatch makes
+// the images render wider than their slide and bleed toward the page edge).
+export const FEATURING_2COL_MAX = 750;
 export function featuringSlidesPerView(width) {
   if (width < SMALL_SCREEN_MAX) return 1;
   if (width < FEATURING_2COL_MAX) return 2;
@@ -36,10 +38,13 @@ export function featuringSlidesPerView(width) {
 }
 
 // Team carousel (Execom) column policy — flat desktop mode only; cube mode
-// is always 1. Derived from the same breakpoint constants.
-const TEAM_WIDE_MIN = 1280;
-const TEAM_3COL_MIN = 1024;
-const TEAM_2COL_MIN = 640;
+// is always 1. Derived from the same breakpoint constants. Exported so the
+// responsive sizes string in TeamCarousel matches the column count and
+// section width exactly (a mismatch makes the edge cards render wider than
+// their slide and bleed under the nav arrows).
+export const TEAM_WIDE_MIN = 1280;
+export const TEAM_3COL_MIN = 1024;
+export const TEAM_2COL_MIN = 640;
 export function teamSlidesPerView(width) {
   if (width >= TEAM_WIDE_MIN) return 4;
   if (width >= TEAM_3COL_MIN) return 3;
@@ -51,6 +56,3 @@ export function teamSlidesPerView(width) {
 export function teamGap(width) {
   return width >= TEAM_3COL_MIN ? 24 : 20;
 }
-
-// Team card responsive sizes string — built from the same breakpoints.
-export const TEAM_CARD_SIZES = `(min-width: ${TEAM_WIDE_MIN}px) 280px, (min-width: ${TEAM_2COL_MIN}px) 360px, 320px`;

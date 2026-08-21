@@ -69,16 +69,6 @@ function HeroSection() {
           className={`h-[50%] w-[38%] relative top-[50vh] left-[10vw] max-[767px]:w-[80%] max-[767px]:top-[41vh] `}
         />
       </div>
-      {/* TEMP: Sentry test button — remove after verifying error tracking */}
-      <button
-        type="button"
-        onClick={() => {
-          throw new Error('This is your first error!');
-        }}
-        className="fixed bottom-4 right-4 z-50 rounded-full bg-red-600 px-4 py-2 text-sm font-semibold text-white"
-      >
-        Break the world
-      </button>
     </div>
   );
 }
