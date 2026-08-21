@@ -103,6 +103,21 @@ Read this before touching anything.
   (single quotes, 100-col, 4-space CSS).
 - **No dead code.** If a field/class/dep isn't consumed, remove it or explain
   why it stays (see `docs/adr/` for how to record the "why").
+- **Cyclomatic complexity.** Keep functions at cyclomatic complexity ≤ 4 as a
+  governance rule documented in AGENTS.md. No ESLint gate is enforced at
+  commit time — rely on code review and the agent directive in AGENTS.md
+  itself to keep scores low without a runtime lint gate.
+- **Mutation testing.** Future agents SHOULD run mutation testing (via
+  `pnpm exec stryker run` or equivalent) when changing pure decision
+  modules. This is a governance requirement documented in AGENTS.md — not an
+  ESLint gate. The baseline and tooling setup lives in the repo for when
+  agents adopt it; the requirement ensures the practice persists across
+  sessions without a runtime gate enforcing it.
+- **Crap score.** Keep functions at low crap score (low cyclomatic complexity
+  - good test coverage). The complexity ≤ 4 rule in AGENTS.md, combined with
+    the unit test suite (`pnpm test:unit`), ensures crap score stays low.
+    No runtime gate enforces this — code review + the AGENTS.md directive
+    governs compliance.
 
 ## Verify (run before you commit)
 
