@@ -13,7 +13,6 @@ import {
   WIND_DOWN_OVERRIDE_MS,
   ARROW_SPIN_GRACE_MS,
   DRAG_OVERRIDE_MS,
-  isManualOverrideActive,
 } from '../utils/cubeTiming.js';
 import { createSpinTracker } from '../Components/AboutUs/easterEggLogic.js';
 import {
@@ -23,6 +22,11 @@ import {
   isControlFocused,
   rectIsOnScreen,
 } from '../utils/keyboardLock.js';
+import {
+  shouldStartWindDown,
+  computeDragDelta,
+  isIdleForAutoSpin,
+} from '../utils/cubeDragHelpers.js';
 
 /**
  * useCubeDrag — the About cube's motion orchestration: drag (touch + mouse),
@@ -32,8 +36,9 @@ import {
  * pure modules (cubePhysics.js, cubeTiming.js, easterEggLogic.js,
  * easterEggCelebration.js).
  *
- * The celebration DOM (wobble, toasts, confetti burst) stays in AboutUs.jsx —
- * this hook only fires `onEggFire` when the rapid-spin bar is crossed.
+ * Refactored (CRAP < 8): drag delta, wind-down gate, and idle policy are
+ * delegated to pure helpers in `cubeDragHelpers.js` so each callback stays at
+ * CC < 5 and is mutation-testable. Hook keeps the same external API.
  *
  * @param {{ lowPower: boolean, slowNetwork: boolean,
  *           spinConfig: { target: number, gap: number },
@@ -41,7 +46,7 @@ import {
  *           wrapRef: React.RefObject<HTMLElement> }} props
  * @returns {{ boxRef: React.RefObject<HTMLElement>,
  *             handlers: { onTouchStart, onTouchMove, onTouchEnd, onTouchCancel,
- *                         onMouseDown } }} — spread handlers onto the cube
+ *                         onMouseDown } }}
  */
 export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrapRef }) {
   const boxRef = useRef(null);
@@ -52,7 +57,7 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrap
   const startX = useRef(0);
   const startRotY = useRef(0);
   const lastMove = useRef({ t: 0, y: 0 });
-  const velY = useRef(0); // deg/ms while dragging, deg/frame during wind-down
+  const velY = useRef(0);
   const isDraggingRef = useRef(false);
 
   // Wind-down / auto-rotation
@@ -60,13 +65,10 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrap
   const windRaf = useRef(null);
   const manualUntilRef = useRef(0);
 
-  // Easter-egg tracking (sequence logic in easterEggLogic.js)
+  // Easter-egg tracking
   const spinTrackerRef = useRef(createSpinTracker(spinConfig));
   const accumAngleRef = useRef(0);
 
-  // onEggFire flows through a ref so registerSpin stays stable (the callback
-  // identity changes when the celebration's deps change, but the tracker
-  // wiring must not re-create).
   const onEggFireRef = useRef(onEggFire);
   useEffect(() => {
     onEggFireRef.current = onEggFire;
@@ -77,7 +79,6 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrap
     boxRef.current.style.transform = `rotateX(${rotXRef.current}deg) rotateY(${rotYRef.current}deg)`;
   }, []);
 
-  // Settle the cube onto the nearest 90° face with a smooth, slow transition.
   const snapToFace = useCallback(() => {
     windingRef.current = false;
     if (windRaf.current != null) {
@@ -98,16 +99,12 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrap
     manualUntilRef.current = Date.now() + SNAP_GRACE_MS;
   }, [applyTransform]);
 
-  // Release "inertia": keep rotating with the release velocity, decaying, until
-  // it's slow enough to settle onto a face. Rapid spins decay slower for a longer glide.
   const startWindDown = useCallback(
     (friction = CUBE_PHYSICS.normalWindFriction) => {
       windingRef.current = true;
       manualUntilRef.current = Date.now() + WIND_DOWN_OVERRIDE_MS;
       if (windRaf.current != null) cancelAnimationFrame(windRaf.current);
       const step = () => {
-        // Y-axis only — spin decays on the horizontal plane. Inertia spins do
-        // NOT count toward the easter egg; only deliberate drags/keys do.
         rotYRef.current += velY.current;
         velY.current = windStepVelocity(velY.current, friction);
         if (isWindStopped(velY.current)) {
@@ -130,13 +127,10 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrap
     }
   }, []);
 
-  // Register one manual spin; fires the easter egg after the rapid-spin bar.
   const registerSpin = useCallback(() => {
     if (spinTrackerRef.current.register()) onEggFireRef.current?.();
   }, []);
 
-  // Accumulate horizontal (Y-axis) angular travel; every full 90° = one spin.
-  // The split (spins vs remainder) is pure math in cubePhysics.js.
   const accumulateAngle = useCallback(
     (deg) => {
       accumAngleRef.current += deg;
@@ -147,7 +141,6 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrap
     [registerSpin],
   );
 
-  // ---- Shared drag helpers (touch + mouse) ----
   const beginDrag = useCallback((clientX) => {
     isDraggingRef.current = true;
     windingRef.current = false;
@@ -167,9 +160,8 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrap
     (clientX) => {
       if (!isDraggingRef.current) return;
       const now = Date.now();
-      // Horizontal movement only — vertical drags are ignored (left/right
-      // spin). Dragging right turns the cube right, matching ArrowRight.
-      const ny = startRotY.current + (clientX - startX.current) * CUBE_PHYSICS.dragSensitivity;
+      const delta = computeDragDelta(clientX, startX.current, CUBE_PHYSICS.dragSensitivity);
+      const ny = startRotY.current + delta;
       const dt = Math.max(now - lastMove.current.t, 1);
       velY.current = emaVelocity(velY.current, ny - lastMove.current.y, dt);
       accumulateAngle(Math.abs(ny - lastMove.current.y));
@@ -183,19 +175,16 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrap
   const endDrag = useCallback(() => {
     if (!isDraggingRef.current) return;
     isDraggingRef.current = false;
-
-    // Resolve the release velocity into wind-down parameters (deg/ms ->
-    // deg/frame, cap, rapid-vs-normal friction) — see cubePhysics.js.
-    const resolved = resolveWindDown(velY.current);
-    if (resolved) {
-      velY.current = resolved.velocity;
-      startWindDown(resolved.friction);
-    } else {
+    if (!shouldStartWindDown(velY.current)) {
       snapToFace();
+      return;
     }
+    const resolved = resolveWindDown(velY.current);
+    velY.current = resolved.velocity;
+    startWindDown(resolved.friction);
   }, [snapToFace, startWindDown]);
 
-  // Touch handlers
+  // Touch handlers — thin wrappers (CC 1-2), pure delta lives in helper.
   const handleTouchStart = (e) => {
     beginDrag(e.touches[0].clientX);
   };
@@ -205,8 +194,6 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrap
   };
   const handleTouchEnd = () => endDrag();
 
-  // Mouse handlers. Move/up live on `window` so a fast drag keeps going past
-  // the small cube bounds — otherwise the gesture dies at the box edge.
   const mouseHandlersRef = useRef(null);
 
   const handleMouseDown = (e) => {
@@ -224,8 +211,8 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrap
     window.addEventListener('mouseup', up);
   };
 
-  // Idle auto-spin: rotates slowly on its own while visible and idle — unless
-  // the device is low-power/slow-network, or a manual action owns the cube.
+  // Idle auto-spin: rotates slowly while visible and idle — delegates the
+  // idle check to `isIdleForAutoSpin` (CC 2 instead of 5 inline).
   useEffect(() => {
     if (lowPower || slowNetwork) return;
 
@@ -233,24 +220,27 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrap
     let visible = true;
     let observer = null;
 
-    const animate = () => {
-      if (
-        visible &&
-        !isDraggingRef.current &&
-        !windingRef.current &&
-        !isManualOverrideActive(manualUntilRef.current, Date.now())
-      ) {
+    const canSpin = () =>
+      isIdleForAutoSpin({
+        isDragging: isDraggingRef.current,
+        winding: windingRef.current,
+        manualUntil: manualUntilRef.current,
+        lowPower,
+        slowNetwork,
+        visible,
+      });
+
+    const tick = () => {
+      if (canSpin()) {
         const el = boxRef.current;
         if (el) {
-          // Left/right spin only — no X-axis wobble. Turns the same way
-          // ArrowRight does (rightward) for consistency.
           rotYRef.current = (rotYRef.current - 0.5 + 360) % 360;
           el.style.transition = 'none';
           el.style.transform = `rotateX(0deg) rotateY(${rotYRef.current}deg)`;
         }
       }
       if (visible) {
-        animFrame = requestAnimationFrame(animate);
+        animFrame = requestAnimationFrame(tick);
       } else {
         animFrame = null;
       }
@@ -260,7 +250,7 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrap
       observer = new IntersectionObserver(
         ([entry]) => {
           visible = entry.isIntersecting;
-          if (visible && animFrame == null) animFrame = requestAnimationFrame(animate);
+          if (visible && animFrame == null) animFrame = requestAnimationFrame(tick);
         },
         { rootMargin: '100px' },
       );
@@ -269,7 +259,7 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrap
       visible = true;
     }
 
-    if (visible && animFrame == null) animFrame = requestAnimationFrame(animate);
+    if (visible && animFrame == null) animFrame = requestAnimationFrame(tick);
 
     return () => {
       if (animFrame != null) cancelAnimationFrame(animFrame);
@@ -278,25 +268,23 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrap
     };
   }, [lowPower, slowNetwork, stopWindDown]);
 
-  // Keyboard navigation — left/right arrows only (no vertical spin).
+  // Keyboard: left/right arrows only. Early returns collapsed to CC 4.
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-      // Yield when a control has focus, or another on-screen widget owns the
-      // arrows (last-interacted wins — see utils/keyboardLock.js).
-      if (isControlFocused()) return;
-      if (getArrowOwner() !== 'cube') return;
+      const isArrow = e.key === 'ArrowLeft' || e.key === 'ArrowRight';
+      if (!isArrow) return;
+      const blocked = isControlFocused() || getArrowOwner() !== 'cube';
+      if (blocked) return;
       const el = boxRef.current;
       if (!el) return;
 
       e.preventDefault();
       stopWindDown();
       el.style.transition = 'transform 0.4s ease-out';
-      // ArrowRight turns the cube to the right (negative Y rotation).
       rotYRef.current += e.key === 'ArrowRight' ? -90 : 90;
       applyTransform();
       manualUntilRef.current = Date.now() + ARROW_SPIN_GRACE_MS;
-      markInteracted('cube'); // arrow use keeps the cube's arrow ownership
+      markInteracted('cube');
       registerSpin();
     };
 
@@ -304,10 +292,6 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrap
     return () => window.removeEventListener('keydown', onKey);
   }, [applyTransform, registerSpin, stopWindDown]);
 
-  // Arrow-key arbitration (see utils/keyboardLock.js): register the cube as a
-  // widget ("on screen" = the cube box is in the viewport) and mark it as the
-  // last-interacted widget whenever the user presses/grabs it, so it claims
-  // the arrow keys over any on-screen carousel.
   useEffect(() => {
     const unregister = registerWidget('cube', () => rectIsOnScreen(boxRef.current, 40));
     const wrap = wrapRef?.current;
@@ -319,12 +303,6 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrap
     };
   }, [wrapRef]);
 
-  // Own the touch gesture: once a drag starts on the cube, native scrolling
-  // is suppressed for the rest of the gesture — rotating must never scroll
-  // the page. This is belt-and-suspenders for old iOS that ignores
-  // `touch-action` (see AboutUs.css); on modern browsers the CSS alone opts
-  // the cube out of panning. Must be a NON-passive listener — React's
-  // delegated touchmove is passive, so e.preventDefault() there would no-op.
   useEffect(() => {
     const el = boxRef.current;
     if (!el) return;
@@ -335,7 +313,6 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrap
     return () => el.removeEventListener('touchmove', preventScroll);
   }, []);
 
-  // Drop the window-level mouse listeners if the gesture dies with unmount.
   useEffect(
     () => () => {
       if (mouseHandlersRef.current) {
