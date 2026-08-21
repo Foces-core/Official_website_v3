@@ -42,7 +42,7 @@ export function pushToast(stack, text, maxToasts = MAX_TOASTS) {
   return toast;
 }
 
-export function createBurstElement(cx, cy, stack) {
+function createBurstElement(cx, cy, stack) {
   const parent = stack.parentElement;
   parent?.querySelectorAll('.about-burst').forEach((n) => n.remove());
   const burst = document.createElement('div');
@@ -73,7 +73,7 @@ function createParticleElement(index, colors, emojis) {
   return el;
 }
 
-export function createParticles(count, colors, emojis) {
+function createParticles(count, colors, emojis) {
   const particles = [];
   for (let i = 0; i < count; i++) {
     const el = createParticleElement(i, colors, emojis);
@@ -93,7 +93,7 @@ function updateParticle(p) {
   return true;
 }
 
-export function startConfettiLoop(particles, burst) {
+function startConfettiLoop(particles, burst) {
   let rafId = null;
   const step = () => {
     let alive = false;

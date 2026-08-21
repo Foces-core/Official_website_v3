@@ -11,7 +11,7 @@
  * @param {Window | { requestAnimationFrame: typeof requestAnimationFrame } | null} win
  * @returns {(cb: FrameRequestCallback) => number}
  */
-export function getRaf(win) {
+function getRaf(win) {
   if (win && typeof win.requestAnimationFrame === 'function') {
     return win.requestAnimationFrame.bind(win);
   }
@@ -28,7 +28,7 @@ export function getRaf(win) {
  * @param {Window | { cancelAnimationFrame: typeof cancelAnimationFrame } | null} win
  * @returns {(id: number) => void}
  */
-export function getCancelRaf(win) {
+function getCancelRaf(win) {
   if (win && typeof win.cancelAnimationFrame === 'function') {
     return win.cancelAnimationFrame.bind(win);
   }
