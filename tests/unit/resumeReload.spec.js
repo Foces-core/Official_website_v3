@@ -32,3 +32,15 @@ test('never reloads on a negative duration (clock skew)', () => {
 test('never reloads on negative timestamps', () => {
   expect(shouldReloadOnResume({ hiddenAt: -5, visibleAt: 10 })).toBe(false);
 });
+
+test('handles non-number types via typeof guard', () => {
+  expect(shouldReloadOnResume({ hiddenAt: '0', visibleAt: 100_000 })).toBe(false);
+  expect(shouldReloadOnResume({ hiddenAt: 0, visibleAt: '100000' })).toBe(false);
+  expect(shouldReloadOnResume({ hiddenAt: NaN, visibleAt: 100_000 })).toBe(false);
+  expect(shouldReloadOnResume({})).toBe(false);
+});
+
+test('handles zero threshold edge', () => {
+  expect(shouldReloadOnResume({ hiddenAt: 0, visibleAt: 0, thresholdMs: 0 })).toBe(true);
+  expect(shouldReloadOnResume({ hiddenAt: 5, visibleAt: 5, thresholdMs: 0 })).toBe(true);
+});
