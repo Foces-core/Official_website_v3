@@ -105,12 +105,18 @@ export default defineConfig({
     // readable. The DSN is read from VITE_SENTRY_DSN env var at runtime.
     // Requires the auth token too — a DSN alone (e.g. local dev) must not
     // activate the plugin, since it cannot upload without credentials.
+    // Upload is best-effort (same policy as the SDK init in main.jsx): a
+    // misconfigured org/project/token must warn, never fail the deploy.
     ...(process.env.VITE_SENTRY_DSN && process.env.SENTRY_AUTH_TOKEN
       ? [
           sentryVitePlugin({
             org: process.env.SENTRY_ORG,
             project: process.env.SENTRY_PROJECT,
             authToken: process.env.SENTRY_AUTH_TOKEN,
+            // Without this the plugin throws on any upload error and fails the
+            // build — a wrong SENTRY_ORG/PROJECT (or expired token) would take
+            // the site offline for everyone. Warn and continue instead.
+            errorHandler: (err) => console.warn('[sentry] source map upload skipped:', err.message),
           }),
         ]
       : []),

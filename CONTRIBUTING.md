@@ -117,6 +117,14 @@ org/github-workflow.json` for workflows). `pnpm-workspace.yaml`
   through the shared `tests/unit/harness.jsx`. CI runs it in the
   lint-and-build job; E2E never imports it. Behavior lives in pure tested
   modules — see [ADR-0009](docs/adr/0009-pure-logic-test-seams.md).
+- `pnpm test:mutation` runs [Stryker](https://stryker-mutator.io/) mutation
+  testing over the same pure modules (`src/utils`, `src/data`, `src/hooks`,
+  the `*.js` modules in `Components`/`Pages`). Slow by design (~45 min,
+  concurrency 4) — run it when you change a decision module and want proof
+  the specs actually pin the behavior. Baseline (2026-08): 68.81% mutation
+  score; the weakest modules (`useCubeDrag`, `frameScheduler`,
+  `easterEggCelebration`, `routePrefetchLogic`, `useCarouselKeyboard`) are
+  known follow-up work.
 - For UI changes, verify desktop + mobile viewports.
 - The repo has puppeteer **probes** in `scripts/probes/` (`wcag-probe.mjs`,
   `mobile-probe.mjs`, `carousel-probe.mjs`, `img-probe.mjs`,
