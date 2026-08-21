@@ -103,21 +103,22 @@ Read this before touching anything.
   (single quotes, 100-col, 4-space CSS).
 - **No dead code.** If a field/class/dep isn't consumed, remove it or explain
   why it stays (see `docs/adr/` for how to record the "why").
-- **Cyclomatic complexity.** Keep functions at cyclomatic complexity ≤ 4 as a
-  governance rule documented in AGENTS.md. No ESLint gate is enforced at
-  commit time — rely on code review and the agent directive in AGENTS.md
-  itself to keep scores low without a runtime lint gate.
-- **Mutation testing.** Future agents SHOULD run mutation testing (via
-  `pnpm exec stryker run` or equivalent) when changing pure decision
-  modules. This is a governance requirement documented in AGENTS.md — not an
-  ESLint gate. The baseline and tooling setup lives in the repo for when
-  agents adopt it; the requirement ensures the practice persists across
-  sessions without a runtime gate enforcing it.
-- **Crap score.** Keep functions at low crap score (low cyclomatic complexity
-  - good test coverage). The complexity ≤ 4 rule in AGENTS.md, combined with
-    the unit test suite (`pnpm test:unit`), ensures crap score stays low.
-    No runtime gate enforces this — code review + the AGENTS.md directive
-    governs compliance.
+- **Cyclomatic complexity & CRAP.** Keep functions at **CRAP < 8** (hard ceiling
+  for agents, ideal **≤ 5**). At 100% coverage `CRAP = CC`, so this means
+  `CC ≤ 8`, ideal `≤ 5`. Threshold is based on research: human ≤ 4, AI ≤ 6,
+  hard ceiling < 8, universal fail > 30 (crap4j). **Agents MUST obey < 8**;
+  humans may exceed to 15 only with an ADR (`docs/adr/`) justifying the
+  complexity + extra tests. No ESLint gate — code review + AGENTS.md governs.
+- **Mutation testing.** Future agents MUST run mutation testing when changing
+  pure decision modules (`src/utils`, `src/data`, `src/hooks`, `*.js` in
+  `Components`/`Pages`). **Break threshold 70% overall, 80% for critical
+  decision modules** (research: 60-70% typical, 70-80% strong, 80%+ excellent;
+  100% is not achievable due to ~23% equivalent mutants). Humans may merge
+  below with an ADR; agents must not. No CI gate — AGENTS.md governs.
+- **Crap score.** `CRAP = CC² × (1−coverage)³ + CC`. Keep **CRAP < 8**
+  (agents) / **< 15 with justification** / **30 universal fail**. At 100%
+  coverage the score equals complexity, so the CC rule above guarantees low
+  CRAP when combined with `pnpm test:unit`. No runtime gate — AGENTS.md governs.
 
 ## Verify (run before you commit)
 

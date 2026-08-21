@@ -10,9 +10,54 @@
 
 const registry = new Map();
 
-// Register default application route chunk loaders
 registry.set('events', () => import('../Pages/EventPage/Eventpage.jsx'));
 registry.set('contact', () => import('../Components/ContactUs/ContactUs.jsx'));
+
+const NOOP = () => {};
+
+export function isDataSaverEnabled(conn) {
+  return conn?.saveData === true;
+}
+
+export function isSlowConnection(conn) {
+  return conn?.effectiveType === '2g' || conn?.effectiveType === 'slow-2g';
+}
+
+function resolveConnection(connection, nav) {
+  return connection || (nav && nav.connection) || null;
+}
+
+/**
+ * Pure network connection gate: determines if prefetching is allowed based
+ * on device profile, Data-Saver headers, and effective network round-trip speed.
+ *
+ * @param {{
+ *   slowNetwork?: boolean,
+ *   connection?: { saveData?: boolean, effectiveType?: string },
+ *   nav?: Navigator | { connection?: { saveData?: boolean, effectiveType?: string } }
+ * }} options
+ * @returns {boolean}
+ */
+export function shouldPrefetchConnection({
+  slowNetwork = false,
+  connection,
+  nav = typeof navigator !== 'undefined' ? navigator : null,
+} = {}) {
+  if (slowNetwork) return false;
+  const conn = resolveConnection(connection, nav);
+  if (isDataSaverEnabled(conn)) return false;
+  if (isSlowConnection(conn)) return false;
+  return true;
+}
+
+function getRouteLoader(routeId) {
+  return registry.get(routeId);
+}
+
+function safeInvokeLoader(loader) {
+  if (typeof loader !== 'function') return null;
+  return loader().catch(() => {});
+}
 
 /**
  * Registers a route loader function for a given route identifier.
@@ -52,33 +97,6 @@ export function clearPrefetchRoutes() {
 }
 
 /**
- * Pure network connection gate: determines if prefetching is allowed based
- * on device profile, Data-Saver headers, and effective network round-trip speed.
- *
- * @param {{
- *   slowNetwork?: boolean,
- *   connection?: { saveData?: boolean, effectiveType?: string },
- *   nav?: Navigator | { connection?: { saveData?: boolean, effectiveType?: string } }
- * }} options
- * @returns {boolean}
- */
-export function shouldPrefetchConnection({
-  slowNetwork = false,
-  connection,
-  nav = typeof navigator !== 'undefined' ? navigator : null,
-} = {}) {
-  if (slowNetwork) return false;
-
-  const conn = connection || (nav && nav.connection);
-  if (conn) {
-    if (conn.saveData === true) return false;
-    if (conn.effectiveType === '2g' || conn.effectiveType === 'slow-2g') return false;
-  }
-
-  return true;
-}
-
-/**
  * Prefetches the code chunk for a specific route identifier, gated by connection policy.
  *
  * @param {string} routeId
@@ -90,15 +108,9 @@ export function shouldPrefetchConnection({
  * @returns {Promise<any>}
  */
 export function prefetchRoute(routeId, options = {}) {
-  if (!shouldPrefetchConnection(options)) {
-    return Promise.resolve();
-  }
-
-  const loader = registry.get(routeId);
-  if (typeof loader === 'function') {
-    return loader().catch(() => {});
-  }
-  return Promise.resolve();
+  if (!shouldPrefetchConnection(options)) return Promise.resolve();
+  const result = safeInvokeLoader(getRouteLoader(routeId));
+  return result ?? Promise.resolve();
 }
 
 /**
@@ -112,11 +124,20 @@ export function prefetchRoute(routeId, options = {}) {
  * @returns {Promise<any[]>}
  */
 export function prefetchDefaultRoutes(options = {}) {
-  if (!shouldPrefetchConnection(options)) {
-    return Promise.resolve([]);
-  }
+  if (!shouldPrefetchConnection(options)) return Promise.resolve([]);
   const routeIds = getRegisteredRouteIds();
   return Promise.all(routeIds.map((id) => prefetchRoute(id, options)));
+}
+
+function shouldScheduleIdle({ slowNetwork, connection, nav }, setTimeoutFn) {
+  if (!setTimeoutFn) return false;
+  return shouldPrefetchConnection({ slowNetwork, connection, nav });
+}
+
+function createCancelHandle(timer, clearTimeoutFn) {
+  return () => {
+    if (clearTimeoutFn) clearTimeoutFn(timer);
+  };
 }
 
 /**
@@ -141,19 +162,70 @@ export function scheduleIdlePrefetch({
   setTimeoutFn = typeof setTimeout !== 'undefined' ? setTimeout : null,
   clearTimeoutFn = typeof clearTimeout !== 'undefined' ? clearTimeout : null,
 } = {}) {
-  if (!shouldPrefetchConnection({ slowNetwork, connection, nav }) || !setTimeoutFn) {
-    return () => {};
+  if (!shouldScheduleIdle({ slowNetwork, connection, nav }, setTimeoutFn)) {
+    return NOOP;
   }
-
   const timer = setTimeoutFn(() => {
     prefetchDefaultRoutes({ slowNetwork, connection, nav });
   }, delayMs);
+  return createCancelHandle(timer, clearTimeoutFn);
+}
 
-  return () => {
-    if (clearTimeoutFn) {
-      clearTimeoutFn(timer);
+function shouldInitForesight({ slowNetwork, connection, nav }, doc) {
+  if (!doc) return false;
+  return shouldPrefetchConnection({ slowNetwork, connection, nav });
+}
+
+function ensureForesightInitialized(ForesightManager) {
+  if (ForesightManager.isInitiated) return;
+  ForesightManager.initialize({
+    enableManagerLogging: false,
+    minimumConnectionType: '3g',
+    setDataAttributes: false,
+  });
+}
+
+function isAllowedRouteId(id, routeIds) {
+  return Boolean(id && routeIds.includes(id));
+}
+
+function registerForesightElement(manager, element, routeIds, onPrefetch, unregisters) {
+  const id = element.getAttribute('data-foresight');
+  if (!isAllowedRouteId(id, routeIds)) return;
+  manager.register({
+    element,
+    name: id,
+    callback: () => onPrefetch(id),
+  });
+  unregisters.push(() => {
+    try {
+      manager.unregister(element);
+    } catch {
+      // Ignore unregister errors on unmount
     }
-  };
+  });
+}
+
+function setupForesightElements(doc, manager, routeIds, onPrefetch, unregisters) {
+  const elements = doc.querySelectorAll('[data-foresight]');
+  elements.forEach((el) =>
+    registerForesightElement(manager, el, routeIds, onPrefetch, unregisters),
+  );
+}
+
+function handleForesightReady(
+  ForesightManager,
+  doc,
+  routeIds,
+  onPrefetch,
+  unregisters,
+  cancelledRef,
+) {
+  if (cancelledRef.cancelled || !ForesightManager) return;
+  ensureForesightInitialized(ForesightManager);
+  const manager = ForesightManager.instance;
+  if (!manager) return;
+  setupForesightElements(doc, manager, routeIds, onPrefetch, unregisters);
 }
 
 /**
@@ -180,49 +252,18 @@ export function initForesightPrefetch({
   onPrefetch = (id) => prefetchRoute(id, { slowNetwork, connection, nav }),
   ForesightLoader = () => import('js.foresight'),
 } = {}) {
-  if (!shouldPrefetchConnection({ slowNetwork, connection, nav }) || !doc) {
-    return () => {};
+  if (!shouldInitForesight({ slowNetwork, connection, nav }, doc)) {
+    return NOOP;
   }
-
-  let cancelled = false;
+  const cancelledRef = { cancelled: false };
   const unregisters = [];
-
   ForesightLoader()
-    .then(({ ForesightManager }) => {
-      if (cancelled || !ForesightManager) return;
-      if (!ForesightManager.isInitiated) {
-        ForesightManager.initialize({
-          enableManagerLogging: false,
-          minimumConnectionType: '3g',
-          setDataAttributes: false,
-        });
-      }
-      const manager = ForesightManager.instance;
-      if (!manager) return;
-
-      const elements = doc.querySelectorAll('[data-foresight]');
-      elements.forEach((el) => {
-        const id = el.getAttribute('data-foresight');
-        if (id && routeIds.includes(id)) {
-          manager.register({
-            element: el,
-            name: id,
-            callback: () => onPrefetch(id),
-          });
-          unregisters.push(() => {
-            try {
-              manager.unregister(el);
-            } catch {
-              // Ignore unregister errors on unmount
-            }
-          });
-        }
-      });
-    })
+    .then(({ ForesightManager }) =>
+      handleForesightReady(ForesightManager, doc, routeIds, onPrefetch, unregisters, cancelledRef),
+    )
     .catch(() => {});
-
   return () => {
-    cancelled = true;
+    cancelledRef.cancelled = true;
     unregisters.forEach((fn) => fn());
   };
 }
