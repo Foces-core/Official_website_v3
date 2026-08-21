@@ -13,6 +13,193 @@ import {
  * body scroll-lock release, double-rAF paint deferral, and focus shifts.
  */
 
+// ---------------------------------------------------------------------------
+// Pure guards & resolvers — each CC < 5, deterministic from inputs, testable
+// ---------------------------------------------------------------------------
+
+export function isMissingParams(targetId, doc) {
+  return !targetId || !doc;
+}
+
+export function getMainContainer(doc) {
+  return doc.getElementById('main-content') || doc.body;
+}
+
+export function canUseObserver(ObserverClass, container) {
+  return Boolean(ObserverClass && container);
+}
+
+export function hasObserveMethod(observer) {
+  return Boolean(observer && typeof observer.observe === 'function');
+}
+
+export function hasDisconnectMethod(observer) {
+  return Boolean(observer && typeof observer.disconnect === 'function');
+}
+
+export function hasSetInterval(win) {
+  return Boolean(win && typeof win.setInterval === 'function');
+}
+
+export function hasClearInterval(win) {
+  return Boolean(win && typeof win.clearInterval === 'function');
+}
+
+export function shouldAttemptScroll(cancelled, scrolled) {
+  return !cancelled && !scrolled;
+}
+
+export function canScrollElement(el) {
+  return Boolean(el && typeof el.scrollIntoView === 'function');
+}
+
+export function shouldInvokeCallback(fn) {
+  return typeof fn === 'function';
+}
+
+export function shouldHandlePoll(found, startTime, now, timeoutMs) {
+  return found || timedOut(startTime, now, timeoutMs);
+}
+
+export function shouldNotifyTimeout(wasScrolled, onTimeout) {
+  return !wasScrolled && typeof onTimeout === 'function';
+}
+
+export function shouldCloseOverlay(closeOverlay) {
+  return typeof closeOverlay === 'function';
+}
+
+export function isIntervalActive(intervalRef) {
+  return intervalRef !== null;
+}
+
+// ---------------------------------------------------------------------------
+// Pure effect helpers — small, testable, CC < 5
+// ---------------------------------------------------------------------------
+
+export function getScrollTarget(doc, targetId) {
+  return doc.getElementById(targetId);
+}
+
+export function executeScroll(el, reducedMotion, onComplete) {
+  if (canScrollElement(el)) {
+    el.scrollIntoView({ behavior: sectionScrollBehavior(reducedMotion) });
+  }
+  if (shouldInvokeCallback(onComplete)) {
+    onComplete();
+  }
+}
+
+export function performScrollAttempt({
+  doc,
+  targetId,
+  scrolled,
+  cancelled,
+  reducedMotion,
+  onComplete,
+}) {
+  if (!shouldAttemptScroll(cancelled, scrolled)) return false;
+  const el = getScrollTarget(doc, targetId);
+  if (!shouldScrollToTarget(el, scrolled)) return false;
+  executeScroll(el, reducedMotion, onComplete);
+  return true;
+}
+
+export function resolveSetIntervalFn(win) {
+  if (hasSetInterval(win)) return win.setInterval.bind(win);
+  return setInterval;
+}
+
+export function clearStoredInterval(intervalRef, win) {
+  if (!isIntervalActive(intervalRef)) return null;
+  if (hasClearInterval(win)) {
+    win.clearInterval(intervalRef);
+  } else {
+    clearInterval(intervalRef);
+  }
+  return null;
+}
+
+export function clearStoredObserver(observer) {
+  if (!hasDisconnectMethod(observer)) return null;
+  observer.disconnect();
+  return null;
+}
+
+export function createObserver(ObserverClass, container, onMutation) {
+  try {
+    const obs = new ObserverClass(onMutation);
+    if (hasObserveMethod(obs)) {
+      obs.observe(container, { childList: true, subtree: true });
+    }
+    return obs;
+  } catch {
+    return null;
+  }
+}
+
+export function setupObserver({ doc, ObserverClass, onMutation }) {
+  const container = getMainContainer(doc);
+  if (!canUseObserver(ObserverClass, container)) return null;
+  return createObserver(ObserverClass, container, onMutation);
+}
+
+export function createPollTick({
+  getCancelled,
+  tryScroll,
+  getScrolled,
+  onCleanup,
+  onTimeout,
+  getStartTime,
+  timeoutMs,
+}) {
+  return () => {
+    if (getCancelled()) return;
+    const found = tryScroll();
+    if (!shouldHandlePoll(found, getStartTime(), Date.now(), timeoutMs)) return;
+    const wasScrolled = getScrolled();
+    onCleanup();
+    if (shouldNotifyTimeout(wasScrolled, onTimeout)) onTimeout();
+  };
+}
+
+export function createTryScroll({
+  doc,
+  targetId,
+  getScrolled,
+  getCancelled,
+  reducedMotion,
+  onComplete,
+  setScrolled,
+}) {
+  return () => {
+    const didScroll = performScrollAttempt({
+      doc,
+      targetId,
+      scrolled: getScrolled(),
+      cancelled: getCancelled(),
+      reducedMotion,
+      onComplete,
+    });
+    if (didScroll) setScrolled(true);
+    return didScroll;
+  };
+}
+
+export function createMutationCallback(tryScroll, cleanup) {
+  return () => {
+    if (tryScroll()) cleanup();
+  };
+}
+
+export function maybeCloseOverlay(closeOverlay) {
+  if (shouldCloseOverlay(closeOverlay)) closeOverlay();
+}
+
+// ---------------------------------------------------------------------------
+// Coordinators — thin orchestration, CC < 5, delegating to helpers above
+// ---------------------------------------------------------------------------
+
 /**
  * Waits for a target section element to mount in the DOM (immediate try, MutationObserver,
  * and failsafe polling) and scrolls to it using the configured section scroll policy.
@@ -41,7 +228,7 @@ export function scrollToSectionWhenReady({
   onComplete,
   onTimeout,
 }) {
-  if (!targetId || !doc) return () => {};
+  if (isMissingParams(targetId, doc)) return () => {};
 
   let cancelled = false;
   let scrolled = false;
@@ -50,74 +237,42 @@ export function scrollToSectionWhenReady({
   const startTime = Date.now();
 
   const cleanup = () => {
-    if (intervalRef !== null) {
-      if (win && typeof win.clearInterval === 'function') {
-        win.clearInterval(intervalRef);
-      } else {
-        clearInterval(intervalRef);
-      }
-      intervalRef = null;
-    }
-    if (observer && typeof observer.disconnect === 'function') {
-      observer.disconnect();
-      observer = null;
-    }
+    intervalRef = clearStoredInterval(intervalRef, win);
+    observer = clearStoredObserver(observer);
   };
 
-  const scrollToTarget = () => {
-    if (cancelled || scrolled) return false;
-    const el = doc.getElementById(targetId);
-    if (shouldScrollToTarget(el, scrolled)) {
-      scrolled = true;
-      if (typeof el.scrollIntoView === 'function') {
-        el.scrollIntoView({ behavior: sectionScrollBehavior(reducedMotion) });
-      }
-      if (typeof onComplete === 'function') {
-        onComplete();
-      }
-      return true;
-    }
-    return false;
-  };
+  const tryScroll = createTryScroll({
+    doc,
+    targetId,
+    getScrolled: () => scrolled,
+    getCancelled: () => cancelled,
+    reducedMotion,
+    onComplete,
+    setScrolled: (v) => {
+      scrolled = v;
+    },
+  });
 
-  // 1. Try scrolling immediately if component is already mounted
-  if (scrollToTarget()) {
-    return () => {};
-  }
+  if (tryScroll()) return () => {};
 
-  // 2. Observe DOM mutations when lazy-loaded Suspense chunks mount
-  const mainContainer = doc.getElementById('main-content') || doc.body;
-  if (ObserverClass && mainContainer) {
-    try {
-      observer = new ObserverClass(() => {
-        if (scrollToTarget()) {
-          cleanup();
-        }
-      });
-      if (typeof observer.observe === 'function') {
-        observer.observe(mainContainer, { childList: true, subtree: true });
-      }
-    } catch {
-      // Best-effort: fallback to polling if observer creation throws
-      observer = null;
-    }
-  }
+  observer = setupObserver({
+    doc,
+    ObserverClass,
+    onMutation: createMutationCallback(tryScroll, cleanup),
+  });
 
-  // 3. Failsafe polling across slow network chunk downloads or background tabs
-  const setIntervalFn =
-    win && typeof win.setInterval === 'function' ? win.setInterval.bind(win) : setInterval;
+  const pollTick = createPollTick({
+    getCancelled: () => cancelled,
+    tryScroll,
+    getScrolled: () => scrolled,
+    onCleanup: cleanup,
+    onTimeout,
+    getStartTime: () => startTime,
+    timeoutMs,
+  });
 
-  intervalRef = setIntervalFn(() => {
-    if (cancelled) return;
-    const found = scrollToTarget();
-    if (found || timedOut(startTime, Date.now(), timeoutMs)) {
-      const wasScrolled = scrolled;
-      cleanup();
-      if (!wasScrolled && typeof onTimeout === 'function') {
-        onTimeout();
-      }
-    }
-  }, pollIntervalMs);
+  const setIntervalFn = resolveSetIntervalFn(win);
+  intervalRef = setIntervalFn(pollTick, pollIntervalMs);
 
   return () => {
     cancelled = true;
@@ -147,11 +302,9 @@ export function coordinateSectionNavigation({
   closeOverlay,
   onComplete,
 }) {
-  if (!targetId || !doc) return () => {};
+  if (isMissingParams(targetId, doc)) return () => {};
 
-  if (typeof closeOverlay === 'function') {
-    closeOverlay();
-  }
+  maybeCloseOverlay(closeOverlay);
 
   let cancelScrollWhenReady = () => {};
 
