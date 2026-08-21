@@ -1,4 +1,4 @@
-import { useRef, useCallback, useMemo } from 'react';
+import { useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 import useCarousel from '../../hooks/useCarousel.js';
@@ -6,13 +6,7 @@ import { useViewportWidth } from '../../hooks/useViewportWidth.js';
 import BlurImage from '../BlurImage/BlurImage';
 import useCarouselKeyboard from '../../hooks/useCarouselKeyboard.js';
 import { copyFor } from '../../utils/carouselWrap.js';
-import {
-  TEAM_WIDE_MIN,
-  TEAM_3COL_MIN,
-  TEAM_2COL_MIN,
-  teamSlidesPerView,
-  teamGap,
-} from '../../utils/breakpoints.js';
+import { getTeamLayout } from '../../utils/viewportPolicy.js';
 
 import '../Execom/custom.css';
 
@@ -51,8 +45,11 @@ function TeamCarousel({
   // Desktop flat mode is responsive (2/3/4 per view, like Swiper's
   // breakpoints); everything else is 1 per view. Re-computed reactively via
   // useViewportWidth, then fed to the hook (its re-style effect re-applies).
-  const perView = flatCube && isDesktop ? teamSlidesPerView(width) : 1;
-  const gap = flatCube ? (isDesktop ? teamGap(width) : 20) : 0;
+  const {
+    slidesPerView: perView,
+    spaceBetween: gap,
+    sizes: cardSizes,
+  } = getTeamLayout(width, flatCube, isDesktop);
 
   const { instanceRef, trackRef } = useCarousel({
     elRef,
@@ -73,29 +70,6 @@ function TeamCarousel({
   const containerClass = isDesktop
     ? `hidden sm:block ${flatCube ? 'px-12' : 'max-w-[360px] mx-auto py-4'}`
     : 'block sm:hidden max-w-[320px] mx-auto py-4';
-
-  // Responsive image sizes matching the actual slide width. The section is
-  // w-4/5 (80vw) at md+, w-5/6 at sm; the px-12 padding reserves 96px total
-  // so the edge cards stop short of the nav arrows. Cube/mobile cards are a
-  // single centered capped width (360px desktop / 320px mobile).
-  // The 2-col calc must handle the sm/md width change: 83.33vw at 640-767,
-  // 80vw from 768 up, so pick the right viewport base.
-  const cardSizes = useMemo(() => {
-    if (flatCube && isDesktop) {
-      if (width >= TEAM_WIDE_MIN) return 'calc((80vw - 168px) / 4)';
-      if (width >= TEAM_3COL_MIN) return 'calc((80vw - 144px) / 3)';
-      if (width >= TEAM_2COL_MIN) {
-        const vw = width < 768 ? '83.33vw' : '80vw';
-        return `calc((${vw} - 116px) / 2)`;
-      }
-    }
-    return isDesktop ? '360px' : '320px';
-  }, [width, flatCube, isDesktop]);
-
-  // Card widths: desktop cube caps at 360px, mobile cube at 320px, desktop
-  // flat scales 2-4 per view (~240-300px each). These sizes make 1x viewports
-  // download the 400w srcset candidate and 2x retina the full-size file.
-  // Card sizes derived from breakpoints.js — same source as teamSlidesPerView.
 
   const showNavArrows = isDesktop && flatCube;
 

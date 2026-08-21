@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useViewportWidth } from '../../hooks/useViewportWidth.js';
 import useCarousel from '../../hooks/useCarousel.js';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
@@ -7,11 +7,7 @@ import useDeviceProfile from '../../hooks/useLowPower.js';
 import BlurImage from '../../Components/BlurImage/BlurImage';
 import featuring from '../../assets/featuring.svg';
 import { echoSlides, carouselSlides } from '../../data/echoSlides.js';
-import {
-  featuringSlidesPerView,
-  FEATURING_2COL_MAX,
-  SMALL_SCREEN_MAX,
-} from '../../utils/breakpoints.js';
+import { getFeaturingLayout } from '../../utils/viewportPolicy.js';
 import { copyFor } from '../../utils/carouselWrap.js';
 import useCarouselKeyboard from '../../hooks/useCarouselKeyboard.js';
 import './Featuring.css';
@@ -20,24 +16,15 @@ function Featuring() {
   const { reducedMotion, lowPower } = useDeviceProfile();
   const disableAutoplay = reducedMotion || lowPower;
   const viewportWidth = useViewportWidth();
-  const noSlides = featuringSlidesPerView(viewportWidth);
+  const {
+    slidesPerView: noSlides,
+    spaceBetween,
+    sizes: slideSizes,
+  } = getFeaturingLayout(viewportWidth);
   const [activeSlide, setActiveSlide] = useState(0);
   const elRef = useRef(null);
   const carouselRef = useRef(null);
   const sectionRef = useRef(null);
-
-  // The .feat-swiper pads each side by 3.5rem (56px) so the slides stop short
-  // of the page edge and the prev/next arrows; the sizes string must match the
-  // actual slide width or the images render wider than their slide and bleed
-  // past the arrows. Computed from the same viewport width that decides the
-  // column count, so they can never drift apart.
-  const slideSizes = useMemo(() => {
-    const pad = 112; // 3.5rem x 2 sides
-    const gap = 50;
-    if (viewportWidth < SMALL_SCREEN_MAX) return `calc(100vw - ${pad}px)`;
-    if (viewportWidth < FEATURING_2COL_MAX) return `calc((100vw - ${pad}px - ${gap}px) / 2)`;
-    return `calc((100vw - ${pad}px - ${gap * 2}px) / 3)`;
-  }, [viewportWidth]);
 
   const { instanceRef, trackRef } = useCarousel({
     elRef,
@@ -45,7 +32,7 @@ function Featuring() {
     total: echoSlides.length,
     mode: 'flat',
     slidesPerView: noSlides,
-    spaceBetween: 50,
+    spaceBetween,
     autoplayDelay: disableAutoplay ? 0 : 3500,
     initialIndex: echoSlides.length,
     onActiveChange: setActiveSlide,
