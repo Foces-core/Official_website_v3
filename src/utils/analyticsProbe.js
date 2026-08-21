@@ -29,11 +29,24 @@ const JAVASCRIPT_MIME_TYPES = new Set([
  */
 export function isVercelScriptResponse(resp) {
   if (!resp || !resp.ok) return false;
-  const mediaType = String(resp.headers?.get('content-type') || '')
-    .split(';')[0]
-    .trim()
-    .toLowerCase();
-  return JAVASCRIPT_MIME_TYPES.has(mediaType);
+  return JAVASCRIPT_MIME_TYPES.has(mediaTypeOf(resp));
+}
+
+function mediaTypeOf(resp) {
+  const header = resp.headers?.get('content-type') || '';
+  return String(header).split(';')[0].trim().toLowerCase();
+}
+
+/**
+ * HEAD the script route and report whether the platform serves it as
+ * JavaScript. All network I/O for the gate lives here (ADR-0009: the wiring
+ * layer injects the fetch implementation; this module makes the decision).
+ */
+export function probeServesScript(fetchFn, url) {
+  if (typeof fetchFn !== 'function') return Promise.resolve(false);
+  return fetchFn(url, { method: 'HEAD' })
+    .then(isVercelScriptResponse)
+    .catch(() => false);
 }
 
 /**

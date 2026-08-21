@@ -1,9 +1,10 @@
+/* eslint-disable react-refresh/only-export-components -- analyticsArmed is a pure helper co-located with its component (ADR-0009); fast-refresh trade-off is the same as main.jsx */
 import { useEffect, useState } from 'react';
 import {
   VERCEL_INSIGHTS_ROUTE,
   VERCEL_ANALYTICS_ROUTE,
-  isVercelScriptResponse,
   mountAnalyticsIfServed,
+  probeServesScript,
 } from './analyticsProbe.js';
 
 /**
@@ -25,6 +26,17 @@ import {
  * blocks the other from mounting, and a failed vendor chunk is
  * best-effort — never an app error.
  */
+/**
+ * Pure render gate: true only when the boot phase is done and at least one
+ * integration actually mounted (ADR-0009 — decision here, wiring in the
+ * component). Kept tiny so the component body stays at complexity 4.
+ */
+export function analyticsArmed(ready, insights, analytics) {
+  if (!ready) return false;
+  if (!insights && !analytics) return false;
+  return true;
+}
+
 export default function DeferredAnalytics() {
   const [ready, setReady] = useState(false);
   const [Insights, setInsights] = useState(null);
@@ -65,15 +77,9 @@ export default function DeferredAnalytics() {
     if (!ready) return;
     let cancelled = false;
 
-    // Network I/O lives here at the wiring layer (ADR-0009); the probe result
-    // decision is made by the pure module.
-    const probe = (url) => {
-      const fetchFn = globalThis.fetch;
-      if (typeof fetchFn !== 'function') return Promise.resolve(false);
-      return fetchFn(url, { method: 'HEAD' })
-        .then(isVercelScriptResponse)
-        .catch(() => false);
-    };
+    // Network I/O lives at the wiring layer (ADR-0009); the probe decision is
+    // made by the pure module (probeServesScript).
+    const probe = (url) => probeServesScript(globalThis.fetch, url);
 
     mountAnalyticsIfServed({
       url: VERCEL_INSIGHTS_ROUTE,
@@ -95,7 +101,7 @@ export default function DeferredAnalytics() {
     };
   }, [ready]);
 
-  if (!ready || (!Insights && !Analytics)) return null;
+  if (!analyticsArmed(ready, Insights, Analytics)) return null;
   return (
     <>
       {Analytics ? <Analytics /> : null}

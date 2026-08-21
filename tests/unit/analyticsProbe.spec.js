@@ -3,7 +3,51 @@ import {
   VERCEL_INSIGHTS_ROUTE,
   isVercelScriptResponse,
   mountAnalyticsIfServed,
+  probeServesScript,
 } from '../../src/utils/analyticsProbe.js';
+import { analyticsArmed } from '../../src/utils/DeferredAnalytics.jsx';
+
+describe('probeServesScript', () => {
+  it('resolves false when no fetch implementation exists', async () => {
+    await expect(probeServesScript(undefined, VERCEL_INSIGHTS_ROUTE)).resolves.toBe(false);
+  });
+  it('resolves true when the platform serves JavaScript', async () => {
+    const fetchFn = vi.fn(() =>
+      Promise.resolve({ ok: true, headers: { get: () => 'application/javascript' } }),
+    );
+    await expect(probeServesScript(fetchFn, VERCEL_INSIGHTS_ROUTE)).resolves.toBe(true);
+    expect(fetchFn).toHaveBeenCalledWith(VERCEL_INSIGHTS_ROUTE, { method: 'HEAD' });
+  });
+  it('resolves false when the response is not a JavaScript 2xx', async () => {
+    const fetchFn = vi.fn(() => Promise.resolve({ ok: true, headers: { get: () => 'text/html' } }));
+    await expect(probeServesScript(fetchFn, VERCEL_INSIGHTS_ROUTE)).resolves.toBe(false);
+  });
+  it('resolves false when the probe request itself fails', async () => {
+    const fetchFn = vi.fn(() => Promise.reject(new Error('offline')));
+    await expect(probeServesScript(fetchFn, VERCEL_INSIGHTS_ROUTE)).resolves.toBe(false);
+  });
+});
+
+describe('analyticsArmed', () => {
+  it('false until the boot phase is done', () => {
+    expect(analyticsArmed(false, null, null)).toBe(false);
+    expect(analyticsArmed(false, () => {}, null)).toBe(false);
+  });
+  it('false when ready but no integration mounted', () => {
+    expect(analyticsArmed(true, null, null)).toBe(false);
+  });
+  it('true when ready and at least one integration mounted', () => {
+    expect(analyticsArmed(true, () => {}, null)).toBe(true);
+    expect(analyticsArmed(true, null, () => {})).toBe(true);
+    expect(
+      analyticsArmed(
+        true,
+        () => {},
+        () => {},
+      ),
+    ).toBe(true);
+  });
+});
 
 describe('isVercelScriptResponse', () => {
   const headersFor = (contentType) => ({ get: (h) => (h === 'content-type' ? contentType : null) });
@@ -65,11 +109,13 @@ describe('isVercelScriptResponse', () => {
 
 describe('mountAnalyticsIfServed', () => {
   const setup = (overrides = {}) => {
-    const importVendor = overrides.importVendor || vi.fn(() => Promise.resolve('vendor'));
-    const setter = overrides.setter || vi.fn();
-    const probe = overrides.probe || vi.fn(() => Promise.resolve(true));
-    const isCancelled = overrides.isCancelled || (() => false);
-    return { url: VERCEL_INSIGHTS_ROUTE, importVendor, setter, probe, isCancelled };
+    const defaults = {
+      importVendor: vi.fn(() => Promise.resolve('vendor')),
+      setter: vi.fn(),
+      probe: vi.fn(() => Promise.resolve(true)),
+      isCancelled: () => false,
+    };
+    return { ...defaults, ...overrides };
   };
 
   it('imports and mounts the vendor when its route is served', async () => {
