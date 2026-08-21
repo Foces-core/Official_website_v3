@@ -6,7 +6,13 @@ import { useViewportWidth } from '../../hooks/useViewportWidth.js';
 import BlurImage from '../BlurImage/BlurImage';
 import useCarouselKeyboard from '../../hooks/useCarouselKeyboard.js';
 import { copyFor } from '../../utils/carouselWrap.js';
-import { TEAM_WIDE_MIN, TEAM_3COL_MIN, TEAM_2COL_MIN } from '../../utils/breakpoints.js';
+import {
+  TEAM_WIDE_MIN,
+  TEAM_3COL_MIN,
+  TEAM_2COL_MIN,
+  teamSlidesPerView,
+  teamGap,
+} from '../../utils/breakpoints.js';
 
 import '../Execom/custom.css';
 
@@ -30,10 +36,10 @@ function TeamCarousel({
   variant,
   slides,
   slidesData,
-  flatCube,
-  disableAutoplay,
-  activeIndex,
-  onActiveChange,
+  flatCube = false,
+  disableAutoplay = false,
+  activeIndex = 0,
+  onActiveChange = () => {},
 }) {
   const elRef = useRef(null);
   const wrapRef = useRef(null);
@@ -45,9 +51,8 @@ function TeamCarousel({
   // Desktop flat mode is responsive (2/3/4 per view, like Swiper's
   // breakpoints); everything else is 1 per view. Re-computed reactively via
   // useViewportWidth, then fed to the hook (its re-style effect re-applies).
-  const perView =
-    flatCube && isDesktop ? (width >= 1280 ? 4 : width >= 1024 ? 3 : width >= 640 ? 2 : 1) : 1;
-  const gap = flatCube ? (isDesktop ? (width >= 1024 ? 24 : 20) : 20) : 0;
+  const perView = flatCube && isDesktop ? teamSlidesPerView(width) : 1;
+  const gap = flatCube ? (isDesktop ? teamGap(width) : 20) : 0;
 
   const { instanceRef, trackRef } = useCarousel({
     elRef,
@@ -73,11 +78,16 @@ function TeamCarousel({
   // w-4/5 (80vw) at md+, w-5/6 at sm; the px-12 padding reserves 96px total
   // so the edge cards stop short of the nav arrows. Cube/mobile cards are a
   // single centered capped width (360px desktop / 320px mobile).
+  // The 2-col calc must handle the sm/md width change: 83.33vw at 640-767,
+  // 80vw from 768 up, so pick the right viewport base.
   const cardSizes = useMemo(() => {
     if (flatCube && isDesktop) {
       if (width >= TEAM_WIDE_MIN) return 'calc((80vw - 168px) / 4)';
       if (width >= TEAM_3COL_MIN) return 'calc((80vw - 144px) / 3)';
-      if (width >= TEAM_2COL_MIN) return 'calc((83.33vw - 116px) / 2)';
+      if (width >= TEAM_2COL_MIN) {
+        const vw = width < 768 ? '83.33vw' : '80vw';
+        return `calc((${vw} - 116px) / 2)`;
+      }
     }
     return isDesktop ? '360px' : '320px';
   }, [width, flatCube, isDesktop]);
@@ -103,7 +113,7 @@ function TeamCarousel({
     <div ref={wrapRef} className={containerClass}>
       <div
         ref={elRef}
-        className={`${isDesktop ? 'execom-swiper pb-12' : 'execom-cube-swiper'} relative ${
+        className={`${isDesktop ? 'execom-swiper pb-12' : 'execom-cube-swiper'} relative w-full ${
           flatCube ? '' : 'cursor-grab active:cursor-grabbing'
         }`}
       >
@@ -115,7 +125,6 @@ function TeamCarousel({
                   isDesktop ? 'group' : ''
                 }`}
               >
-                {' '}
                 <BlurImage
                   className={`object-cover ${d.name === 'Sebin Mathew' ? 'object-center' : 'object-top'} w-full h-full ${isDesktop ? 'card-hover' : ''} grayscale group-hover:filter-none transition-all duration-300`}
                   src={d.img}
@@ -197,13 +206,6 @@ TeamCarousel.propTypes = {
   disableAutoplay: PropTypes.bool,
   activeIndex: PropTypes.number,
   onActiveChange: PropTypes.func,
-};
-
-TeamCarousel.defaultProps = {
-  flatCube: false,
-  disableAutoplay: false,
-  activeIndex: 0,
-  onActiveChange: () => {},
 };
 
 export default TeamCarousel;

@@ -112,7 +112,7 @@ function Featuring() {
         >
           <FaChevronLeft />
         </button>
-        <div ref={elRef} className="feat-swiper bg-transparent h-fit">
+        <div ref={elRef} className="feat-swiper bg-transparent h-fit w-full">
           <div ref={trackRef} className="swiper-wrapper">
             {carouselSlides.map(({ image, imageSet, blur, alt }, index) => (
               <div

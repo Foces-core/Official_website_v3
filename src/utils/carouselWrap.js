@@ -7,7 +7,7 @@
 // pattern. The carousels are hand-rolled (see useCarousel) — this module
 // only answers "where am I / where do I jump".
 export function normalizeIndex(activeIndex, total) {
-  return activeIndex % total;
+  return ((activeIndex % total) + total) % total;
 }
 
 // The copy-jump target for a raw carousel index, or null when it sits in the

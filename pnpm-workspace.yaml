@@ -10,6 +10,3 @@ allowBuilds:
 # by audit/dependabot - pin the 3.x line across vite/tailwind/vitest.
 overrides:
   nanoid: ^3.3.18
-  # Stryker (typed-rest-client -> qs) ships 6.15.1, which carries a moderate
-  # advisory (GHSA-q8mj-m7cp-5q26) patched in 6.15.2.
-  qs: ^6.15.2
