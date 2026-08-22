@@ -141,10 +141,14 @@ jobs:
             # Vercel analytics script fire while tests drive a real browser.
             # Read-only telemetry from a disposable CI profile.
             clients2.google.com:443
+            clients2.google.com.:443
             www.google.com:443
             accounts.google.com:443
             update.googleapis.com:443
             android.clients.google.com:443
+            android.clients.google.com.:443
+            mtalk.google.com:443
+            mtalk.google.com.:443
             va.vercel-scripts.com:443
 
       - name: Install pnpm
@@ -210,10 +214,14 @@ jobs:
             # Vercel analytics script fire while tests drive a real browser.
             # Read-only telemetry from a disposable CI profile.
             clients2.google.com:443
+            clients2.google.com.:443
             www.google.com:443
             accounts.google.com:443
             update.googleapis.com:443
             android.clients.google.com:443
+            android.clients.google.com.:443
+            mtalk.google.com:443
+            mtalk.google.com.:443
             va.vercel-scripts.com:443
 
       - name: Install pnpm
