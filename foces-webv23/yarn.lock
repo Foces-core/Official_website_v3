@@ -3246,9 +3246,7 @@
     uuid "^8.0.0"
 
 "@sanity/vision@^3.21.1":
-  version "3.21.1"
-  resolved "https://registry.yarnpkg.com/@sanity/vision/-/vision-3.21.1.tgz#dd64bada1893ad0f5aa02a2d73cb210d6a16203e"
-  integrity sha512-xqIyB3NL3+gMnipg2oLdOYyJxXn+kq2M40ZFsbTLpmMl0L6ME4I8+polrUGGhOFMTDVB8+0zP7vXEJMppk43BQ==
+  version "3.99.0"
   dependencies:
     "@codemirror/autocomplete" "^6.1.0"
     "@codemirror/commands" "^6.0.1"
@@ -7327,9 +7325,7 @@ sanity-diff-patch@^3.0.2:
     "@sanity/diff-match-patch" "^3.0.0"
 
 sanity@^3.21.1:
-  version "3.21.1"
-  resolved "https://registry.yarnpkg.com/sanity/-/sanity-3.21.1.tgz#6bf516c2b9e79d56428f3866e83cd8ca5d00bd8f"
-  integrity sha512-kagAkXjhH07AKgOpB9RAVMB8nEIm9Iv4HTtn4jZJroCwsqiV8grlgcBcdfZ/RUBuFPM7uDCJ3Nund5LIGu9ElA==
+  version "3.99.0"
   dependencies:
     "@dnd-kit/core" "^6.0.5"
     "@dnd-kit/modifiers" "^6.0.0"
