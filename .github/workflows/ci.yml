@@ -25,6 +25,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      # StepSecurity Harden-Runner — records every outbound call the job
+      # makes and flags unexpected destinations (supply-chain exfiltration
+      # detection). audit mode = observe only; flip to `block` once a week of
+      # logs confirms nothing legitimate is flagged.
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
       - name: Install pnpm
         uses: pnpm/action-setup@v6
         with:
@@ -90,6 +99,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
+
       - name: Install pnpm
         uses: pnpm/action-setup@v6
         with:
@@ -125,6 +139,11 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+
+      - name: Harden Runner
+        uses: step-security/harden-runner@v2
+        with:
+          egress-policy: audit
 
       - name: Install pnpm
         uses: pnpm/action-setup@v6
@@ -212,6 +231,25 @@ jobs:
       contents: read
       pull-requests: read
 
+  # Reviews the dependency diff a PR introduces (unlike `pnpm audit`, which
+  # only sees the current lockfile). Fails PRs that add high/critical
+  # vulnerabilities or incompatible license changes.
+  dependency-review:
+    name: Dependency review
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high
+
   # Tell Vercel when the GitHub checks finish so deployments that "wait for
   # CI" don't hang. The `name` below must match the check name configured in
   # Vercel → Project → Settings → Git → Deployment settings → "Wait for CI
@@ -220,7 +258,7 @@ jobs:
   notify-vercel:
     name: Notify Vercel
     if: always()
-    needs: [lint-and-build, e2e, probes, commitlint]
+    needs: [lint-and-build, e2e, probes, commitlint, dependency-review]
     runs-on: ubuntu-latest
     permissions:
       # The status action calls the Actions jobs API (actions: read) and
@@ -243,7 +281,8 @@ jobs:
             "${{ needs.lint-and-build.result }}" \
             "${{ needs.e2e.result }}" \
             "${{ needs.probes.result }}" \
-            "${{ needs.commitlint.result }}"; do
+            "${{ needs.commitlint.result }}" \
+            "${{ needs.dependency-review.result }}"; do
             if [ "$r" != "success" ] && [ "$r" != "skipped" ]; then
               failed=1
             fi
@@ -268,7 +307,7 @@ jobs:
   notify-on-failure:
     name: Notify on failure
     if: failure() && github.event_name == 'pull_request'
-    needs: [lint-and-build, e2e, probes, commitlint]
+    needs: [lint-and-build, e2e, probes, commitlint, dependency-review]
     runs-on: ubuntu-latest
     permissions:
       issues: write
@@ -285,5 +324,5 @@ jobs:
               repo: context.repo.repo,
               issue_number: context.issue.number,
               body: `🚨 **CI failed** on \`${sha}\` — [view the run](${run}).\n\n` +
-                `@${context.actor} one of the checks (lint, format, unit, specs, build, E2E, probes, commitlint) is red, so the merge gate stays closed.`,
+                `@${context.actor} one of the checks (lint, format, unit, specs, build, E2E, probes, commitlint, dependency review) is red, so the merge gate stays closed.`,
             });

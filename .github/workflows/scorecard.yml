@@ -1,0 +1,60 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+# OpenSSF Scorecard — supply-chain posture audit (branch protection, action
+# pinning, token permissions, dependency policy). Results publish to the
+# OSSF API (enables the scorecard badge) and upload as SARIF so findings
+# appear under Security → Code scanning alongside CodeQL.
+name: Scorecard supply-chain security
+
+on:
+  # Run weekly and on every push to main; dispatch lets us re-score on demand.
+  branch_protection_rule:
+  schedule:
+    - cron: '40 2 * * 4'
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Restrict the top-level token; the job widens only what Scorecard needs.
+permissions: read-all
+
+jobs:
+  analysis:
+    name: Scorecard analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      # Needed to publish results to the OSSF badge/API (via OIDC).
+      id-token: write
+      # Needed to upload SARIF to code scanning.
+      security-events: write
+      actions: read
+      checks: read
+      contents: read
+      issues: read
+      pull-requests: read
+    steps:
+      # persist-credentials: false — Scorecard flags repos whose checkout
+      # leaves the runner token in .git/config.
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Run analysis
+        uses: ossf/scorecard-action@v2
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: SARIF file
+          path: results.sarif
+          retention-days: 5
+
+      - name: Upload to code-scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
