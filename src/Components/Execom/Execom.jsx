@@ -1,20 +1,15 @@
 import React from 'react';
 import BlurImage from '../BlurImage/BlurImage';
-import useExperienceCapabilities from '../../hooks/useExperienceCapabilities.js';
+import useDeviceProfile from '../../hooks/useLowPower.js';
 import TeamCarousel from './TeamCarousel';
 import { cardData, cubeSlides, advisor } from '../../data/team.js';
 
 import MeetTheTeam from '../../assets/MeetTheTeam.svg';
 
 function Execom() {
-  // Both dialects (disableAutoplay = reducedMotion, flatCube = lowPower ||
-  // reducedMotion) live in the experience-tier matrix. The matrix unifies
-  // autoplay with Featuring (full tier only) — Execom previously auto-rotated
-  // on low-CPU/slow-network devices, which the policy says should not pay the
-  // animation cost.
-  const { autoplay, cube3d } = useExperienceCapabilities();
-  const disableAutoplay = !autoplay;
-  const flatCube = !cube3d;
+  const { lowPower, reducedMotion } = useDeviceProfile();
+  const disableAutoplay = reducedMotion;
+  const flatCube = lowPower || reducedMotion;
   const [activeCube, setActiveCube] = React.useState(0);
   // Each TeamCarousel marks itself interacted on pointer use via useCarouselKeyboard.
 
