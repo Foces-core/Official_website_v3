@@ -17,37 +17,16 @@ export function shouldMountSection(top, viewportHeight, marginFraction = 0.5) {
 }
 
 /**
- * Schedules background idle mounting of deferred off-screen sections once the
- * active page content has settled and the main thread is idle.
+ * Boot-time rule: before the user has scrolled at all, only a section that is
+ * actually IN the viewport may mount. Below-fold sections stay deferred even
+ * though the pre-load margin would otherwise open them at load — their chunk
+ * must not download (or evaluate) during the boot window. The first real
+ * scroll arms the normal margin rule.
  *
- * @param {Object} options
- * @param {() => void} options.onMount
- * @param {number} [options.delayMs=2000]
- * @param {boolean} [options.slowNetwork=false]
- * @returns {() => void} Cleanup handle
+ * @param {number} top            Section top edge relative to the viewport (px).
+ * @param {number} viewportHeight Viewport height (px).
+ * @returns {boolean}
  */
-export function scheduleIdleMount({ onMount, delayMs = 2000, slowNetwork = false }) {
-  if (slowNetwork || typeof onMount !== 'function') {
-    return () => {};
-  }
-
-  let timerId = 0;
-  let idleId = 0;
-
-  const trigger = () => {
-    if (typeof requestIdleCallback !== 'undefined') {
-      idleId = requestIdleCallback(() => onMount(), { timeout: 1000 });
-    } else {
-      onMount();
-    }
-  };
-
-  timerId = setTimeout(trigger, delayMs);
-
-  return () => {
-    if (timerId) clearTimeout(timerId);
-    if (idleId && typeof cancelIdleCallback !== 'undefined') {
-      cancelIdleCallback(idleId);
-    }
-  };
+export function shouldMountAtBoot(top, viewportHeight) {
+  return top < viewportHeight;
 }

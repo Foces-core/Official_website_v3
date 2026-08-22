@@ -2,8 +2,7 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import SectionSkeleton from '../SectionSkeleton/SectionSkeleton';
 import { isDesktopViewport } from '../../utils/breakpoints.js';
-import useExperienceCapabilities from '../../hooks/useExperienceCapabilities.js';
-import { shouldMountSection, scheduleIdleMount } from './scrollGateLogic.js';
+import { shouldMountAtBoot, shouldMountSection } from './scrollGateLogic.js';
 
 // Real section heights, cached after first mount so the placeholder matches
 // the real content on subsequent visits (no layout shift on return). Keyed by
@@ -32,10 +31,20 @@ function viewportBucket() {
  */
 export default function ScrollGate({ id, placeholderHeight = '110vh', label, children }) {
   const [mounted, setMounted] = useState(false);
+  // Before the first user scroll, below-fold sections stay deferred (boot
+  // must not download/evaluate their chunks). The first scroll event arms the
+  // normal pre-load margin. Anchor jumps still work: the wrapper owns the
+  // section id, so navigationCoordinator finds it, scrolls, and the resulting
+  // scroll event arms the gate before content is needed.
+  const [armed, setArmed] = useState(false);
   const wrapRef = useRef(null);
-  // The slowNetwork gate for the idle pre-mount lives in the experience-tier
-  // matrix — scrollGate is the capability.
-  const { scrollGate } = useExperienceCapabilities();
+
+  useEffect(() => {
+    if (armed) return;
+    const arm = () => setArmed(true);
+    window.addEventListener('scroll', arm, { passive: true, once: true });
+    return () => window.removeEventListener('scroll', arm);
+  }, [armed]);
 
   useEffect(() => {
     if (mounted) return;
@@ -63,11 +72,15 @@ export default function ScrollGate({ id, placeholderHeight = '110vh', label, chi
     );
     io.observe(el);
 
-    // 2. Programmatic jump fallback
+    // 2. Programmatic jump fallback — boot rule before first scroll, full
+    //    margin once armed.
     let rafId = 0;
     const checkPosition = () => {
-      const rect = el.getBoundingClientRect();
-      if (shouldMountSection(rect.top, window.innerHeight, MOUNT_MARGIN_VIEWPORTS)) mount();
+      const top = el.getBoundingClientRect().top;
+      const ok = armed
+        ? shouldMountSection(top, window.innerHeight, MOUNT_MARGIN_VIEWPORTS)
+        : shouldMountAtBoot(top, window.innerHeight);
+      if (ok) mount();
     };
     const onScroll = () => {
       if (rafId) cancelAnimationFrame(rafId);
@@ -78,21 +91,13 @@ export default function ScrollGate({ id, placeholderHeight = '110vh', label, chi
 
     checkPosition();
 
-    // 3. Idle background pre-mounting once on-screen content is loaded
-    const cancelIdle = scheduleIdleMount({
-      onMount: mount,
-      delayMs: 2200,
-      slowNetwork: !scrollGate,
-    });
-
     return () => {
       io?.disconnect();
       if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener('scroll', onScroll);
       window.removeEventListener('resize', onScroll);
-      cancelIdle();
     };
-  }, [mounted, scrollGate]);
+  }, [mounted, armed]);
 
   // Cache the real height once the section's content lands. ResizeObserver —
   // not a mount-timed read — because when `mounted` flips, the inner lazy

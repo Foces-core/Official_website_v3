@@ -168,18 +168,24 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Shell only — photos ship via the immutable HTTP cache instead.
-        globPatterns: ['**/*.{js,css,html,svg,woff2}'],
-        // Keep the precache lean: skip the 734KB three.js chunk (only the
-        // desktop hero WebGL needs it, and only on good connections) and the
-        // non-latin font subsets (the latin site never downloads them).
-        globIgnores: [
-          '**/three.module-*.js',
-          '**/inter-{latin-ext,cyrillic,cyrillic-ext,greek,greek-ext,vietnamese}-*.woff2',
-          '**/space-grotesk-{latin-ext,vietnamese}-*.woff2',
+        // App-shell only (AGENTS.md contract): the entry chunk, its vendor
+        // runtime, shell CSS, latin fonts, and index.html. Lazy section/route
+        // chunks (AboutUs/Events/Featuring/Execom/routes) are NOT precached —
+        // they stream via the immutable HTTP cache when ScrollGate mounts
+        // them, so a boot-time SW install no longer pulls ~1MB of JS the
+        // visitor may never scroll to.
+        globPatterns: [
+          'index.html',
+          'registerSW.js',
+          'manifest.webmanifest',
+          'assets/index-*.js',
+          'assets/rolldown-runtime-*.js',
+          'assets/react-vendor-*.js',
+          'assets/index-*.css',
+          'assets/*-latin-wght-normal.subset-*.woff2',
         ],
         // Nothing in the shell is larger than this; anything bigger was
-        // probably an image that slipped through the glob.
+        // probably an image or lazy chunk that slipped through the glob.
         maximumFileSizeToCacheInBytes: 1024 * 1024,
         navigateFallback: '/index.html',
         cleanupOutdatedCaches: true,
