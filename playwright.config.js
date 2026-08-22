@@ -17,6 +17,19 @@ export default defineConfig({
     baseURL: BASE_URL,
     headless: true,
     trace: 'retain-on-failure',
+    // Kill Chromium's background phone-home (component updater →
+    // clients2.google.com, FCM → mtalk.google.com, Safe Browsing pings).
+    // Harmless read-only telemetry, but in block-mode CI every attempt trips
+    // a Harden-Runner alert, so tests run a fully quiet browser.
+    launchOptions: {
+      args: [
+        '--disable-background-networking',
+        '--disable-component-update',
+        '--disable-client-side-phishing-detection',
+        '--disable-sync',
+        '--no-pings',
+      ],
+    },
   },
   // Run E2E against the PRODUCTION build (vite build + vite preview), not the
   // dev server — catches minification, code-splitting, and asset-hash issues
