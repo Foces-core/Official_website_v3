@@ -49,7 +49,6 @@ jobs:
             playwright.azureedge.net:443
             playwright.download.prss.microsoft.com:443
             storage.googleapis.com:443
-
       - name: Install pnpm
         uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
         with:
@@ -122,9 +121,10 @@ jobs:
           # Explicit allowlist for block mode — everything a JS/pnpm/Playwright
           # CI job legitimately needs. The trailing-dot registry.npmjs.org.
           # entry covers the absolute-FQDN form resolvers hand back (seen in
-          # StepSecurity block notifications). The OS/package-repo hosts below
-          # serve `playwright install --with-deps` system packages. Extend
-          # only with justification.
+          # StepSecurity block notifications). No OS package repos here:
+          # Playwright installs without --with-deps because the runner image
+          # already ships Chromium's system libraries. Extend only with
+          # justification.
           allowed-endpoints: >
             registry.npmjs.org:443
             registry.npmjs.org.:443
@@ -137,12 +137,15 @@ jobs:
             playwright.azureedge.net:443
             playwright.download.prss.microsoft.com:443
             storage.googleapis.com:443
-            azure.archive.ubuntu.com:80
-            azure.archive.ubuntu.com:443
-            security.ubuntu.com:80
-            security.ubuntu.com:443
-            packages.microsoft.com:443
-            dl.google.com:443
+            # Chromium Safe-Browsing/component-updater pings + the site's
+            # Vercel analytics script fire while tests drive a real browser.
+            # Read-only telemetry from a disposable CI profile.
+            clients2.google.com:443
+            www.google.com:443
+            accounts.google.com:443
+            update.googleapis.com:443
+            android.clients.google.com:443
+            va.vercel-scripts.com:443
 
       - name: Install pnpm
         uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
@@ -159,7 +162,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm exec playwright install chromium
 
       - name: Run E2E tests
         run: pnpm test
@@ -187,9 +190,10 @@ jobs:
           # Explicit allowlist for block mode — everything a JS/pnpm/Playwright
           # CI job legitimately needs. The trailing-dot registry.npmjs.org.
           # entry covers the absolute-FQDN form resolvers hand back (seen in
-          # StepSecurity block notifications). The OS/package-repo hosts below
-          # serve `playwright install --with-deps` system packages. Extend
-          # only with justification.
+          # StepSecurity block notifications). No OS package repos here:
+          # Playwright installs without --with-deps because the runner image
+          # already ships Chromium's system libraries. Extend only with
+          # justification.
           allowed-endpoints: >
             registry.npmjs.org:443
             registry.npmjs.org.:443
@@ -202,12 +206,15 @@ jobs:
             playwright.azureedge.net:443
             playwright.download.prss.microsoft.com:443
             storage.googleapis.com:443
-            azure.archive.ubuntu.com:80
-            azure.archive.ubuntu.com:443
-            security.ubuntu.com:80
-            security.ubuntu.com:443
-            packages.microsoft.com:443
-            dl.google.com:443
+            # Chromium Safe-Browsing/component-updater pings + the site's
+            # Vercel analytics script fire while tests drive a real browser.
+            # Read-only telemetry from a disposable CI profile.
+            clients2.google.com:443
+            www.google.com:443
+            accounts.google.com:443
+            update.googleapis.com:443
+            android.clients.google.com:443
+            va.vercel-scripts.com:443
 
       - name: Install pnpm
         uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
@@ -224,7 +231,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Playwright browsers (Chromium used by the probes)
-        run: pnpm exec playwright install --with-deps chromium
+        run: pnpm exec playwright install chromium
 
       - name: Build + serve preview
         run: |
