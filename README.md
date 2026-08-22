@@ -1,5 +1,9 @@
 # FOCES Official Website
 
+[![CI](https://github.com/Foces-core/Official_website_v3/actions/workflows/ci.yml/badge.svg)](https://github.com/Foces-core/Official_website_v3/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/Foces-core/Official_website_v3/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Foces-core/Official_website_v3/security/code-scanning)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Foces-core/Official_website_v3/badge)](https://api.scorecard.dev/projects/github.com/Foces-core/Official_website_v3)
+
 Official website for **FOCES** (Forum of Computer Engineering Students), College of Engineering Chengannur — built with React + Vite.
 
 🌐 **Live Production Site:** [https://focess-five.vercel.app/](https://focess-five.vercel.app/)
@@ -175,13 +179,18 @@ test seams (0009) are the recent ones.
 
 **Automation in this repo:**
 
-- **CI** (`.github/workflows/ci.yml`) — lint + format-check + build + Playwright E2E on every push/PR to `main`
+- **CI** (`.github/workflows/ci.yml`) — lint + format-check + unit tests + structural checks + build + Playwright E2E on every push/PR to `main` (+ dependency review and commitlint on PRs)
+- **Code scanning** — GitHub CodeQL (default setup) semantic SAST on every push/PR to `main`; results under [Security → Code scanning](https://github.com/Foces-core/Official_website_v3/security/code-scanning)
+- **OpenSSF Scorecard** (`.github/workflows/scorecard.yml`) — weekly supply-chain posture audit (branch protection, action pinning, token permissions); results published to the OSSF API and code scanning
+- **StepSecurity Harden-Runner** — egress monitoring (`audit` mode) inside every CI job that installs/runs packages; flags unexpected outbound calls from runners
+- **Dependency review** — PR gate that fails when a diff introduces high/critical vulnerabilities (complements `pnpm audit`, which only sees the current lockfile)
 - **Dependabot** (`.github/dependabot.yml`) — weekly grouped dependency PRs
+- **Renovate** (`renovate.json`) — config-driven toolchain updates (grouped major bumps, digest pinning where applicable)
 - **CodeRabbit** (`.coderabbit.yaml`) — strict AI code review on every PR (assertive profile; `request_changes_workflow` formally blocks merges on critical findings)
 - **Dependabot auto-merge** (`.github/workflows/auto-merge-dependabot.yml`) — dependabot PRs squash-merge themselves once CI passes
+- **Perf (nightly)** (`.github/workflows/perf-nightly.yml`) — daily 06:00 UTC Lighthouse run across device/network profiles with hard performance budgets; auto-opens a regression issue on breach and closes it when budgets pass again
 - **Stale bot** (`.github/workflows/stale.yml`) — closes abandoned issues/PRs
-- **Deploys** — handled by the **native Vercel Git integration**: auto
-  production deploy on every push to `main`, auto preview deploy on every PR
+- **Deploys** — handled by the **native Vercel Git integration**: auto production deploy on every push to `main`, auto preview deploy on every PR
 - **Security** — report vulnerabilities via [SECURITY.md](SECURITY.md)
 
 ## Deployment
@@ -189,5 +198,10 @@ test seams (0009) are the recent ones.
 Hosted on **Vercel** ([https://focess-five.vercel.app/](https://focess-five.vercel.app/)).
 
 - **Continuous Deployment:** Every push to `main` deploys to production via Vercel Edge.
+- **Merge gate:** branch protection on `main` requires the `Lint & Build`, `E2E (Playwright)`,
+  and `Probes (structural checks)` checks to pass; CodeQL, dependency review, and the
+  CodeRabbit review run alongside them. Vercel additionally waits for the
+  `Vercel - focces: lint` status (posted by CI's notify job) so deployments never go
+  live against a red build.
 - **Edge Performance:** All static assets are served from the Vercel edge CDN same-origin with 1-year immutable caching (`/assets/(.*)`) and service worker precaching.
 - **Security & SPA Routing:** Global security headers and clean SPA client-side routing are defined in [`vercel.json`](vercel.json).
