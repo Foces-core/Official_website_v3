@@ -1,13 +1,7 @@
 import { useRef, useLayoutEffect, useEffect } from 'react';
-import {
-  flatTrackTransform,
-  cubeTrackTransform,
-  cubeFaceTransform,
-  cubeDragAngle,
-  dragSnap,
-  slideStep,
-} from '../utils/carouselGeometry.js';
+import { cubeDragAngle, dragSnap } from '../utils/carouselGeometry.js';
 import { normalizeIndex, wrapTarget } from '../utils/carouselWrap.js';
+import { getAdapter } from '../utils/carouselAdapters.js';
 
 /**
  * Hand-rolled carousel engine — replaces Swiper for the two carousels on the
@@ -88,19 +82,17 @@ export default function useCarousel({
     const t = track();
     if (!t) return;
     const { mode: m, spaceBetween: gap } = p();
+    const adapter = getAdapter(m);
     if (m === 'cube') {
-      s.faceWidth = t.clientWidth || root()?.clientWidth || 0;
-      if (!s.faceWidth) return;
-      const firstCard = t.firstElementChild?.firstElementChild;
-      const h = firstCard ? firstCard.offsetHeight : 0;
-      if (h) t.style.height = `${h}px`;
+      const res = adapter.measure(t, root());
+      if (!res) return;
+      s.faceWidth = res.faceWidth;
       applyFaceTransforms();
     } else {
-      const first = t.firstElementChild;
-      if (!first || first.offsetParent === null) return;
-      s.slideWidth = first.getBoundingClientRect().width;
-      if (!s.slideWidth) return;
-      s.step = slideStep(s.slideWidth, gap);
+      const res = adapter.measure(t, gap);
+      if (!res) return;
+      s.slideWidth = res.slideWidth;
+      s.step = res.step;
     }
   }
 
@@ -121,8 +113,9 @@ export default function useCarousel({
   function applyFaceTransforms() {
     const t = track();
     if (!t || p().mode !== 'cube') return;
+    const adapter = getAdapter('cube');
     Array.from(t.children).forEach((slide, i) => {
-      slide.style.transform = cubeFaceTransform(i, s.faceWidth / 2);
+      slide.style.transform = adapter.getFaceTransform(i, s.faceWidth / 2);
     });
   }
 
@@ -130,13 +123,12 @@ export default function useCarousel({
     const t = track();
     if (!t) return;
     const { mode: m } = p();
+    const adapter = getAdapter(m);
     if (m === 'cube') {
-      t.style.transform = cubeTrackTransform(
-        s.raw,
-        s.dragging ? cubeDragAngle(s.dragOffset, s.faceWidth) : 0,
-      );
+      const dragAngle = s.dragging ? cubeDragAngle(s.dragOffset, s.faceWidth) : 0;
+      t.style.transform = adapter.getTransform(s.raw, s.faceWidth, dragAngle);
     } else {
-      t.style.transform = flatTrackTransform(s.raw, s.step, s.dragging ? s.dragOffset : 0);
+      t.style.transform = adapter.getTransform(s.raw, s.step, s.dragging ? s.dragOffset : 0);
     }
     syncActiveClasses();
     root()?.setAttribute('data-carousel-ready', '');
@@ -334,35 +326,12 @@ export default function useCarousel({
     const { mode: m, slidesPerView: spv, spaceBetween: gap } = p();
     r.setAttribute('data-carousel-mode', m);
     r.__carouselEngine__ = instanceRef.current;
+    const adapter = getAdapter(m);
     if (m === 'cube') {
-      r.style.perspective = '1200px';
-      t.style.display = '';
-      t.style.columnGap = '';
-      t.style.transformStyle = 'preserve-3d';
-      Array.from(t.children).forEach((slide) => {
-        slide.style.position = 'absolute';
-        slide.style.inset = '0';
-        slide.style.width = '100%';
-        slide.style.height = '100%';
-        slide.style.backfaceVisibility = 'hidden';
-        slide.style.flex = '';
-      });
+      adapter.styleTrack(t, r);
       applyFaceTransforms();
     } else {
-      t.style.display = 'flex';
-      t.style.alignItems = 'center';
-      t.style.columnGap = `${gap}px`;
-      t.style.transformStyle = '';
-      t.style.height = '';
-      r.style.perspective = '';
-      Array.from(t.children).forEach((slide) => {
-        slide.style.position = '';
-        slide.style.inset = '';
-        slide.style.width = '';
-        slide.style.height = '';
-        slide.style.backfaceVisibility = '';
-        slide.style.flex = `0 0 calc((100% - ${gap * (spv - 1)}px) / ${spv})`;
-      });
+      adapter.styleTrack(t, r, spv, gap);
     }
   }
 

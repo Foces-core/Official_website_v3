@@ -2,25 +2,35 @@ import { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import useDeviceProfile from '../../hooks/useLowPower.js';
 import { useBlurImage } from './useBlurImage.js';
-import { resolveMaxImageWidth, capSrcset } from '../../utils/imagePolicy.js';
+import { createImageSpec } from '../../utils/imageSpec.js';
 
 /**
- * BlurImage — lazy-loads an image with a blur-up placeholder.
- * Automatically elevates fetchPriority to 'high' upon direct user interaction.
+ * BlurImage — thin adapter over two pure/tested seams.
  *
- * The state machine (loaded / placeholder removal / priority elevation) lives
- * in the tested useBlurImage hook (useBlurImage.js); this component is wiring.
+ * - Image spec (what to fetch): src/utils/imageSpec.js — pure
+ *   createImageSpec({ src, srcSet, sizes, policy }) caps the srcset
+ *   for the device profile. No DOM.
+ * - Loaded / placeholder / fetch-priority state machine:
+ *   src/Components/BlurImage/useBlurImage.js — the reducer owns all
+ *   transitions; this component only wires events and renders.
  *
- * This is also the single seam for the image-policy cap (utils/imagePolicy.js):
- * every photo — events, echo slides, team — renders through here, so the
- * device profile is consulted once, here, and the srcset is capped before it
- * reaches the <img>. A slow-network visitor never downloads a candidate wider
- * than 400w; a low-CPU device tops out at 800w; capable devices get the full
- * triplet.
+ * The wrapper no longer duplicates object-fit utilities (object-cover /
+ * object-contain …): those belong on the <img>, not the <div>.
+ * Layout utilities (w-full, h-full, rounded-*) stay on the wrapper so
+ * overflow-hidden clipping still works.
  */
+
+function stripObjectFit(className) {
+  return className
+    .split(/\s+/)
+    .filter((c) => c.length > 0 && !c.startsWith('object-'))
+    .join(' ');
+}
+
 export default function BlurImage({
   src,
   srcSet,
+  sizes,
   blurSrc,
   alt = '',
   className = '',
@@ -33,21 +43,27 @@ export default function BlurImage({
   const { imgRef, loaded, removed, priorityAttr, handleLoad, handleError, handleInteraction } =
     useBlurImage({ src, blurSrc, eager: loading === 'eager' });
 
-  // Image-policy cap: consult the device profile once per image and drop
-  // srcset candidates wider than the cap. Memoized on the profile flags so a
-  // connection change (or unrelated re-render) doesn't re-parse the string.
   const { slowNetwork, lowCPU } = useDeviceProfile();
-  const cappedSrcSet = useMemo(
-    () =>
-      srcSet == null ? srcSet : capSrcset(srcSet, resolveMaxImageWidth({ slowNetwork, lowCPU })),
-    [srcSet, slowNetwork, lowCPU],
+
+  const {
+    src: specSrc,
+    srcSet: cappedSrcSet,
+    sizes: specSizes,
+  } = useMemo(
+    () => createImageSpec({ src, srcSet, sizes, policy: { slowNetwork, lowCPU } }),
+    [src, srcSet, sizes, slowNetwork, lowCPU],
   );
 
   const showBlur = blurSrc && !removed;
 
+  const wrapperClass = useMemo(() => {
+    const stripped = stripObjectFit(className);
+    return stripped ? `relative overflow-hidden ${stripped}` : 'relative overflow-hidden';
+  }, [className]);
+
   return (
     <div
-      className={`relative overflow-hidden ${className}`}
+      className={wrapperClass}
       style={{ width, height }}
       onMouseEnter={handleInteraction}
       onTouchStart={handleInteraction}
@@ -67,8 +83,9 @@ export default function BlurImage({
       {/* Full image — fades in on load */}
       <img
         ref={imgRef}
-        src={src}
+        src={specSrc}
         srcSet={cappedSrcSet}
+        sizes={specSizes}
         alt={alt}
         loading={loading}
         decoding={decoding}
@@ -87,6 +104,7 @@ export default function BlurImage({
 BlurImage.propTypes = {
   src: PropTypes.string.isRequired,
   srcSet: PropTypes.string,
+  sizes: PropTypes.string,
   blurSrc: PropTypes.string,
   alt: PropTypes.string,
   className: PropTypes.string,
