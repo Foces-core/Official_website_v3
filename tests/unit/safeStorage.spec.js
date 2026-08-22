@@ -51,4 +51,21 @@ describe('safeStorage pure helpers', () => {
     expect(safeSessionRemove('k', null)).toBe(false);
     expect(safeSessionHas('k', null)).toBe(false);
   });
+
+  it('safeSessionSet coerces non-string values to strings', () => {
+    const memory = new Map();
+    const mockStorage = {
+      getItem: (k) => memory.get(k) ?? null,
+      setItem: (k, v) => memory.set(k, String(v)),
+      removeItem: (k) => memory.delete(k),
+    };
+    expect(safeSessionSet('n', 123, mockStorage)).toBe(true);
+    expect(safeSessionGet('n', null, mockStorage)).toBe('123');
+  });
+
+  it('safeSessionGet with no default returns null for missing key', () => {
+    const memory = new Map();
+    const mockStorage = { getItem: (k) => memory.get(k) ?? null };
+    expect(safeSessionGet('missing', undefined, mockStorage)).toBeNull();
+  });
 });

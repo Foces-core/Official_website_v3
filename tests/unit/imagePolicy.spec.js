@@ -54,4 +54,25 @@ describe('capSrcset — enforce the cap on a srcset string', () => {
     expect(capSrcset('', 400)).toBe('');
     expect(capSrcset(null, 400)).toBeNull();
   });
+
+  it('returns the original string when no candidate parses', () => {
+    expect(capSrcset('garbage-with-no-width', 400)).toBe('garbage-with-no-width');
+    expect(capSrcset('/a.webp notawidth, /b.webp 100x', 400)).toBe(
+      '/a.webp notawidth, /b.webp 100x',
+    );
+  });
+
+  it('parses candidates with extra whitespace and multiple spaces', () => {
+    expect(capSrcset('  /a.webp   800w  ,  /b.webp 400w ', 800)).toBe('/a.webp 800w, /b.webp 400w');
+  });
+
+  it('keeps equal-to-cap width (boundary <=)', () => {
+    const pair = '/a.webp 800w';
+    expect(capSrcset(pair, 800)).toBe(pair);
+  });
+
+  it('floor picks strictly smallest when all exceed cap (reduce min)', () => {
+    const set = '/big.webp 2000w, /mid.webp 1500w, /small.webp 1200w';
+    expect(capSrcset(set, 400)).toBe('/small.webp 1200w');
+  });
 });

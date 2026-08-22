@@ -20,6 +20,30 @@ describe('overlayLifecycle pure helpers', () => {
       expect(findFocusableElements({})).toEqual([]);
     });
 
+    it('excludes elements with display:none and keeps offsetParent fallback', () => {
+      const hidden = {
+        hasAttribute: () => false,
+        getAttribute: () => null,
+        offsetParent: null,
+        style: { display: 'none' },
+      };
+      const visibleByStyle = {
+        hasAttribute: () => false,
+        getAttribute: () => null,
+        offsetParent: null,
+        style: { display: 'block' },
+      };
+      const visibleByOffset = {
+        hasAttribute: () => false,
+        getAttribute: () => null,
+        offsetParent: {},
+        style: undefined,
+      };
+      const container = { querySelectorAll: () => [hidden, visibleByStyle, visibleByOffset] };
+      const results = findFocusableElements(container);
+      expect(results).toEqual([visibleByStyle, visibleByOffset]);
+    });
+
     it('finds visible focusable elements and excludes disabled or aria-hidden', () => {
       const btn1 = {
         hasAttribute: (attr) => attr === 'disabled',
@@ -58,6 +82,79 @@ describe('overlayLifecycle pure helpers', () => {
       expect(trapTabFocus(null, {})).toBe(false);
       expect(trapTabFocus({ key: 'Escape' }, {})).toBe(false);
       expect(trapTabFocus({ key: 'Tab' }, null)).toBe(false);
+    });
+
+    it('returns false when no focusables exist in container', () => {
+      const container = { querySelectorAll: () => [], contains: () => false };
+      const trapped = trapTabFocus(
+        { key: 'Tab', shiftKey: false, preventDefault: vi.fn() },
+        container,
+      );
+      expect(trapped).toBe(false);
+    });
+
+    it('wraps forward when focus outside container on Tab (not contained)', () => {
+      const first = {
+        focus: vi.fn(),
+        hasAttribute: () => false,
+        getAttribute: () => null,
+        offsetParent: {},
+      };
+      const last = {
+        focus: vi.fn(),
+        hasAttribute: () => false,
+        getAttribute: () => null,
+        offsetParent: {},
+      };
+      const container = { querySelectorAll: () => [first, last], contains: () => false };
+      const event = { key: 'Tab', shiftKey: false, preventDefault: vi.fn() };
+      const originalActive = document.activeElement;
+      Object.defineProperty(document, 'activeElement', {
+        value: document.body,
+        configurable: true,
+      });
+      const trapped = trapTabFocus(event, container);
+      expect(trapped).toBe(true);
+      expect(first.focus).toHaveBeenCalledTimes(1);
+      Object.defineProperty(document, 'activeElement', {
+        value: originalActive,
+        configurable: true,
+      });
+    });
+
+    it('does not trap when focus strictly inside and not at edge', () => {
+      const first = {
+        focus: vi.fn(),
+        hasAttribute: () => false,
+        getAttribute: () => null,
+        offsetParent: {},
+      };
+      const mid = {
+        focus: vi.fn(),
+        hasAttribute: () => false,
+        getAttribute: () => null,
+        offsetParent: {},
+      };
+      const last = {
+        focus: vi.fn(),
+        hasAttribute: () => false,
+        getAttribute: () => null,
+        offsetParent: {},
+      };
+      const container = {
+        querySelectorAll: () => [first, mid, last],
+        contains: (el) => el === mid,
+      };
+      const event = { key: 'Tab', shiftKey: false, preventDefault: vi.fn() };
+      const originalActive = document.activeElement;
+      Object.defineProperty(document, 'activeElement', { value: mid, configurable: true });
+      const trapped = trapTabFocus(event, container);
+      expect(trapped).toBe(false);
+      expect(event.preventDefault).not.toHaveBeenCalled();
+      Object.defineProperty(document, 'activeElement', {
+        value: originalActive,
+        configurable: true,
+      });
     });
 
     it('wraps focus to last element on Shift+Tab from first element', () => {
@@ -141,6 +238,32 @@ describe('overlayLifecycle pure helpers', () => {
     it('returns false if event is not Escape or isOpen is false', () => {
       expect(handleOverlayEscape({ key: 'Enter' }, { isOpen: true })).toBe(false);
       expect(handleOverlayEscape({ key: 'Escape' }, { isOpen: false })).toBe(false);
+    });
+
+    it('returns false when event is null', () => {
+      expect(handleOverlayEscape(null, { isOpen: true })).toBe(false);
+    });
+
+    it('handles bare function onClose form', () => {
+      const onClose = vi.fn();
+      const event = { key: 'Escape', preventDefault: vi.fn() };
+      const handled = handleOverlayEscape(event, onClose);
+      expect(handled).toBe(true);
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    it('skips preventDefault when not a function', () => {
+      const event = { key: 'Escape' };
+      const handled = handleOverlayEscape(event, { isOpen: true });
+      expect(handled).toBe(true);
+    });
+
+    it('skips restore when onRestoreFocus missing but still closes', () => {
+      const onClose = vi.fn();
+      const event = { key: 'Escape', preventDefault: vi.fn() };
+      const handled = handleOverlayEscape(event, { isOpen: true, onClose });
+      expect(handled).toBe(true);
+      expect(onClose).toHaveBeenCalledTimes(1);
     });
 
     it('handles Escape, prevents default, calls onClose, and defers onRestoreFocus', () => {
