@@ -18,7 +18,15 @@ const check = (name, ok, detail = '') => {
 const browser = await puppeteer.launch({
   executablePath: chromePath,
   headless: 'new',
-  args: ['--no-sandbox', '--window-size=1280,800'],
+  args: [
+    '--no-sandbox',
+    '--window-size=1280,800',
+    '--disable-background-networking',
+    '--disable-component-update',
+    '--disable-client-side-phishing-detection',
+    '--disable-sync',
+    '--no-pings',
+  ],
 });
 
 try {
