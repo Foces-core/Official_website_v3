@@ -3,6 +3,15 @@ import { validateContactForm, isSpamSubmission } from './validateContactForm.js'
 export const CONTACT_EMAIL = 'Sebinmathew543@gmail.com';
 
 /**
+ * Pure decision: which toast autoClose delay applies for an outcome type?
+ * @param {'success' | 'error' | 'info'} toastType
+ * @returns {number} ms
+ */
+export function toastAutoCloseMs(toastType) {
+  return toastType === 'info' ? 3000 : 2000;
+}
+
+/**
  * Pure decision: which channel should a submission use?
  *
  * @param {{ onLine: boolean, serviceId?: string, templateId?: string, publicKey?: string }} env

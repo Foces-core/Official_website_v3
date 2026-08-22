@@ -6,6 +6,7 @@ import {
   resolveSendChannel,
   buildMailtoHref,
   resolveSubmissionOutcome,
+  toastAutoCloseMs,
 } from '../utils/contactSubmitLogic.js';
 import { loadContactDraft, saveContactDraft, clearContactDraft } from '../utils/contactDraft.js';
 
@@ -74,13 +75,16 @@ export default function useContactForm() {
     }
 
     toast.dismiss();
-    if (outcome.toastType === 'success') {
-      toast.success(outcome.message, { autoClose: 2000, ...TOAST_STYLE });
-    } else if (outcome.toastType === 'error') {
-      toast.error(outcome.message, { autoClose: 2000, ...TOAST_STYLE });
-    } else {
-      toast.info(outcome.message, { autoClose: 3000, ...TOAST_STYLE });
-    }
+    const showToast =
+      outcome.toastType === 'success'
+        ? toast.success
+        : outcome.toastType === 'error'
+          ? toast.error
+          : toast.info;
+    showToast(outcome.message, {
+      autoClose: toastAutoCloseMs(outcome.toastType ?? 'info'),
+      ...TOAST_STYLE,
+    });
 
     setIsSubmitting(false);
   };

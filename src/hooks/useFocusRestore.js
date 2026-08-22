@@ -1,11 +1,19 @@
 import { useEffect, useRef } from 'react';
 import { deferToNextPaint } from '../utils/frameScheduler.js';
-import { findFocusableElements } from '../utils/overlayLifecycle.js';
+import {
+  resolveEntryFocusTarget,
+  resolveRestoreFocusTarget,
+  focusIfFocusable,
+} from '../utils/focusTargets.js';
 
 /**
  * Focused hook that captures focus prior to opening an overlay, focuses an
  * initial element, and restores focus back to the trigger or pre-open element
  * when the overlay closes or unmounts (WCAG 2.4.3 Focus Order).
+ *
+ * Target resolution lives in the pure seam utils/focusTargets.js — this hook
+ * only wires the open/close lifecycle and captures the previously focused
+ * element.
  *
  * @param {{
  *   isOpen: boolean,
@@ -38,42 +46,33 @@ export default function useFocusRestore({
       previouslyFocusedElementRef.current = doc.activeElement;
     }
 
+    const explicitRestoreTarget = restoreFocusRef?.current ?? null;
+
     // Focus entry: initialFocusRef -> initialFocusId -> first focusable in container
     const cancelEntry = deferToNextPaint(() => {
-      let targetToFocus = initialFocusRef?.current;
-      if (!targetToFocus && initialFocusId) {
-        targetToFocus = doc.getElementById(initialFocusId);
-      }
-      if (!targetToFocus) {
-        const container =
-          containerRef?.current || (containerId ? doc.getElementById(containerId) : null);
-        if (container) {
-          const focusables = findFocusableElements(container);
-          targetToFocus = focusables[0] || container;
-        }
-      }
-
-      if (targetToFocus && typeof targetToFocus.focus === 'function') {
-        targetToFocus.focus();
-      }
+      focusIfFocusable(
+        resolveEntryFocusTarget({
+          initialFocusRef,
+          initialFocusId,
+          containerRef,
+          containerId,
+          doc,
+        }),
+      );
     });
-
-    const explicitRestoreTarget = restoreFocusRef?.current;
 
     return () => {
       cancelEntry();
       // Restore focus on close / unmount
       deferToNextPaint(() => {
-        let restoreEl = explicitRestoreTarget;
-        if (!restoreEl && restoreFocusId) {
-          restoreEl = doc.getElementById(restoreFocusId);
-        }
-        if (!restoreEl) {
-          restoreEl = previouslyFocusedElementRef.current;
-        }
-        if (restoreEl && typeof restoreEl.focus === 'function') {
-          restoreEl.focus();
-        }
+        focusIfFocusable(
+          resolveRestoreFocusTarget({
+            explicitRestoreTarget,
+            restoreFocusId,
+            previouslyFocusedElement: previouslyFocusedElementRef.current,
+            doc,
+          }),
+        );
       });
     };
   }, [
