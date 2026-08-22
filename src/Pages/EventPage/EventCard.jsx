@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import Modal from './Modal';
 import { prioritizeAssetFetch } from '../../utils/priorityScheduler.js';
@@ -10,7 +10,7 @@ import BlurImage from '../../Components/BlurImage/BlurImage';
  * Accessible interactive trigger for photo gallery expansion.
  * Coordinates role="button", tabIndex, keyboard activation (Enter/Space), and accessible labels.
  */
-function GalleryTrigger({ onOpen, label, hasPopup, className, children }) {
+function GalleryTrigger({ onOpen, label, hasPopup = false, className = '', children = null }) {
   const handleKeyDown = onActivationKey(onOpen);
   return (
     <div
@@ -35,12 +35,6 @@ GalleryTrigger.propTypes = {
   children: PropTypes.node,
 };
 
-GalleryTrigger.defaultProps = {
-  hasPopup: false,
-  className: '',
-  children: null,
-};
-
 /**
  * EventCard — one responsive card for every breakpoint.
  *
@@ -50,22 +44,28 @@ GalleryTrigger.defaultProps = {
  * Tailwind responsive variants, so Eventpage no longer tracks window width
  * (and its per-resize re-render is gone with it).
  */
-function EventCard({ Events, priority, reverse }) {
+function EventCard({ Events, priority = false, reverse = false }) {
   const [Expanding, setExpanding] = useState(false);
-  const handleOpenGallery = () => setExpanding(true);
+  // INP: every callback/allocation below used to be re-created on each render
+  // of the events list (e.g. a sibling card opening its modal re-renders all
+  // cards). Memoized so a parent re-render does no per-card allocation work
+  // and React can bail out of prop-identity churn.
+  const handleOpenGallery = useCallback(() => setExpanding(true), []);
+  const handleCloseGallery = useCallback(() => setExpanding(false), []);
 
   // photos are { url, srcset } pairs (see src/utils/eventPhotos.js) — no more
   // parallel images[i] ↔ imageSets[i] index math to get wrong.
-  const photos = Events.photos || [];
+  const photos = useMemo(() => Events.photos || [], [Events.photos]);
   const primary = photos[0];
+  const modalImages = useMemo(() => photos.map((photo) => photo.url), [photos]);
 
   // Images are already cached by the service worker (images-cache-v2,
   // CacheFirst) — the removed imageCacheManager fetched + stored every photo
   // a second time in its own cache. Only warm the browser's HTTP cache for
   // the photos the user is about to look at (modal open intent), on demand.
-  const handleInteraction = () => {
+  const handleInteraction = useCallback(() => {
     photos.forEach((photo) => prioritizeAssetFetch(photo.url));
-  };
+  }, [photos]);
 
   return (
     <div
@@ -136,11 +136,7 @@ function EventCard({ Events, priority, reverse }) {
         )}
       </div>
 
-      <Modal
-        images={photos.map((photo) => photo.url)}
-        open={Expanding}
-        onClose={() => setExpanding(false)}
-      />
+      <Modal images={modalImages} open={Expanding} onClose={handleCloseGallery} />
 
       {/* Details Section */}
       <div className="w-full md:w-1/2 flex flex-col justify-between text-white space-y-3 md:space-y-4">
@@ -195,11 +191,6 @@ EventCard.propTypes = {
   }).isRequired,
   priority: PropTypes.bool,
   reverse: PropTypes.bool,
-};
-
-EventCard.defaultProps = {
-  priority: false,
-  reverse: false,
 };
 
 export default EventCard;
