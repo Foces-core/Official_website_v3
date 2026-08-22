@@ -21,10 +21,12 @@
  *   ?motion=on  — force full motion (ignore prefers-reduced-motion)
  */
 
+import { MOBILE_MAX, DESKTOP_MIN, WIDE_SCREEN_MIN } from './breakpoints.js';
+
 const BREAKPOINTS = {
-  mobile: '(max-width: 767px)',
-  tablet: '(min-width: 768px) and (max-width: 1023px)',
-  desktop: '(min-width: 1024px)',
+  mobile: `(max-width: ${MOBILE_MAX}px)`,
+  tablet: `(min-width: ${DESKTOP_MIN}px) and (max-width: ${WIDE_SCREEN_MIN - 1}px)`,
+  desktop: `(min-width: ${WIDE_SCREEN_MIN}px)`,
 };
 
 function matches(query) {

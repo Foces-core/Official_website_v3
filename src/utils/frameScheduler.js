@@ -5,6 +5,40 @@
  */
 
 /**
+ * Resolve the appropriate requestAnimationFrame function.
+ * Pure helper — no side effects, deterministic from `win` and globals.
+ *
+ * @param {Window | { requestAnimationFrame: typeof requestAnimationFrame } | null} win
+ * @returns {(cb: FrameRequestCallback) => number}
+ */
+function getRaf(win) {
+  if (win && typeof win.requestAnimationFrame === 'function') {
+    return win.requestAnimationFrame.bind(win);
+  }
+  if (typeof requestAnimationFrame !== 'undefined') {
+    return requestAnimationFrame;
+  }
+  return (cb) => setTimeout(cb, 16);
+}
+
+/**
+ * Resolve the appropriate cancelAnimationFrame function.
+ * Pure helper — no side effects, deterministic from `win` and globals.
+ *
+ * @param {Window | { cancelAnimationFrame: typeof cancelAnimationFrame } | null} win
+ * @returns {(id: number) => void}
+ */
+function getCancelRaf(win) {
+  if (win && typeof win.cancelAnimationFrame === 'function') {
+    return win.cancelAnimationFrame.bind(win);
+  }
+  if (typeof cancelAnimationFrame !== 'undefined') {
+    return cancelAnimationFrame;
+  }
+  return (id) => clearTimeout(id);
+}
+
+/**
  * Coalesce multiple calls within the same animation frame into a single execution.
  * Returns a wrapper function with a `.cancel()` method to tear down pending frames.
  *
@@ -14,18 +48,8 @@
  */
 export function coalesceToFrame(fn, win = typeof window !== 'undefined' ? window : null) {
   let rafId = null;
-  const rAF =
-    win && typeof win.requestAnimationFrame === 'function'
-      ? win.requestAnimationFrame.bind(win)
-      : (cb) =>
-          typeof requestAnimationFrame !== 'undefined'
-            ? requestAnimationFrame(cb)
-            : setTimeout(cb, 16);
-  const cancelRAF =
-    win && typeof win.cancelAnimationFrame === 'function'
-      ? win.cancelAnimationFrame.bind(win)
-      : (id) =>
-          typeof cancelAnimationFrame !== 'undefined' ? cancelAnimationFrame(id) : clearTimeout(id);
+  const rAF = getRaf(win);
+  const cancelRAF = getCancelRaf(win);
 
   const schedule = () => {
     if (rafId != null) return;
@@ -56,18 +80,8 @@ export function deferToNextPaint(fn, win = typeof window !== 'undefined' ? windo
   let firstId = null;
   let secondId = null;
 
-  const rAF =
-    win && typeof win.requestAnimationFrame === 'function'
-      ? win.requestAnimationFrame.bind(win)
-      : (cb) =>
-          typeof requestAnimationFrame !== 'undefined'
-            ? requestAnimationFrame(cb)
-            : setTimeout(cb, 16);
-  const cancelRAF =
-    win && typeof win.cancelAnimationFrame === 'function'
-      ? win.cancelAnimationFrame.bind(win)
-      : (id) =>
-          typeof cancelAnimationFrame !== 'undefined' ? cancelAnimationFrame(id) : clearTimeout(id);
+  const rAF = getRaf(win);
+  const cancelRAF = getCancelRaf(win);
 
   firstId = rAF(() => {
     firstId = null;

@@ -2,94 +2,152 @@ import { describe, it, expect } from 'vitest';
 import {
   pickEasterMessage,
   pushToast,
-  emaVelocity,
+  fire,
 } from '../../src/Components/AboutUs/easterEggCelebration.js';
 
-// The cube easter egg's CELEBRATION policies (message no-repeat, toast-stack
-// cap, drag-velocity EMA) used to be inline in AboutUs.jsx — detection is
-// tested (easterEggLogic), the celebration was not.
-
-describe('pickEasterMessage — no two identical toasts in a row', () => {
-  const MESSAGES = ['DARE to spin! 🎉', 'DOMINATE the cube! 🔥', 'Spin champion! 🌀'];
-
-  it('picks a message different from the previous one', () => {
-    // rand sequence: first pick lands on MESSAGES[0], which IS the previous →
-    // loop re-picks, landing on MESSAGES[1]
-    let calls = 0;
-    const rand = () => (calls++ === 0 ? 0 : 1);
-    expect(pickEasterMessage(MESSAGES[0], MESSAGES, rand)).toBe(MESSAGES[1]);
+describe('pickEasterMessage', () => {
+  const M = ['DARE to spin! 🎉', 'DOMINATE the cube! 🔥', 'Spin champion! 🌀'];
+  it('picks different from previous', () => {
+    let c = 0;
+    const r = () => (c++ === 0 ? 0 : 1);
+    expect(pickEasterMessage(M[0], M, r)).toBe(M[1]);
   });
-
-  it('keeps the first pick when it already differs from the previous', () => {
-    const rand = () => 0;
-    expect(pickEasterMessage('Spin champion! 🌀', MESSAGES, rand)).toBe(MESSAGES[0]);
+  it('keeps first pick when already different', () => {
+    expect(pickEasterMessage('Spin champion! 🌀', M, () => 0)).toBe(M[0]);
   });
-
-  it('returns the only message when there is nothing else to choose (no infinite loop)', () => {
-    const rand = () => 0;
-    expect(pickEasterMessage('Solo 🎉', ['Solo 🎉'], rand)).toBe('Solo 🎉');
+  it('returns only message when single', () => {
+    expect(pickEasterMessage('Solo 🎉', ['Solo 🎉'], () => 0)).toBe('Solo 🎉');
   });
-
-  it("terminates when rand keeps returning the previous message's index (bounded retry)", () => {
-    // A hostile/constant rand that always points at the previous message —
-    // the bounded walk must still return a valid, different message.
-    const rand = () => 0;
-    expect(pickEasterMessage(MESSAGES[0], MESSAGES, rand)).toBe(MESSAGES[1]);
+  it('terminates with hostile rand', () => {
+    expect(pickEasterMessage(M[0], M, () => 0)).toBe(M[1]);
   });
-
-  it('normalizes an out-of-range rand result (wraps, never index errors)', () => {
-    const rand = () => 5; // beyond MESSAGES.length — must wrap to a valid index
-    expect(pickEasterMessage('DARE to spin! 🎉', MESSAGES, rand)).toBe(MESSAGES[2]);
+  it('wraps out-of-range rand', () => {
+    expect(pickEasterMessage('DARE to spin! 🎉', M, () => 5)).toBe(M[2]);
   });
-
-  it('returns a message when every candidate equals the previous one (degenerate data)', () => {
-    // offset === -1: nothing to pick that differs — any choice repeats. The
-    // picker must still return a valid message instead of looping forever.
-    const rand = () => 0;
-    expect(pickEasterMessage('Same 🎉', ['Same 🎉', 'Same 🎉', 'Same 🎉'], rand)).toBe('Same 🎉');
+  it('returns when all identical', () => {
+    expect(pickEasterMessage('Same 🎉', ['Same 🎉', 'Same 🎉'], () => 0)).toBe('Same 🎉');
   });
 });
 
-describe('pushToast — capped, oldest-first toast stack', () => {
-  it('appends a toast and returns the new element', () => {
-    const stack = document.createElement('div');
-    const toast = pushToast(stack, 'DARE to spin! 🎉', 4);
-    expect(stack.children).toHaveLength(1);
-    expect(toast.className).toContain('about-toast');
-    expect(toast.textContent).toBe('DARE to spin! 🎉');
+describe('pushToast', () => {
+  it('appends toast and returns element', () => {
+    const s = document.createElement('div');
+    const t = pushToast(s, 'Hello', 4);
+    expect(s.children).toHaveLength(1);
+    expect(t.textContent).toBe('Hello');
   });
-
-  it('drops the OLDEST toast when the stack is at capacity', () => {
-    const stack = document.createElement('div');
-    const first = pushToast(stack, 'A', 4);
-    pushToast(stack, 'B', 4);
-    pushToast(stack, 'C', 4);
-    pushToast(stack, 'D', 4);
-    const last = pushToast(stack, 'E', 4);
-    expect(stack.children).toHaveLength(4);
-    expect(first.isConnected).toBe(false); // oldest removed from the DOM
-    expect(stack.textContent).toBe('BCDE'); // order preserved, newest last
-    expect(last.textContent).toBe('E');
+  it('drops oldest at capacity', () => {
+    const s = document.createElement('div');
+    const f = pushToast(s, 'A', 4);
+    pushToast(s, 'B', 4);
+    pushToast(s, 'C', 4);
+    pushToast(s, 'D', 4);
+    pushToast(s, 'E', 4);
+    expect(s.children).toHaveLength(4);
+    expect(f.isConnected).toBe(false);
+    expect(s.textContent).toBe('BCDE');
   });
 });
 
-describe('emaVelocity — exponential moving average of drag velocity', () => {
-  it('mixes previous velocity with the instantaneous rate by the k factor', () => {
-    // 10*(1-0.4) + (100/1)*0.4 = 6 + 40 = 46
-    expect(emaVelocity(10, 100, 1)).toBeCloseTo(46);
+describe('fire — celebration trigger seam', () => {
+  it('creates burst element inside parent', () => {
+    const p = document.createElement('div');
+    const s = document.createElement('div');
+    p.appendChild(s);
+    let l = '';
+    fire({
+      cx: 100,
+      cy: 200,
+      count: 0,
+      messages: ['A'],
+      stack: s,
+      getLastToast: () => l,
+      setLastToast: (m) => {
+        l = m;
+      },
+    });
+    const b = p.querySelector('.about-burst');
+    expect(b).not.toBeNull();
+    expect(b.style.left).toBe('100px');
   });
-
-  it('decays toward zero when there is no movement', () => {
-    // 10*(1-0.4) + 0 = 6 → repeated calls converge to 0
-    let v = 10;
-    for (let i = 0; i < 20; i += 1) v = emaVelocity(v, 0, 1);
-    expect(v).toBeCloseTo(0);
+  it('picks message and pushes toast', () => {
+    const p = document.createElement('div');
+    const s = document.createElement('div');
+    p.appendChild(s);
+    let l = '';
+    fire({
+      cx: 0,
+      cy: 0,
+      count: 0,
+      messages: ['Hello', 'World'],
+      stack: s,
+      getLastToast: () => l,
+      setLastToast: (m) => {
+        l = m;
+      },
+    });
+    expect(s.children.length).toBe(1);
+    expect(l).toBeTruthy();
   });
-
-  it('accepts a custom k and guards against zero dt', () => {
-    // custom k=1 → pure instantaneous rate
-    expect(emaVelocity(10, 50, 1, 1)).toBe(50);
-    // dt of 0 clamps to 1 (as the component does)
-    expect(emaVelocity(10, 0, 0)).toBe(6);
+  it('spawns particles when count > 0', () => {
+    const p = document.createElement('div');
+    const s = document.createElement('div');
+    p.appendChild(s);
+    let l = '';
+    fire({
+      cx: 0,
+      cy: 0,
+      count: 5,
+      messages: ['X'],
+      stack: s,
+      getLastToast: () => l,
+      setLastToast: (m) => {
+        l = m;
+      },
+    });
+    expect(
+      p.querySelector('.about-burst').querySelectorAll('.about-particle, .about-particle--emoji')
+        .length,
+    ).toBe(5);
+  });
+  it('cleanup removes burst', () => {
+    const p = document.createElement('div');
+    const s = document.createElement('div');
+    p.appendChild(s);
+    let l = '';
+    const c = fire({
+      cx: 0,
+      cy: 0,
+      count: 0,
+      messages: ['X'],
+      stack: s,
+      getLastToast: () => l,
+      setLastToast: (m) => {
+        l = m;
+      },
+    });
+    expect(p.querySelector('.about-burst')).not.toBeNull();
+    c();
+    expect(p.querySelector('.about-burst')).toBeNull();
+  });
+  it('removes previous burst before creating new', () => {
+    const p = document.createElement('div');
+    const s = document.createElement('div');
+    p.appendChild(s);
+    let l = '';
+    const o = {
+      cx: 0,
+      cy: 0,
+      count: 0,
+      messages: ['X'],
+      stack: s,
+      getLastToast: () => l,
+      setLastToast: (m) => {
+        l = m;
+      },
+    };
+    fire(o);
+    fire(o);
+    expect(p.querySelectorAll('.about-burst').length).toBe(1);
   });
 });

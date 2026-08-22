@@ -19,6 +19,13 @@ import './index.css';
 // replay) is ~100KB and would inflate the initial bundle for every visitor.
 // Instead it is fetched on demand, only when a DSN is configured (production).
 // Most visits never configure a DSN, so they never download it.
+import {
+  SENTRY_IGNORE_ERRORS,
+  SENTRY_DENY_URLS,
+  shouldDropSentryEvent,
+  isIgnorableMessage,
+} from './utils/sentryFilter.js';
+
 let reportError = () => {};
 
 if (import.meta.env.VITE_SENTRY_DSN) {
@@ -34,8 +41,25 @@ if (import.meta.env.VITE_SENTRY_DSN) {
         tracesSampleRate: 0.2,
         replaysSessionSampleRate: 0,
         replaysOnErrorSampleRate: 1.0,
+        ignoreErrors: SENTRY_IGNORE_ERRORS,
+        denyUrls: SENTRY_DENY_URLS,
+        beforeSend(event, hint) {
+          if (shouldDropSentryEvent(event, hint)) return null;
+          return event;
+        },
       });
-      reportError = (error) => Sentry.captureException(error);
+      reportError = (error) => {
+        const msg = error?.message || (typeof error === 'string' ? error : '');
+        if (isIgnorableMessage(msg)) return;
+        if (
+          shouldDropSentryEvent(
+            { exception: { values: [{ value: msg }] } },
+            { originalException: error },
+          )
+        )
+          return;
+        Sentry.captureException(error);
+      };
     })
     // Best-effort: if the SDK fails to load, fall back to the console-only
     // behavior — never let telemetry break the app.

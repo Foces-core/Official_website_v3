@@ -240,3 +240,29 @@ describe('resolveLogoAction — where the logo click goes', () => {
     expect(resolveLogoAction('/')).toEqual({ type: 'scroll-top' });
   });
 });
+
+describe('pickOnViewport - route awareness edges', () => {
+  it('returns contact on the /contact route without reading the DOM', () => {
+    const doc = { getElementById: vi.fn(), documentElement: {} };
+    expect(
+      pickOnViewport({
+        sectionIds: ['home'],
+        pathname: '/contact',
+        win: { scrollY: 0, innerHeight: 800 },
+        doc,
+      }),
+    ).toBe('contact');
+  });
+
+  it('returns null on unknown routes (e.g. /events)', () => {
+    const doc = { getElementById: vi.fn(), documentElement: {} };
+    expect(
+      pickOnViewport({
+        sectionIds: ['home'],
+        pathname: '/events',
+        win: { scrollY: 0, innerHeight: 800 },
+        doc,
+      }),
+    ).toBeNull();
+  });
+});

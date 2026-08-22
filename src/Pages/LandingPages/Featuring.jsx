@@ -3,19 +3,12 @@ import { useViewportWidth } from '../../hooks/useViewportWidth.js';
 import useCarousel from '../../hooks/useCarousel.js';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 import useExperienceCapabilities from '../../hooks/useExperienceCapabilities.js';
-import { useAutoplayOnScreen } from '../../hooks/useAutoplayOnScreen.js';
 import BlurImage from '../../Components/BlurImage/BlurImage';
 import featuring from '../../assets/featuring.svg';
 import { echoSlides, carouselSlides } from '../../data/echoSlides.js';
-import { featuringSlidesPerView, DESKTOP_MIN, SMALL_SCREEN_MAX } from '../../utils/breakpoints.js';
+import { getFeaturingLayout } from '../../utils/viewportPolicy.js';
 import { copyFor } from '../../utils/carouselWrap.js';
-import {
-  syncCarouselKeyboard,
-  subscribeKeyboardArbitration,
-  registerWidget,
-  markInteracted,
-  rectIsOnScreen,
-} from '../../utils/keyboardLock.js';
+import useCarouselKeyboard from '../../hooks/useCarouselKeyboard.js';
 import './Featuring.css';
 
 function Featuring() {
@@ -23,7 +16,12 @@ function Featuring() {
   // matrix — autoplay is a full-tier capability.
   const { autoplay } = useExperienceCapabilities();
   const disableAutoplay = !autoplay;
-  const noSlides = featuringSlidesPerView(useViewportWidth());
+  const viewportWidth = useViewportWidth();
+  const {
+    slidesPerView: noSlides,
+    spaceBetween,
+    sizes: slideSizes,
+  } = getFeaturingLayout(viewportWidth);
   const [activeSlide, setActiveSlide] = useState(0);
   const elRef = useRef(null);
   const carouselRef = useRef(null);
@@ -31,45 +29,21 @@ function Featuring() {
 
   const { instanceRef, trackRef } = useCarousel({
     elRef,
+    wrapperRef: sectionRef,
     total: echoSlides.length,
     mode: 'flat',
     slidesPerView: noSlides,
-    spaceBetween: 50,
+    spaceBetween,
     autoplayDelay: disableAutoplay ? 0 : 3500,
     initialIndex: echoSlides.length,
     onActiveChange: setActiveSlide,
   });
 
-  // Arrow-key arbitration (see utils/keyboardLock.js): register the carousel
-  // as a widget and enable its keyboard only while it owns the arrows (on
-  // screen + last interacted). Pointer use on the carousel area (slides,
-  // arrows, dots) marks it — not clicks on the section heading.
-  useEffect(() => {
-    const id = 'featuring';
-    const unregister = registerWidget(
-      id,
-      () => rectIsOnScreen(instanceRef.current?.el, 60),
-      sectionRef.current, // section wrapper includes the arrows AND the dot indicator
-    );
-    const sync = () => syncCarouselKeyboard(instanceRef.current, id);
-    const mark = () => markInteracted(id);
-    sync(); // ownership may already be decided before this runs
-    const carouselEl = carouselRef.current;
-    carouselEl?.addEventListener('pointerdown', mark, true);
-    const unsub = subscribeKeyboardArbitration(sync);
-    return () => {
-      unregister();
-      unsub();
-      carouselEl?.removeEventListener('pointerdown', mark, true);
-    };
-  }, [instanceRef]);
-
-  // Only run autoplay while the carousel is on screen (shared seam —
-  // useAutoplayOnScreen, same hook TeamCarousel uses).
-  useAutoplayOnScreen({
-    elementRef: carouselRef,
-    swiperRef: instanceRef,
-    disable: disableAutoplay,
+  // Arrow-key arbitration: one deep module, one line (see hooks/useCarouselKeyboard.js).
+  useCarouselKeyboard({
+    widgetId: 'featuring',
+    instanceRef,
+    wrapperRef: sectionRef,
   });
 
   // The seamless loop renders 3 copies of the slides; label each copy with
@@ -126,7 +100,7 @@ function Featuring() {
         >
           <FaChevronLeft />
         </button>
-        <div ref={elRef} className="feat-swiper bg-transparent h-fit">
+        <div ref={elRef} className="feat-swiper bg-transparent h-fit w-full">
           <div ref={trackRef} className="swiper-wrapper">
             {carouselSlides.map(({ image, imageSet, blur, alt }, index) => (
               <div
@@ -144,7 +118,7 @@ function Featuring() {
                     className="h-full w-full rounded-2xl object-cover transition-all duration-300 shadow-xl hover:scale-105 hover:ring-2 hover:ring-white/50 hover:shadow-[0_0_25px_6px_rgba(255,255,255,0.25)]"
                     src={image}
                     srcSet={imageSet}
-                    sizes={`(min-width: ${DESKTOP_MIN}px) 33vw, (min-width: ${SMALL_SCREEN_MAX}px) 50vw, 90vw`}
+                    sizes={slideSizes}
                     blurSrc={blur}
                     alt={alt}
                     loading="lazy"

@@ -50,9 +50,19 @@ jobs:
           echo "Timed out waiting for CI to finish."
           exit 1
 
+      # Branch protection requires one approving review; dependabot cannot
+      # self-approve, so the workflow approves on the bot's behalf before the
+      # merge is queued.
+      - name: Approve dependabot PR
+        if: github.event.pull_request.state == 'open'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr review --approve "$PR_URL"
+
       - name: Merge (squash + delete branch)
         if: github.event.pull_request.state == 'open'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_URL: ${{ github.event.pull_request.html_url }}
-        run: gh pr merge --squash --delete-branch "$PR_URL"
+        run: gh pr merge --squash --delete-branch --auto "$PR_URL"

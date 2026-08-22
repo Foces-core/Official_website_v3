@@ -7,10 +7,14 @@ import { imagetools } from 'vite-imagetools';
 
 const PORT = 5173;
 
-// The hero PNG is the LCP element. It only mounts after React renders, so
-// without a hint its fetch waits for the JS bundle — on 3G that's seconds.
-// Preload it in the built HTML so the (tiny) request starts at parse time,
-// overlapping the JS download; React then paints it from cache instantly.
+// The hero PNG is the LCP element. On 3G + CPU throttle, React takes
+// ~10 s to mount — the <img> only enters the DOM then, so LCP fires at
+// ~10 s even though the image bytes arrive in <100 ms (preloaded).
+//
+// Fix: inject the hero <img> into static HTML (outside #root) so the
+// browser can paint it during parse, before any JS loads. The preload
+// ensures fast download; the static element ensures Chrome can count it
+// as LCP immediately. HeroSection removes the static copy on mount.
 function preloadHeroImage() {
   let heroPath = null;
   return {
@@ -23,8 +27,25 @@ function preloadHeroImage() {
     },
     transformIndexHtml(html) {
       if (!heroPath) return html;
-      const link = `<link rel="preload" as="image" type="image/png" href="/${heroPath}" fetchpriority="high" />`;
-      return html.replace('</head>', `    ${link}\n  </head>`);
+      const preload = `<link rel="preload" as="image" type="image/png" href="/${heroPath}" fetchpriority="high" />`;
+      // Static hero: the <img> lives in the DOM at parse time. On 3G the
+      // image bytes arrive <100 ms (2.3 KB), so the browser paints it
+      // almost instantly — long before React mounts. The splash (z-index
+      // 100) sits on top; Chrome still counts the painted element for LCP.
+      // HeroSection removes #hero-lcp-static on mount; the React-rendered
+      // version takes over seamlessly (same src from cache, same position).
+      const staticHero = `
+    <style>
+      #hero-lcp-static{position:fixed;inset:0;z-index:0;background:#0a0a0c;overflow:hidden;pointer-events:none}
+      #hero-lcp-static img{position:absolute;height:50%;width:38%;top:45vh;left:10vw;max-width:none}
+      @media(max-width:767px){#hero-lcp-static img{width:80%;top:40vh}}
+    </style>
+    <div id="hero-lcp-static">
+      <img src="/${heroPath}" alt="FOCES" fetchpriority="high" decoding="async" width="716" height="155" />
+    </div>`;
+      return html
+        .replace('</head>', `    ${preload}\n  </head>`)
+        .replace('<div id="root"></div>', `${staticHero}\n    <div id="root"></div>`);
     },
   };
 }
@@ -82,12 +103,20 @@ export default defineConfig({
     imagetools(),
     // Sentry: upload source maps in CI/release builds so stack traces are
     // readable. The DSN is read from VITE_SENTRY_DSN env var at runtime.
-    ...(process.env.VITE_SENTRY_DSN
+    // Requires the auth token too — a DSN alone (e.g. local dev) must not
+    // activate the plugin, since it cannot upload without credentials.
+    // Upload is best-effort (same policy as the SDK init in main.jsx): a
+    // misconfigured org/project/token must warn, never fail the deploy.
+    ...(process.env.VITE_SENTRY_DSN && process.env.SENTRY_AUTH_TOKEN
       ? [
           sentryVitePlugin({
             org: process.env.SENTRY_ORG,
             project: process.env.SENTRY_PROJECT,
             authToken: process.env.SENTRY_AUTH_TOKEN,
+            // Without this the plugin throws on any upload error and fails the
+            // build — a wrong SENTRY_ORG/PROJECT (or expired token) would take
+            // the site offline for everyone. Warn and continue instead.
+            errorHandler: (err) => console.warn('[sentry] source map upload skipped:', err.message),
           }),
         ]
       : []),

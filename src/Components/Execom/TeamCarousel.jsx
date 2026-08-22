@@ -1,17 +1,13 @@
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 import useCarousel from '../../hooks/useCarousel.js';
 import { useViewportWidth } from '../../hooks/useViewportWidth.js';
 import BlurImage from '../BlurImage/BlurImage';
-import {
-  syncCarouselKeyboard,
-  subscribeKeyboardArbitration,
-  registerWidget,
-  rectIsOnScreen,
-} from '../../utils/keyboardLock.js';
+import useCarouselKeyboard from '../../hooks/useCarouselKeyboard.js';
 import { copyFor } from '../../utils/carouselWrap.js';
-import { useAutoplayOnScreen } from '../../hooks/useAutoplayOnScreen.js';
+import { getTeamLayout } from '../../utils/viewportPolicy.js';
+
 import '../Execom/custom.css';
 
 /**
@@ -26,7 +22,7 @@ import '../Execom/custom.css';
  *
  * The DOM contract the E2E suite and CSS rely on is unchanged: the root keeps
  * .execom-swiper / .execom-cube-swiper, slides keep .swiper-slide (with
- * .swiper-slide-active toggled), cards keep .container-execom, and the dots
+ * data-slide-active toggled by the engine), cards keep .container-execom, and the dots
  * div stays the root's direct sibling.
  */
 function TeamCarousel({
@@ -34,10 +30,10 @@ function TeamCarousel({
   variant,
   slides,
   slidesData,
-  flatCube,
-  disableAutoplay,
-  activeIndex,
-  onActiveChange,
+  flatCube = false,
+  disableAutoplay = false,
+  activeIndex = 0,
+  onActiveChange = () => {},
 }) {
   const elRef = useRef(null);
   const wrapRef = useRef(null);
@@ -49,12 +45,15 @@ function TeamCarousel({
   // Desktop flat mode is responsive (2/3/4 per view, like Swiper's
   // breakpoints); everything else is 1 per view. Re-computed reactively via
   // useViewportWidth, then fed to the hook (its re-style effect re-applies).
-  const perView =
-    flatCube && isDesktop ? (width >= 1280 ? 4 : width >= 1024 ? 3 : width >= 640 ? 2 : 1) : 1;
-  const gap = flatCube ? (isDesktop ? (width >= 1024 ? 24 : 20) : 20) : 0;
+  const {
+    slidesPerView: perView,
+    spaceBetween: gap,
+    sizes: cardSizes,
+  } = getTeamLayout(width, flatCube, isDesktop);
 
   const { instanceRef, trackRef } = useCarousel({
     elRef,
+    wrapperRef: wrapRef,
     total,
     mode: flatCube ? 'flat' : 'cube',
     slidesPerView: perView,
@@ -65,46 +64,12 @@ function TeamCarousel({
     onActiveChange,
   });
 
-  // Arrow-key arbitration (see utils/keyboardLock.js): this carousel counts
-  // as "on screen" only while its root is actually rendered/visible (the
-  // other variant is hidden via CSS, which rectIsOnScreen detects), and it
-  // enables its keyboard only while it owns the arrows. The widget's `el` is
-  // the WRAPPER div (parent of both the root AND the dots) — that way the
-  // dots are "inside" the widget, so clicking one keeps the arrow keys
-  // driving the carousel (same containment the original Execom had).
-  useEffect(() => {
-    const unregister = registerWidget(
-      widgetId,
-      () => rectIsOnScreen(instanceRef.current?.el, 60),
-      wrapRef.current,
-    );
-    const sync = () => syncCarouselKeyboard(instanceRef.current, widgetId);
-    sync(); // ownership may already be decided before this runs
-    const unsub = subscribeKeyboardArbitration(sync);
-    return () => {
-      unregister();
-      unsub();
-    };
-  }, [widgetId, instanceRef]);
-
-  // Only run autoplay while the carousel is actually on screen — at high CPU
-  // throttle (or on low-end phones), a slider spinning off-screen is pure
-  // wasted frames. Shared seam (useAutoplayOnScreen) — same hook Featuring
-  // uses.
-  useAutoplayOnScreen({
-    elementRef: wrapRef,
-    swiperRef: instanceRef,
-    disable: disableAutoplay,
-  });
+  // Arrow-key arbitration: one deep module, one line (see hooks/useCarouselKeyboard.js).
+  useCarouselKeyboard({ widgetId, instanceRef, wrapperRef: wrapRef });
 
   const containerClass = isDesktop
-    ? `hidden sm:block ${flatCube ? '' : 'max-w-[360px] mx-auto py-4'}`
+    ? `hidden sm:block ${flatCube ? 'px-12' : 'max-w-[360px] mx-auto py-4'}`
     : 'block sm:hidden max-w-[320px] mx-auto py-4';
-
-  // Card widths: desktop cube caps at 360px, mobile cube at 320px, desktop
-  // flat scales 2-4 per view (~240-300px each). These sizes make 1x viewports
-  // download the 400w srcset candidate and 2x retina the full-size file.
-  const TEAM_CARD_SIZES = '(min-width: 1280px) 280px, (min-width: 640px) 360px, 320px';
 
   const showNavArrows = isDesktop && flatCube;
 
@@ -122,7 +87,7 @@ function TeamCarousel({
     <div ref={wrapRef} className={containerClass}>
       <div
         ref={elRef}
-        className={`${isDesktop ? 'execom-swiper pb-12' : 'execom-cube-swiper'} relative ${
+        className={`${isDesktop ? 'execom-swiper pb-12' : 'execom-cube-swiper'} relative w-full ${
           flatCube ? '' : 'cursor-grab active:cursor-grabbing'
         }`}
       >
@@ -134,12 +99,11 @@ function TeamCarousel({
                   isDesktop ? 'group' : ''
                 }`}
               >
-                {' '}
                 <BlurImage
                   className={`object-cover ${d.name === 'Sebin Mathew' ? 'object-center' : 'object-top'} w-full h-full ${isDesktop ? 'card-hover' : ''} grayscale group-hover:filter-none transition-all duration-300`}
                   src={d.img}
                   srcSet={d.srcset}
-                  sizes={TEAM_CARD_SIZES}
+                  sizes={cardSizes}
                   blurSrc={d.blur}
                   alt={d.name}
                   loading="lazy"
@@ -216,13 +180,6 @@ TeamCarousel.propTypes = {
   disableAutoplay: PropTypes.bool,
   activeIndex: PropTypes.number,
   onActiveChange: PropTypes.func,
-};
-
-TeamCarousel.defaultProps = {
-  flatCube: false,
-  disableAutoplay: false,
-  activeIndex: 0,
-  onActiveChange: () => {},
 };
 
 export default TeamCarousel;

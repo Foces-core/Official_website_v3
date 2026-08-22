@@ -9,14 +9,14 @@ import { writeFile, readFile, mkdir } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { PREVIEW_URL } from './constants.mjs';
+import { PREVIEW_URL, resolveChrome } from './constants.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const envChrome = process.env.CHROME_PATH;
-const CHROME =
-  envChrome && envChrome.toLowerCase().endsWith('.exe')
-    ? envChrome
-    : 'C:/Users/sebin/AppData/Local/Chromium/Application/chrome.exe';
+const CHROME = resolveChrome();
+if (!CHROME) {
+  console.error('Chrome not found — set CHROME_PATH to the Chrome/Chromium binary.');
+  process.exit(1);
+}
 const URL = process.argv[2] || process.env.URL || PREVIEW_URL;
 
 const { default: lighthouse } = await import('lighthouse');

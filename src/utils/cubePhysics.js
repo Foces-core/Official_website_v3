@@ -17,7 +17,7 @@ export const DEG_PER_FRAME = 1000 / 60; // deg/ms -> deg/frame at 60fps
 
 // Settle an angle onto the nearest 90° cube face.
 export function snapAngle(rot) {
-  return Math.round(rot / 90) * 90;
+  return Math.round(rot / 90) * 90 || 0;
 }
 
 // Split an accumulated angle into whole 90° spins and the leftover remainder
@@ -54,4 +54,13 @@ export function resolveWindDown(velYms, physics = CUBE_PHYSICS) {
   const friction = rapid ? physics.rapidWindFriction : physics.normalWindFriction;
   const scale = Math.min(speed, maxSpeed) / speed;
   return { velocity: vy * scale, friction, rapid };
+}
+
+// Exponential moving average of drag velocity (deg/ms). The instantaneous
+// rate (deg / ms since the last move) is smoothed against the previous
+// velocity by factor `k` — same math AboutUs.jsx applied inline.
+// Home: drag physics, not celebration (moved from easterEggCelebration.js).
+export function emaVelocity(prev, delta, dt = 1, k = 0.4) {
+  const safeDt = Math.max(dt, 1);
+  return prev * (1 - k) + (delta / safeDt) * k;
 }

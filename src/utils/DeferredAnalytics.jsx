@@ -1,4 +1,11 @@
+/* eslint-disable react-refresh/only-export-components -- analyticsArmed is a pure helper co-located with its component (ADR-0009); fast-refresh trade-off is the same as main.jsx */
 import { useEffect, useState } from 'react';
+import {
+  VERCEL_INSIGHTS_ROUTE,
+  VERCEL_ANALYTICS_ROUTE,
+  mountAnalyticsIfServed,
+  probeServesScript,
+} from './analyticsProbe.js';
 
 /**
  * Analytics must never compete with the real page for network or CPU on first
@@ -7,13 +14,29 @@ import { useEffect, useState } from 'react';
  * when the safety timer fires, or once the browser is idle — whichever comes
  * first — so on 2G/3G the FOCES content wins the critical path.
  *
+ * Each integration mounts only when Vercel actually serves its /_vercel/
+ * script route (decisions live in the pure module analyticsProbe.js): off
+ * Vercel the SPA fallback would answer with index.html and the injected
+ * <script> would throw a parse error ("Unexpected token '<'").
+ *
  * Only the Vercel vendor module code (speed-insights/react and
  * analytics/react) is code-split behind the dynamic imports below — React
  * itself is statically imported above and is already part of the app
- * bundle. Each integration loads independently (Promise.allSettled): a
- * failure in one never blocks the other from mounting, and a failed vendor
- * chunk is best-effort — never an app error.
+ * bundle. Each integration loads independently; a failure in one never
+ * blocks the other from mounting, and a failed vendor chunk is
+ * best-effort — never an app error.
  */
+/**
+ * Pure render gate: true only when the boot phase is done and at least one
+ * integration actually mounted (ADR-0009 — decision here, wiring in the
+ * component). Kept tiny so the component body stays at complexity 4.
+ */
+export function analyticsArmed(ready, insights, analytics) {
+  if (!ready) return false;
+  if (!insights && !analytics) return false;
+  return true;
+}
+
 export default function DeferredAnalytics() {
   const [ready, setReady] = useState(false);
   const [Insights, setInsights] = useState(null);
@@ -51,25 +74,34 @@ export default function DeferredAnalytics() {
   }, []);
 
   useEffect(() => {
-    if (!ready || (Insights && Analytics)) return;
+    if (!ready) return;
     let cancelled = false;
-    // allSettled, not all: a failed vendor chunk must never discard the
-    // integration that loaded fine (best-effort per integration).
-    Promise.allSettled([
-      import('@vercel/speed-insights/react'),
-      import('@vercel/analytics/react'),
-    ]).then(([speedResult, analyticsResult]) => {
-      if (cancelled) return;
-      if (speedResult.status === 'fulfilled') setInsights(() => speedResult.value.SpeedInsights);
-      if (analyticsResult.status === 'fulfilled')
-        setAnalytics(() => analyticsResult.value.Analytics);
+
+    // Network I/O lives at the wiring layer (ADR-0009); the probe decision is
+    // made by the pure module (probeServesScript).
+    const probe = (url) => probeServesScript(globalThis.fetch, url);
+
+    mountAnalyticsIfServed({
+      url: VERCEL_INSIGHTS_ROUTE,
+      probe,
+      importVendor: () => import('@vercel/speed-insights/react').then((m) => m.SpeedInsights),
+      setter: setInsights,
+      isCancelled: () => cancelled,
     });
+    mountAnalyticsIfServed({
+      url: VERCEL_ANALYTICS_ROUTE,
+      probe,
+      importVendor: () => import('@vercel/analytics/react').then((m) => m.Analytics),
+      setter: setAnalytics,
+      isCancelled: () => cancelled,
+    });
+
     return () => {
       cancelled = true;
     };
-  }, [ready, Insights, Analytics]);
+  }, [ready]);
 
-  if (!ready || (!Insights && !Analytics)) return null;
+  if (!analyticsArmed(ready, Insights, Analytics)) return null;
   return (
     <>
       {Analytics ? <Analytics /> : null}

@@ -44,10 +44,11 @@ Read this before touching anything.
 - `src/Components/` — shared UI (AboutUs, BlurImage, ContactUs, Execom, Grain, InstallPrompt,
   Loader, ScrollGate, SectionSkeleton).
 - `src/Components/AboutUs/` — the cube: `easterEggLogic.js` (spin tracker + `SPIN_BARS`),
-  `cubePhysics.js` (wind-down), `cubeTiming.js` (timing windows +
-  `isManualOverrideActive`), `confettiSim.js` (particles), `easterEggCelebration.js`
-  (toast/message/EMA policies) — pure modules, the JSX is wiring. The motion
-  orchestration (drag/wind-down/snap, spin tracking, arrow keys) is `useCubeDrag`.
+  `confettiSim.js` (particles), `easterEggCelebration.js`
+  (toast/message/EMA policies) — pure modules, the JSX is wiring. Wind-down
+  physics live in `src/utils/cubePhysics.js` and timing windows in
+  `src/utils/cubeTiming.js`. The motion orchestration (drag/wind-down/snap,
+  spin tracking, arrow keys) is `useCubeDrag`.
 - `src/Components/BlurImage/` — shared image primitive: `BlurImage.jsx` + `useBlurImage.js`
   (loaded/placeholder/fetch-priority state machine).
 - `src/Components/Execom/` — team carousel: `TeamCarousel.jsx`; the wrap math
@@ -68,10 +69,11 @@ Read this before touching anything.
   `ariaActivation.js`, `aosGating.js` (gate + `initAOS`), `breakpoints.js` (viewports 500/767/768/1024),
   `carouselWrap.js` (shared wrap math), `scrollLock.js` (ref-counted body lock), `navigationCoordinator.js` (unified scroll/overlay/lock coordinator),
   `overlayLifecycle.js` (pure focus/trap/escape helpers), `routePrefetchLogic.js` (pure route loaders),
+  `analyticsProbe.js` (pure Vercel-script gate behind DeferredAnalytics),
   `DeferredAnalytics.jsx`, `lazyWithRetry.js`, `sessionCookie.js`, `scrollToSectionLogic.js`, `bootSplashLogic.js`.
 - `src/hooks/` — `useLowPower.js` (`useDeviceProfile` driving all perf degradation),
   `useViewportWidth.js` (reactive width over `breakpoints.js`),
-  `useAutoplayOnScreen.js` (on-screen autoplay gate), `useCubeDrag.js` (cube orchestration),
+  `useCarousel.js` (hand-rolled carousel engine with internal autoplay visibility gating), `useCubeDrag.js` (cube orchestration),
   `useScrollLock.js` (body scroll lock lifecycle), `useEscapeClose.js` (escape key dismissal),
   `useFocusTrap.js` (tab key focus trap), `useFocusRestore.js` (entry focus & next-paint restore),
   `useRoutePrefetch.js` (idle/foresight/intent route chunk prefetch wiring).
@@ -101,6 +103,22 @@ Read this before touching anything.
   (single quotes, 100-col, 4-space CSS).
 - **No dead code.** If a field/class/dep isn't consumed, remove it or explain
   why it stays (see `docs/adr/` for how to record the "why").
+- **Cyclomatic complexity & CRAP.** Keep functions at **CRAP < 8** (hard ceiling
+  for agents, ideal **≤ 5**). At 100% coverage `CRAP = CC`, so this means
+  `CC ≤ 8`, ideal `≤ 5`. Threshold is based on research: human ≤ 4, AI ≤ 6,
+  hard ceiling < 8, universal fail > 30 (crap4j). **Agents MUST obey < 8**;
+  humans may exceed to 15 only with an ADR (`docs/adr/`) justifying the
+  complexity + extra tests. No ESLint gate — code review + AGENTS.md governs.
+- **Mutation testing.** Future agents MUST run mutation testing when changing
+  pure decision modules (`src/utils`, `src/data`, `src/hooks`, `*.js` in
+  `Components`/`Pages`). **Break threshold 70% overall, 80% for critical
+  decision modules** (research: 60-70% typical, 70-80% strong, 80%+ excellent;
+  100% is not achievable due to ~23% equivalent mutants). Humans may merge
+  below with an ADR; agents must not. No CI gate — AGENTS.md governs.
+- **Crap score.** `CRAP = CC² × (1−coverage)³ + CC`. Keep **CRAP < 8**
+  (agents) / **< 15 with justification** / **30 universal fail**. At 100%
+  coverage the score equals complexity, so the CC rule above guarantees low
+  CRAP when combined with `pnpm test:unit`. No runtime gate — AGENTS.md governs.
 
 ## Verify (run before you commit)
 
@@ -125,6 +143,32 @@ queues a run.
 
 For UI/a11y changes, run the relevant probes in `scripts/` against
 `pnpm preview` (per `CONTRIBUTING.md`).
+
+## Push / PR (how changes land)
+
+- **Never push straight to `main`.** The remote enforces branch protection
+  ("changes must be made through a pull request") — a direct push bypasses
+  CodeRabbit, the PR-time checks, and the review gate entirely. Always ship
+  through a PR.
+- **Flow:** `git fetch origin` → branch off an up-to-date `main` →
+  commit (`conventional` only) → push the branch → open a PR with `gh pr
+create` → **wait for every gate to finish** — the four required checks
+  (Lint & Build, E2E (Playwright), Probes (structural checks), Validate
+  commit messages), GitHub's default code scanning (CodeQL), and the
+  CodeRabbit review → resolve any failures/findings with follow-up commits
+  → merge when all green.
+- **The remote moves on its own** (Dependabot, Renovate, other agents push
+  daily). Before pushing anything, `git fetch origin` and rebase/merge the
+  latest `main`; never force-push. If a push is rejected, fetch + rebase +
+  push again.
+- **CodeRabbit reviews PRs only** — a commit pushed directly to `main` gets
+  no automated review. If a fix was already pushed straight to main, the only
+  way to get it reviewed is to re-issue it through a PR.
+- **Never merge your own PR without CI + CodeQL + CodeRabbit passing** —
+  `.coderabbit.yaml` sets `request_changes_workflow: true`, so CodeRabbit
+  submits a formal "Changes Requested" review for critical findings and its
+  title/description checks run in `error` mode — both block the merge until
+  resolved. Do not dismiss findings without a reason.
 
 ## Docs / ADR
 

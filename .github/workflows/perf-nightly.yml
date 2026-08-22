@@ -75,7 +75,7 @@ jobs:
       # just sit in the Actions tab.
       - name: Open / update regression issue on budget breach
         if: steps.budgets.outcome == 'failure'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const { data: commits } = await github.rest.repos.listCommits({
@@ -118,7 +118,7 @@ jobs:
       # The next green night closes the regression issue automatically.
       - name: Close regression issue when budgets pass
         if: steps.budgets.outcome == 'success'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const title = '🚨 Perf regression detected (nightly)';

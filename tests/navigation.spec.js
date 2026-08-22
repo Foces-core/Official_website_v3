@@ -63,9 +63,12 @@ test.describe('Cross-route navigation', () => {
   test('logo click from /contact returns to home', async ({ page }) => {
     await page.goto('/contact', { waitUntil: 'networkidle' });
     await waitForLoaderGone(page);
-    // The loader also renders an img[alt="FOCES"]; once the loader is gone this
-    // is the navbar logo.
-    await page.locator('img[alt="FOCES"]').first().click();
+    // The navbar logo is the only clickable FOCES wordmark. The static hero
+    // LCP placeholder (#hero-lcp-static) also renders img[alt="FOCES"] and
+    // comes FIRST in the DOM — but it is pointer-events: none, so a plain
+    // `.first()` click would be permanently intercepted. Scope to the
+    // cursor-pointer navbar logo instead.
+    await page.locator('img[alt="FOCES"].cursor-pointer:visible').first().click();
     await page.waitForURL('**/');
     await expect(page.locator('#home')).toBeVisible();
   });

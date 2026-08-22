@@ -10,6 +10,13 @@ function HeroSection() {
   const myRef = useRef(null);
   const { webgl } = useExperienceCapabilities();
 
+  // Remove the static LCP hero that the build injected into index.html.
+  // It ensured the browser could paint the hero image before React mounted
+  // (critical on 3G + CPU throttle where React takes ~10 s to mount).
+  useEffect(() => {
+    document.getElementById('hero-lcp-static')?.remove();
+  }, []);
+
   useEffect(() => {
     const destroy = initHeroWavesStage(myRef.current, {
       webgl,
@@ -29,10 +36,14 @@ function HeroSection() {
         {/* Only the LCP image gets fetchPriority="high" — a fetch-priority hint
             on every hero layer dilutes the hint and tells the browser to
             download them all eagerly. The decorative layers keep the default
-            (auto) priority; they are small SVGs and can queue behind the PNG. */}
+            (auto) priority; they are small SVGs and can queue behind the PNG.
+            Explicit width/height reserve intrinsic space before Tailwind CSS
+            loads, preventing CLS from the dimensionless SVGs. */}
         <img
           src={ddd}
           alt="DDD"
+          width={689}
+          height={25}
           loading="eager"
           decoding="async"
           className={`h-[50%] w-[36%] relative top-[40vh] left-[10vw] max-[767px]:w-[80%] max-[767px]:top-[38vh] `}
@@ -40,6 +51,8 @@ function HeroSection() {
         <img
           src={focespng}
           alt="FOCES"
+          width={716}
+          height={155}
           loading="eager"
           fetchPriority="high"
           decoding="async"
@@ -49,6 +62,8 @@ function HeroSection() {
           src={foces1}
           alt=""
           aria-hidden="true"
+          width={713}
+          height={27}
           loading="eager"
           decoding="async"
           className={`h-[50%] w-[38%] relative top-[50vh] left-[10vw] max-[767px]:w-[80%] max-[767px]:top-[41vh] `}
