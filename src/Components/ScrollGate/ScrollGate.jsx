@@ -60,10 +60,16 @@ export default function ScrollGate({ id, placeholderHeight = '110vh', label, chi
     let io = null;
     const mount = () => setMounted(true);
 
-    // 1. IntersectionObserver: fires reliably during real (incremental) scrolling
+    // 1. IntersectionObserver: fires reliably during real (incremental)
+    //    scrolling. The callback honours the boot rule too — rootMargin
+    //    extends the zone 0.5 viewports below the fold, so without the guard
+    //    IO would mount a just-below-fold section the instant it observes.
+    //    (Observer is recreated once when `armed` flips.)
     io = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        if (!entry.isIntersecting) return;
+        const ok = armed || shouldMountAtBoot(entry.boundingClientRect.top, window.innerHeight);
+        if (ok) {
           mount();
           io?.disconnect();
         }

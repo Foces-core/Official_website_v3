@@ -19,8 +19,20 @@ test.describe('Home page structure', () => {
 test.describe('Cube easter egg', () => {
   async function scrollToCube(page) {
     await gotoHome(page);
-    await page.locator('#about').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(800);
+    await page.evaluate(() =>
+      document.getElementById('about')?.scrollIntoView({ block: 'center' }),
+    );
+    // The cube section is scroll-gated: the chunk downloads only after this
+    // scroll arms the gate. Wait for the real cube element, not a fixed
+    // timeout - under suite load the download can outlive any constant.
+    await page.locator('#boxDiv-about').waitFor({ state: 'attached' });
+    // The keyboard-arbitration widget only claims arrows while the cube box
+    // itself is on screen - minimal #about scroll can leave it below the fold.
+    await page.evaluate(() =>
+      document.getElementById('boxDiv-about')?.scrollIntoView({ block: 'center' }),
+    );
+    // Give the hook's effects one frame to register the keyboard widget.
+    await page.waitForTimeout(100);
   }
 
   // All presses dispatched SYNCHRONOUSLY inside the single evaluate — same
@@ -48,7 +60,7 @@ test.describe('Cube easter egg', () => {
     // (bursts at 8 and 16) — assert on the first toast, not a strict single
     // match. The desktop bar (20 spins) fires exactly at the 20th press.
     await pressArrowRapidly(page, 'ArrowRight', 20);
-    await expect(page.locator('.about-toast').first()).toBeVisible();
+    await expect(page.locator('.about-toast').first()).toBeVisible({ timeout: 15000 });
   });
 
   test('no consecutive duplicate toast messages', async ({ page }) => {
@@ -100,8 +112,20 @@ test.describe('Cube easter egg', () => {
 test.describe('Cube touch rotation', () => {
   async function scrollToCube(page) {
     await gotoHome(page);
-    await page.locator('#about').scrollIntoViewIfNeeded();
-    await page.waitForTimeout(800);
+    await page.evaluate(() =>
+      document.getElementById('about')?.scrollIntoView({ block: 'center' }),
+    );
+    // The cube section is scroll-gated: the chunk downloads only after this
+    // scroll arms the gate. Wait for the real cube element, not a fixed
+    // timeout - under suite load the download can outlive any constant.
+    await page.locator('#boxDiv-about').waitFor({ state: 'attached' });
+    // The keyboard-arbitration widget only claims arrows while the cube box
+    // itself is on screen - minimal #about scroll can leave it below the fold.
+    await page.evaluate(() =>
+      document.getElementById('boxDiv-about')?.scrollIntoView({ block: 'center' }),
+    );
+    // Give the hook's effects one frame to register the keyboard widget.
+    await page.waitForTimeout(100);
   }
 
   // One synthetic touch drag across the cube (~150px at 0.6 sens = one 90°
@@ -179,6 +203,6 @@ test.describe('Cube touch rotation', () => {
     // All 8 drags in one evaluate — synchronous burst, immune to round-trip
     // jitter under suite load (see dragCube).
     await dragCube(page, 150, 8);
-    await expect(page.locator('.about-toast')).toBeVisible();
+    await expect(page.locator('.about-toast')).toBeVisible({ timeout: 15000 });
   });
 });

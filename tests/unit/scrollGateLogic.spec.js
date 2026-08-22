@@ -44,9 +44,9 @@ describe('shouldMountSection', () => {
 describe('shouldMountAtBoot — pre-scroll rule', () => {
   const VIEWPORT = 800;
 
-  it('mounts a section inside the viewport at load', () => {
+  it('mounts a section meaningfully inside the viewport at load (>10% visible)', () => {
     expect(shouldMountAtBoot(0, VIEWPORT)).toBe(true);
-    expect(shouldMountAtBoot(VIEWPORT - 1, VIEWPORT)).toBe(true);
+    expect(shouldMountAtBoot(VIEWPORT * 0.9 - 1, VIEWPORT)).toBe(true);
   });
 
   it('defers a section just below the fold even though the margin would open it', () => {
@@ -56,8 +56,9 @@ describe('shouldMountAtBoot — pre-scroll rule', () => {
     expect(shouldMountSection(VIEWPORT + 100, VIEWPORT, 0.5)).toBe(true);
   });
 
-  it('boundary: top exactly at the fold is NOT visible — stays deferred', () => {
+  it('boundary: bottom-10% band stays deferred (jitter-safe buffer)', () => {
+    expect(shouldMountAtBoot(VIEWPORT * 0.9, VIEWPORT)).toBe(false);
+    expect(shouldMountAtBoot(VIEWPORT - 1, VIEWPORT)).toBe(false);
     expect(shouldMountAtBoot(VIEWPORT, VIEWPORT)).toBe(false);
-    expect(shouldMountAtBoot(VIEWPORT + 1, VIEWPORT)).toBe(false);
   });
 });

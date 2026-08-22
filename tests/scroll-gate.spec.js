@@ -14,10 +14,36 @@ test('scroll-gate defers section chunks', async ({ page }) => {
 
   const boot = await loaded();
   const hasChunk = (arr, key) => arr.some((n) => n.toLowerCase().includes(key));
+  // Landing *section* chunk is capitalized ("Events-<hash>.js"); the shared
+  // data module ("events-<hash>.js") also ships to the /events ROUTE, whose
+  // idle prefetch is by design — only flag the capital-E section chunk.
+  const hasSectionChunk = (arr, name) => arr.some((n) => n.includes(name));
+  // Debug: dump AboutUs resource entries with initiator when assertion will fail
+  if (hasChunk(boot, 'aboutus')) {
+    const dbg = await page.evaluate(() =>
+      performance
+        .getEntriesByType('resource')
+        .filter((r) => r.name.toLowerCase().includes('aboutus'))
+        .map((r) => ({
+          name: r.name.split('/').pop(),
+          init: r.initiatorType,
+          start: Math.round(r.startTime),
+        })),
+    );
+    console.log('ABOUTUS ENTRIES:', JSON.stringify(dbg));
+    const gate = await page.evaluate(() => {
+      const el = document.getElementById('about');
+      return {
+        mountedChildren: el ? el.children.length : -1,
+        top: el ? Math.round(el.getBoundingClientRect().top) : null,
+      };
+    });
+    console.log('GATE STATE:', JSON.stringify(gate));
+  }
   // Nothing section-specific should be eagerly fetched (AboutUs/Events chunks,
   // carousel engine, cube physics, three/vanta).
   expect(hasChunk(boot, 'aboutus'), 'AboutUs chunk eager-loaded').toBeFalsy();
-  expect(hasChunk(boot, 'events-'), 'Events chunk eager-loaded').toBeFalsy();
+  expect(hasSectionChunk(boot, '/Events-'), 'Events section chunk eager-loaded').toBeFalsy();
   expect(hasChunk(boot, 'execom'), 'Execom chunk eager-loaded').toBeFalsy();
   expect(hasChunk(boot, 'featuring'), 'Featuring chunk eager-loaded').toBeFalsy();
 

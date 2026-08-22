@@ -18,15 +18,17 @@ export function shouldMountSection(top, viewportHeight, marginFraction = 0.5) {
 
 /**
  * Boot-time rule: before the user has scrolled at all, only a section that is
- * actually IN the viewport may mount. Below-fold sections stay deferred even
- * though the pre-load margin would otherwise open them at load — their chunk
- * must not download (or evaluate) during the boot window. The first real
- * scroll arms the normal margin rule.
+ * meaningfully IN the viewport may mount — its top edge must have crossed the
+ * 90% visibility line. Sections merely touching the fold (top ≈ viewport
+ * height) stay deferred even though a pixel or two may paint, so their chunk
+ * never downloads or evaluates during the boot window (layout jitter around
+ * the exact fold line made an equality check flaky). The first real scroll
+ * arms the normal margin rule.
  *
  * @param {number} top            Section top edge relative to the viewport (px).
  * @param {number} viewportHeight Viewport height (px).
  * @returns {boolean}
  */
 export function shouldMountAtBoot(top, viewportHeight) {
-  return top < viewportHeight;
+  return top < viewportHeight * 0.9;
 }
