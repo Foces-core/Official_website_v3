@@ -44,7 +44,9 @@ test.describe('Execom / Meet the team carousel', () => {
 
   test.beforeEach(async ({ page }) => {
     await gotoHome(page);
-    await page.locator('#execom').scrollIntoViewIfNeeded();
+    await page.evaluate(() =>
+      document.getElementById('execom')?.scrollIntoView({ block: 'center' }),
+    );
     await page.waitForTimeout(1000);
   });
 
@@ -95,7 +97,9 @@ test.describe('Execom mobile cube drag', () => {
 
   test('dragging the cube advances to the next member', async ({ page }) => {
     await gotoHome(page);
-    await page.locator('#execom').scrollIntoViewIfNeeded();
+    await page.evaluate(() =>
+      document.getElementById('execom')?.scrollIntoView({ block: 'center' }),
+    );
     await page.locator('.execom-cube-swiper[data-carousel-ready]').waitFor({
       state: 'attached',
     });
@@ -113,7 +117,11 @@ test.describe('Execom mobile cube drag', () => {
     // stale/off-viewport coordinates dispatches no pointer events (autoplay
     // used to mask this; the experience-tier matrix disables autoplay on
     // non-full tiers). Bring the slide into view, then re-measure.
-    await slide.scrollIntoViewIfNeeded();
+    await page.evaluate(() =>
+      document
+        .querySelector('.execom-cube-swiper [data-slide-active]')
+        ?.scrollIntoView({ block: 'center' }),
+    );
     const box = await slide.boundingBox();
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.down();
@@ -125,7 +133,9 @@ test.describe('Execom mobile cube drag', () => {
 
   test('every member shows on the front face as the cube advances', async ({ page }) => {
     await gotoHome(page);
-    await page.locator('#execom').scrollIntoViewIfNeeded();
+    await page.evaluate(() =>
+      document.getElementById('execom')?.scrollIntoView({ block: 'center' }),
+    );
     await page.locator('.execom-cube-swiper[data-carousel-ready]').waitFor({
       state: 'attached',
     });
@@ -148,7 +158,9 @@ test.describe('Execom mobile cube drag', () => {
 
   test('rotating the cube never scrolls the page', async ({ page }) => {
     await gotoHome(page);
-    await page.locator('#execom').scrollIntoViewIfNeeded();
+    await page.evaluate(() =>
+      document.getElementById('execom')?.scrollIntoView({ block: 'center' }),
+    );
     await page.locator('.execom-cube-swiper[data-carousel-ready]').waitFor({
       state: 'attached',
     });

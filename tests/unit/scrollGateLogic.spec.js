@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import {
   shouldMountSection,
-  scheduleIdleMount,
+  shouldMountAtBoot,
 } from '../../src/Components/ScrollGate/scrollGateLogic.js';
 
 describe('shouldMountSection', () => {
@@ -41,38 +41,24 @@ describe('shouldMountSection', () => {
   });
 });
 
-describe('scheduleIdleMount', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
+describe('shouldMountAtBoot — pre-scroll rule', () => {
+  const VIEWPORT = 800;
+
+  it('mounts a section meaningfully inside the viewport at load (>10% visible)', () => {
+    expect(shouldMountAtBoot(0, VIEWPORT)).toBe(true);
+    expect(shouldMountAtBoot(VIEWPORT * 0.9 - 1, VIEWPORT)).toBe(true);
   });
 
-  afterEach(() => {
-    vi.restoreAllMocks();
+  it('defers a section just below the fold even though the margin would open it', () => {
+    // #about sits ~1 viewport down: the armed margin (1.5x) would mount it at
+    // boot, but before any scroll the boot rule keeps its chunk unloaded.
+    expect(shouldMountAtBoot(VIEWPORT + 100, VIEWPORT)).toBe(false);
+    expect(shouldMountSection(VIEWPORT + 100, VIEWPORT, 0.5)).toBe(true);
   });
 
-  it('schedules onMount after delayMs elapses', () => {
-    const onMount = vi.fn();
-    scheduleIdleMount({ onMount, delayMs: 1000 });
-
-    expect(onMount).not.toHaveBeenCalled();
-    vi.advanceTimersByTime(1000);
-    expect(onMount).toHaveBeenCalledTimes(1);
-  });
-
-  it('cancels scheduled mount when cleanup handle is invoked', () => {
-    const onMount = vi.fn();
-    const cancel = scheduleIdleMount({ onMount, delayMs: 1000 });
-
-    cancel();
-    vi.advanceTimersByTime(1500);
-    expect(onMount).not.toHaveBeenCalled();
-  });
-
-  it('does nothing when slowNetwork is active', () => {
-    const onMount = vi.fn();
-    scheduleIdleMount({ onMount, delayMs: 1000, slowNetwork: true });
-
-    vi.advanceTimersByTime(1500);
-    expect(onMount).not.toHaveBeenCalled();
+  it('boundary: bottom-10% band stays deferred (jitter-safe buffer)', () => {
+    expect(shouldMountAtBoot(VIEWPORT * 0.9, VIEWPORT)).toBe(false);
+    expect(shouldMountAtBoot(VIEWPORT - 1, VIEWPORT)).toBe(false);
+    expect(shouldMountAtBoot(VIEWPORT, VIEWPORT)).toBe(false);
   });
 });
