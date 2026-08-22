@@ -207,6 +207,15 @@ describe('keyboardLock — rectIsOnScreen', () => {
     expect(rectIsOnScreen(e)).toBe(false);
     expect(rectIsOnScreen(e, 400)).toBe(true);
   });
+  it('above viewport false, left-of-viewport false', () => {
+    expect(rectIsOnScreen(fakeEl({ top: -300, bottom: -100, left: 0, right: 200 }))).toBe(false);
+    expect(rectIsOnScreen(fakeEl({ top: 0, bottom: 200, left: -500, right: -300 }))).toBe(false);
+  });
+  it('right-of-viewport false with margin boundary', () => {
+    const e = fakeEl({ top: 0, bottom: 200, left: 1400, right: 1600 });
+    expect(rectIsOnScreen(e)).toBe(false);
+    expect(rectIsOnScreen(e, 200)).toBe(true);
+  });
 });
 
 describe('keyboardLock — SSR guard', () => {
