@@ -17,59 +17,59 @@ import {
 // Pure guards & resolvers — each CC < 5, deterministic from inputs, testable
 // ---------------------------------------------------------------------------
 
-export function isMissingParams(targetId, doc) {
+function isMissingParams(targetId, doc) {
   return !targetId || !doc;
 }
 
-export function getMainContainer(doc) {
+function getMainContainer(doc) {
   return doc.getElementById('main-content') || doc.body;
 }
 
-export function canUseObserver(ObserverClass, container) {
+function canUseObserver(ObserverClass, container) {
   return Boolean(ObserverClass && container);
 }
 
-export function hasObserveMethod(observer) {
+function hasObserveMethod(observer) {
   return Boolean(observer && typeof observer.observe === 'function');
 }
 
-export function hasDisconnectMethod(observer) {
+function hasDisconnectMethod(observer) {
   return Boolean(observer && typeof observer.disconnect === 'function');
 }
 
-export function hasSetInterval(win) {
+function hasSetInterval(win) {
   return Boolean(win && typeof win.setInterval === 'function');
 }
 
-export function hasClearInterval(win) {
+function hasClearInterval(win) {
   return Boolean(win && typeof win.clearInterval === 'function');
 }
 
-export function shouldAttemptScroll(cancelled, scrolled) {
+function shouldAttemptScroll(cancelled, scrolled) {
   return !cancelled && !scrolled;
 }
 
-export function canScrollElement(el) {
+function canScrollElement(el) {
   return Boolean(el && typeof el.scrollIntoView === 'function');
 }
 
-export function shouldInvokeCallback(fn) {
+function shouldInvokeCallback(fn) {
   return typeof fn === 'function';
 }
 
-export function shouldHandlePoll(found, startTime, now, timeoutMs) {
+function shouldHandlePoll(found, startTime, now, timeoutMs) {
   return found || timedOut(startTime, now, timeoutMs);
 }
 
-export function shouldNotifyTimeout(wasScrolled, onTimeout) {
+function shouldNotifyTimeout(wasScrolled, onTimeout) {
   return !wasScrolled && typeof onTimeout === 'function';
 }
 
-export function shouldCloseOverlay(closeOverlay) {
+function shouldCloseOverlay(closeOverlay) {
   return typeof closeOverlay === 'function';
 }
 
-export function isIntervalActive(intervalRef) {
+function isIntervalActive(intervalRef) {
   return intervalRef !== null;
 }
 
@@ -77,11 +77,11 @@ export function isIntervalActive(intervalRef) {
 // Pure effect helpers — small, testable, CC < 5
 // ---------------------------------------------------------------------------
 
-export function getScrollTarget(doc, targetId) {
+function getScrollTarget(doc, targetId) {
   return doc.getElementById(targetId);
 }
 
-export function executeScroll(el, reducedMotion, onComplete) {
+function executeScroll(el, reducedMotion, onComplete) {
   if (canScrollElement(el)) {
     el.scrollIntoView({ behavior: sectionScrollBehavior(reducedMotion) });
   }
@@ -90,14 +90,7 @@ export function executeScroll(el, reducedMotion, onComplete) {
   }
 }
 
-export function performScrollAttempt({
-  doc,
-  targetId,
-  scrolled,
-  cancelled,
-  reducedMotion,
-  onComplete,
-}) {
+function performScrollAttempt({ doc, targetId, scrolled, cancelled, reducedMotion, onComplete }) {
   if (!shouldAttemptScroll(cancelled, scrolled)) return false;
   const el = getScrollTarget(doc, targetId);
   if (!shouldScrollToTarget(el, scrolled)) return false;
@@ -105,12 +98,12 @@ export function performScrollAttempt({
   return true;
 }
 
-export function resolveSetIntervalFn(win) {
+function resolveSetIntervalFn(win) {
   if (hasSetInterval(win)) return win.setInterval.bind(win);
   return setInterval;
 }
 
-export function clearStoredInterval(intervalRef, win) {
+function clearStoredInterval(intervalRef, win) {
   if (!isIntervalActive(intervalRef)) return null;
   if (hasClearInterval(win)) {
     win.clearInterval(intervalRef);
@@ -120,13 +113,13 @@ export function clearStoredInterval(intervalRef, win) {
   return null;
 }
 
-export function clearStoredObserver(observer) {
+function clearStoredObserver(observer) {
   if (!hasDisconnectMethod(observer)) return null;
   observer.disconnect();
   return null;
 }
 
-export function createObserver(ObserverClass, container, onMutation) {
+function createObserver(ObserverClass, container, onMutation) {
   try {
     const obs = new ObserverClass(onMutation);
     if (hasObserveMethod(obs)) {
@@ -138,13 +131,13 @@ export function createObserver(ObserverClass, container, onMutation) {
   }
 }
 
-export function setupObserver({ doc, ObserverClass, onMutation }) {
+function setupObserver({ doc, ObserverClass, onMutation }) {
   const container = getMainContainer(doc);
   if (!canUseObserver(ObserverClass, container)) return null;
   return createObserver(ObserverClass, container, onMutation);
 }
 
-export function createPollTick({
+function createPollTick({
   getCancelled,
   tryScroll,
   getScrolled,
@@ -163,7 +156,7 @@ export function createPollTick({
   };
 }
 
-export function createTryScroll({
+function createTryScroll({
   doc,
   targetId,
   getScrolled,
@@ -186,13 +179,13 @@ export function createTryScroll({
   };
 }
 
-export function createMutationCallback(tryScroll, cleanup) {
+function createMutationCallback(tryScroll, cleanup) {
   return () => {
     if (tryScroll()) cleanup();
   };
 }
 
-export function maybeCloseOverlay(closeOverlay) {
+function maybeCloseOverlay(closeOverlay) {
   if (shouldCloseOverlay(closeOverlay)) closeOverlay();
 }
 
