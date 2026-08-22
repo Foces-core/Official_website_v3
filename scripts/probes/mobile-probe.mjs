@@ -10,7 +10,14 @@ if (!chromePath) {
 const b = await puppeteer.launch({
   executablePath: chromePath,
   headless: 'new',
-  args: ['--no-sandbox'],
+  args: [
+    '--no-sandbox',
+    '--disable-background-networking',
+    '--disable-component-update',
+    '--disable-client-side-phishing-detection',
+    '--disable-sync',
+    '--no-pings',
+  ],
 });
 
 // MOBILE /events page
