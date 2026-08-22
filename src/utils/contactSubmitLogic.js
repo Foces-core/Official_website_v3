@@ -12,16 +12,6 @@ export function toastAutoCloseMs(toastType) {
 }
 
 /**
- * Pure decision: which toast method should run for a type? Returns the
- * side-effect-free descriptor the hook applies.
- * @param {'success' | 'error' | 'info'} toastType
- * @returns {{ kind: 'success' | 'error' | 'info', message: string }}
- */
-export function toastDescriptor(outcome) {
-  return { kind: outcome.toastType ?? 'info', message: outcome.message };
-}
-
-/**
  * Pure decision: which channel should a submission use?
  *
  * @param {{ onLine: boolean, serviceId?: string, templateId?: string, publicKey?: string }} env
