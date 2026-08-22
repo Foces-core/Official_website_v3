@@ -3,6 +3,25 @@ import { validateContactForm, isSpamSubmission } from './validateContactForm.js'
 export const CONTACT_EMAIL = 'Sebinmathew543@gmail.com';
 
 /**
+ * Pure decision: which toast autoClose delay applies for an outcome type?
+ * @param {'success' | 'error' | 'info'} toastType
+ * @returns {number} ms
+ */
+export function toastAutoCloseMs(toastType) {
+  return toastType === 'info' ? 3000 : 2000;
+}
+
+/**
+ * Pure decision: which toast method should run for a type? Returns the
+ * side-effect-free descriptor the hook applies.
+ * @param {'success' | 'error' | 'info'} toastType
+ * @returns {{ kind: 'success' | 'error' | 'info', message: string }}
+ */
+export function toastDescriptor(outcome) {
+  return { kind: outcome.toastType ?? 'info', message: outcome.message };
+}
+
+/**
  * Pure decision: which channel should a submission use?
  *
  * @param {{ onLine: boolean, serviceId?: string, templateId?: string, publicKey?: string }} env
