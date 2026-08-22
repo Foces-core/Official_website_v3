@@ -104,4 +104,22 @@ describe('createSpinTracker — default clock', () => {
     vi.setSystemTime(1100);
     expect(tracker.register()).toBe(true);
   });
+
+  it('register returns false while below target even with exact-gap spacing', () => {
+    const tracker = createSpinTracker({ target: 3, gap: 800 });
+    expect(tracker.register(0)).toBe(false);
+    expect(tracker.register(800)).toBe(false);
+  });
+
+  it('spin arriving exactly at the gap boundary keeps the run alive (not >)', () => {
+    const tracker = createSpinTracker({ target: 2, gap: 800 });
+    tracker.register(0);
+    expect(tracker.register(800)).toBe(true);
+  });
+
+  it('spin arriving 1ms past the gap resets the count', () => {
+    const tracker = createSpinTracker({ target: 2, gap: 800 });
+    tracker.register(0);
+    expect(tracker.register(801)).toBe(false);
+  });
 });
