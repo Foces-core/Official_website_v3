@@ -80,18 +80,26 @@ function App() {
       <main id="main-content" tabIndex={-1}>
         {pageH1}
         <HeroSection />
-        <Suspense fallback={<SectionSkeleton height="100vh" label="Loading about" />}>
-          <AboutUs />
-        </Suspense>
+        {/* The cube section is scroll-gated too: its chunk (AboutUs + cube
+            physics + celebration) only downloads when the user approaches it.
+            The wrapper owns the section id, so anchors/scrollspy/tests still
+            find it. */}
+        <ScrollGate id="about" placeholderHeight="100vh" label="Loading about">
+          <Suspense fallback={<SectionSkeleton height="100vh" label="Loading about" />}>
+            <AboutUs />
+          </Suspense>
+        </ScrollGate>
         {/* Carousel sections are scroll-gated: the hand-rolled carousel chunk
             only downloads when the section approaches the viewport. The wrapper
             owns the section id, so anchors/scrollspy/tests still find it. */}
         <ScrollGate id="featuring" placeholderHeight="95vh" label="Loading featuring">
           <Featuring />
         </ScrollGate>
-        <Suspense fallback={<SectionSkeleton height="100vh" label="Loading events" />}>
-          <Events />
-        </Suspense>
+        <ScrollGate id="events" placeholderHeight="120vh" label="Loading events">
+          <Suspense fallback={<SectionSkeleton height="100vh" label="Loading events" />}>
+            <Events />
+          </Suspense>
+        </ScrollGate>
         <ScrollGate id="execom" placeholderHeight="110vh" label="Loading team">
           <Execom />
         </ScrollGate>

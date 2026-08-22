@@ -6,10 +6,7 @@ import { WIDE_SCREEN_MIN, DESKTOP_MIN } from '../../utils/breakpoints.js';
 
 function Events() {
   return (
-    <section
-      className="bg-[#0b0b0c] text-white py-16 px-4 md:px-12 relative overflow-hidden scroll-mt-24"
-      id="events"
-    >
+    <section className="bg-[#0b0b0c] text-white py-16 px-4 md:px-12 relative overflow-hidden scroll-mt-24">
       {/* Background Decorative Neon Glows */}
       <div className="absolute top-1/4 -left-32 w-96 h-96 bg-cyan-600/15 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-10 -right-32 w-96 h-96 bg-purple-600/15 blur-[120px] rounded-full pointer-events-none" />
