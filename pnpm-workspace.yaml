@@ -9,4 +9,4 @@ allowBuilds:
 # Build-time only (postcss -> nanoid), but the advisory (<3.3.18) is flagged
 # by audit/dependabot - pin the 3.x line across vite/tailwind/vitest.
 overrides:
-  nanoid: ^3.3.18
+  nanoid: ^6.0.0
