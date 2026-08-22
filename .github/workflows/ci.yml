@@ -121,7 +121,9 @@ jobs:
           # Explicit allowlist for block mode — everything a JS/pnpm/Playwright
           # CI job legitimately needs. The trailing-dot registry.npmjs.org.
           # entry covers the absolute-FQDN form resolvers hand back (seen in
-          # StepSecurity block notifications). Extend only with justification.
+          # StepSecurity block notifications). The OS/package-repo hosts below
+          # serve `playwright install --with-deps` system packages. Extend
+          # only with justification.
           allowed-endpoints: >
             registry.npmjs.org:443
             registry.npmjs.org.:443
@@ -133,6 +135,12 @@ jobs:
             cdn.playwright.dev:443
             playwright.azureedge.net:443
             playwright.download.prss.microsoft.com:443
+            azure.archive.ubuntu.com:80
+            azure.archive.ubuntu.com:443
+            security.ubuntu.com:80
+            security.ubuntu.com:443
+            packages.microsoft.com:443
+            dl.google.com:443
 
       - name: Install pnpm
         uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
@@ -177,7 +185,9 @@ jobs:
           # Explicit allowlist for block mode — everything a JS/pnpm/Playwright
           # CI job legitimately needs. The trailing-dot registry.npmjs.org.
           # entry covers the absolute-FQDN form resolvers hand back (seen in
-          # StepSecurity block notifications). Extend only with justification.
+          # StepSecurity block notifications). The OS/package-repo hosts below
+          # serve `playwright install --with-deps` system packages. Extend
+          # only with justification.
           allowed-endpoints: >
             registry.npmjs.org:443
             registry.npmjs.org.:443
@@ -189,6 +199,12 @@ jobs:
             cdn.playwright.dev:443
             playwright.azureedge.net:443
             playwright.download.prss.microsoft.com:443
+            azure.archive.ubuntu.com:80
+            azure.archive.ubuntu.com:443
+            security.ubuntu.com:80
+            security.ubuntu.com:443
+            packages.microsoft.com:443
+            dl.google.com:443
 
       - name: Install pnpm
         uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
