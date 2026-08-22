@@ -4,6 +4,7 @@
   "dependencyDashboard": true,
   "lockFileMaintenance": { "enabled": true },
   "minimumReleaseAge": "1 day",
+  "ignorePaths": ["**/node_modules/**", "foces-webv23/**"],
   "packageRules": [
     {
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
