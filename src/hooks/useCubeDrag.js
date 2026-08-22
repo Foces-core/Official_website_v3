@@ -40,15 +40,14 @@ import {
  * delegated to pure helpers in `cubeDragHelpers.js` so each callback stays at
  * CC < 5 and is mutation-testable. Hook keeps the same external API.
  *
- * @param {{ lowPower: boolean, slowNetwork: boolean,
- *           spinConfig: { target: number, gap: number },
+ * @param {{ idleSpin: boolean, spinConfig: { target: number, gap: number },
  *           onEggFire: () => void,
  *           wrapRef: React.RefObject<HTMLElement> }} props
  * @returns {{ boxRef: React.RefObject<HTMLElement>,
  *             handlers: { onTouchStart, onTouchMove, onTouchEnd, onTouchCancel,
  *                         onMouseDown } }}
  */
-export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrapRef }) {
+export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
   const boxRef = useRef(null);
   const rotXRef = useRef(0);
   const rotYRef = useRef(0);
@@ -211,10 +210,11 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrap
     window.addEventListener('mouseup', up);
   };
 
-  // Idle auto-spin: rotates slowly while visible and idle — delegates the
-  // idle check to `isIdleForAutoSpin` (CC 2 instead of 5 inline).
+  // Idle auto-spin: rotates slowly on its own while visible and idle — unless
+  // the experience tier strips it (idleSpin capability), or a manual action
+  // owns the cube. Delegates the idle check to `isIdleForAutoSpin`.
   useEffect(() => {
-    if (lowPower || slowNetwork) return;
+    if (!idleSpin) return;
 
     let animFrame = null;
     let visible = true;
@@ -225,8 +225,6 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrap
         isDragging: isDraggingRef.current,
         winding: windingRef.current,
         manualUntil: manualUntilRef.current,
-        lowPower,
-        slowNetwork,
         visible,
       });
 
@@ -266,7 +264,7 @@ export function useCubeDrag({ lowPower, slowNetwork, spinConfig, onEggFire, wrap
       if (observer) observer.disconnect();
       stopWindDown();
     };
-  }, [lowPower, slowNetwork, stopWindDown]);
+  }, [idleSpin, stopWindDown]);
 
   // Keyboard: left/right arrows only. Early returns collapsed to CC 4.
   useEffect(() => {

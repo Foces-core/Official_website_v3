@@ -2,8 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useViewportWidth } from '../../hooks/useViewportWidth.js';
 import useCarousel from '../../hooks/useCarousel.js';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
-import useDeviceProfile from '../../hooks/useLowPower.js';
-
+import useExperienceCapabilities from '../../hooks/useExperienceCapabilities.js';
 import BlurImage from '../../Components/BlurImage/BlurImage';
 import featuring from '../../assets/featuring.svg';
 import { echoSlides, carouselSlides } from '../../data/echoSlides.js';
@@ -13,8 +12,10 @@ import useCarouselKeyboard from '../../hooks/useCarouselKeyboard.js';
 import './Featuring.css';
 
 function Featuring() {
-  const { reducedMotion, lowPower } = useDeviceProfile();
-  const disableAutoplay = reducedMotion || lowPower;
+  // The reducedMotion || lowPower dialect lives in the experience-tier
+  // matrix — autoplay is a full-tier capability.
+  const { autoplay } = useExperienceCapabilities();
+  const disableAutoplay = !autoplay;
   const viewportWidth = useViewportWidth();
   const {
     slidesPerView: noSlides,

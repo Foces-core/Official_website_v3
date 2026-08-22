@@ -109,6 +109,11 @@ test.describe('Execom mobile cube drag', () => {
     const before = await activeIndex();
 
     const slide = page.locator('.execom-cube-swiper [data-slide-active]');
+    // The section anchor can leave the carousel below the fold — dragging at
+    // stale/off-viewport coordinates dispatches no pointer events (autoplay
+    // used to mask this; the experience-tier matrix disables autoplay on
+    // non-full tiers). Bring the slide into view, then re-measure.
+    await slide.scrollIntoViewIfNeeded();
     const box = await slide.boundingBox();
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.down();

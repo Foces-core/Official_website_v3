@@ -32,15 +32,9 @@ afterEach(() => {
   rafCallbacks.clear();
 });
 
-function Probe({
-  onEggFire = vi.fn(),
-  spinConfig = SPIN_BARS.desktop,
-  lowPower = false,
-  slowNetwork = false,
-}) {
+function Probe({ onEggFire = vi.fn(), spinConfig = SPIN_BARS.desktop, idleSpin = true }) {
   const { boxRef, handlers } = useCubeDrag({
-    lowPower,
-    slowNetwork,
+    idleSpin,
     spinConfig,
     onEggFire,
   });
@@ -50,8 +44,7 @@ function Probe({
 Probe.propTypes = {
   onEggFire: PropTypes.func,
   spinConfig: PropTypes.shape({ target: PropTypes.number, gap: PropTypes.number }),
-  lowPower: PropTypes.bool,
-  slowNetwork: PropTypes.bool,
+  idleSpin: PropTypes.bool,
 };
 
 const mousedown = (el, clientX) =>
@@ -146,8 +139,8 @@ describe('useCubeDrag', () => {
     expect(el.style.transform).toContain('rotateY(359.5deg)');
   });
 
-  it('skips the idle auto-spin on low-power devices', () => {
-    harness.render(<Probe lowPower />);
+  it('skips the idle auto-spin when the idleSpin capability is off', () => {
+    harness.render(<Probe idleSpin={false} />);
     expect(rafCallbacks.size).toBe(0);
   });
 

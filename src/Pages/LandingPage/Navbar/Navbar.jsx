@@ -5,7 +5,7 @@ import toggleW from '../../../assets/ButtonW.svg';
 import toggleB from '../../../assets/ButtonB.svg';
 import LogoWhite from '../../../assets/FOCES White.svg';
 import LogoGrey from '../../../assets/FOCES Black.svg';
-import useDeviceProfile from '../../../hooks/useLowPower.js';
+import useExperienceCapabilities from '../../../hooks/useExperienceCapabilities.js';
 import { useViewportWidth } from '../../../hooks/useViewportWidth.js';
 import useScrollLock from '../../../hooks/useScrollLock.js';
 import useEscapeClose from '../../../hooks/useEscapeClose.js';
@@ -36,7 +36,10 @@ const navItems = [
 ];
 
 export default function Navbar() {
-  const { slowNetwork, reducedMotion } = useDeviceProfile();
+  // The slowNetwork/reducedMotion dialects live in the experience-tier
+  // matrix — prefetch gates route-chunk prefetching, smoothScroll the
+  // animated section scrolling.
+  const { prefetch, smoothScroll } = useExperienceCapabilities();
   // Viewport bucket comes from the shared useViewportWidth seam (reactive to
   // resize; policy in breakpoints.js). Reading it on first render keeps
   // phones from flashing the desktop menu open for a frame.
@@ -146,7 +149,7 @@ export default function Navbar() {
         setRovingId(id);
         coordinateSectionNavigation({
           targetId: id,
-          reducedMotion,
+          reducedMotion: !smoothScroll,
           closeOverlay: isMobile ? () => setShowItems(false) : undefined,
           onComplete: isMobile
             ? () => {
@@ -169,7 +172,7 @@ export default function Navbar() {
     if (action.type === 'navigate') {
       navigate('/');
     } else {
-      window.scrollTo({ top: 0, behavior: sectionScrollBehavior(reducedMotion) });
+      window.scrollTo({ top: 0, behavior: sectionScrollBehavior(!smoothScroll) });
     }
   };
 
@@ -236,7 +239,7 @@ export default function Navbar() {
 
   // Route chunk prefetch lifecycle: manages idle preload, ForesightJS ML prediction,
   // and intent-driven (hover/touch/focus) route chunk prefetching behind a slowNetwork gate.
-  const { handlePrefetch } = useRoutePrefetch({ slowNetwork });
+  const { handlePrefetch } = useRoutePrefetch({ slowNetwork: !prefetch });
 
   // (Quicklink removed: it prefetched the same index.html shell for /events
   // and /contact — the real route chunks are already prefetched by js.foresight

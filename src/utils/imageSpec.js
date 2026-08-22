@@ -1,4 +1,4 @@
-import { resolveMaxImageWidth, capSrcset } from './imagePolicy.js';
+import { capSrcset } from './imagePolicy.js';
 
 /**
  * imageSpec — pure image-spec builder (deep module).
@@ -7,21 +7,22 @@ import { resolveMaxImageWidth, capSrcset } from './imagePolicy.js';
  * side effects — same inputs always yield same outputs, so it is
  * fully unit-testable without a browser.
  *
- * Deletion test: delete this module and policy logic scatters back
- * into BlurImage.jsx as useMemo + capSrcset + resolveMaxImageWidth
- * wiring plus profile plumbing — the shallow 80-line adapter returns.
+ * The width policy comes from the experience-tier matrix
+ * (utils/experienceTier.js `imageMaxWidth` capability): 400w on slow
+ * networks, 800w on low CPU, 1000w capable. BlurImage reads the capability
+ * once and passes it here — this module stays policy-free, it only applies
+ * the number it is given.
  *
- * BlurImage is the thin adapter that calls this and feeds the result
- * to the <img>; every photo (events, echo slides, team) routes through
- * that single seam, so the cap lives in one place.
+ * Deletion test: delete this module and the null-guard + capSrcset wiring
+ * scatters back into BlurImage.jsx — the shallow adapter returns.
  *
  * CC = 2 (one null-guard ternary). Well under the <5 budget.
  *
- * @param {{ src?: string, srcSet?: string, sizes?: string, policy?: { slowNetwork?: boolean, lowCPU?: boolean } }} [config]
+ * @param {{ src?: string, srcSet?: string, sizes?: string,
+ *           maxWidth?: number }} [config]
  * @returns {{ src: string|undefined, srcSet: string|undefined, sizes: string|undefined }}
  */
-export function createImageSpec({ src, srcSet, sizes, policy } = {}) {
-  const cappedSrcSet =
-    srcSet == null ? srcSet : capSrcset(srcSet, resolveMaxImageWidth(policy ?? {}));
+export function createImageSpec({ src, srcSet, sizes, maxWidth } = {}) {
+  const cappedSrcSet = srcSet == null ? srcSet : capSrcset(srcSet, maxWidth ?? 1000);
   return { src, srcSet: cappedSrcSet, sizes };
 }

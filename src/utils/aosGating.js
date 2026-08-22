@@ -15,12 +15,14 @@
 // lifecycle (listeners, rAF, cleanup) lives in the useAosFailsafe hook, which
 // is mounted once in App.
 import detectProfile from './detectProfile.js';
+import { resolveExperienceCapabilities } from './experienceTier.js';
 import AOS from 'aos';
 
 export function aosDisabled() {
   if (typeof window === 'undefined') return false;
-  const profile = detectProfile();
-  return profile.reducedMotion || profile.lowPower;
+  // The reducedMotion || lowPower dialect lives in the experience-tier
+  // matrix — aosReveals is the capability (full tier only).
+  return !resolveExperienceCapabilities(detectProfile()).aosReveals;
 }
 
 // AOS hides [data-aos] elements (opacity/transform) until they scroll into

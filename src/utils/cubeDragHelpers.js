@@ -38,20 +38,16 @@ export function computeDragDelta(clientX, startX, sensitivity) {
  * `manualUntil` is the timestamp until which a manual action owns the cube
  * (see `cubeTiming.js`). `now` is injectable for deterministic tests.
  *
- * @param {{ isDragging: boolean, winding: boolean, manualUntil: number|string, lowPower: boolean, slowNetwork: boolean, visible: boolean, now?: number }} params
+ * @param {{ isDragging: boolean, winding: boolean, manualUntil: number|string, visible: boolean, now?: number }} params
  * @returns {boolean}
  */
 export function isIdleForAutoSpin({
   isDragging,
   winding,
   manualUntil,
-  lowPower,
-  slowNetwork,
   visible,
   now = Date.now(),
 } = {}) {
-  const powerLimited = lowPower || slowNetwork;
-  if (powerLimited) return false;
   const busy = isDragging || winding || !visible;
   if (busy) return false;
   return !isManualOverrideActive(manualUntil ?? 0, now);

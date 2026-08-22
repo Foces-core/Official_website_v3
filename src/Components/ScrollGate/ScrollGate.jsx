@@ -2,7 +2,7 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import SectionSkeleton from '../SectionSkeleton/SectionSkeleton';
 import { isDesktopViewport } from '../../utils/breakpoints.js';
-import useDeviceProfile from '../../hooks/useLowPower.js';
+import useExperienceCapabilities from '../../hooks/useExperienceCapabilities.js';
 import { shouldMountSection, scheduleIdleMount } from './scrollGateLogic.js';
 
 // Real section heights, cached after first mount so the placeholder matches
@@ -33,7 +33,9 @@ function viewportBucket() {
 export default function ScrollGate({ id, placeholderHeight = '110vh', label, children }) {
   const [mounted, setMounted] = useState(false);
   const wrapRef = useRef(null);
-  const { slowNetwork } = useDeviceProfile();
+  // The slowNetwork gate for the idle pre-mount lives in the experience-tier
+  // matrix — scrollGate is the capability.
+  const { scrollGate } = useExperienceCapabilities();
 
   useEffect(() => {
     if (mounted) return;
@@ -80,7 +82,7 @@ export default function ScrollGate({ id, placeholderHeight = '110vh', label, chi
     const cancelIdle = scheduleIdleMount({
       onMount: mount,
       delayMs: 2200,
-      slowNetwork,
+      slowNetwork: !scrollGate,
     });
 
     return () => {
@@ -90,7 +92,7 @@ export default function ScrollGate({ id, placeholderHeight = '110vh', label, chi
       window.removeEventListener('resize', onScroll);
       cancelIdle();
     };
-  }, [mounted, slowNetwork]);
+  }, [mounted, scrollGate]);
 
   // Cache the real height once the section's content lands. ResizeObserver —
   // not a mount-timed read — because when `mounted` flips, the inner lazy

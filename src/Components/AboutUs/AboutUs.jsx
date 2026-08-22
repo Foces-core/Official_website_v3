@@ -1,7 +1,7 @@
 import { useRef, useCallback, useEffect } from 'react';
 import FocesLogo from '../../assets/FOCES White.svg';
 import '../AboutUs/AboutUs.css';
-import useDeviceProfile from '../../hooks/useLowPower.js';
+import useExperienceCapabilities from '../../hooks/useExperienceCapabilities.js';
 import { useCubeDrag } from '../../hooks/useCubeDrag.js';
 import { scheduleBackgroundTask } from '../../utils/priorityScheduler.js';
 import { spinConfigFor } from './easterEggLogic.js';
@@ -47,7 +47,11 @@ const EASTER_MESSAGES = [
 ];
 
 function AboutUs() {
-  const { lowPower, slowNetwork, reducedMotion } = useDeviceProfile();
+  // The lowPower/slowNetwork/reducedMotion dialects live in the
+  // experience-tier matrix (utils/experienceTier.js): the cube's idle
+  // auto-spin (idleSpin), the celebration's wobble/confetti (celebrationMotion)
+  // and the confetti particle budget (confetti) are read as capabilities.
+  const { idleSpin, confetti, celebrationMotion } = useExperienceCapabilities();
   const celebrationCleanupRef = useRef(null);
   const lastToastRef = useRef('');
 
@@ -57,8 +61,7 @@ function AboutUs() {
   const triggerEggRef = useRef(() => {});
   const cubeWrapRef = useRef(null);
   const { boxRef, handlers } = useCubeDrag({
-    lowPower,
-    slowNetwork,
+    idleSpin,
     spinConfig: SPIN_CONFIG,
     onEggFire: () => triggerEggRef.current(),
     wrapRef: cubeWrapRef,
@@ -71,7 +74,8 @@ function AboutUs() {
     wrap.querySelectorAll('.about-burst').forEach((n) => n.remove());
     wrap.classList.remove('about-wobble');
 
-    if (!reducedMotion) {
+    // Celebratory wobble (on the wrapper, so it never fights the cube's inline rotate)
+    if (celebrationMotion) {
       wrap.classList.add('about-wobble');
       setTimeout(() => wrap.classList.remove('about-wobble'), 1000);
     }
@@ -98,7 +102,7 @@ function AboutUs() {
       celebrationCleanupRef.current = fire({
         cx,
         cy,
-        count: reducedMotion ? 0 : lowPower ? 10 : 30,
+        count: confetti ? (celebrationMotion ? 30 : 0) : 10,
         colors: PARTICLE_COLORS,
         emojis: PARTICLE_EMOJIS,
         messages: EASTER_MESSAGES,
@@ -109,7 +113,7 @@ function AboutUs() {
         },
       });
     });
-  }, [lowPower, reducedMotion, boxRef]);
+  }, [confetti, celebrationMotion, boxRef]);
 
   useEffect(() => {
     triggerEggRef.current = triggerEasterEgg;

@@ -1,53 +1,11 @@
 /**
- * Image-policy seam — one pure place that answers "how big may a photo be
- * for this device?" and enforces it on a srcset string.
+ * Image-policy string mechanics — the one pure helper that enforces a width
+ * cap on a srcset string.
  *
- * Consumption rule: <BlurImage> is the single render seam every photo routes
- * through (events via photoTriplet, echo slides via imageSet, team via
- * srcset), and it is the only consumer of this module — so the cap lives in
- * one place instead of being re-derived at each image site.
- *
- * Intended to fold into the experience-tier module (architecture report,
- * Candidate 2) as a capability: resolveExperienceTier(profile) will own the
- * matrix and this module becomes the image-specific consumer of a tier.
- */
-
-export const IMAGE_WIDTH_TIERS = {
-  // slowNetwork — cut payload hardest: a 400w file is enough to recognize a
-  // person / read a poster at card size, and it is the smallest candidate
-  // every triplet ships.
-  slowNetwork: 400,
-  // lowCPU — cut decode cost: 800w covers retina without the 1000w decode.
-  lowCPU: 800,
-  // capable devices get the full triplet.
-  full: 1000,
-};
-
-/**
- * Map a device profile to the largest image width it should download.
- * `slowNetwork` wins over `lowCPU` (a low-CPU device on a slow network still
- * wants the smaller file). Missing/unknown fields resolve to the full tier.
- *
- * @param {{ slowNetwork?: boolean, lowCPU?: boolean }} [profile]
- * @returns {number} 400 | 800 | 1000
- */
-export function resolveMaxImageWidth({ slowNetwork, lowCPU } = {}) {
-  if (slowNetwork) return IMAGE_WIDTH_TIERS.slowNetwork;
-  if (lowCPU) return IMAGE_WIDTH_TIERS.lowCPU;
-  return IMAGE_WIDTH_TIERS.full;
-}
-
-/**
- * Drop every srcset candidate wider than `maxWidth`, preserving order and
- * formatting ("url 1000w, url 800w, ...").
- *
- * Floor: if every candidate is wider than the cap (the echo slides only ship
- * 480w+), keep the single smallest one — an EMPTY srcset makes the browser
- * fall back to the full-size `src`, which would defeat the cap entirely.
- *
- * @param {string|undefined} srcsetValue
- * @param {number} maxWidth
- * @returns {string|undefined} the capped srcset (undefined/'' pass through)
+ * The POLICY (which width cap a device gets) lives in the experience-tier
+ * matrix (utils/experienceTier.js, `imageMaxWidth` capability); this module
+ * only knows how to enforce it on a srcset string. <BlurImage> is the single
+ * consumer: it reads `imageMaxWidth` from the matrix and passes it here.
  */
 export function capSrcset(srcsetValue, maxWidth) {
   if (srcsetValue == null || srcsetValue === '') return srcsetValue;

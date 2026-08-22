@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import PropTypes from 'prop-types';
-import useDeviceProfile from '../../hooks/useLowPower.js';
+import useExperienceCapabilities from '../../hooks/useExperienceCapabilities.js';
 import { useBlurImage } from './useBlurImage.js';
 import { createImageSpec } from '../../utils/imageSpec.js';
 
@@ -8,11 +8,17 @@ import { createImageSpec } from '../../utils/imageSpec.js';
  * BlurImage — thin adapter over two pure/tested seams.
  *
  * - Image spec (what to fetch): src/utils/imageSpec.js — pure
- *   createImageSpec({ src, srcSet, sizes, policy }) caps the srcset
- *   for the device profile. No DOM.
+ *   createImageSpec({ src, srcSet, sizes, maxWidth }) caps the srcset for
+ *   the device. No DOM.
  * - Loaded / placeholder / fetch-priority state machine:
  *   src/Components/BlurImage/useBlurImage.js — the reducer owns all
  *   transitions; this component only wires events and renders.
+ *
+ * This is also the single seam for the image-policy cap: every photo —
+ * events, echo slides, team — renders through here, so the experience-tier
+ * matrix is consulted once (imageMaxWidth capability: 400w on slow networks,
+ * 800w on low CPU, 1000w capable), here, and the srcset is capped before it
+ * reaches the <img>.
  *
  * The wrapper no longer duplicates object-fit utilities (object-cover /
  * object-contain …): those belong on the <img>, not the <div>.
@@ -43,15 +49,19 @@ export default function BlurImage({
   const { imgRef, loaded, removed, priorityAttr, handleLoad, handleError, handleInteraction } =
     useBlurImage({ src, blurSrc, eager: loading === 'eager' });
 
-  const { slowNetwork, lowCPU } = useDeviceProfile();
+  // Image-policy cap: the experience-tier matrix owns the width policy
+  // (imageMaxWidth capability) and imageSpec applies it. Memoized on the
+  // cap so a connection change (or unrelated re-render) doesn't re-parse
+  // the string.
+  const { imageMaxWidth } = useExperienceCapabilities();
 
   const {
     src: specSrc,
     srcSet: cappedSrcSet,
     sizes: specSizes,
   } = useMemo(
-    () => createImageSpec({ src, srcSet, sizes, policy: { slowNetwork, lowCPU } }),
-    [src, srcSet, sizes, slowNetwork, lowCPU],
+    () => createImageSpec({ src, srcSet, sizes, maxWidth: imageMaxWidth }),
+    [src, srcSet, sizes, imageMaxWidth],
   );
 
   const showBlur = blurSrc && !removed;

@@ -23,15 +23,10 @@ describe('cubeDragHelpers', () => {
       isDragging: false,
       winding: false,
       manualUntil: 0,
-      lowPower: false,
-      slowNetwork: false,
       visible: true,
       now: 1000,
     };
     it('true when idle', () => expect(isIdleForAutoSpin(base)).toBe(true));
-    it('false lowPower', () => expect(isIdleForAutoSpin({ ...base, lowPower: true })).toBe(false));
-    it('false slowNetwork', () =>
-      expect(isIdleForAutoSpin({ ...base, slowNetwork: true })).toBe(false));
     it('false dragging', () =>
       expect(isIdleForAutoSpin({ ...base, isDragging: true })).toBe(false));
     it('false winding', () => expect(isIdleForAutoSpin({ ...base, winding: true })).toBe(false));
