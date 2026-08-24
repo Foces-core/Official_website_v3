@@ -1,0 +1,81 @@
+# Depot CI Migration
+# Source: .github\workflows\perf-nightly.yml
+#
+# Changes made:
+# - Changed GitHub runs-on labels to their Depot equivalents
+
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+# Nightly performance run: builds the site, runs the Lighthouse multi-profile
+# probe (8 profiles — desktop, throttled mobile 3G/4G/2G, CPU slowdowns,
+# reduced-motion), enforces budgets, and opens/updates a regression issue if
+# any budget is breached so the last committer on main is pinged.
+#
+# Deliberately NOT a PR check: Lighthouse under CI throttling jitters, so
+# this is a nightly signal (ADR-0001 guard) rather than a merge blocker.
+name: Perf (nightly)
+on:
+  schedule:
+    # 06:00 UTC daily — after typical dev hours, before morning traffic.
+    - cron: '0 6 * * *'
+  workflow_dispatch: {}
+permissions:
+  contents: read
+  issues: write
+jobs:
+  perf:
+    name: Lighthouse multi-profile
+    runs-on: depot-ubuntu-24.04 # was: ubuntu-latest. Mapped standard GitHub runner to Depot equivalent.
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Install pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          version: 11.22.0
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Playwright browsers (Chromium used by the probe)
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Build + serve preview
+        run: |
+          pnpm build
+          nohup pnpm exec vite preview --port 4173 --strictPort > /tmp/preview.log 2>&1 &
+          for _ in $(seq 1 60); do
+            curl -s -o /dev/null http://localhost:4173/ && break
+            sleep 1
+          done
+          if curl -s -o /dev/null http://localhost:4173/; then
+            echo "preview up"
+          else
+            echo "preview failed"
+            cat /tmp/preview.log
+            exit 1
+          fi
+      - name: Run Lighthouse multi-profile probe
+        run: |
+          CHROME_PATH=$(node -e "console.log(require('@playwright/test').chromium.executablePath())")
+          export CHROME_PATH
+          pnpm probe:perf
+      - name: Enforce performance budgets
+        id: budgets
+        run: node scripts/maintenance/check-perf-budgets.mjs
+      # Loud, human-visible failure: open (or bump) a regression issue that
+      # @mentions whoever last touched main, so the nightly red run doesn't
+      # just sit in the Actions tab.
+      - name: Open / update regression issue on budget breach
+        if: steps.budgets.outcome == 'failure'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          script: "const { data: commits } = await github.rest.repos.listCommits({\n  owner: context.repo.owner,\n  repo: context.repo.repo,\n  per_page: 1,\n});\nconst last = commits[0] || {};\nconst handle = last.author?.login || last.commit?.author?.name || 'someone';\nconst run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;\nconst title = '\U0001F6A8 Perf regression detected (nightly)';\nconst body =\n  `The nightly Lighthouse run breached a performance budget — [view the run](${run}).\\n\\n` +\n  `@${handle} — you are the last committer on \\`main\\`; please check whether your recent change ` +\n  `(large dependency, missing srcset/lazy-load, removed perf guard) caused this, and fix or revert.\\n\\n` +\n  `This issue is auto-updated by the next green run's closure or the next breach's bump.`;\n\nconst { data: existing } = await github.rest.issues.listForRepo({\n  owner: context.repo.owner,\n  repo: context.repo.repo,\n  state: 'open',\n});\nconst match = existing.find((i) => i.title === title);\nif (match) {\n  await github.rest.issues.createComment({\n    owner: context.repo.owner,\n    repo: context.repo.repo,\n    issue_number: match.number,\n    body: `Another breach on ${new Date().toISOString()} — [run](${run}). @${handle}`,\n  });\n} else {\n  await github.rest.issues.create({\n    owner: context.repo.owner,\n    repo: context.repo.repo,\n    title,\n    body,\n  });\n}\n"
+      # The next green night closes the regression issue automatically.
+      - name: Close regression issue when budgets pass
+        if: steps.budgets.outcome == 'success'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          script: "const title = '\U0001F6A8 Perf regression detected (nightly)';\nconst { data: existing } = await github.rest.issues.listForRepo({\n  owner: context.repo.owner,\n  repo: context.repo.repo,\n  state: 'open',\n});\nconst match = existing.find((i) => i.title === title);\nif (match) {\n  await github.rest.issues.createComment({\n    owner: context.repo.owner,\n    repo: context.repo.repo,\n    issue_number: match.number,\n    body: 'Budgets are green again — closing.',\n  });\n  await github.rest.issues.update({\n    owner: context.repo.owner,\n    repo: context.repo.repo,\n    issue_number: match.number,\n    state: 'closed',\n  });\n}\n"

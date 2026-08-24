@@ -1,0 +1,60 @@
+# Depot CI Migration
+# Source: .github\workflows\scorecard.yml
+#
+# Changes made:
+# - Removed unsupported trigger "branch_protection_rule"
+# - Changed GitHub runs-on labels to their Depot equivalents
+
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+# OpenSSF Scorecard — supply-chain posture audit (branch protection, action
+# pinning, token permissions, dependency policy). Results publish to the
+# OSSF API (enables the scorecard badge) and upload as SARIF so findings
+# appear under Security → Code scanning alongside CodeQL.
+name: Scorecard supply-chain security
+# Removed unsupported trigger: branch_protection_rule. Branch protection rule events are not supported.
+on:
+  schedule:
+    - cron: '40 2 * * 4'
+  push:
+    branches: [main]
+  workflow_dispatch:
+# Restrict the token to exactly what Scorecard needs (S8234: no broad
+# read-all); the analysis job below needs nothing beyond these.
+permissions:
+  actions: read
+  checks: read
+  contents: read
+  issues: read
+  pull-requests: read
+  id-token: write # publish results to the OSSF badge/API via OIDC
+  security-events: write # upload SARIF to code scanning
+jobs:
+  analysis:
+    name: Scorecard analysis
+    runs-on: depot-ubuntu-24.04 # was: ubuntu-latest. Mapped standard GitHub runner to Depot equivalent.
+    timeout-minutes: 10
+    steps:
+      # persist-credentials: false — Scorecard flags repos whose checkout
+      # leaves the runner token in .git/config.
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Run analysis
+        # No floating major tag exists for this action — pin the patch
+        # release; dependabot bumps it weekly.
+        uses: ossf/scorecard-action@2d1146689b8cda280b9bc96326124645441f03bc # v2.4.4
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: true
+      - name: Upload artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: SARIF file
+          path: results.sarif
+          retention-days: 5
+      - name: Upload to code-scanning
+        uses: github/codeql-action/upload-sarif@db488ddef3bf6cb639b32c2e9a7c0a7ea8271d28 # v4
+        with:
+          sarif_file: results.sarif

@@ -1,0 +1,69 @@
+# Depot CI Migration
+# Source: .github\workflows\auto-merge-dependabot.yml
+#
+# Changes made:
+# - Changed GitHub runs-on labels to their Depot equivalents
+
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+# Auto-merge dependabot PRs once CI passes.
+#
+# GitHub has no native "auto-merge dependabot PRs" flag in dependabot.yml, so
+# this workflow polls the four CI checks (Lint & Build, E2E, Probes, Validate
+# commit messages) on the PR head until they complete, then squash-merges the
+# PR and deletes its branch. A failing check aborts the job and leaves the PR
+# open — nothing merges on a red build. Non-CI checks (e.g. the stale
+# Vercel official-website-v3 status) are deliberately ignored: they fail on
+# every commit regardless of code.
+name: Auto-merge dependabot PRs
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  auto-merge:
+    runs-on: depot-ubuntu-24.04 # was: ubuntu-latest. Mapped standard GitHub runner to Depot equivalent.
+    if: github.actor == 'dependabot[bot]' && github.event.pull_request.draft == false
+    steps:
+      - name: Wait for CI checks to pass
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          CHECKS='Lint & Build|E2E (Playwright)|Probes (structural checks)|Validate commit messages'
+          for _ in $(seq 1 45); do
+            OUT=$(gh api "repos/Foces-core/Official_website_v3/commits/${SHA}/check-runs" --jq \
+              "[.check_runs[] | select(.name|test(\"$CHECKS\")) | {name, status, conclusion}]")
+            FAILED=$(echo "$OUT" | jq '[.[] | select(.conclusion != null and .conclusion != "success" and .conclusion != "skipped" and .conclusion != "neutral")] | length')
+            DONE=$(echo "$OUT" | jq '[.[] | select(.status == "completed")] | length')
+            TOTAL=$(echo "$OUT" | jq 'length')
+            echo "CI checks: $DONE/$TOTAL completed"
+            if [ "$FAILED" -gt 0 ]; then
+              echo "A CI check failed — leaving PR open:"
+              echo "$OUT"
+              exit 1
+            fi
+            if [ "$TOTAL" -gt 0 ] && [ "$DONE" -eq "$TOTAL" ]; then
+              echo "All CI checks passed."
+              exit 0
+            fi
+            sleep 20
+          done
+          echo "Timed out waiting for CI to finish."
+          exit 1
+      # Branch protection requires one approving review; dependabot cannot
+      # self-approve, so the workflow approves on the bot's behalf before the
+      # merge is queued.
+      - name: Approve dependabot PR
+        if: github.event.pull_request.state == 'open'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr review --approve "$PR_URL"
+      - name: Merge (squash + delete branch)
+        if: github.event.pull_request.state == 'open'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: gh pr merge --squash --delete-branch --auto "$PR_URL"

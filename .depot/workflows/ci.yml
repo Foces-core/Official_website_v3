@@ -1,0 +1,307 @@
+# Depot CI Migration
+# Source: .github\workflows\ci.yml
+#
+# Changes made:
+# - Changed GitHub runs-on labels to their Depot equivalents
+
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  # Manual re-runs — GitHub sometimes drops webhook-triggered runs during
+  # incidents (Aug 2026), and dispatch lets maintainers run CI on any ref
+  # without a push.
+  workflow_dispatch:
+# Cancel in-progress runs when a newer commit lands on the same branch.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  lint-and-build:
+    name: Lint & Build
+    runs-on: depot-ubuntu-24.04 # was: ubuntu-latest. Mapped standard GitHub runner to Depot equivalent.
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      # StepSecurity Harden-Runner — records every outbound call the job
+      # makes and flags unexpected destinations (supply-chain exfiltration
+      # detection). audit mode = observe only; flip to `block` once a week of
+      # logs confirms nothing legitimate is flagged.
+      - name: Harden Runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2
+        with:
+          egress-policy: block
+          # Explicit allowlist for block mode — everything a JS/pnpm/Playwright
+          # CI job legitimately needs. The trailing-dot registry.npmjs.org.
+          # entry covers the absolute-FQDN form resolvers hand back (seen in
+          # StepSecurity block notifications). Extend only with justification.
+          allowed-endpoints: >
+            registry.npmjs.org:443 registry.npmjs.org.:443 nodejs.org:443 api.github.com:443 github.com:443 objects.githubusercontent.com:443 release-assets.githubusercontent.com:443 cdn.playwright.dev:443 playwright.azureedge.net:443 playwright.download.prss.microsoft.com:443 storage.googleapis.com:443
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          version: 11.22.0
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Lint
+        run: pnpm lint
+      - name: Format check (Prettier)
+        run: pnpm format:check
+      - name: Check git diff
+        run: git diff --check
+      - name: pnpm audit
+        run: pnpm audit
+      - name: Dead code check (knip)
+        run: pnpm exec knip
+      # Workflow lint (actionlint + shellcheck) — the same gate the pre-push
+      # hook runs, so contributors who skip hooks still get caught here. CI
+      # mode fails hard if the tools can't be obtained (never silently skip).
+      - name: Workflow lint (actionlint + shellcheck)
+        run: pnpm lint:workflows
+      - name: Orphan asset check
+        run: pnpm check:assets
+      - name: Pure-module spec check (ADR-0009)
+        run: pnpm check:specs
+      - name: Unit tests (Vitest)
+        run: pnpm exec vitest run --coverage --bail 1
+      - name: Build
+        run: pnpm build
+      - name: Service-worker precache check
+        run: pnpm check:sw
+      - name: Upload build output (optional artifact)
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: dist
+          path: dist
+          retention-days: 7
+  e2e:
+    name: E2E (Playwright)
+    runs-on: depot-ubuntu-24.04 # was: ubuntu-latest. Mapped standard GitHub runner to Depot equivalent.
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Harden Runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2
+        with:
+          egress-policy: block
+          # Explicit allowlist for block mode — everything a JS/pnpm/Playwright
+          # CI job legitimately needs. The trailing-dot registry.npmjs.org.
+          # entry covers the absolute-FQDN form resolvers hand back (seen in
+          # StepSecurity block notifications). No OS package repos here:
+          # Playwright installs without --with-deps because the runner image
+          # already ships Chromium's system libraries. Extend only with
+          # justification.
+          allowed-endpoints: >
+            registry.npmjs.org:443 registry.npmjs.org.:443 nodejs.org:443 api.github.com:443 github.com:443 objects.githubusercontent.com:443 release-assets.githubusercontent.com:443 cdn.playwright.dev:443 playwright.azureedge.net:443 playwright.download.prss.microsoft.com:443 storage.googleapis.com:443 # Chromium Safe-Browsing/component-updater pings + the site's # Vercel analytics script fire while tests drive a real browser. # Read-only telemetry from a disposable CI profile. clients2.google.com:443 clients2.google.com.:443 www.google.com:443 accounts.google.com:443 update.googleapis.com:443 android.clients.google.com:443 android.clients.google.com.:443 mtalk.google.com:443 mtalk.google.com.:443 va.vercel-scripts.com:443
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          version: 11.22.0
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install chromium
+      - name: Run E2E tests
+        run: pnpm test
+      - name: Upload Playwright report (on failure)
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: playwright-report
+          path: playwright-report
+          retention-days: 7
+  probes:
+    name: Probes (structural checks)
+    runs-on: depot-ubuntu-24.04 # was: ubuntu-latest. Mapped standard GitHub runner to Depot equivalent.
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Harden Runner
+        uses: step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c # v2
+        with:
+          egress-policy: block
+          # Explicit allowlist for block mode — everything a JS/pnpm/Playwright
+          # CI job legitimately needs. The trailing-dot registry.npmjs.org.
+          # entry covers the absolute-FQDN form resolvers hand back (seen in
+          # StepSecurity block notifications). No OS package repos here:
+          # Playwright installs without --with-deps because the runner image
+          # already ships Chromium's system libraries. Extend only with
+          # justification.
+          allowed-endpoints: >
+            registry.npmjs.org:443 registry.npmjs.org.:443 nodejs.org:443 api.github.com:443 github.com:443 objects.githubusercontent.com:443 release-assets.githubusercontent.com:443 cdn.playwright.dev:443 playwright.azureedge.net:443 playwright.download.prss.microsoft.com:443 storage.googleapis.com:443 # Chromium Safe-Browsing/component-updater pings + the site's # Vercel analytics script fire while tests drive a real browser. # Read-only telemetry from a disposable CI profile. clients2.google.com:443 clients2.google.com.:443 www.google.com:443 accounts.google.com:443 update.googleapis.com:443 android.clients.google.com:443 android.clients.google.com.:443 mtalk.google.com:443 mtalk.google.com.:443 va.vercel-scripts.com:443
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          version: 11.22.0
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Install Playwright browsers (Chromium used by the probes)
+        run: pnpm exec playwright install chromium
+      - name: Build + serve preview
+        run: |
+          pnpm build
+          nohup pnpm exec vite preview --port 4173 --strictPort > /tmp/preview.log 2>&1 &
+          for _ in $(seq 1 60); do
+            curl -s -o /dev/null http://localhost:4173/ && break
+            sleep 1
+          done
+          if curl -s -o /dev/null http://localhost:4173/; then
+            echo "preview up"
+          else
+            echo "preview failed"
+            cat /tmp/preview.log
+            exit 1
+          fi
+      - name: Run structural probes
+        run: |
+          # Point the puppeteer-core probes at Playwright's installed Chromium.
+          CHROME_PATH=$(node -e "console.log(require('@playwright/test').chromium.executablePath())")
+          export CHROME_PATH
+          pnpm probe:wcag
+          pnpm probe:carousel
+          pnpm probe:mobile
+  # Enforce Conventional Commits on every PR (same rules as the local
+  # husky commit-msg hook, see commitlint.config.cjs). Also runs on manual
+  # workflow_dispatch so a dispatched run reproduces the full PR check set.
+  commitlint:
+    name: Validate commit messages
+    runs-on: depot-ubuntu-24.04 # was: ubuntu-latest. Mapped standard GitHub runner to Depot equivalent.
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - name: Install pnpm
+        uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
+        with:
+          version: 11.22.0
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Lint commit messages (pull request)
+        if: github.event_name == 'pull_request'
+        uses: wagoid/commitlint-github-action@b948419dd99f3fd78a6548d48f94e3df7f6bf3ed # v6
+        with:
+          configFile: commitlint.config.cjs
+      - name: Lint commit messages (manual dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        # Explicit range for dispatch runs (no PR base to diff against):
+        # lint every commit on this branch that isn't already on main.
+        run: |
+          git fetch origin main --quiet
+          pnpm exec commitlint --from "$(git merge-base origin/main HEAD)" --to HEAD
+    permissions:
+      contents: read
+      pull-requests: read
+  # Reviews the dependency diff a PR introduces (unlike `pnpm audit`, which
+  # only sees the current lockfile). Fails PRs that add high/critical
+  # vulnerabilities or incompatible license changes.
+  dependency-review:
+    name: Dependency review
+    runs-on: depot-ubuntu-24.04 # was: ubuntu-latest. Mapped standard GitHub runner to Depot equivalent.
+    timeout-minutes: 10
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Dependency Review
+        uses: actions/dependency-review-action@a1d282b36b6f3519aa1f3fc636f609c47dddb294 # v5.0.0
+        with:
+          fail-on-severity: high
+  # Tell Vercel when the GitHub checks finish so deployments that "wait for
+  # CI" don't hang. The `name` below must match the check name configured in
+  # Vercel → Project → Settings → Git → Deployment settings → "Wait for CI
+  # to pass (GitHub Checks)". Runs even on failure so Vercel marks the
+  # deployment as failed instead of waiting forever.
+  notify-vercel:
+    name: Notify Vercel
+    if: always()
+    needs: [lint-and-build, e2e, probes, commitlint, dependency-review]
+    runs-on: depot-ubuntu-24.04 # was: ubuntu-latest. Mapped standard GitHub runner to Depot equivalent.
+    permissions:
+      # The status action calls the Actions jobs API (actions: read) and
+      # creates commit statuses (statuses: write) — contents: write is NOT
+      # what it needs.
+      actions: read
+      statuses: write
+    steps:
+      # The action derives the posted state from THIS job's step conclusions
+      # (main stage posts "pending", post stage the final state), so a guard
+      # step fails the job — and only the job — when any dependency check
+      # failed. Without it Vercel would always receive "success". Skipped
+      # jobs (e.g. commitlint on push) count as green.
+      - name: Guard - fail when any dependency check failed
+        if: always()
+        shell: bash
+        run: |
+          failed=""
+          for r in \
+            "${{ needs.lint-and-build.result }}" \
+            "${{ needs.e2e.result }}" \
+            "${{ needs.probes.result }}" \
+            "${{ needs.commitlint.result }}" \
+            "${{ needs.dependency-review.result }}"; do
+            if [ "$r" != "success" ] && [ "$r" != "skipped" ]; then
+              failed=1
+            fi
+          done
+          if [ -n "$failed" ]; then
+            echo "one or more checks failed — reporting failure to Vercel"
+            exit 1
+          fi
+          echo "all checks passed"
+      - name: notify vercel
+        if: always()
+        # Pinned to a commit using the node24 runtime — the v1 tag still ships
+        # node20, which is deprecated on GH runners (renovate can digest-bump).
+        uses: vercel/repository-dispatch/actions/status@61881006269f0b5ac2cb186b198c54be6afe90e1
+        with:
+          name: 'Vercel - focces: lint'
+  # The merge gate stays closed until every check is green; once the run
+  # finishes red, mention `github.actor` (the user who triggered the run,
+  # usually whoever pushed). GitHub emails PR participants only per their
+  # own notification settings — the same channel CodeRabbit comments use.
+  notify-on-failure:
+    name: Notify on failure
+    if: failure() && github.event_name == 'pull_request'
+    needs: [lint-and-build, e2e, probes, commitlint, dependency-review]
+    runs-on: depot-ubuntu-24.04 # was: ubuntu-latest. Mapped standard GitHub runner to Depot equivalent.
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Comment on the PR
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9
+        with:
+          script: "const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;\nconst sha = context.sha.slice(0, 7);\nawait github.rest.issues.createComment({\n  owner: context.repo.owner,\n  repo: context.repo.repo,\n  issue_number: context.issue.number,\n  body: `\U0001F6A8 **CI failed** on \\`${sha}\\` — [view the run](${run}).\\n\\n` +\n    `@${context.actor} one of the checks (lint, format, unit, specs, build, E2E, probes, commitlint, dependency review) is red, so the merge gate stays closed.`,\n});"
