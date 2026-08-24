@@ -13,6 +13,9 @@
 name: Scorecard supply-chain security
 # Removed unsupported trigger: branch_protection_rule. Branch protection rule events are not supported.
 on:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
   schedule:
     - cron: '40 2 * * 4'
   push:

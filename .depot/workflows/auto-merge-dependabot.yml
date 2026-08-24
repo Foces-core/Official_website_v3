@@ -16,6 +16,9 @@
 # every commit regardless of code.
 name: Auto-merge dependabot PRs
 on:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
   pull_request:
     branches: [main]
 permissions:
@@ -23,6 +26,7 @@ permissions:
   pull-requests: write
 jobs:
   auto-merge:
+    timeout-minutes: 10
     runs-on: depot-ubuntu-24.04 # was: ubuntu-latest. Mapped standard GitHub runner to Depot equivalent.
     if: github.actor == 'dependabot[bot]' && github.event.pull_request.draft == false
     steps:
