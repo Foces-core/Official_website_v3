@@ -49,6 +49,26 @@ jobs:
             playwright.azureedge.net:443
             playwright.download.prss.microsoft.com:443
             storage.googleapis.com:443
+            # Ubuntu system repos (runner setup, apt-get, MOTD)
+            _https._tcp.packages.microsoft.com:443
+            _https._tcp.dl.google.com:443
+            _http._tcp.azure.archive.ubuntu.com:80
+            _https._tcp.motd.ubuntu.com:443
+            motd.ubuntu.com:443
+            _https._tcp.esm.ubuntu.com:443
+            esm.ubuntu.com:443
+            # Google services (Chromium pings, analytics)
+            clients2.google.com:443
+            clients2.google.com.:443
+            www.google.com:443
+            accounts.google.com:443
+            update.googleapis.com:443
+            android.clients.google.com:443
+            android.clients.google.com.:443
+            mtalk.google.com:443
+            mtalk.google.com.:443
+            # Vercel analytics
+            va.vercel-scripts.com:443
       - name: Install pnpm
         uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6
         with:
