@@ -16,10 +16,12 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 permissions:
-  contents: write
-  pull-requests: write
+  contents: read
 jobs:
   auto-merge:
+    permissions:
+      contents: write
+      pull-requests: write
     timeout-minutes: 10
     runs-on: ubuntu-latest
     if: github.actor == 'dependabot[bot]' && github.event.pull_request.draft == false

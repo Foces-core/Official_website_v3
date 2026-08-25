@@ -22,14 +22,15 @@ permissions:
   contents: read
   issues: read
   pull-requests: read
-  id-token: write      # publish results to the OSSF badge/API via OIDC
-  security-events: write # upload SARIF to code scanning
 
 jobs:
   analysis:
     name: Scorecard analysis
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    permissions:
+      id-token: write      # publish results to the OSSF badge/API via OIDC
+      security-events: write # upload SARIF to code scanning
     steps:
       # persist-credentials: false — Scorecard flags repos whose checkout
       # leaves the runner token in .git/config.

@@ -18,15 +18,24 @@ const mime = {
   '.txt': 'text/plain',
 };
 
+const DIST_ROOT = fs.realpathSync(path.resolve(process.cwd(), 'dist'));
+
+// Resolve a request path to a file inside DIST_ROOT, or null when the
+// request escapes the served directory.
+function resolveWithinDist(requestPath) {
+  const cleaned = decodeURIComponent(requestPath.split('?')[0]).replace(/^\/+/, '');
+  const candidate = path.resolve(DIST_ROOT, cleaned === '' ? 'index.html' : cleaned);
+  if (candidate !== DIST_ROOT && !candidate.startsWith(DIST_ROOT + path.sep)) {
+    return null;
+  }
+  return candidate;
+}
+
 const server = http.createServer((req, res) => {
-  let reqPath = req.url.split('?')[0];
-  let normalized = reqPath.replace(/^\/+/, '');
-  let filePath = path.join(process.cwd(), 'dist', normalized === '' ? 'index.html' : normalized);
+  let filePath = resolveWithinDist(req.url);
 
-  console.log('SERVER REQ:', req.url, 'EXISTS:', fs.existsSync(filePath));
-
-  if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
-    filePath = path.join(process.cwd(), 'dist', 'index.html');
+  if (!filePath || !fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
+    filePath = path.join(DIST_ROOT, 'index.html');
   }
 
   const ext = path.extname(filePath);
@@ -40,9 +49,9 @@ const server = http.createServer((req, res) => {
       Connection: 'close',
     });
     res.end(data);
-  } catch (err) {
-    res.writeHead(500);
-    res.end(String(err));
+  } catch {
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not found');
   }
 });
 
