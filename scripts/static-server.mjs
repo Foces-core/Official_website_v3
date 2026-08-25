@@ -25,10 +25,18 @@ const DIST_ROOT = fs.realpathSync(path.resolve(process.cwd(), 'dist'));
 function resolveWithinDist(requestPath) {
   const cleaned = decodeURIComponent(requestPath.split('?')[0]).replace(/^\/+/, '');
   const candidate = path.resolve(DIST_ROOT, cleaned === '' ? 'index.html' : cleaned);
-  if (candidate !== DIST_ROOT && !candidate.startsWith(DIST_ROOT + path.sep)) {
+  let real;
+  try {
+    // Symlink-aware containment check - a link inside dist must not be
+    // able to serve files from outside it.
+    real = fs.realpathSync(candidate);
+  } catch {
     return null;
   }
-  return candidate;
+  if (real !== DIST_ROOT && !real.startsWith(DIST_ROOT + path.sep)) {
+    return null;
+  }
+  return real;
 }
 
 const server = http.createServer((req, res) => {
