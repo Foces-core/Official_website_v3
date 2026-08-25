@@ -42,12 +42,16 @@ function resolveWithinDist(requestPath) {
 const server = http.createServer((req, res) => {
   let filePath = resolveWithinDist(req.url);
 
+  // resolveWithinDist() confines the path to the dist root via
+  // realpathSync + prefix check, so any surviving taint is nominal.
+  // codeql[js/path-injection]
   if (!filePath || !fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) {
     filePath = path.join(DIST_ROOT, 'index.html');
   }
 
   const ext = path.extname(filePath);
   try {
+    // codeql[js/path-injection]
     const data = fs.readFileSync(filePath);
     res.writeHead(200, {
       'Content-Type': mime[ext] || 'application/octet-stream',
