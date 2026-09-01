@@ -1,67 +1,67 @@
-# FOCES Official Website
+# FOCES official website
 
 [![CI](https://github.com/Foces-core/Official_website_v3/actions/workflows/ci.yml/badge.svg)](https://github.com/Foces-core/Official_website_v3/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/Foces-core/Official_website_v3/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Foces-core/Official_website_v3/security/code-scanning)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Foces-core/Official_website_v3/badge)](https://api.scorecard.dev/projects/github.com/Foces-core/Official_website_v3)
 
-Official website for **FOCES** (Forum of Computer Engineering Students), College of Engineering Chengannur — built with React + Vite.
+Official website for **FOCES** (Forum of Computer Engineering Students), College of Engineering Chengannur, built with React + Vite.
 
 🌐 **Live Production Site:** [https://focess-five.vercel.app/](https://focess-five.vercel.app/)
 
-## Prerequisites — install the tools
+## Prerequisites: install the tools
 
 New to the stack? Install these once (about 15 minutes), then the
 `pnpm` commands below just work. Each tool links its official install page,
 its docs, a beginner video, and a readable reference.
 
-- **Git** — for cloning, branching, and PRs.
+- **Git**, for cloning, branching, and PRs.
   [Install](https://git-scm.com/downloads) · [Docs](https://git-scm.com/doc) ·
   🎬 [Official videos](https://git-scm.com/videos) ·
   📖 [Pro Git book (free)](https://git-scm.com/book)
-- **Node.js 22.x** — runs Vite, Vitest, and the build. The minimum is
-  `>=22.13` (set in `package.json` `engines` and enforced by
+- **Node.js 22.x**, runs Vite, Vitest, and the build. The supported range is
+  `>=22.20 <25` (set in `package.json` `engines` and enforced by
   `engine-strict`); `.nvmrc` pins the update-tracked `22` line.
   [Install](https://nodejs.org/en/download) ·
   [Windows version manager (nvm-windows)](https://github.com/coreybutler/nvm-windows) ·
   [Learn](https://nodejs.org/en/learn) ·
-  🎬 [YouTube search — Node.js for beginners](https://www.youtube.com/results?search_query=node+js+for+beginners)
-- **pnpm** — the package manager. This repo uses **pnpm only** (never
+  🎬 [YouTube search, Node.js for beginners](https://www.youtube.com/results?search_query=node+js+for+beginners)
+- **pnpm**, the package manager. This repo uses **pnpm only** (never
   npm/yarn): `pnpm install`, `pnpm dev`, ...
   [Install](https://pnpm.io/installation) · [Docs](https://pnpm.io/) ·
-  🎬 [YouTube search — pnpm tutorials](https://www.youtube.com/results?search_query=pnpm+tutorial) ·
+  🎬 [YouTube search, pnpm tutorials](https://www.youtube.com/results?search_query=pnpm+tutorial) ·
   📖 [Why pnpm?](https://pnpm.io/motivation)
-- **VS Code** — recommended editor; the repo's settings enable ESLint
+- **VS Code**, recommended editor; the repo's settings enable ESLint
   fix-on-save + Prettier format-on-save so your edits are always formatted.
   On first open, VS Code offers the recommended extensions from
-  [`.vscode/extensions.json`](.vscode/extensions.json) — accept them.
+  [`.vscode/extensions.json`](.vscode/extensions.json), accept them.
   [Install](https://code.visualstudio.com/download) ·
   [Docs](https://code.visualstudio.com/docs) ·
   🎬 [Official intro videos](https://code.visualstudio.com/docs/getstarted/introvideos)
-- **Chrome** — **optional**. The E2E suite and probes run on the Chromium
+- **Chrome**, **optional**. The E2E suite and probes run on the Chromium
   that Playwright installs automatically, so Chrome itself isn't needed to
-  test — install it if you want it as your day-to-day browser and for
+  test, install it if you want it as your day-to-day browser and for
   manual DevTools work.
   [Install](https://www.google.com/chrome/) ·
   [DevTools docs](https://developer.chrome.com/docs/devtools) ·
-  🎬 [YouTube search — Chrome DevTools for beginners](https://www.youtube.com/results?search_query=chrome+devtools+for+beginners)
+  🎬 [YouTube search, Chrome DevTools for beginners](https://www.youtube.com/results?search_query=chrome+devtools+for+beginners)
 
 **Never used React or Vite before?** Do the official [React tutorial](https://react.dev/learn)
 and skim the [Vite guide](https://vite.dev/guide/) first, then watch a full
-walkthrough: 🎬 [YouTube search — build a React + Vite app from scratch](https://www.youtube.com/results?search_query=vite+react+beginner+tutorial).
+walkthrough: 🎬 [YouTube search, build a React + Vite app from scratch](https://www.youtube.com/results?search_query=vite+react+beginner+tutorial).
 
 ## Getting started
 
 ```bash
 pnpm install
-cp .env.example .env   # optional — EmailJS/Sentry vars, see below
+cp .env.example .env   # optional, EmailJS/Sentry vars, see below
 pnpm dev
 ```
 
-Run `pnpm verify` before committing — it runs the whole fast gate (lint,
+Run `pnpm verify` before committing, it runs the whole fast gate (lint,
 format check, unit tests, structural checks, build) in one command.
 
 **Watching PR checks from the terminal:** once a PR is up, follow its CI
-without leaving the terminal —
+without leaving the terminal,
 `gh pr checks <number> --watch` (set the default repo once with
 `gh repo set-default`). It re-polls until every check settles and prints a
 live table; the [GitHub CLI](https://cli.github.com/) (`gh`) is already
@@ -69,19 +69,19 @@ authorized if you've pushed to this repo, and `gh` is the fastest way to
 open/review/merge PRs too. The checks you'll see: `Lint & Build`, `E2E
 (Playwright)`, `Probes (structural checks)`, and `Validate commit messages`.
 
-## Tech Stack
+## Tech stack
 
 - **[React 19](https://react.dev/)** + **[Vite 8](https://vite.dev/)** (SWC plugin)
 - **[Tailwind CSS](https://tailwindcss.com/)** for styling
 - **Hand-rolled carousels** (`useCarousel` + `carouselGeometry.js`): the
-  Featuring flat slider and the Execom 3D cube (rotateY 90° per face) —
+  Featuring flat slider and the Execom 3D cube (rotateY 90° per face),
   replaced Swiper to drop the ~104 KB vendor chunk
 - **[Three.js](https://threejs.org/) / [Vanta](https://www.vantajs.com/)** hero background
 - **[react-router](https://reactrouter.com/)** for `/events` and `/contact` routes
 - **PWA** ([`vite-plugin-pwa`](https://vite-pwa-org.netlify.app/)) with service-worker precaching
 - **Perf**: `js.foresight` (intent-based route chunk prefetch), manual chunk
   splitting, responsive `srcset` images, and build-time image optimization
-- **[Sentry](https://sentry.io/)** (optional) — error tracking via `@sentry/react` + `@sentry/vite-plugin`;
+- **[Sentry](https://sentry.io/)** (optional), error tracking via `@sentry/react` + `@sentry/vite-plugin`;
   see `.env.example` for required env vars (`VITE_SENTRY_DSN`, `SENTRY_ORG`,
   `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`)
 
@@ -109,6 +109,7 @@ See `.env.example` for the full list of available variables and their expected v
 | `pnpm preview`        | Serve `dist/` locally                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `pnpm lint`           | [ESLint](https://eslint.org/) over all `js`/`jsx` files                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `pnpm format`         | [Prettier](https://prettier.io/) format the whole repo (single quotes, 100-col, 4-space CSS)                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `pnpm check`          | Fast gate subset: lint + format-check + unit tests                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
 | `pnpm verify`         | One-command pre-commit gate: lint + format-check + unit tests + structural checks + build                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `pnpm format:check`   | Verify formatting (run by CI)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `pnpm lint:watch`     | ESLint in watch mode (live feedback while editing)                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
@@ -116,10 +117,10 @@ See `.env.example` for the full list of available variables and their expected v
 | `pnpm lint:workflows` | [actionlint](https://github.com/rhysd/actionlint) workflow linter + [shellcheck](https://github.com/koalaman/shellcheck) shell-injection checks (runs in the pre-push hook and CI)                                                                                                                                                                                                                                                                                                                                         |
 | `pnpm clean`          | Remove generated artifacts (`dist`, `test-results`, `playwright-report`)                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `pnpm test`           | [Playwright](https://playwright.dev/) E2E suite (split across `tests/*.spec.js`)                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| `pnpm test:unit`      | [Vitest](https://vitest.dev/) unit suite (`tests/unit/` — pure logic + component seams via the shared `harness.jsx`; covers detectProfile, keyboardLock, srcset, events, contact, scroll-to-section, cube physics/easter egg, carousel wrap, session cookies, boot splash, analytics deferral, navbar scrollspy/nav actions, body scroll-lock, blur-image states, cube celebration, team roster, breakpoints). Run a single spec by filename: `pnpm test:unit navSpy` (also works in watch: `pnpm test:unit:watch navSpy`) |
+| `pnpm test:unit`      | [Vitest](https://vitest.dev/) unit suite (`tests/unit/`, pure logic + component seams via the shared `harness.jsx`; covers detectProfile, keyboardLock, srcset, events, contact, scroll-to-section, cube physics/easter egg, carousel wrap, session cookies, boot splash, analytics deferral, navbar scrollspy/nav actions, body scroll-lock, blur-image states, cube celebration, team roster, breakpoints). Run a single spec by filename: `pnpm test:unit navSpy` (also works in watch: `pnpm test:unit:watch navSpy`) |
 | `pnpm test:e2e:ui`    | Playwright UI mode (interactive debugger)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 
-## Performance Tooling
+## Performance tooling
 
 `scripts/probes/perf-test.mjs` runs [Lighthouse](https://developer.chrome.com/docs/lighthouse/) across device/network profiles
 (`desktop-fast`, `mobile-4g`, `mobile-3g`, `mobile-2g`, CPU-throttled variants).
@@ -136,14 +137,14 @@ The site deliberately degrades on slow networks and low-end hardware (see
   boot splash is bypassed, and below-fold routes/images load lazily
 - **lowPower / reducedMotion** → heavy animations (idle cube spin, AOS reveals)
   are disabled; content always stays visible
-- **PWA precache is app-shell only** — photos come from the immutable HTTP
+- **PWA precache is app-shell only**, photos come from the immutable HTTP
   cache, so first visits don't download the whole site
 
 ## Accessibility (WCAG 2.1/2.2 + ARIA APG)
 
 Every PR runs an automated [axe](https://www.deque.com/axe/) WCAG 2.1/2.2
 scan on `/`, `/events`, and `/contact` (in `tests/accessibility.spec.js`),
-failing on serious/critical violations — on top of these hand-checked
+failing on serious/critical violations, on top of these hand-checked
 behaviors:
 
 - Skip-to-content link on every route targets `#main-content`
@@ -153,15 +154,15 @@ behaviors:
 - `:focus-visible` cyan ring + corner-bracket outline on nav links
 - Keyboard navigation on the Featuring carousel and About cube
 
-## Verification Probes
+## Verification probes
 
-- `scripts/wcag-probe.mjs` — puppeteer checks for skip link, roving tabindex,
+- `scripts/wcag-probe.mjs`, puppeteer checks for skip link, roving tabindex,
   modal focus trap/restore, navbar theme, no console errors
-- `scripts/mobile-probe.mjs` — mobile viewport nav/modal/cursor checks
-- `scripts/carousel-probe.mjs` — Featuring/Modal carousel arrows, infinite
+- `scripts/mobile-probe.mjs`, mobile viewport nav/modal/cursor checks
+- `scripts/carousel-probe.mjs`, Featuring/Modal carousel arrows, infinite
   loop, hover glow, register-button absence checks
-- `scripts/img-probe.mjs` — image asset checks
-- `scripts/firefox-probe.mjs` — Gecko (Firefox/Waterfox) rendering check
+- `scripts/img-probe.mjs`, image asset checks
+- `scripts/firefox-probe.mjs`, Gecko (Firefox/Waterfox) rendering check
 
 Probes expect a local preview server (e.g. `pnpm preview`). All probes read
 the URL from `PREVIEW_URL` (default `http://localhost:4173`) via the shared
@@ -169,29 +170,29 @@ the URL from `PREVIEW_URL` (default `http://localhost:4173`) via the shared
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) — setup, branch naming, Conventional
+See [CONTRIBUTING.md](CONTRIBUTING.md), setup, branch naming, Conventional
 Commits, PR workflow, and the performance/a11y expectations every change must
 meet.
 
-**Architecture decisions** live in [docs/adr/](docs/adr/) — touch-gesture
+**Architecture decisions** live in [docs/adr/](docs/adr/), touch-gesture
 ownership (0007), automatic chunk-load recovery (0008), and the pure-logic
 test seams (0009) are the recent ones.
 
 **Automation in this repo:**
 
-- **CI** (`.github/workflows/ci.yml`) — lint + format-check + unit tests + structural checks + build + Playwright E2E on every push/PR to `main` (+ dependency review and commitlint on PRs)
-- **Code scanning** — GitHub CodeQL (default setup) semantic SAST on every push/PR to `main`; results under [Security → Code scanning](https://github.com/Foces-core/Official_website_v3/security/code-scanning)
-- **OpenSSF Scorecard** (`.github/workflows/scorecard.yml`) — weekly supply-chain posture audit (branch protection, action pinning, token permissions); results published to the OSSF API and code scanning
-- **StepSecurity Harden-Runner** — egress monitoring (`audit` mode) inside every CI job that installs/runs packages; flags unexpected outbound calls from runners
-- **Dependency review** — PR gate that fails when a diff introduces high/critical vulnerabilities (complements `pnpm audit`, which only sees the current lockfile)
-- **Dependabot** (`.github/dependabot.yml`) — weekly grouped dependency PRs
-- **Renovate** (`renovate.json`) — config-driven toolchain updates (grouped major bumps, digest pinning where applicable)
-- **CodeRabbit** (`.coderabbit.yaml`) — strict AI code review on every PR (assertive profile; `request_changes_workflow` formally blocks merges on critical findings)
-- **Dependabot auto-merge** (`.github/workflows/auto-merge-dependabot.yml`) — dependabot PRs squash-merge themselves once CI passes
-- **Perf (nightly)** (`.github/workflows/perf-nightly.yml`) — daily 06:00 UTC Lighthouse run across device/network profiles with hard performance budgets; auto-opens a regression issue on breach and closes it when budgets pass again
-- **Stale bot** (`.github/workflows/stale.yml`) — closes abandoned issues/PRs
-- **Deploys** — handled by the **native Vercel Git integration**: auto production deploy on every push to `main`, auto preview deploy on every PR
-- **Security** — report vulnerabilities via [SECURITY.md](SECURITY.md)
+- **CI** (`.github/workflows/ci.yml`), lint + format-check + unit tests + structural checks + build + Playwright E2E on every push/PR to `main` (+ dependency review and commitlint on PRs)
+- **Code scanning**, GitHub CodeQL (default setup) semantic SAST on every push/PR to `main`; results under [Security → Code scanning](https://github.com/Foces-core/Official_website_v3/security/code-scanning)
+- **OpenSSF Scorecard** (`.github/workflows/scorecard.yml`), weekly supply-chain posture audit (branch protection, action pinning, token permissions); results published to the OSSF API and code scanning
+- **StepSecurity Harden-Runner**, egress monitoring (`audit` mode) inside every CI job that installs/runs packages; flags unexpected outbound calls from runners
+- **Dependency review**, PR gate that fails when a diff introduces high/critical vulnerabilities (complements `pnpm audit`, which only sees the current lockfile)
+- **Dependabot** (`.github/dependabot.yml`), weekly grouped dependency PRs
+- **Renovate** (`renovate.json`), config-driven toolchain updates (grouped major bumps, digest pinning where applicable)
+- **CodeRabbit** (`.coderabbit.yaml`), strict AI code review on every PR (assertive profile; `request_changes_workflow` formally blocks merges on critical findings)
+- **Dependabot auto-merge** (`.github/workflows/auto-merge-dependabot.yml`), dependabot PRs squash-merge themselves once CI passes
+- **Perf (nightly)** (`.github/workflows/perf-nightly.yml`), daily 06:00 UTC Lighthouse run across device/network profiles with hard performance budgets; auto-opens a regression issue on breach and closes it when budgets pass again
+- **Stale bot** (`.github/workflows/stale.yml`), closes abandoned issues/PRs
+- **Deploys**, handled by the **native Vercel Git integration**: auto production deploy on every push to `main`, auto preview deploy on every PR
+- **Security**, report vulnerabilities via [SECURITY.md](SECURITY.md)
 
 ## Deployment
 
