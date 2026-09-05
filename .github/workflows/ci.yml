@@ -59,16 +59,6 @@ jobs:
             motd.ubuntu.com:443
             _https._tcp.esm.ubuntu.com:443
             esm.ubuntu.com:443
-            # Google services (Chromium pings, analytics)
-            clients2.google.com:443
-            clients2.google.com.:443
-            www.google.com:443
-            accounts.google.com:443
-            update.googleapis.com:443
-            android.clients.google.com:443
-            android.clients.google.com.:443
-            mtalk.google.com:443
-            mtalk.google.com.:443
             # Vercel analytics
             va.vercel-scripts.com:443
       - name: Install pnpm
@@ -161,18 +151,7 @@ jobs:
             playwright.azureedge.net:443
             playwright.download.prss.microsoft.com:443
             storage.googleapis.com:443
-            # Chromium Safe-Browsing/component-updater pings + the site's
-            # Vercel analytics script fire while tests drive a real browser.
-            # Read-only telemetry from a disposable CI profile.
-            clients2.google.com:443
-            clients2.google.com.:443
-            www.google.com:443
-            accounts.google.com:443
-            update.googleapis.com:443
-            android.clients.google.com:443
-            android.clients.google.com.:443
-            mtalk.google.com:443
-            mtalk.google.com.:443
+            # Vercel analytics
             va.vercel-scripts.com:443
 
       - name: Install pnpm
@@ -236,18 +215,7 @@ jobs:
             playwright.azureedge.net:443
             playwright.download.prss.microsoft.com:443
             storage.googleapis.com:443
-            # Chromium Safe-Browsing/component-updater pings + the site's
-            # Vercel analytics script fire while tests drive a real browser.
-            # Read-only telemetry from a disposable CI profile.
-            clients2.google.com:443
-            clients2.google.com.:443
-            www.google.com:443
-            accounts.google.com:443
-            update.googleapis.com:443
-            android.clients.google.com:443
-            android.clients.google.com.:443
-            mtalk.google.com:443
-            mtalk.google.com.:443
+            # Vercel analytics
             va.vercel-scripts.com:443
 
       - name: Install pnpm

@@ -15,6 +15,36 @@ import os from 'node:os';
 export const PREVIEW_URL = process.env.PREVIEW_URL ?? 'http://localhost:4173';
 export const DEV_URL = process.env.DEV_URL ?? 'http://localhost:5173';
 
+/**
+ * Flags to run Chromium completely silent, private, and ultra-fast:
+ * - Prevents background network requests & Google telemetry (Safe Browsing, component update, FCM/mtalk, sync, etc.)
+ * - Disables unnecessary GPU/audio/extension overhead and background throttling for faster CI execution
+ * - Isolates runner memory with disable-dev-shm-usage and no-sandbox
+ */
+export const QUIET_CHROMIUM_ARGS = [
+  '--no-sandbox',
+  '--disable-setuid-sandbox',
+  '--disable-dev-shm-usage',
+  '--disable-background-networking',
+  '--disable-component-update',
+  '--disable-client-side-phishing-detection',
+  '--disable-sync',
+  '--no-pings',
+  '--disable-default-apps',
+  '--disable-extensions',
+  '--disable-features=Translate,OptimizationHints,MediaRouter,CalculateNativeWinOcclusion,InterestFeedContentSuggestions',
+  '--metrics-recording-only',
+  '--mute-audio',
+  '--no-first-run',
+  '--no-default-browser-check',
+  '--disable-background-timer-throttling',
+  '--disable-backgrounding-occluded-windows',
+  '--disable-renderer-backgrounding',
+  '--disable-device-discovery-notifications',
+  '--disable-breakpad',
+  '--disable-crash-reporter',
+];
+
 function findPlaywrightChromium() {
   try {
     const cache = path.join(os.homedir(), '.cache', 'ms-playwright');
