@@ -32,7 +32,7 @@ export const QUIET_CHROMIUM_ARGS = [
   '--no-pings',
   '--disable-default-apps',
   '--disable-extensions',
-  '--disable-features=Translate,OptimizationHints,MediaRouter,CalculateNativeWinOcclusion,InterestFeedContentSuggestions',
+  '--disable-features=Translate,OptimizationHints,MediaRouter,CalculateNativeWinOcclusion,InterestFeedContentSuggestions,CaptivePortal',
   '--metrics-recording-only',
   '--mute-audio',
   '--no-first-run',
@@ -43,6 +43,7 @@ export const QUIET_CHROMIUM_ARGS = [
   '--disable-device-discovery-notifications',
   '--disable-breakpad',
   '--disable-crash-reporter',
+  '--host-resolver-rules=MAP * ~NOTFOUND , EXCLUDE 127.0.0.1 , EXCLUDE localhost',
 ];
 
 function findPlaywrightChromium() {
