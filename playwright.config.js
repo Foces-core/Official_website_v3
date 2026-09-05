@@ -9,7 +9,8 @@ export default defineConfig({
   // Vitest owns tests/unit/ (pure-logic suites) — exclude them so Playwright
   // doesn't try to run them as browser E2E.
   testIgnore: ['**/unit/**'],
-  fullyParallel: false,
+  fullyParallel: true,
+  workers: process.env.CI ? 4 : undefined,
   timeout: 60_000,
   retries: process.env.CI ? 1 : 0,
   reporter: [['list'], ['html', { open: 'never' }]],

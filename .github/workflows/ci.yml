@@ -75,32 +75,33 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --prefer-offline
 
-      - name: Lint
-        run: pnpm lint
+      - name: Static checks (lint, format, audit, knip, workflows, assets, specs, git diff)
+        run: |
+          pnpm lint &
+          PID_LINT=$!
+          pnpm format:check &
+          PID_FORMAT=$!
+          pnpm audit &
+          PID_AUDIT=$!
+          pnpm exec knip &
+          PID_KNIP=$!
+          pnpm lint:workflows &
+          PID_WORKFLOWS=$!
+          pnpm check:assets &
+          PID_ASSETS=$!
+          pnpm check:specs &
+          PID_SPECS=$!
+          git diff --check &
+          PID_DIFF=$!
 
-      - name: Format check (Prettier)
-        run: pnpm format:check
-
-      - name: Check git diff
-        run: git diff --check
-
-      - name: pnpm audit
-        run: pnpm audit
-
-      - name: Dead code check (knip)
-        run: pnpm exec knip
-
-      # Workflow lint (actionlint + shellcheck) — the same gate the pre-push
-      # hook runs, so contributors who skip hooks still get caught here. CI
-      # mode fails hard if the tools can't be obtained (never silently skip).
-      - name: Workflow lint (actionlint + shellcheck)
-        run: pnpm lint:workflows
-
-      - name: Orphan asset check
-        run: pnpm check:assets
-
-      - name: Pure-module spec check (ADR-0009)
-        run: pnpm check:specs
+          failed=0
+          for pid in "$PID_LINT" "$PID_FORMAT" "$PID_AUDIT" "$PID_KNIP" "$PID_WORKFLOWS" "$PID_ASSETS" "$PID_SPECS" "$PID_DIFF"; do
+            wait "$pid" || failed=1
+          done
+          if [ "$failed" -ne 0 ]; then
+            echo "One or more static checks failed"
+            exit 1
+          fi
 
       - name: Unit tests (Vitest)
         run: pnpm exec vitest run --coverage --bail 1
