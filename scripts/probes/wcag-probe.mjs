@@ -1,5 +1,5 @@
 import puppeteer from 'puppeteer-core';
-import { PREVIEW_URL, resolveChrome } from './constants.mjs';
+import { PREVIEW_URL, QUIET_CHROMIUM_ARGS, resolveChrome } from './constants.mjs';
 
 const chromePath = resolveChrome();
 if (!chromePath) {
@@ -18,15 +18,7 @@ const check = (name, ok, detail = '') => {
 const browser = await puppeteer.launch({
   executablePath: chromePath,
   headless: 'new',
-  args: [
-    '--no-sandbox',
-    '--window-size=1280,800',
-    '--disable-background-networking',
-    '--disable-component-update',
-    '--disable-client-side-phishing-detection',
-    '--disable-sync',
-    '--no-pings',
-  ],
+  args: ['--window-size=1280,800', ...QUIET_CHROMIUM_ARGS],
 });
 
 try {

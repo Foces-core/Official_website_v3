@@ -11,6 +11,7 @@ export default defineConfig({
   test: {
     include: ['tests/unit/**/*.spec.{js,jsx}'],
     environment: 'jsdom',
+    pool: 'threads',
     setupFiles: ['tests/unit/setup.js'],
     // Coverage is measured over the unit-test contract and reported in CI
     // (the CI unit step runs with --coverage) but NOT gated: enforcement

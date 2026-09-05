@@ -59,16 +59,6 @@ jobs:
             motd.ubuntu.com:443
             _https._tcp.esm.ubuntu.com:443
             esm.ubuntu.com:443
-            # Google services (Chromium pings, analytics)
-            clients2.google.com:443
-            clients2.google.com.:443
-            www.google.com:443
-            accounts.google.com:443
-            update.googleapis.com:443
-            android.clients.google.com:443
-            android.clients.google.com.:443
-            mtalk.google.com:443
-            mtalk.google.com.:443
             # Vercel analytics
             va.vercel-scripts.com:443
       - name: Install pnpm
@@ -83,37 +73,46 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --prefer-offline
 
-      - name: Lint
-        run: pnpm lint
+      - name: Static checks (lint, format, audit, knip, workflows, assets, specs, git diff)
+        run: |
+          pnpm lint &
+          PID_LINT=$!
+          pnpm format:check &
+          PID_FORMAT=$!
+          pnpm audit &
+          PID_AUDIT=$!
+          pnpm exec knip &
+          PID_KNIP=$!
+          pnpm lint:workflows &
+          PID_WORKFLOWS=$!
+          pnpm check:assets &
+          PID_ASSETS=$!
+          pnpm check:specs &
+          PID_SPECS=$!
+          git diff --check &
+          PID_DIFF=$!
 
-      - name: Format check (Prettier)
-        run: pnpm format:check
-
-      - name: Check git diff
-        run: git diff --check
-
-      - name: pnpm audit
-        run: pnpm audit
-
-      - name: Dead code check (knip)
-        run: pnpm exec knip
-
-      # Workflow lint (actionlint + shellcheck) — the same gate the pre-push
-      # hook runs, so contributors who skip hooks still get caught here. CI
-      # mode fails hard if the tools can't be obtained (never silently skip).
-      - name: Workflow lint (actionlint + shellcheck)
-        run: pnpm lint:workflows
-
-      - name: Orphan asset check
-        run: pnpm check:assets
-
-      - name: Pure-module spec check (ADR-0009)
-        run: pnpm check:specs
+          failed=0
+          for pid in "$PID_LINT" "$PID_FORMAT" "$PID_AUDIT" "$PID_KNIP" "$PID_WORKFLOWS" "$PID_ASSETS" "$PID_SPECS" "$PID_DIFF"; do
+            wait "$pid" || failed=1
+          done
+          if [ "$failed" -ne 0 ]; then
+            echo "One or more static checks failed"
+            exit 1
+          fi
 
       - name: Unit tests (Vitest)
         run: pnpm exec vitest run --coverage --bail 1
+
+      - name: Cache Vite build cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.2.2
+        with:
+          path: node_modules/.vite
+          key: vite-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('src/**', 'index.html', 'vite.config.js') }}
+          restore-keys: |
+            vite-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
 
       - name: Build
         run: pnpm build
@@ -161,18 +160,7 @@ jobs:
             playwright.azureedge.net:443
             playwright.download.prss.microsoft.com:443
             storage.googleapis.com:443
-            # Chromium Safe-Browsing/component-updater pings + the site's
-            # Vercel analytics script fire while tests drive a real browser.
-            # Read-only telemetry from a disposable CI profile.
-            clients2.google.com:443
-            clients2.google.com.:443
-            www.google.com:443
-            accounts.google.com:443
-            update.googleapis.com:443
-            android.clients.google.com:443
-            android.clients.google.com.:443
-            mtalk.google.com:443
-            mtalk.google.com.:443
+            # Vercel analytics
             va.vercel-scripts.com:443
 
       - name: Install pnpm
@@ -187,10 +175,30 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.2.2
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
 
       - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install chromium
+
+      - name: Cache Vite build cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.2.2
+        with:
+          path: node_modules/.vite
+          key: vite-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('src/**', 'index.html', 'vite.config.js') }}
+          restore-keys: |
+            vite-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
 
       - name: Run E2E tests
         run: pnpm test
@@ -236,18 +244,7 @@ jobs:
             playwright.azureedge.net:443
             playwright.download.prss.microsoft.com:443
             storage.googleapis.com:443
-            # Chromium Safe-Browsing/component-updater pings + the site's
-            # Vercel analytics script fire while tests drive a real browser.
-            # Read-only telemetry from a disposable CI profile.
-            clients2.google.com:443
-            clients2.google.com.:443
-            www.google.com:443
-            accounts.google.com:443
-            update.googleapis.com:443
-            android.clients.google.com:443
-            android.clients.google.com.:443
-            mtalk.google.com:443
-            mtalk.google.com.:443
+            # Vercel analytics
             va.vercel-scripts.com:443
 
       - name: Install pnpm
@@ -262,10 +259,30 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.2.2
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
 
       - name: Install Playwright browsers (Chromium used by the probes)
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install chromium
+
+      - name: Cache Vite build cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.2.2
+        with:
+          path: node_modules/.vite
+          key: vite-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('src/**', 'index.html', 'vite.config.js') }}
+          restore-keys: |
+            vite-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
 
       - name: Build + serve preview
         run: |
@@ -288,9 +305,22 @@ jobs:
           # Point the puppeteer-core probes at Playwright's installed Chromium.
           CHROME_PATH=$(node -e "console.log(require('@playwright/test').chromium.executablePath())")
           export CHROME_PATH
-          pnpm probe:wcag
-          pnpm probe:carousel
-          pnpm probe:mobile
+          pnpm probe:wcag &
+          PID_WCAG=$!
+          pnpm probe:carousel &
+          PID_CAROUSEL=$!
+          pnpm probe:mobile &
+          PID_MOBILE=$!
+          wait "$PID_WCAG"
+          STATUS_WCAG=$?
+          wait "$PID_CAROUSEL"
+          STATUS_CAROUSEL=$?
+          wait "$PID_MOBILE"
+          STATUS_MOBILE=$?
+          if [ "$STATUS_WCAG" -ne 0 ] || [ "$STATUS_CAROUSEL" -ne 0 ] || [ "$STATUS_MOBILE" -ne 0 ]; then
+            echo "One or more probes failed"
+            exit 1
+          fi
 
   # Enforce Conventional Commits on every PR (same rules as the local
   # husky commit-msg hook, see commitlint.config.cjs). Also runs on manual
@@ -317,7 +347,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: Lint commit messages (pull request)
         if: github.event_name == 'pull_request'
