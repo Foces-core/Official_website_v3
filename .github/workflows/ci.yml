@@ -73,7 +73,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: Lint
         run: pnpm lint
@@ -166,9 +166,21 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.2.2
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
 
       - name: Install Playwright browsers
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install chromium
 
       - name: Run E2E tests
@@ -230,9 +242,21 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Get Playwright version
+        id: playwright-version
+        run: echo "version=$(node -e "console.log(require('@playwright/test/package.json').version)")" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.2.2
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
 
       - name: Install Playwright browsers (Chromium used by the probes)
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install chromium
 
       - name: Build + serve preview
@@ -256,9 +280,22 @@ jobs:
           # Point the puppeteer-core probes at Playwright's installed Chromium.
           CHROME_PATH=$(node -e "console.log(require('@playwright/test').chromium.executablePath())")
           export CHROME_PATH
-          pnpm probe:wcag
-          pnpm probe:carousel
-          pnpm probe:mobile
+          pnpm probe:wcag &
+          PID_WCAG=$!
+          pnpm probe:carousel &
+          PID_CAROUSEL=$!
+          pnpm probe:mobile &
+          PID_MOBILE=$!
+          wait "$PID_WCAG"
+          STATUS_WCAG=$?
+          wait "$PID_CAROUSEL"
+          STATUS_CAROUSEL=$?
+          wait "$PID_MOBILE"
+          STATUS_MOBILE=$?
+          if [ "$STATUS_WCAG" -ne 0 ] || [ "$STATUS_CAROUSEL" -ne 0 ] || [ "$STATUS_MOBILE" -ne 0 ]; then
+            echo "One or more probes failed"
+            exit 1
+          fi
 
   # Enforce Conventional Commits on every PR (same rules as the local
   # husky commit-msg hook, see commitlint.config.cjs). Also runs on manual
@@ -285,7 +322,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --prefer-offline
 
       - name: Lint commit messages (pull request)
         if: github.event_name == 'pull_request'
