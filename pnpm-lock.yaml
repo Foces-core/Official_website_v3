@@ -163,8 +163,8 @@ importers:
         specifier: ^8.2.1
         version: 8.2.2(@types/node@26.2.0)(jiti@2.7.0)(terser@5.50.0)(yaml@2.9.0)
       vite-imagetools:
-        specifier: ^12.0.0
-        version: 12.0.0(@types/node@26.2.0)(rollup@4.62.5)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(terser@5.50.0)(yaml@2.9.0))
+        specifier: ^12.0.1
+        version: 12.0.1(@types/node@26.2.0)(rollup@4.62.5)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(terser@5.50.0)(yaml@2.9.0))
       vite-plugin-image-optimizer:
         specifier: ^2.0.3
         version: 2.0.3(sharp@0.35.4(@types/node@26.2.0))(svgo@4.1.0)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(terser@5.50.0)(yaml@2.9.0))
@@ -4497,8 +4497,8 @@ packages:
   vanta@0.5.24:
     resolution: {integrity: sha512-fvieEbHy1ZS23zrcX+topzqAgA4Uct1enngOEWLFBgs9TtOf6RDFOYatH7KSVdrABzQDMCQ5myQy+nTSZZwLzg==}
 
-  vite-imagetools@12.0.0:
-    resolution: {integrity: sha512-OafPbvTNTaWy/IDKfjO58rNIPL4+yazyd/6A9qqL5h/ThmDiCjWTOxPgQxbBmmmhFjbGOTvsO63qGrapXZCD0A==}
+  vite-imagetools@12.0.1:
+    resolution: {integrity: sha512-BZcU5TLmCKJyLo6FIk8detM9TYtFkbwOaZ8ebd+Kt7YQKHXL+xJH/Oxg4bBNx8xcP3NPVblE6DI/VCaKja5nYQ==}
     engines: {node: '>=22.0.0'}
     peerDependencies:
       vite: '>=8.0.0'
@@ -9199,7 +9199,7 @@ snapshots:
 
   vanta@0.5.24: {}
 
-  vite-imagetools@12.0.0(@types/node@26.2.0)(rollup@4.62.5)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(terser@5.50.0)(yaml@2.9.0)):
+  vite-imagetools@12.0.1(@types/node@26.2.0)(rollup@4.62.5)(vite@8.2.2(@types/node@26.2.0)(jiti@2.7.0)(terser@5.50.0)(yaml@2.9.0)):
     dependencies:
       '@rollup/pluginutils': 5.4.0(rollup@4.62.5)
       imagetools-core: 12.0.0
