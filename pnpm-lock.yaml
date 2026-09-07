@@ -151,8 +151,8 @@ importers:
         specifier: ^0.35.4
         version: 0.35.4(@types/node@26.2.0)
       subset-font:
-        specifier: ^2.5.0
-        version: 2.5.0
+        specifier: ^2.7.0
+        version: 2.7.0
       svgo:
         specifier: ^4.1.0
         version: 4.1.0
@@ -3742,9 +3742,6 @@ packages:
   lodash.throttle@4.1.1:
     resolution: {integrity: sha512-wIkUCfVKpVsWo3JSZlc+8MB5it+2AN5W8J7YVMST30UrvcQNZ1Okbj+rbVniijTWE6FGYy4XJq/rHkas8qJMLQ==}
 
-  lodash@4.18.1:
-    resolution: {integrity: sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q==}
-
   lookup-closest-locale@6.2.0:
     resolution: {integrity: sha512-/c2kL+Vnp1jnV6K6RpDTHK3dgg0Tu2VVp+elEiJpjfS1UyY7AjOYHohRug6wT0OpoX2qFgNORndE9RqesfVxWQ==}
 
@@ -4315,8 +4312,8 @@ packages:
   stubborn-utils@1.0.2:
     resolution: {integrity: sha512-zOh9jPYI+xrNOyisSelgym4tolKTJCQd5GBhK0+0xJvcYDcwlOoxF/rnFKQ2KRZknXSG9jWAp66fwP6AxN9STg==}
 
-  subset-font@2.5.0:
-    resolution: {integrity: sha512-Vsa8ngQ/ohhUj0an7on49y9jLZ2rK5U+T1FzPM4/ZQY0xUy5mLis6BfFtPGzecTjFgYXQlvY7FlsJF4t3R/6Ug==}
+  subset-font@2.7.0:
+    resolution: {integrity: sha512-KoBEshkhodCspvR8DweQFkxRB0OxLmXiWV49y8O5fksD9gf/qBK8gcLwUOlGP4ktm55t2Ot0gLRsVQLT4391QQ==}
 
   supports-color@7.2.0:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
@@ -8279,8 +8276,6 @@ snapshots:
 
   lodash.throttle@4.1.1: {}
 
-  lodash@4.18.1: {}
-
   lookup-closest-locale@6.2.0: {}
 
   loose-envify@1.4.0:
@@ -8979,11 +8974,10 @@ snapshots:
 
   stubborn-utils@1.0.2: {}
 
-  subset-font@2.5.0:
+  subset-font@2.7.0:
     dependencies:
       fontverter: 2.0.0
       harfbuzzjs: 0.10.3
-      lodash: 4.18.1
       p-limit: 3.1.0
 
   supports-color@7.2.0:
