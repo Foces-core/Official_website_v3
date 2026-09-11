@@ -98,4 +98,9 @@ describe('resolveExperienceCapabilities — the capability matrix', () => {
     const profile = { slowNetwork: true, lowCPU: false, reducedMotion: true };
     expect(resolveExperienceCapabilities(profile)).toEqual(resolveExperienceCapabilities(profile));
   });
+
+  it('defaults an omitted reducedMotion to full motion (found by mutation testing)', () => {
+    expect(resolveExperienceCapabilities({}).smoothScroll).toBe(true);
+    expect(resolveExperienceCapabilities().celebrationMotion).toBe(true);
+  });
 });
