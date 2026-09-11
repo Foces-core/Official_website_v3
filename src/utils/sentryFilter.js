@@ -12,6 +12,14 @@ export const SENTRY_IGNORE_ERRORS = [
   'ChunkLoadError',
   'Failed to fetch dynamically imported module',
   'Importing a module script failed',
+  // HTML-as-JS signature (missing hashed chunk served the SPA index.html
+  // fallback): deployment skew, not actionable code — same bucket as chunk
+  // noise. Kept in sync with isChunkError in chunkRecovery.js.
+  'Failed to load module script',
+  'Expected a JavaScript',
+  'MIME type',
+  "Unexpected token '<'",
+  'Unexpected token <',
   'AbortError',
   'NetworkError when attempting to fetch resource',
   'Non-Error promise rejection captured',

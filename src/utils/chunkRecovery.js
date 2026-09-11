@@ -11,7 +11,12 @@ import {
 
 export function isChunkError(error) {
   const msg = error?.message || (typeof error === 'string' ? error : '');
-  return /Loading chunk|Loading CSS chunk|ChunkLoadError|Failed to fetch dynamically imported module|Importing a module script failed/.test(
+  // The last four alternatives are the HTML-as-JS signature: when a missing
+  // hashed chunk gets the SPA index.html fallback (200 text/html) instead of
+  // a 404, the module loader throws a SyntaxError/MIME error rather than a
+  // classic chunk message. Treating them as chunk errors routes them into
+  // the retry + one-shot reload recovery instead of the static fallback.
+  return /Loading chunk|Loading CSS chunk|ChunkLoadError|Failed to fetch dynamically imported module|Importing a module script failed|Failed to load module script|Expected a JavaScript|MIME type|text\/html|Unexpected token ['"]?</.test(
     msg,
   );
 }

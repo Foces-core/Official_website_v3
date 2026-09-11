@@ -1,8 +1,15 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { scheduleErrorAutoReload } from '../../utils/errorRecoveryLogic.js';
+import { isChunkError } from '../../utils/chunkRecovery.js';
+import {
+  getErrorCode,
+  purgeAppCaches,
+  unregisterServiceWorkers,
+} from '../../utils/cacheRecovery.js';
 
 function ErrorFallback({ error, resetError }) {
+  const [clearing, setClearing] = useState(false);
   useEffect(() => {
     const cancel = scheduleErrorAutoReload({ delayMs: 1200 });
     return cancel;
@@ -17,6 +24,22 @@ function ErrorFallback({ error, resetError }) {
     if (resetError) resetError();
     window.location.href = '/';
   };
+
+  // Poisoned-cache escape hatch: a stale chunk cached as HTML survives plain
+  // reloads forever, so purge caches + drop the controlling SW before
+  // reloading. Helpers are zero-throw; the reload is the same one Refresh
+  // uses, so a blocked reload degrades to today's behavior.
+  const handleClearCache = async () => {
+    if (clearing) return;
+    setClearing(true);
+    await purgeAppCaches();
+    await unregisterServiceWorkers();
+    if (resetError) resetError();
+    window.location.reload();
+  };
+
+  const code = getErrorCode(error);
+  const chunkLike = isChunkError(error);
 
   return (
     <div className="min-h-screen bg-[#0b0b0c] text-white flex items-center justify-center p-6 relative overflow-hidden">
@@ -48,6 +71,11 @@ function ErrorFallback({ error, resetError }) {
           </div>
         )}
 
+        <p className="mb-6 text-[11px] tracking-wider text-gray-500">
+          Error code: <span className="font-mono text-gray-400">{code}</span>
+          {chunkLike ? ' — clearing cached files usually fixes this.' : ''}
+        </p>
+
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
             type="button"
@@ -63,6 +91,14 @@ function ErrorFallback({ error, resetError }) {
           >
             Return Home
           </button>
+          <button
+            type="button"
+            onClick={handleClearCache}
+            disabled={clearing}
+            className="w-full sm:w-auto px-6 py-2.5 bg-white/10 hover:bg-white/20 text-white font-semibold text-sm rounded-xl border border-white/20 transition-colors disabled:opacity-60"
+          >
+            {clearing ? 'Clearing…' : 'Clear cache & reload'}
+          </button>
         </div>
       </div>
     </div>
@@ -71,6 +107,7 @@ function ErrorFallback({ error, resetError }) {
 
 ErrorFallback.propTypes = {
   error: PropTypes.shape({
+    name: PropTypes.string,
     message: PropTypes.string,
   }),
   resetError: PropTypes.func,
