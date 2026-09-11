@@ -41,13 +41,14 @@ const Execom = lazyWithRetry(() => import('./Components/Execom/Execom'));
 const Footer = lazyWithRetry(() => import('./Pages/LandingPage/Footer/Footer'));
 
 // AOS hides [data-aos] elements (opacity/transform) until they scroll into
-// view. Init runs at module scope, before React renders, so when the animation
-// gate is active (reduced motion / low-end device) AOS finds no elements to
-// unhide and never registers its observer — leaving every [data-aos] element
-// stuck invisible. So when gated, initAOS tags <body> and CSS force-shows all
-// [data-aos] content (including anything mounted later, e.g. lazy routes).
+// view. The gate check runs at module scope, before React renders, so when
+// the animation gate is active (reduced motion / low-end device) initAOS tags
+// <body> and CSS force-shows all [data-aos] content (including anything
+// mounted later, e.g. lazy routes) — with the AOS library never downloading.
+// On capable devices the library fetch starts here and inits on arrival;
+// elements mounted meanwhile are picked up by AOS's MutationObserver.
 // Capable devices get the viewport failsafe via useAosFailsafe (below) so a
-// broken AOS can never leave in-view content hidden.
+// broken or still-loading AOS can never leave in-view content hidden.
 initAOS();
 
 function App() {
