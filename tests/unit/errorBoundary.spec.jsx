@@ -109,6 +109,37 @@ test('shows the dev error message and wires both buttons to resetError', () => {
   h.unmount();
 });
 
+test('fallback shows a support code and a chunk hint for stale-cache errors', () => {
+  const h = createHarness();
+  h.render(<ErrorFallback error={new Error("Unexpected token '<'")} />);
+  expect(h.container.textContent).toContain('Error code:');
+  expect(h.container.textContent).toMatch(/CHUNK-[0-9A-Z]{6}/);
+  expect(h.container.textContent).toContain('clearing cached files usually fixes this');
+  h.unmount();
+});
+
+test('fallback shows an APP support code without the chunk hint for genuine errors', () => {
+  const h = createHarness();
+  h.render(<ErrorFallback error={new Error('boom')} />);
+  expect(h.container.textContent).toMatch(/APP-[0-9A-Z]{6}/);
+  expect(h.container.textContent).not.toContain('clearing cached files');
+  h.unmount();
+});
+
+test('clear-cache button purges, unregisters, resets, and reloads', async () => {
+  const h = createHarness();
+  const resetError = vi.fn();
+  h.render(<ErrorFallback error={new Error('boom')} resetError={resetError} />);
+  const clear = [...h.container.querySelectorAll('button')].find((b) =>
+    b.textContent.includes('Clear cache'),
+  );
+  expect(clear).toBeTruthy();
+  await act(async () => clear.click());
+  expect(resetError).toHaveBeenCalledTimes(1);
+  expect(reload).toHaveBeenCalled();
+  h.unmount();
+});
+
 test('fallback handlers still navigate when resetError is not provided (standalone use)', () => {
   const h = createHarness();
   h.render(<ErrorFallback error={new Error('x')} />);
