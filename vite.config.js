@@ -201,7 +201,7 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
-            // Versioned JS/CSS chunks (lazy routes, sections, footer, icons):
+            // Versioned JS chunks (lazy routes, sections, footer, icons):
             // CacheFirst keyed by hashed URL. Every filename carries a content
             // hash, so a cached entry can never go stale — a deploy produces
             // new URLs that simply miss and fetch fresh. Populated ONLY from
@@ -212,7 +212,17 @@ export default defineConfig({
             // fallback. three.js rides along under the same rule — cached only
             // if previously fetched, never precached (check-sw-precache still
             // guards the install-time precache separately).
-            urlPattern: /\/assets\/[^/]+\.(?:js|css)(?:\?.*)?$/i,
+            //
+            // MIME guard: only cache responses served as JavaScript. A missing
+            // chunk must 404 (vercel.json excludes /assets/* from the SPA
+            // fallback); without this guard a 200 HTML fallback would be
+            // cached as JS for 30 days and every later import would throw
+            // "Unexpected token '<'" from cache, surviving refresh + home
+            // navigation. Workbox compares headers with strict equality, hence
+            // the exact Vercel content-type including charset. Worst case if
+            // the CDN ever changes the charset spelling is a cache miss (extra
+            // fetch), never a poisoned entry.
+            urlPattern: /\/assets\/[^/]+\.js(?:\?.*)?$/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'chunks-cache-v1',
@@ -222,7 +232,26 @@ export default defineConfig({
                 purgeOnQuotaError: true,
               },
               cacheableResponse: {
-                statuses: [0, 200],
+                statuses: [200],
+                headers: { 'content-type': 'application/javascript; charset=utf-8' },
+              },
+            },
+          },
+          {
+            // Same MIME guard for stylesheets: only cache real CSS so an HTML
+            // fallback can never poison the chunk cache as a stylesheet.
+            urlPattern: /\/assets\/[^/]+\.css(?:\?.*)?$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'chunks-cache-v1',
+              expiration: {
+                maxEntries: 60,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 Days
+                purgeOnQuotaError: true,
+              },
+              cacheableResponse: {
+                statuses: [200],
+                headers: { 'content-type': 'text/css; charset=utf-8' },
               },
             },
           },

@@ -21,6 +21,7 @@ Status conventions: **Accepted** (settled), **Proposed** (under review),
 | [0012](0012-contact-draft-persistence-and-precompression.md)        | Contact draft persistence, pre-compression, and staging no-index                 | Accepted |
 | [0013](0013-navigation-coordinator-and-hero-stage-adapter.md)       | Viewport navigation coordinator and hero waves stage adapter                     | Accepted |
 | [0014](0014-section-scroll-overlay-lifecycle-and-route-prefetch.md) | Section scroll deepening, overlay lifecycle, and route prefetch                  | Accepted |
+| [0015](0015-cache-poison-recovery.md)                               | Cache-poison recovery: SPA fallback, SW MIME guard, error codes                  | Accepted |
 
 ## Adding a new ADR
 
