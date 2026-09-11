@@ -7,6 +7,7 @@ import App from './App.jsx';
 import Loader from './Components/Loader/Loader.jsx';
 import Grain from './Components/Grain/Grain.jsx';
 import InstallPrompt from './Components/InstallPrompt/InstallPrompt.jsx';
+import OfflineToast from './Components/OfflineToast/OfflineToast.jsx';
 import ErrorBoundary from './Components/ErrorBoundary/ErrorBoundary.jsx';
 import { lazyWithRetry } from './utils/lazyWithRetry.js';
 import { SPLASH_FAILSAFE_MS, skipSplash, paintReady } from './utils/bootSplashLogic.js';
@@ -213,6 +214,7 @@ root.render(
       <Root />
       <DeferredAnalytics />
       <InstallPrompt />
+      <OfflineToast />
     </Router>
   </React.StrictMode>,
 );

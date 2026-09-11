@@ -1,0 +1,29 @@
+/* Offline pill: enters once when shown (mount animation only — leaving is
+   instant because reconnect must clear the notice immediately, not after a
+   fade). Reduced-motion users get no slide. */
+.offline-toast {
+    animation: offline-toast-in 0.25s ease-out;
+}
+
+@keyframes offline-toast-in {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 8px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .offline-toast {
+        animation: none;
+    }
+    /* The amber dot uses Tailwind's animate-ping; reduced-motion users get a
+       static dot instead (higher specificity than the utility, no !important). */
+    .offline-toast .offline-dot {
+        animation: none;
+        opacity: 1;
+    }
+}
