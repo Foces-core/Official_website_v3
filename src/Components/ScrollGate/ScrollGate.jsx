@@ -1,6 +1,8 @@
 import { Suspense, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import SectionSkeleton from '../SectionSkeleton/SectionSkeleton';
+import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
+import ChunkErrorFallback from '../ErrorFallback/ChunkErrorFallback';
 import { isDesktopViewport } from '../../utils/breakpoints.js';
 import { shouldMountAtBoot, shouldMountSection } from './scrollGateLogic.js';
 
@@ -128,12 +130,18 @@ export default function ScrollGate({ id, placeholderHeight = '110vh', label, chi
   return (
     <div ref={wrapRef} id={id} className="scroll-mt-24">
       {mounted ? (
-        // The lazy section resolves its own Suspense fallback while the chunk
-        // downloads — but by then we're ~1 viewport away, so the skeleton is
-        // barely seen and the download overlaps the scroll.
-        <Suspense fallback={<SectionSkeleton height={skeletonHeight} label={label} />}>
-          {children}
-        </Suspense>
+        // ErrorBoundary OUTSIDE Suspense: a failed lazy chunk rejects out of
+        // the Suspense subtree, so without this a single section failure
+        // (e.g. offline) climbs to the root boundary and blanks the page.
+        // The island degrades to a compact retry fallback instead.
+        <ErrorBoundary fallback={<ChunkErrorFallback />}>
+          {/* The lazy section resolves its own Suspense fallback while the chunk
+            downloads — but by then we're ~1 viewport away, so the skeleton is
+            barely seen and the download overlaps the scroll. */}
+          <Suspense fallback={<SectionSkeleton height={skeletonHeight} label={label} />}>
+            {children}
+          </Suspense>
+        </ErrorBoundary>
       ) : (
         // NOT role=status: this placeholder is not a loading state — the
         // section is merely deferred until scrolled to. role=status would

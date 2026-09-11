@@ -2,6 +2,7 @@ import { test, expect, vi, afterEach, beforeEach } from 'vitest';
 import { act } from 'react';
 import ErrorBoundary from '../../src/Components/ErrorBoundary/ErrorBoundary.jsx';
 import ErrorFallback from '../../src/Components/ErrorFallback/ErrorFallback.jsx';
+import ChunkErrorFallback from '../../src/Components/ErrorFallback/ChunkErrorFallback.jsx';
 import { createHarness } from './harness.jsx';
 
 // React logs caught render errors to the console; the boundary's whole job is
@@ -157,5 +158,40 @@ test('boundary shows the fallback once and lets the fallback heal (auto-reload p
     </ErrorBoundary>,
   );
   expect(h.container.textContent).toContain('Something went wrong');
+  h.unmount();
+});
+
+test('custom fallback prop degrades the island instead of the full page', () => {
+  const h = createHarness();
+  h.render(
+    <ErrorBoundary fallback={<div>section unavailable</div>}>
+      <Bomb />
+    </ErrorBoundary>,
+  );
+  expect(h.container.textContent).toContain('section unavailable');
+  expect(h.container.textContent).not.toContain('Something went wrong');
+  h.unmount();
+});
+
+test('ChunkErrorFallback explains offline and offers no useless retry', () => {
+  Object.defineProperty(window.navigator, 'onLine', { value: false, configurable: true });
+  try {
+    const h = createHarness();
+    h.render(<ChunkErrorFallback />);
+    expect(h.container.textContent).toContain('You are offline');
+    expect(h.container.querySelector('button')).toBeNull();
+    h.unmount();
+  } finally {
+    Object.defineProperty(window.navigator, 'onLine', { value: true, configurable: true });
+  }
+});
+
+test('ChunkErrorFallback offers retry online, wired to reload', () => {
+  const h = createHarness();
+  h.render(<ChunkErrorFallback />);
+  const retry = h.container.querySelector('button');
+  expect(retry.textContent).toContain('Retry');
+  act(() => retry.click());
+  expect(reload).toHaveBeenCalledTimes(1);
   h.unmount();
 });

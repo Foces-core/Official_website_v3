@@ -10,6 +10,12 @@ import ErrorFallback from '../ErrorFallback/ErrorFallback.jsx';
  * bundle stays free of the ~100KB SDK. When Sentry is available it is wired
  * through the optional onError callback; otherwise the boundary still
  * catches errors and shows the ErrorFallback UI.
+ *
+ * `fallback` (optional): a compact node shown instead of the full-page
+ * ErrorFallback. Lazy islands (ScrollGate sections, footer) pass one so a
+ * single failed chunk degrades that island instead of blanking the page —
+ * measured offline: a Footer chunk failure used to unmount the entire app
+ * behind the root fallback.
  */
 class ErrorBoundary extends Component {
   state = { error: null };
@@ -27,6 +33,7 @@ class ErrorBoundary extends Component {
   render() {
     const { error } = this.state;
     if (error) {
+      if (this.props.fallback) return this.props.fallback;
       return <ErrorFallback error={error} resetError={() => this.setState({ error: null })} />;
     }
     return this.props.children;
@@ -36,6 +43,7 @@ class ErrorBoundary extends Component {
 ErrorBoundary.propTypes = {
   children: PropTypes.node,
   onError: PropTypes.func,
+  fallback: PropTypes.node,
 };
 
 export default ErrorBoundary;

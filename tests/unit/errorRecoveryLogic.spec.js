@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   AUTO_RELOAD_KEY,
   CHUNK_RETRY_KEY,
+  isOffline,
   shouldAutoReloadOnError,
   scheduleErrorAutoReload,
   resetErrorAutoReload,
@@ -103,6 +104,38 @@ describe('errorRecoveryLogic auto-reload policies', () => {
     it('clears chunk retry flag', () => {
       mockStorage.setItem(CHUNK_RETRY_KEY, 'true');
       clearLazyChunkRetry({ storage: mockStorage });
+      expect(mockStorage.getItem(CHUNK_RETRY_KEY)).toBeNull();
+    });
+  });
+
+  describe('Offline policy — a reload without connection can never recover', () => {
+    const offlineWin = () => ({
+      navigator: { onLine: false },
+      location: { reload: vi.fn() },
+    });
+
+    it('detects an explicitly offline window, and only that', () => {
+      expect(isOffline(offlineWin())).toBe(true);
+      expect(isOffline({ navigator: { onLine: true } })).toBe(false);
+      expect(isOffline({})).toBe(false);
+      expect(isOffline(null)).toBe(false);
+    });
+
+    it('skips the error-boundary auto-reload offline without consuming the flag', () => {
+      const win = offlineWin();
+      const reloadFn = vi.fn();
+      const cancel = scheduleErrorAutoReload({ storage: mockStorage, win, reloadFn });
+      cancel();
+      expect(reloadFn).not.toHaveBeenCalled();
+      // Flag untouched: a later ONLINE failure still gets its one reload.
+      expect(mockStorage.getItem(AUTO_RELOAD_KEY)).toBeNull();
+    });
+
+    it('skips the chunk recovery reload offline without consuming the flag', () => {
+      const win = offlineWin();
+      const reloadFn = vi.fn();
+      recordLazyChunkReload({ storage: mockStorage, win, reloadFn });
+      expect(reloadFn).not.toHaveBeenCalled();
       expect(mockStorage.getItem(CHUNK_RETRY_KEY)).toBeNull();
     });
   });

@@ -4,6 +4,24 @@ export const AUTO_RELOAD_KEY = 'foces:error-auto-reloaded';
 export const CHUNK_RETRY_KEY = 'chunk-reload-retry';
 
 /**
+ * True only when the browser explicitly reports offline. A reload without a
+ * connection can never fix a failed chunk or a crashed render — it just
+ * flashes the boot splash and replays the same failure (measured: an offline
+ * lazy-chunk failure blanked the whole page behind the root error fallback).
+ * Gated recoveries become silent no-ops offline and leave their session flags
+ * untouched, so a later ONLINE failure still gets its one recovery reload.
+ *
+ * Unknown state (SSR, jsdom, browsers without navigator.onLine) counts as
+ * online: only an explicit `false` suppresses the reload.
+ *
+ * @param {Window | null} [win]
+ * @returns {boolean}
+ */
+export function isOffline(win = typeof window !== 'undefined' ? window : null) {
+  return win?.navigator?.onLine === false;
+}
+
+/**
  * Decide whether the Error Boundary fallback should attempt an automatic page reload.
  * Prevents reload loops by verifying that an auto-reload has not already been attempted in this session.
  *
@@ -32,6 +50,7 @@ export function scheduleErrorAutoReload({
   delayMs = 1200,
   reloadFn,
 } = {}) {
+  if (isOffline(win)) return () => {};
   if (!shouldAutoReloadOnError({ storage })) {
     return () => {};
   }
@@ -83,6 +102,7 @@ export function recordLazyChunkReload({
   win = typeof window !== 'undefined' ? window : null,
   reloadFn,
 } = {}) {
+  if (isOffline(win)) return;
   safeSessionSet(CHUNK_RETRY_KEY, 'true', storage);
   const doReload =
     reloadFn ||
