@@ -145,6 +145,10 @@ describe('initAOS — gate + init in one owner', () => {
       expect(document.body.classList.contains('aos-disabled')).toBe(false);
       expect(console.error).toHaveBeenCalled();
     } finally {
+      // Restore the default no-op mock: without this the throw leaks into any
+      // initAOS test added below, failing it for reasons nowhere near its
+      // own assertions (order-dependent flake).
+      AOS.init.mockReset();
       spy.mockRestore();
     }
   });

@@ -102,11 +102,13 @@ describe('useAosFailsafe — capable device', () => {
     // after boot; no scroll/resize may ever fire for them).
     const el = addStuck('late', 100);
     expect(el.classList.contains('aos-animate')).toBe(false);
-    // MutationObserver delivers asynchronously — let the microtask run, then
-    // flush the rAF frame the observer scheduled.
-    await new Promise((resolve) => setTimeout(resolve, 0));
-    flushRaf();
-    expect(el.classList.contains('aos-animate')).toBe(true);
+    // MutationObserver delivers asynchronously. A bare `setTimeout 0` sleep
+    // flakes under load (delivery vs. macrotask race); waitFor polls the
+    // assertion instead — just as fast when healthy, deterministic when not.
+    await vi.waitFor(() => {
+      flushRaf();
+      expect(el.classList.contains('aos-animate')).toBe(true);
+    });
   });
 
   it('a scroll reveals a stuck below-fold element once it enters the viewport', () => {
