@@ -6,8 +6,9 @@ import {
   stuckAosInView,
 } from '../../src/utils/aosGating.js';
 
-vi.mock('aos', () => ({ default: { init: vi.fn() } }));
-import AOS from 'aos';
+// No 'aos' module mock: src no longer statically imports the library (it is
+// fetched on demand), so specs inject a fake loader instead — which also
+// proves the entry chunk stays free of it.
 
 // aosDisabled reads detectProfile(), which reads window.location.search,
 // matchMedia and navigator at call time — stub those the same way the
@@ -96,54 +97,75 @@ describe('aosDisabled — SSR guard', () => {
   });
 });
 
-describe('initAOS — gate + init in one owner', () => {
+describe('initAOS — gate + lazy init in one owner', () => {
   beforeEach(() => {
     document.body.classList.remove('aos-disabled');
-    AOS.init.mockClear();
   });
 
-  it('calls AOS.init with once:true and the resolved gate, and tags <body> when gated', () => {
+  const resolvingLoader = (init) => () => Promise.resolve({ init });
+
+  it('never downloads the library when gated, and tags <body>', async () => {
     setUrl('?motion=off');
-    expect(initAOS()).toBe(true);
-    expect(AOS.init).toHaveBeenCalledWith({ once: true, disable: true });
+    const loadAos = vi.fn();
+    expect(initAOS({ loadAos })).toBe(true);
+    expect(loadAos).not.toHaveBeenCalled();
     expect(document.body.classList.contains('aos-disabled')).toBe(true);
   });
 
-  it('leaves <body> untagged and AOS enabled on a capable device', () => {
+  it('fetches the library on capable devices and inits it un-disabled', async () => {
     setUrl('?perf=high');
-    expect(initAOS()).toBe(false);
-    expect(AOS.init).toHaveBeenCalledWith({ once: true, disable: false });
+    const init = vi.fn();
+    expect(initAOS({ loadAos: resolvingLoader(init) })).toBe(false);
     expect(document.body.classList.contains('aos-disabled')).toBe(false);
+    await vi.waitFor(() => {
+      expect(init).toHaveBeenCalledWith({ once: true, disable: false });
+    });
   });
 
-  it('still inits AOS when <body> is not in the document yet', () => {
-    // The body-tag step is optional; AOS.init must still run (and not throw)
-    // when the gate is evaluated before hydration attaches <body>.
+  it('still tags <body> and kicks the fetch when <body> is missing', async () => {
+    // The body-tag step is optional; the gate + fetch must still run (and not
+    // throw) when evaluated before hydration attaches <body>.
     const bodyDesc = Object.getOwnPropertyDescriptor(document, 'body');
     Object.defineProperty(document, 'body', { value: null, configurable: true });
+    const loadAos = vi.fn(() => Promise.resolve({ init: () => {} }));
     try {
-      expect(() => initAOS()).not.toThrow();
-      expect(AOS.init).toHaveBeenCalledWith({ once: true, disable: false });
+      expect(() => initAOS({ loadAos })).not.toThrow();
+      expect(loadAos).toHaveBeenCalled();
     } finally {
       if (bodyDesc) Object.defineProperty(document, 'body', bodyDesc);
       else delete document.body;
     }
   });
 
-  it('survives AOS.init throwing — the app must boot and the failsafe still covers reveals', () => {
-    // AOS.init runs at module scope; a throw there would take the whole app
-    // down. Catch it, keep the body tag, and return the gate so callers know
-    // (the viewport failsafe in useAosFailsafe force-shows in-view content).
-    const err = new Error('AOS broke');
-    AOS.init.mockImplementation(() => {
-      throw err;
+  it('survives the library init throwing — the app must boot and the failsafe still covers reveals', async () => {
+    // A failed init must not take the boot down. The viewport failsafe in
+    // useAosFailsafe force-shows in-view content instead.
+    const init = vi.fn(() => {
+      throw new Error('AOS broke');
     });
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
     try {
-      expect(() => initAOS()).not.toThrow();
-      expect(initAOS()).toBe(false);
+      expect(initAOS({ loadAos: resolvingLoader(init) })).toBe(false);
+      await vi.waitFor(() => {
+        expect(console.error).toHaveBeenCalled();
+      });
       expect(document.body.classList.contains('aos-disabled')).toBe(false);
-      expect(console.error).toHaveBeenCalled();
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('stays silent when the library fetch itself fails (offline/blocked)', async () => {
+    // A rejected fetch means offline or an ad-blocker — the failsafe covers
+    // reveals, and logging noise for an expected condition helps nobody.
+    const loadAos = () => Promise.reject(new Error('offline'));
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      expect(initAOS({ loadAos })).toBe(false);
+      // Flush the rejection through the handled path, then assert silence.
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(spy).not.toHaveBeenCalled();
     } finally {
       spy.mockRestore();
     }

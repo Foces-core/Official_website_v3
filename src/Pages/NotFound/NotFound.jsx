@@ -1,12 +1,15 @@
 import { Link } from 'react-router';
 import Navbar from '../LandingPage/Navbar/Navbar.jsx';
 import Footer from '../LandingPage/Footer/Footer.jsx';
+import useExperienceCapabilities from '../../hooks/useExperienceCapabilities.js';
 
 /**
  * NotFound — friendly 404 for unknown routes. Matches the site's dark theme
  * and gives the visitor one obvious way out (back home).
  */
 function NotFound() {
+  // Same route-transition policy as the navbar (see Navbar.jsx).
+  const { smoothScroll } = useExperienceCapabilities();
   return (
     <div className="bg-[#0b0b0c] min-h-screen flex flex-col">
       <Navbar />
@@ -31,6 +34,7 @@ function NotFound() {
         </p>
         <Link
           to="/"
+          viewTransition={smoothScroll}
           className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-cyan-400 text-black font-semibold hover:bg-cyan-300 transition-colors"
         >
           <span aria-hidden="true">←</span> Back to Home

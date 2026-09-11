@@ -14,9 +14,15 @@
 // the viewport failsafe *decisions* live here. The failsafe's browser
 // lifecycle (listeners, rAF, cleanup) lives in the useAosFailsafe hook, which
 // is mounted once in App.
+//
+// NOTE: there is deliberately NO static 'aos' import here. The library (plus
+// its lodash throttle/debounce) is only ever needed below the fold, so it is
+// fetched on demand and never joins the entry chunk — the boot-critical path
+// stays free of ~15KB that first paint cannot use. Gated devices
+// (reduced motion / low-end) never download it at all: the body tag + CSS
+// net below cover their reveals with zero JS.
 import detectProfile from './detectProfile.js';
 import { resolveExperienceCapabilities } from './experienceTier.js';
-import AOS from 'aos';
 
 export function aosDisabled() {
   if (typeof window === 'undefined') return false;
@@ -26,28 +32,38 @@ export function aosDisabled() {
 }
 
 // AOS hides [data-aos] elements (opacity/transform) until they scroll into
-// view. Init runs at module scope, before React renders, so when the gate is
-// active (reduced motion / low-end device) AOS finds no elements to unhide and
-// never registers its observer — leaving every [data-aos] element stuck
-// invisible. So when gated, <body> is tagged and CSS force-shows all
-// [data-aos] content (including anything mounted later, e.g. lazy routes).
-// Gate + init live here so the 'aos' dependency and the override handling have
-// a single owner (the old second copy of the gate checks lived in App.jsx).
-export function initAOS() {
+// view. The gate check runs synchronously at module scope, before React
+// renders, so when the gate is active (reduced motion / low-end device) the
+// <body> tag below lands before anything paints and the CSS net force-shows
+// all [data-aos] content (including anything mounted later, e.g. lazy
+// routes) — with the library never downloading. On capable devices the
+// library fetch starts here and AOS.init runs when it lands; elements
+// mounted meanwhile are picked up by AOS's own MutationObserver, and the
+// viewport failsafe (useAosFailsafe) force-shows anything in view that AOS
+// hasn't revealed yet, so the async init can never leave content hidden.
+export function initAOS({ loadAos = () => import('aos') } = {}) {
   const gated = aosDisabled();
-  if (document.body) {
+  if (typeof document !== 'undefined' && document.body) {
     document.body.classList.toggle('aos-disabled', gated);
   }
-  // AOS.init must never take the app down: if it throws at module scope the
-  // whole page would fail to boot. On capable devices the viewport failsafe
-  // (useAosFailsafe) force-shows in-view content anyway; on gated devices the
-  // body.aos-disabled CSS net covers everything.
-  try {
-    AOS.init({ once: true, disable: gated });
-  } catch (error) {
-    console.error('AOS initialization failed; the viewport failsafe will cover reveals.', error);
-  }
-  return gated;
+  if (gated) return true;
+  // AOS.init must never take the app down: if the library (or its init)
+  // throws, the viewport failsafe covers reveals. A rejected library fetch
+  // (offline/blocked) stays silent for the same reason.
+  loadAos().then(
+    (mod) => {
+      try {
+        (mod?.default ?? mod).init({ once: true, disable: false });
+      } catch (error) {
+        console.error(
+          'AOS initialization failed; the viewport failsafe will cover reveals.',
+          error,
+        );
+      }
+    },
+    () => {},
+  );
+  return false;
 }
 
 // --- AOS failsafe decisions ------------------------------------------------
