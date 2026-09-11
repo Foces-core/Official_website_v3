@@ -118,6 +118,12 @@ org/github-workflow.json` for workflows). `pnpm-workspace.yaml`
   lint-and-build job; E2E never imports it. Behavior lives in pure tested
   modules — see [ADR-0009](docs/adr/0009-pure-logic-test-seams.md).
 - For UI changes, verify desktop + mobile viewports.
+- `pnpm test:mutation` runs [StrykerJS](https://stryker-mutator.io/) mutation
+  testing over the same pure modules `check:specs` guards (`stryker.config.mjs`
+  mirrors its globs). AGENTS.md requires ≥70% overall (≥80% for critical
+  decision modules) when you touch those files — run it scoped for speed:
+  `pnpm exec stryker run --mutate src/utils/<module>.js`. Like the perf lab
+  probes it is deliberately **not** in CI (slow, noisy under contention).
 - The repo has puppeteer **probes** in `scripts/probes/` (`wcag-probe.mjs`,
   `mobile-probe.mjs`, `carousel-probe.mjs`, `img-probe.mjs`,
   `firefox-probe.mjs`, `perf-probe.mjs`, `perf-test.mjs`,
