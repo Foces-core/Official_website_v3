@@ -38,7 +38,10 @@ const navItems = [
 export default function Navbar() {
   // The slowNetwork/reducedMotion dialects live in the experience-tier
   // matrix — prefetch gates route-chunk prefetching, smoothScroll the
-  // animated section scrolling.
+  // animated section scrolling. Route changes additionally pass
+  // viewTransition: smoothScroll to every navigate() below: capable
+  // motion-OK devices get the platform crossfade, reduced-motion users keep
+  // the instant cut, and browsers without the API ignore the flag.
   const { prefetch, smoothScroll } = useExperienceCapabilities();
   // Viewport bucket comes from the shared useViewportWidth seam (reactive to
   // resize; policy in breakpoints.js). Reading it on first render keeps
@@ -136,12 +139,12 @@ export default function Navbar() {
     switch (action.type) {
       case 'route': {
         e.preventDefault();
-        navigate(action.to);
+        navigate(action.to, { viewTransition: smoothScroll });
         return;
       }
       case 'navigate': {
         e.preventDefault();
-        navigate(action.to, { state: action.state });
+        navigate(action.to, { state: action.state, viewTransition: smoothScroll });
         return;
       }
       case 'scroll':
@@ -170,7 +173,7 @@ export default function Navbar() {
     }
     const action = resolveLogoAction(window.location.pathname);
     if (action.type === 'navigate') {
-      navigate('/');
+      navigate('/', { viewTransition: smoothScroll });
     } else {
       window.scrollTo({ top: 0, behavior: sectionScrollBehavior(!smoothScroll) });
     }

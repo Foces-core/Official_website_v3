@@ -2,9 +2,13 @@ import { Link } from 'react-router';
 import EventTitle from '../../assets/Event.svg';
 import { featuredEvents } from '../../data/events.js';
 import BlurImage from '../../Components/BlurImage/BlurImage';
+import useExperienceCapabilities from '../../hooks/useExperienceCapabilities.js';
 import { WIDE_SCREEN_MIN, DESKTOP_MIN } from '../../utils/breakpoints.js';
 
 function Events() {
+  // Same route-transition policy as the navbar: crossfade for capable
+  // motion-OK devices, instant cut otherwise (smoothScroll capability).
+  const { smoothScroll } = useExperienceCapabilities();
   return (
     <section className="bg-[#0b0b0c] text-white py-16 px-4 md:px-12 relative overflow-hidden scroll-mt-24">
       {/* Background Decorative Neon Glows */}
@@ -93,6 +97,7 @@ function Events() {
         <div data-aos="fade-up" data-aos-duration="300" className="mt-2">
           <Link
             to="/events"
+            viewTransition={smoothScroll}
             onMouseEnter={() => import('../EventPage/Eventpage.jsx').catch(() => {})}
             onTouchStart={() => import('../EventPage/Eventpage.jsx').catch(() => {})}
             className="inline-flex items-center space-x-3 bg-white text-black font-bold text-base px-8 py-3.5 rounded-xl shadow-lg hover:bg-cyan-400 hover:text-black transition-all duration-300 transform hover:scale-105"
