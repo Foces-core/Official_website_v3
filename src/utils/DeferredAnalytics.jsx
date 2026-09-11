@@ -37,6 +37,26 @@ export function analyticsArmed(ready, insights, analytics) {
   return true;
 }
 
+const VERCEL_SCRIPTS_ORIGIN = 'https://va.vercel-scripts.com';
+
+/**
+ * Opens the connection to the analytics beacon origin just before the vendor
+ * chunks are requested. The only cross-origin request the page ever makes is
+ * the Vercel SpeedInsights beacon — preconnecting at parse (index.html) burns
+ * a DNS+TLS handshake on the critical path (up to seconds on 2G) for scripts
+ * that only load after interaction/idle. Idempotent: at most one link tag.
+ */
+export function ensureScriptsPreconnect(doc) {
+  const target = doc ?? (typeof document !== 'undefined' ? document : null);
+  if (!target?.head) return;
+  if (target.querySelector(`link[rel="preconnect"][href="${VERCEL_SCRIPTS_ORIGIN}"]`)) return;
+  const link = target.createElement('link');
+  link.rel = 'preconnect';
+  link.href = VERCEL_SCRIPTS_ORIGIN;
+  link.crossOrigin = 'anonymous';
+  target.head.appendChild(link);
+}
+
 export default function DeferredAnalytics() {
   const [ready, setReady] = useState(false);
   const [Insights, setInsights] = useState(null);
@@ -76,6 +96,9 @@ export default function DeferredAnalytics() {
   useEffect(() => {
     if (!ready) return;
     let cancelled = false;
+
+    // Connection warm-up for the cross-origin beacon origin (see above).
+    ensureScriptsPreconnect();
 
     // Network I/O lives at the wiring layer (ADR-0009); the probe decision is
     // made by the pure module (probeServesScript).

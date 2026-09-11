@@ -1,4 +1,7 @@
-/* Space Grotesk is loaded via <link> in index.html (faster than CSS @import) */
+/* Space Grotesk is intentionally NOT preloaded: this section is below the fold,
+   so the browser fetches the woff2 on demand when the lazy chunk mounts
+   (font-display: swap in fonts-latin.css — no layout shift). Only the
+   above-the-fold Inter font gets a <link rel="preload"> (vite.config.js). */
 
 .container-about {
     padding: 40px 20px;

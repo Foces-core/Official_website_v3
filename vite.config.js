@@ -65,10 +65,14 @@ function subsetFontsPlugin() {
   };
 }
 
-// Preloads the two self-hosted woff2 fonts in the HTML so the browser starts
-// the fetch as soon as the document is parsed — instead of waiting for the
-// CSS bundle (which carries the @font-face) to download + parse. Inter is used
-// above the fold (navbar + hero), so this cuts the first-paint font swap.
+// Preloads the self-hosted Inter woff2 in the HTML so the browser starts the
+// fetch as soon as the document is parsed — instead of waiting for the CSS
+// bundle (which carries the @font-face) to download + parse. Inter is the
+// ONLY font used above the fold (navbar + hero); Space Grotesk is used below
+// the fold (AboutUs), so it is deliberately NOT preloaded — the browser
+// fetches it on demand when the lazy section mounts (font-display: swap, no
+// layout shift), keeping ~20KB of high-priority contention off the LCP path
+// on slow networks.
 function preloadFonts() {
   let fontUrls = [];
   return {
@@ -76,7 +80,7 @@ function preloadFonts() {
     apply: 'build',
     generateBundle(_opts, bundle) {
       fontUrls = Object.keys(bundle)
-        .filter((n) => /-(latin)-wght-normal(?:\.subset)?-?.*\.woff2$/.test(n))
+        .filter((n) => /inter-(latin)-wght-normal(?:\.subset)?-?.*\.woff2$/.test(n))
         .map((n) => bundle[n].fileName);
     },
     transformIndexHtml(html) {
@@ -138,6 +142,12 @@ export default defineConfig({
     // visit — the worst case for slow devices.
     VitePWA({
       registerType: 'autoUpdate',
+      // script-defer: the registration snippet must not be parser-blocking.
+      // The default 'script' injects a classic <script src="/registerSW.js">
+      // in <head>, which stalls HTML parsing for a full round trip on slow
+      // networks before first paint. Deferred, it still registers before
+      // DOMContentLoaded — installability is unaffected.
+      injectRegister: 'script-defer',
       includeAssets: ['foces.svg', 'og-image.jpg', 'pwa-192.png', 'pwa-512.png'],
       manifest: {
         id: '/',

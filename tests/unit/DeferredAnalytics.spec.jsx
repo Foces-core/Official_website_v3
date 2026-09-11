@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { act } from 'react';
-import DeferredAnalytics from '../../src/utils/DeferredAnalytics.jsx';
+import DeferredAnalytics, { ensureScriptsPreconnect } from '../../src/utils/DeferredAnalytics.jsx';
 import { createHarness } from './harness.jsx';
 
 // The seam is the rendered output: DeferredAnalytics must render NOTHING at
@@ -87,6 +87,12 @@ function analyticsRendered() {
   return document.getElementById('vercel-analytics') !== null;
 }
 
+const preconnectSelector = 'link[rel="preconnect"][href="https://va.vercel-scripts.com"]';
+
+function preconnectLink() {
+  return document.head.querySelector(preconnectSelector);
+}
+
 beforeEach(() => {
   harness = createHarness();
   stubVercelFetch();
@@ -95,6 +101,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.unstubAllGlobals();
   vi.useRealTimers();
+  document.head.querySelectorAll('link[rel="preconnect"]').forEach((el) => el.remove());
   harness.unmount();
 });
 
@@ -200,6 +207,31 @@ describe('DeferredAnalytics — idle boot path', () => {
     await act(async () => {});
     expect(insightsRendered()).toBe(false);
     expect(analyticsRendered()).toBe(false);
+  });
+
+  it('does not preconnect to the beacon origin at boot', () => {
+    stubIdleCallback();
+    renderAnalytics();
+    expect(preconnectLink()).toBeNull();
+  });
+
+  it('preconnects to the beacon origin once when analytics arms (not at parse)', async () => {
+    stubIdleCallback();
+    renderAnalytics();
+    interact();
+    await fireIdle();
+    const first = preconnectLink();
+    expect(first?.getAttribute('crossorigin')).toBe('anonymous');
+    await fireIdle();
+    // Idempotent: arming twice must not stack duplicate link tags.
+    expect(document.querySelectorAll(preconnectSelector)).toHaveLength(1);
+  });
+
+  it('ensureScriptsPreconnect is idempotent and tolerates a missing head', () => {
+    ensureScriptsPreconnect(document);
+    ensureScriptsPreconnect(document);
+    expect(document.querySelectorAll(preconnectSelector)).toHaveLength(1);
+    expect(() => ensureScriptsPreconnect({})).not.toThrow();
   });
 });
 
