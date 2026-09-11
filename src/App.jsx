@@ -7,6 +7,8 @@ import './assets/aos-min.css';
 import { Suspense, useEffect } from 'react';
 import SectionSkeleton from './Components/SectionSkeleton/SectionSkeleton';
 import ScrollGate from './Components/ScrollGate/ScrollGate';
+import ErrorBoundary from './Components/ErrorBoundary/ErrorBoundary';
+import ChunkErrorFallback from './Components/ErrorFallback/ChunkErrorFallback';
 import HeroSection from './Pages/LandingPage/HeroSection/HeroSection';
 import Navbar from './Pages/LandingPage/Navbar/Navbar';
 import { useLocation } from 'react-router';
@@ -104,9 +106,14 @@ function App() {
           <Execom />
         </ScrollGate>
       </main>
-      <Suspense fallback={<SectionSkeleton height="30vh" label="Loading footer" />}>
-        <Footer />
-      </Suspense>
+      {/* The footer chunk is lazy too: a failure (e.g. offline) degrades to
+          the compact island fallback instead of climbing to the root
+          boundary and blanking the mounted page. */}
+      <ErrorBoundary fallback={<ChunkErrorFallback />}>
+        <Suspense fallback={<SectionSkeleton height="30vh" label="Loading footer" />}>
+          <Footer />
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
 }

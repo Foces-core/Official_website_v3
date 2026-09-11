@@ -201,6 +201,32 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
+            // Versioned JS/CSS chunks (lazy routes, sections, footer, icons):
+            // CacheFirst keyed by hashed URL. Every filename carries a content
+            // hash, so a cached entry can never go stale — a deploy produces
+            // new URLs that simply miss and fetch fresh. Populated ONLY from
+            // chunks the visitor actually downloads (zero first-visit install
+            // cost, unlike precaching), which is exactly the offline-resilience
+            // semantic: already-downloaded content keeps working offline,
+            // never-visited chunks still fail honestly into their island
+            // fallback. three.js rides along under the same rule — cached only
+            // if previously fetched, never precached (check-sw-precache still
+            // guards the install-time precache separately).
+            urlPattern: /\/assets\/[^/]+\.(?:js|css)(?:\?.*)?$/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'chunks-cache-v1',
+              expiration: {
+                maxEntries: 60,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 Days
+                purgeOnQuotaError: true,
+              },
+              cacheableResponse: {
+                statuses: [0, 200],
+              },
+            },
+          },
+          {
             // CacheFirst strategy for all static images (handling query params like ?w=1000 or asset hashes)
             urlPattern: /\.(?:png|jpg|jpeg|svg|webp|avif)(?:\?.*)?$/i,
             handler: 'CacheFirst',
