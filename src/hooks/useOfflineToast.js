@@ -7,7 +7,11 @@ import { nextOfflineVisible } from '../utils/offlineToast.js';
  * decision lives in the pure offlineToast module; this hook only subscribes
  * to the `online`/`offline` events and reads the initial state.
  *
- * @returns {{ offlineVisible: boolean }}
+ * `epoch` bumps on every transition so consumers can tell a fresh offline
+ * event from a stale one (e.g. re-arm a manual dismiss) with pure
+ * derivation — no cascading setState-in-effect needed.
+ *
+ * @returns {{ offlineVisible: boolean, epoch: number }}
  */
 export default function useOfflineToast() {
   const [isOnline, setIsOnline] = useState(() =>
@@ -15,9 +19,13 @@ export default function useOfflineToast() {
       ? true
       : navigator.onLine,
   );
+  const [epoch, setEpoch] = useState(0);
 
   useEffect(() => {
-    const sync = () => setIsOnline(navigator.onLine);
+    const sync = () => {
+      setIsOnline(navigator.onLine);
+      setEpoch((e) => e + 1);
+    };
     window.addEventListener('online', sync);
     window.addEventListener('offline', sync);
     return () => {
@@ -26,5 +34,5 @@ export default function useOfflineToast() {
     };
   }, []);
 
-  return { offlineVisible: nextOfflineVisible(isOnline) };
+  return { offlineVisible: nextOfflineVisible(isOnline), epoch };
 }

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import './OfflineToast.css';
 import useOfflineToast from '../../hooks/useOfflineToast.js';
 
@@ -17,13 +17,12 @@ import useOfflineToast from '../../hooks/useOfflineToast.js';
  * menu always wins if both ever mount.
  */
 export default function OfflineToast() {
-  const { offlineVisible } = useOfflineToast();
-  const [dismissed, setDismissed] = useState(false);
-
-  // A fresh offline transition re-arms the pill after a manual dismiss.
-  useEffect(() => {
-    if (offlineVisible) setDismissed(false);
-  }, [offlineVisible]);
+  const { offlineVisible, epoch } = useOfflineToast();
+  // Dismissal is scoped to the transition that caused it: a fresh
+  // online/offline event bumps `epoch`, re-arming the pill by pure
+  // derivation (no effect-driven reset, no nag-loop while staying offline).
+  const [dismissedEpoch, setDismissedEpoch] = useState(-1);
+  const dismissed = dismissedEpoch === epoch;
 
   if (!offlineVisible || dismissed) return null;
 
@@ -42,7 +41,7 @@ export default function OfflineToast() {
       </p>
       <button
         type="button"
-        onClick={() => setDismissed(true)}
+        onClick={() => setDismissedEpoch(epoch)}
         aria-label="Dismiss offline notice"
         className="flex-none w-6 h-6 rounded-full text-gray-500 hover:text-white transition-colors"
       >
