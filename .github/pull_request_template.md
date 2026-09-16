@@ -24,3 +24,4 @@
 - [ ] If the change touches performance paths: `useDeviceProfile` (slow-network / low-power) behavior preserved
 - [ ] If interactive: keyboard navigable with visible `:focus-visible` styling
 - [ ] No new inline `style={{}}` objects (prefer CSS files / Tailwind utilities)
+- [ ] CodeRabbit manual review requested (`@coderabbitai full review`), finished, no unresolved blocking findings (non-blocking nits may remain)
