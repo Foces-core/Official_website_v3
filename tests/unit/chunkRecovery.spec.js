@@ -15,6 +15,17 @@ describe('chunkRecovery', () => {
     expect(isChunkError(null)).toBe(false);
   });
 
+  it('isChunkError detects the HTML-as-JS signature (stale chunk served index.html)', () => {
+    expect(isChunkError(new Error("Unexpected token '<'"))).toBe(true);
+    expect(isChunkError(new Error('Unexpected token <'))).toBe(true);
+    expect(isChunkError(new Error('Failed to load module script'))).toBe(true);
+    expect(isChunkError(new Error('Expected a JavaScript module script'))).toBe(true);
+    expect(isChunkError(new Error("MIME type ('text/html') is not executable"))).toBe(true);
+    expect(isChunkError(new Error('server responded with text/html'))).toBe(true);
+    expect(isChunkError(new Error('plain text failure'))).toBe(false);
+    expect(isChunkError(new Error('Unexpected token export'))).toBe(false);
+  });
+
   it('createChunkRecovery returns helpers', () => {
     const recovery = createChunkRecovery({ storage: null, win: null });
     expect(typeof recovery.hasReloaded).toBe('function');

@@ -23,6 +23,14 @@ describe('sentryFilter', () => {
     expect(isIgnorableMessage(null)).toBe(false);
   });
 
+  it('isIgnorableMessage matches the HTML-as-JS signature (deploy skew, not code)', () => {
+    expect(isIgnorableMessage("Unexpected token '<'")).toBe(true);
+    expect(isIgnorableMessage('Failed to load module script')).toBe(true);
+    expect(isIgnorableMessage('Expected a JavaScript module script')).toBe(true);
+    expect(isIgnorableMessage("MIME type ('text/html') is not executable")).toBe(true);
+    expect(isIgnorableMessage('TypeError: x is not a function')).toBe(false);
+  });
+
   it('isDeniedUrl matches extensions', () => {
     expect(isDeniedUrl('chrome-extension://abc/background.js')).toBe(true);
     expect(isDeniedUrl('moz-extension://xyz/content.js')).toBe(true);
