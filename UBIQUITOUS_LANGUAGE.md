@@ -2,6 +2,10 @@
 
 Canonical domain glossary and terminology for the FOCES site codebase.
 
+> Human-facing companion to [`CONTEXT.md`](CONTEXT.md), which is canonical
+> for agents (per `CLAUDE.md`). Do not redefine seam terms here — point at
+> `CONTEXT.md` instead.
+
 ## Navigation & Viewport
 
 | Term                       | Definition                                                                                                                           | Aliases to avoid                         |

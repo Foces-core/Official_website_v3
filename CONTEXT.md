@@ -3,6 +3,10 @@
 Shared vocabulary for the FOCES site. Keep this current as new concepts are
 named; the /domain-modeling skill sharpens fuzzy terms here.
 
+> Canonical glossary for agents (per `CLAUDE.md`): seam definitions here win.
+> [`UBIQUITOUS_LANGUAGE.md`](UBIQUITOUS_LANGUAGE.md) is the human-facing
+> companion — it must not redefine these terms.
+
 - **Event** — a past or upcoming fest event (Prompt Paradox, Coding Arena,
   Agentic Workshop…). Single source of truth: `src/data/events.js`
   (ADR-0003), shape-guarded by `validateEvents` (live-data test runs in CI).

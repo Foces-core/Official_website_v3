@@ -3,37 +3,27 @@
 Behavioral rules for AI agents (and humans) working in this repository.
 Read this before touching anything.
 
-## 🛑 Critical Rules
+Three numbered sections with stable anchors — cite them in review
+(e.g. "violates §2.1") instead of pasting prose:
+
+- **§1 Background** — where things are (read-only orientation).
+- **§2 Behaviour** — how to work (contracts, verification, PR flow).
+- **§3 Output** — what to emit (commits, PRs, docs).
+
+## §1 Background
 
 - **Live Production URL:** [https://focess-five.vercel.app/](https://focess-five.vercel.app/) — deployed continuously from `main` via Vercel edge.
 - **Read first:** architecture/decisions live in `docs/adr/` and the
-  performance/a11y contract is in `CONTRIBUTING.md`. Do not duplicate those —
-  reference them.
-- **Conventional Commits only:** `feat|fix|perf|a11y|chore|docs|test|refactor|ci|build|style|revert(scope):`
-  (see `commitlint.config.cjs`). Husky enforces it locally; CI re-checks on
-  PRs. Don't use `--no-verify` unless it's genuinely broken.
-- **`foces-webv23/` is OFF-LIMITS:** it is the archived Sanity CMS studio from
-  the previous site generation. Root tooling must never lint/build/format it.
-  Every tool skips it: ESLint flat-config `ignores`, `.prettierignore`, knip
-  `ignore`, Dependabot `exclude-paths`, CodeRabbit `path_filters`, and
-  `lint-staged.config.js` (filters it out of pre-commit tasks). Do not
-  "upgrade to match the root" (it's pinned to Sanity 3 / React 18 on
-  purpose). See `foces-webv23/README.md`.
+  performance/a11y contract is in `CONTRIBUTING.md`. This file points at
+  those owners — it never duplicates them.
 - **Package managers:** root uses **pnpm** (`pnpm install`, `pnpm test`, ...).
   The studio uses **yarn** (inside `foces-webv23/` only). Do not mix.
-  Use `sfw` for networked package/tool commands when available.
-- **Security:** never commit `.env`, tokens, or the Sanity studio auth.
-  EmailJS keys are only referenced via `VITE_*` env vars.
-- **Dependabot PRs auto-merge** once the four CI checks pass
-  (`.github/workflows/auto-merge-dependabot.yml` polls CI, then squash-merges
-  and deletes the branch). Everything else merges manually.
-- **CodeRabbit enforces strict automated PR reviews** (`.coderabbit.yaml`):
-  Runs automatically on all PRs with assertive review posture and
-  `request_changes_workflow: true`. Critical/error findings formally block
-  merges until resolved. Address its findings before merging; do not dismiss
-  them without reason.
+- **Networked commands:** IF the `sfw` wrapper exists on PATH, prefix
+  networked package/tool commands with it — ELSE run the bare command.
+  Never install it, never fail when it is absent (it is not installed in
+  every environment).
 
-## Map
+## §1 Map
 
 - `src/App.jsx` — landing page composition (home, about, featuring, events, execom); every lazy
   chunk here loads via `lazyWithRetry` (ADR-0008); cross-route anchor scroll
@@ -80,50 +70,54 @@ Read this before touching anything.
 - Behavior lives in pure tested modules; components are wiring (ADR-0009) — new logic lands as a
   module with its spec in the same change, and JSX specs use `tests/unit/harness.jsx`.
 - `scripts/` — puppeteer probes + Lighthouse perf tests; `scripts/maintenance/` holds the
-  CI guards (`check-specs.mjs`, `check-orphan-assets.mjs`, `check-sw-precache.mjs`).
+  CI guards (`check-specs.mjs`, `check-orphan-assets.mjs`, `check-sw-precache.mjs`, `check-prompts.mjs`).
 - `tests/*.spec.js` — Playwright E2E suite (split by page/section).
 - `public/`, `src/assets/` — static + optimized images.
 
-## Architecture contract (non-negotiable)
+## §2 Behaviour
 
-- **Performance is a feature.** The site deliberately degrades on slow/low-end
-  devices via the `useDeviceProfile` hook in `src/hooks/useLowPower.js`
-  (`slowNetwork`, `lowPower`). Never remove
-  those guards, and never let gated content disappear entirely (see the AOS
-  safety net in `App.css`).
+### §2.1 Architecture contract (non-negotiable)
+
+One line each — the full contract lives in `CONTRIBUTING.md`:
+
+- **`foces-webv23/` is OFF-LIMITS:** archived Sanity CMS studio, pinned to
+  Sanity 3 / React 18 on purpose. Root tooling must never lint/build/format
+  it (every tool skips it — `pnpm check:prompts` verifies the exclusions
+  agree). Never "upgrade to match the root". See `foces-webv23/README.md`.
+- **Performance is a feature.** Never remove the `useDeviceProfile`
+  (`slowNetwork`, `lowPower`) guards, and never let gated content disappear
+  entirely (AOS safety net in `src/App.css`).
 - **PWA precache is app-shell only.** Photos ship via the immutable HTTP
-  cache, not the service worker — keep it that way (`vite.config.js`).
-- **Images:** responsive `srcset` variants + `decoding="async"`; lazy-load
-  below the fold. Build-time optimization handles the rest.
+  cache, not the service worker (`vite.config.js`).
+- **Images:** responsive `srcset` + `decoding="async"`; lazy-load below the fold.
 - **A11y (WCAG 2.1/2.2):** keyboard-accessible with visible focus. Only one
-  widget may respond to arrow keys at a time — coordinate via
-  `src/utils/keyboardLock.js`.
-- **Styling:** Tailwind utility classes are the norm; no inline
-  `style={{}}` for custom visuals. Prettier is the single source of truth
-  (single quotes, 100-col, 4-space CSS).
-- **No dead code.** If a field/class/dep isn't consumed, remove it or explain
-  why it stays (see `docs/adr/` for how to record the "why").
-- **Cyclomatic complexity & CRAP.** Keep functions at **CRAP < 8** (hard ceiling
-  for agents, ideal **≤ 5**). At 100% coverage `CRAP = CC`, so this means
-  `CC ≤ 8`, ideal `≤ 5`. Threshold is based on research: human ≤ 4, AI ≤ 6,
-  hard ceiling < 8, universal fail > 30 (crap4j). **Agents MUST obey < 8**;
-  humans may exceed to 15 only with an ADR (`docs/adr/`) justifying the
-  complexity + extra tests. No ESLint gate — code review + AGENTS.md governs.
-- **Mutation testing.** Future agents MUST run mutation testing when changing
-  pure decision modules (`src/utils`, `src/data`, `src/hooks`, `*.js` in
-  `Components`/`Pages`). **Break threshold 70% overall, 80% for critical
-  decision modules** (research: 60-70% typical, 70-80% strong, 80%+ excellent;
-  100% is not achievable due to ~23% equivalent mutants). Humans may merge
-  below with an ADR; agents must not. No CI gate — AGENTS.md governs.
-- **Crap score.** `CRAP = CC² × (1−coverage)³ + CC`. Keep **CRAP < 8**
-  (agents) / **< 15 with justification** / **30 universal fail**. At 100%
-  coverage the score equals complexity, so the CC rule above guarantees low
-  CRAP when combined with `pnpm test:unit`. No runtime gate — AGENTS.md governs.
+  widget may own arrow keys at a time — coordinate via `src/utils/keyboardLock.js`.
+- **Styling:** Tailwind utilities; no inline `style={{}}` for custom visuals.
+  Prettier is the single source of truth (single quotes, 100-col, 4-space CSS).
+- **No dead code.** Unconsumed field/class/dep goes away, or its "why" is
+  recorded in `docs/adr/` (`pnpm knip` enforces).
+- **Security:** never commit `.env`, tokens, or the Sanity studio auth.
+  EmailJS keys are only referenced via `VITE_*` env vars.
+- **Complexity: CRAP < 8.** `CRAP = CC² × (1−coverage)³ + CC`, so at 100%
+  coverage CRAP = CC. Agents: hard ceiling CC ≤ 8, ideal ≤ 5. Humans may
+  reach 15 only with a justifying ADR. No ESLint gate — review + this file govern.
+- **Mutation testing.** IF the change touches pure decision modules
+  (`src/utils`, `src/data`, `src/hooks`, `*.js` in `Components`/`Pages` —
+  same globs as `stryker.config.mjs`) THEN run it scoped:
+  `pnpm exec stryker run --mutate <file>`. Bar: 70% break overall, 80% for
+  critical decision modules (review policy — see the config header; ~23%
+  equivalent mutants expected). Deliberately not in CI (slow, noisy under
+  contention — run on a quiet machine). Agents must not merge below bar;
+  humans need an ADR.
+- **CodeRabbit enforces strict automated PR reviews** (root `.coderabbit.yaml`
+  is the single active config): assertive profile,
+  `request_changes_workflow: true`. Address findings before merging; never
+  dismiss without reason.
 
-## Verify (run before you commit)
+### §2.2 Verify (run before you commit)
 
 `pnpm verify` runs the fast deterministic gate (lint + format check + unit
-tests + check:specs/check:assets/check:sw + build + `git diff --check`) in
+tests + check:specs/check:assets/check:sw/check:prompts + build + `git diff --check`) in
 one command. The individual steps, if you prefer:
 
 ```powershell
@@ -131,44 +125,47 @@ pnpm lint          # ESLint 10 flat config, no warnings expected
 pnpm format:check  # Prettier (writes with pnpm format if dirty)
 pnpm knip          # dead-code / unused-dependency guard (CI runs it too — see CONTRIBUTING)
 pnpm lint:workflows  # actionlint + shellcheck on .github/workflows/ — required after touching any workflow file
+pnpm check:prompts  # prompt-parity guard (configs, ADR pointer, studio exclusions, Map paths, glossary)
 pnpm build         # production build must succeed
-pnpm test          # Playwright E2E (tests/*.spec.js) — run targeted tests when scoping
+pnpm test          # Playwright E2E (tests/*.spec.js) — see scoping rubric below
 git diff --check   # no whitespace errors
 ```
 
-`pnpm lint:workflows` (actionlint + shellcheck, added in #86) also runs in
+Scoping rubric: IF the change is scoped (≤3 files, one section/route) THEN
+run the targeted specs (`pnpm test:unit <name>`, `playwright test -g "<area>"`)
+ELSE run the full suites. For UI/a11y changes, run the relevant probes in
+`scripts/` against `pnpm preview` (per `CONTRIBUTING.md`).
+
+`pnpm lint:workflows` (actionlint + shellcheck) also runs in
 the pre-push hook — run it manually anytime you edited `.github/workflows/`
 so workflow bugs (and shell-injection in `run:` steps) fail before CI
 queues a run.
 
-For UI/a11y changes, run the relevant probes in `scripts/` against
-`pnpm preview` (per `CONTRIBUTING.md`).
+### §2.3 Push / PR flow (behaviour — format lives in §3)
 
-## Push / PR (how changes land)
-
-- **Never push straight to `main`.** The remote enforces branch protection
-  ("changes must be made through a pull request") — a direct push bypasses
-  CodeRabbit, the PR-time checks, and the review gate entirely. Always ship
-  through a PR.
+- **Never push straight to `main`.** Branch protection requires a PR —
+  a direct push bypasses CodeRabbit, the PR-time checks, and review entirely.
 - **Flow:** `git fetch origin` → branch off an up-to-date `main` →
-  commit (`conventional` only) → push the branch → open a PR with `gh pr
-create` → **wait for every gate to finish** — the four required checks
-  (Lint & Build, E2E (Playwright), Probes (structural checks), Validate
-  commit messages), GitHub's default code scanning (CodeQL), and the
-  CodeRabbit review → resolve any failures/findings with follow-up commits
-  → merge when all green.
+  commit (§3.1) → push the branch → open a PR with `gh pr create` →
+  **wait for every gate** — the four required checks (Lint & Build,
+  E2E (Playwright), Probes (structural checks), Validate commit messages),
+  CodeQL, and the CodeRabbit review → resolve failures/findings with
+  follow-up commits → merge when all green.
+- **Dependabot PRs auto-merge** once the four CI checks pass
+  (`.github/workflows/auto-merge-dependabot.yml` polls CI, then squash-merges
+  and deletes the branch). Everything else merges manually.
 - **Review loop (every PR — human-authored or bot).** After CI is green:
-  (1) check for reviewer input — `gh pr view --json
+  (1) check reviewer input — `gh pr view --json
 reviews,comments,reviewDecision` plus inline threads — and request a
   reviewer if none is assigned. (2) Address every finding with follow-up
   commits (never dismiss without reason), push, and wait for the next
   review round. (3) Repeat until `reviewDecision` is APPROVED (or only
-  non-blocking nits remain) — then merge. Be credit-aware: bounded waits
-  only (a few CI-length polls, one rerun for an infra flake). If no new
-  reviews arrive, the branch churns under you (bot force-pushes), or a red
-  check needs human judgment, stop and report instead of polling forever.
-  Never self-approve your own PR, and never merge it without the required
-  approval unless the human explicitly instructs the bypass.
+  non-blocking nits remain) — then merge. Bounded waits only: poll
+  `gh pr checks --watch` to green, re-poll ≤2 more times at CI-length
+  intervals (~5 min), 1 rerun max for a suspected infra flake — THEN stop
+  and report instead of polling forever. Never self-approve your own PR,
+  and never merge it without the required approval unless the human
+  explicitly instructs the bypass.
 - **Agent merges (sebin-gg bypass) — merge only post-CI.** Agents act as
   `sebin-gg`, which is on the PR review bypass list: no approval is needed,
   and `--admin` is never the tool for that. Before merging an agent PR:
@@ -190,17 +187,35 @@ reviews,comments,reviewDecision` plus inline threads — and request a
 - **CodeRabbit reviews PRs only** — a commit pushed directly to `main` gets
   no automated review. If a fix was already pushed straight to main, the only
   way to get it reviewed is to re-issue it through a PR.
-- **Never merge your own PR without CI + CodeQL + CodeRabbit passing** —
-  `.coderabbit.yaml` sets `request_changes_workflow: true`, so CodeRabbit
-  submits a formal "Changes Requested" review for critical findings and its
-  title/description checks run in `error` mode — both block the merge until
-  resolved. Do not dismiss findings without a reason.
+- **Merge gate:** never merge without CI + CodeQL + CodeRabbit green —
+  CodeRabbit's `request_changes_workflow: true` plus its title/description
+  checks in `error` mode block the merge until resolved.
 
-## Docs / ADR
+## §3 Output
 
-- Any meaningful architecture decision → add a record in `docs/adr/` using the
-  template there (status: Accepted / Proposed / Deprecated). One file per
-  decision, linked from `docs/adr/README.md`.
+### §3.1 Commits
+
+- **Conventional Commits only:** `feat|fix|perf|a11y|chore|docs|test|refactor|ci|build|style|revert(scope):`
+  (see `commitlint.config.cjs`). Husky enforces it locally; CI re-checks on
+  PRs. Bypass (`--no-verify`) ONLY when hooks are broken (hook crashes or
+  errors) or an emergency hotfix cannot land otherwise — and state why in
+  the PR body. Never a habit.
+
+### §3.2 PRs
+
+- Open against `main` with the `.github/pull_request_template.md` body filled
+  in: **How to test** and the **Checklist** are enforced by CodeRabbit's
+  description check. Tick only what was actually run.
+- Title follows Conventional Commits (~72 chars, lowercase, no trailing
+  period) — enforced by CodeRabbit's title check in `error` mode.
+
+### §3.3 Docs / ADR
+
+- IF the change alters a contract, adds/removes a check, changes perf/a11y
+  behavior, or overrules a prior ADR THEN record it in `docs/adr/` using the
+  template there (status: Accepted / Proposed / Deprecated; one file per
+  decision, linked from `docs/adr/README.md`) — ELSE skip (typo-, comment-,
+  and docs-only changes need no record).
 - Update `README.md` / `CONTRIBUTING.md` when commands, structure, or the
   perf/a11y contract change.
 - Never commit generated artifacts: `dist/`, `test-results/`,
