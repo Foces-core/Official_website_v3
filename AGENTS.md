@@ -169,6 +169,16 @@ reviews,comments,reviewDecision` plus inline threads — and request a
   check needs human judgment, stop and report instead of polling forever.
   Never self-approve your own PR, and never merge it without the required
   approval unless the human explicitly instructs the bypass.
+- **Agent merges (sebin-gg bypass) — merge only post-CI.** Agents act as
+  `sebin-gg`, which is on the PR review bypass list: no approval is needed,
+  and `--admin` is never the tool for that. Before merging an agent PR:
+  (1) the head branch must contain the latest `main` (fetch + rebase first —
+  Renovate/Dependabot land things constantly); (2) `gh pr checks --watch`
+  until every required check is green on the final SHA (merging seconds
+  after a push fails with "not mergeable"); (3) no unresolved CodeRabbit
+  blocking review. Only then `gh pr merge --squash --delete-branch`. If a
+  check is red, fix it or stop and report — never bypass. `--admin` is
+  reserved for explicit human instruction in the moment.
 - **The remote moves on its own** (Dependabot, Renovate, other agents push
   daily). Before pushing anything, `git fetch origin` and rebase/merge the
   latest `main`; never force-push. If a push is rejected, fetch + rebase +
