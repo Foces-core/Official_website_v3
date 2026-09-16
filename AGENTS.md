@@ -164,8 +164,8 @@ review` on the PR and wait for the review run to finish — never merge
   while it is still running. (3) Address every finding (human or
   CodeRabbit) with follow-up commits (never dismiss without reason), push,
   and wait for the next review round. (4) Repeat until `reviewDecision` is
-  APPROVED (or only non-blocking nits remain) AND the manual review posts
-  no unresolved blocking findings — then merge. Bounded waits only: poll
+  APPROVED AND the manual review finished with no unresolved blocking
+  findings (non-blocking nits may remain in both) — then merge. Bounded waits only: poll
   `gh pr checks --watch` to green, re-poll ≤2 more times at CI-length
   intervals (~5 min), 1 rerun max for a suspected infra flake — THEN stop
   and report instead of polling forever. Never self-approve your own PR,
@@ -196,7 +196,7 @@ review` on the PR and wait for the review run to finish — never merge
   CodeRabbit's `request_changes_workflow: true` plus its title/description
   checks in `error` mode block the merge until resolved. The manual review
   from the loop above must have finished with no unresolved blocking
-  findings.
+  findings (non-blocking nits may remain).
 
 ## §3 Output
 
