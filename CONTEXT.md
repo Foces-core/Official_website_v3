@@ -3,9 +3,8 @@
 Shared vocabulary for the FOCES site. Keep this current as new concepts are
 named; the /domain-modeling skill sharpens fuzzy terms here.
 
-> Canonical glossary for agents (per `CLAUDE.md`): seam definitions here win.
-> [`UBIQUITOUS_LANGUAGE.md`](UBIQUITOUS_LANGUAGE.md) is the human-facing
-> companion — it must not redefine these terms.
+> Single canonical glossary (per `CLAUDE.md`) — aliases, relationships, and
+> flagged ambiguities live here too, so terms never fork across files.
 
 - **Event** — a past or upcoming fest event (Prompt Paradox, Coding Arena,
   Agentic Workshop…). Single source of truth: `src/data/events.js`
@@ -98,3 +97,60 @@ lowPower }` from `detectProfile`. One seam, two entries: components
 - **Staging crawler exclusion** — crawler blocking via `<meta name="robots" content="noindex, nofollow" />`
   and `public/robots.txt` for the upstream repository until formal release forks (ADR-0012).
 - **Canonical production deployment** — [https://focess-five.vercel.app/](https://focess-five.vercel.app/): the continuous deployment edge target linked to `main` with immutable asset caching and security headers via `vercel.json`.
+- **Scrollspy** — viewport-geometry evaluation marking which section is currently active for the navbar.
+- **Navigation coordinator** — deep orchestration module (`navigationCoordinator.js`) unifying section scroll, overlay dismissal, body lock release, and paint deferral.
+- **Hero waves stage** — WebGL lifecycle adapter (`HeroStage/heroWavesStage.js`) for the Three.js/Vanta hero background, with context-loss recovery and low-power fallback.
+- **Roving tabindex** — APG pattern where exactly one item in a composite widget owns `tabindex="0"` while siblings hold `tabindex="-1"`.
+- **Keyboard arbitration** — priority system granting arrow-key control to exactly one active on-screen widget (`keyboardLock.js`).
+- **Scroll lock** — reference-counted body scroll lock held while modal overlays or drawers are open (`scrollLock.js`).
+- **Overlay lifecycle** — unified open/close lifecycle for modals and drawers (scroll-lock, focus entry, tab trapping, Escape, focus restore).
+- **Route prefetch** — idle/intent/trajectory-based route-chunk loading, gated by the network profile.
+- **Echo slide** — highlighted feature card in the Featuring carousel (`echoSlides.js`).
+
+## Aliases to avoid
+
+Say the canonical term, never the alias:
+
+- Section scroll policy — not "smooth scroll flag" / "animation setting"
+- Next-paint deferral — not "delay timer" / "setTimeout hack" / "double rAF"
+- Navigation coordinator — not "scroll manager" / "nav helper"
+- Hero waves stage — not "3D background" / "canvas effect"
+- Roving tabindex — not "tab manager" / "focus switcher"
+- Viewport seam — not "screen size watcher" / "media query helper"
+- ARIA activation — not "key handler" / "click simulator"
+- Keyboard arbitration — not "focus lock" / "key dispatcher"
+- Scroll lock — not "body freeze" / "modal backdrop lock"
+- Overlay lifecycle — not "modal manager" / "popup controller"
+- Route prefetch — not "page preload" / "quick loader"
+- Event — not "activity" / "programme"
+- Event photo — not "image item" / "picture record"
+- Team roster — not "member list" / "committee data"
+- Echo slide — not "carousel card" / "showcase banner"
+- ScrollGate — not "lazy loader" / "suspense trigger"
+- Cube drag mechanics — not "3D container" / "cube rotator"
+- Easter egg celebration — not "spin reward" / "bonus animation"
+- Honeypot spam defense — not "bot blocker" / "captcha gate"
+- Contact draft persistence — not "form storage" / "auto-save state"
+- Scrollspy — not "nav watcher" / "section highlighter"
+
+## Relationships
+
+- A **Device profile** governs both **Autoplay gating** and the **Section scroll policy**.
+- A **Scroll lock** reference count increments on each open overlay (**Navbar mobile drawer**, **Event modal**) and releases only when the count returns to zero.
+- **Next-paint deferral** executes focus restoration after the **Scroll lock** has released on overlay unmount.
+- **Keyboard arbitration** evaluates the topmost on-screen widget among the **Cube drag mechanics** and **Team carousel**.
+- **ARIA activation** converts Enter and Space keystrokes into synthetic activation for custom interactive elements.
+
+## Example dialogue
+
+> **Dev:** "How should the mobile navbar restore focus when closed?"
+> **Domain expert:** "Use **Next-paint deferral**. It waits two frames so the **Scroll lock** unmounts cleanly before focusing the toggle."
+> **Dev:** "And if the user clicks a nav link while `prefers-reduced-motion` is active?"
+> **Domain expert:** "The **Section scroll policy** resolves to `auto` rather than `smooth` so the scroll happens instantaneously."
+> **Dev:** "Do custom gallery thumbnails need custom keyboard bindings?"
+> **Domain expert:** "Yes, bind them through **ARIA activation** so both Enter and Space trigger gallery expansion while preventing default spacebar page scrolling."
+
+## Flagged ambiguities
+
+- `"review"` vs **Role**: the Execom data previously used `review` to hold member titles; canonically it is **Role** (`Chairperson`, `Secretary`, …).
+- `"animation"` vs **Section scroll policy**: anchor transitions must never hardcode CSS/DOM `smooth` — always consult the motion policy from the **Device profile**.

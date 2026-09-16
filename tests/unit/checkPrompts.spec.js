@@ -3,7 +3,7 @@ import {
   STUDIO_EXCLUSION_FILES,
   checkAdrPointerFresh,
   checkDocPaths,
-  checkGlossaryOwnership,
+  checkGlossarySingular,
   checkSingleCoderabbitConfig,
   checkStudioExclusions,
   extractDocPaths,
@@ -113,23 +113,32 @@ describe('extractDocPaths / checkDocPaths', () => {
   });
 });
 
-// 5. Canonical glossary named.
-describe('checkGlossaryOwnership', () => {
-  it('passes when a canonical glossary is named', () => {
-    expect(checkGlossaryOwnership('CONTEXT.md is canonical for agents')).toEqual([]);
+// 5. Single glossary, no fork.
+describe('checkGlossarySingular', () => {
+  const noFork = () => false;
+
+  it('passes when the fork is gone and CONTEXT.md is pointed at', () => {
+    expect(checkGlossarySingular(noFork, 'glossary: CONTEXT.md')).toEqual([]);
   });
 
-  it('flags the ambiguous two-glossary state', () => {
-    const findings = checkGlossaryOwnership('see CONTEXT.md and UBIQUITOUS_LANGUAGE.md');
+  it('flags a reintroduced UBIQUITOUS_LANGUAGE.md', () => {
+    const findings = checkGlossarySingular(() => true, 'glossary: CONTEXT.md');
     expect(findings).toHaveLength(1);
-    expect(findings[0]).toContain('canonical');
+    expect(findings[0]).toContain('UBIQUITOUS_LANGUAGE.md');
+  });
+
+  it('flags CLAUDE.md losing its CONTEXT.md pointer', () => {
+    const findings = checkGlossarySingular(noFork, 'see the docs folder');
+    expect(findings).toEqual([
+      'CLAUDE.md no longer points at CONTEXT.md as the single canonical glossary',
+    ]);
   });
 });
 
 // End to end over stub FS seams.
 describe('runAllChecks', () => {
   const healthyFs = {
-    exists: (rel) => rel !== '.github/coderabbit.yaml',
+    exists: (rel) => rel !== '.github/coderabbit.yaml' && rel !== 'UBIQUITOUS_LANGUAGE.md',
     readFile: (rel) => {
       if (rel === 'CLAUDE.md') return 'canonical glossary: CONTEXT.md; see docs/adr/ index';
       return '`src/data/team.js` and foces-webv23';
@@ -144,14 +153,15 @@ describe('runAllChecks', () => {
 
   it('aggregates findings from every section', () => {
     const findings = runAllChecks({
-      exists: (rel) => rel === '.github/coderabbit.yaml',
-      readFile: () => 'through ADR-0001, see CONTEXT.md and UBIQUITOUS_LANGUAGE.md',
+      exists: (rel) => rel === '.github/coderabbit.yaml' || rel === 'UBIQUITOUS_LANGUAGE.md',
+      readFile: () => 'through ADR-0001, see the domain docs',
       adrFileNames: ['0015-x.md'],
     });
     const joined = findings.join('\n');
     expect(joined).toContain('.github/coderabbit.yaml');
     expect(joined).toContain('ADR-0001');
     expect(joined).toContain('foces-webv23');
-    expect(joined).toContain('canonical');
+    expect(joined).toContain('UBIQUITOUS_LANGUAGE.md');
+    expect(joined).toContain('CONTEXT.md');
   });
 });

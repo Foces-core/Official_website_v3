@@ -7,9 +7,8 @@ Instructions and invariants for Claude working in this repository.
 - **Live Production URL:** [https://focess-five.vercel.app/](https://focess-five.vercel.app/)
 - **Architecture decisions:** [`docs/adr/`](docs/adr/README.md) (see the index there for the current range).
 - **Agent instructions & map:** [`AGENTS.md`](AGENTS.md).
-- **Domain glossary (canonical for agents):** [`CONTEXT.md`](CONTEXT.md) — seam definitions agents must obey.
-  [`UBIQUITOUS_LANGUAGE.md`](UBIQUITOUS_LANGUAGE.md) is the human-facing domain language; it must not
-  redefine seam terms (see its header).
+- **Domain glossary (single, canonical):** [`CONTEXT.md`](CONTEXT.md) — seam definitions, aliases to avoid,
+  relationships, and flagged ambiguities. There is no second glossary.
 - **Standards & contributing:** [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Non-Negotiable Invariants

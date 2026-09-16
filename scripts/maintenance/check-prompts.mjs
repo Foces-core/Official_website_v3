@@ -19,8 +19,9 @@
  *      the exclusion lives in ~7 files and one drift re-arms the studio.
  *   4. Every src/docs/scripts/tests/public path named in AGENTS.md exists —
  *      the Map section is the accretion hotspot and must not point at ghosts.
- *   5. CLAUDE.md names the canonical agent glossary, so CONTEXT.md and
- *      UBIQUITOUS_LANGUAGE.md can't silently fork seam definitions.
+ *   5. CONTEXT.md is the single glossary — UBIQUITOUS_LANGUAGE.md was merged
+ *      into it (aliases, relationships, dialogue, ambiguities) and must not
+ *      come back, and CLAUDE.md must still point at CONTEXT.md.
  *
  * Usage:  node scripts/maintenance/check-prompts.mjs
  *         pnpm check:prompts
@@ -134,15 +135,20 @@ export function checkDocPaths(markdown, exists, listDir) {
   return findings;
 }
 
-// 5. One canonical agent glossary, named in CLAUDE.md.
-export function checkGlossaryOwnership(claudeText) {
-  if (!/canonical/i.test(claudeText)) {
-    return [
-      'CLAUDE.md names no canonical agent glossary — CONTEXT.md vs ' +
-        'UBIQUITOUS_LANGUAGE.md ownership is ambiguous; name one canonical for agents',
-    ];
+// 5. One glossary: the UBIQUITOUS_LANGUAGE.md fork was merged into
+// CONTEXT.md and must not be reintroduced.
+export function checkGlossarySingular(exists, claudeText) {
+  const findings = [];
+  if (exists('UBIQUITOUS_LANGUAGE.md')) {
+    findings.push(
+      'UBIQUITOUS_LANGUAGE.md exists — it was merged into CONTEXT.md ' +
+        '(aliases, relationships, dialogue, ambiguities); delete it so terms cannot fork',
+    );
   }
-  return [];
+  if (!claudeText.includes('CONTEXT.md')) {
+    findings.push('CLAUDE.md no longer points at CONTEXT.md as the single canonical glossary');
+  }
+  return findings;
 }
 
 export function runAllChecks({ exists, readFile, adrFileNames, listDir }) {
@@ -153,7 +159,7 @@ export function runAllChecks({ exists, readFile, adrFileNames, listDir }) {
     ...checkAdrPointerFresh(claudeMd, maxAdrNumber(adrFileNames)),
     ...checkStudioExclusions(readFile),
     ...checkDocPaths(agentsMd, exists, listDir),
-    ...checkGlossaryOwnership(claudeMd),
+    ...checkGlossarySingular(exists, claudeMd),
   ];
 }
 
