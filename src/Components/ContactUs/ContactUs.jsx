@@ -1,5 +1,5 @@
 import { FaFacebookF, FaInstagram, FaXTwitter, FaLocationDot } from 'react-icons/fa6';
-import { FaLinkedinIn, FaPhoneAlt } from 'react-icons/fa';
+import { FaLinkedinIn } from 'react-icons/fa';
 import { IoSend, IoMail } from 'react-icons/io5';
 import Contactus from '../../assets/Contact us.svg';
 import Title from '../../assets/title.svg';
@@ -80,10 +80,6 @@ function ContactUs() {
                   </span>
                 </div>
                 <div className="  mb-4 text-lg inline-flex space-x-2 items-center">
-                  <FaPhoneAlt />
-                  <span>+91-479-2454125</span>
-                </div>
-                <div className="mb-4 text-lg inline-flex space-x-2 items-center">
                   <IoMail />
                   <a
                     href={`mailto:${CONTACT_EMAIL}`}
