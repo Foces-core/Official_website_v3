@@ -63,7 +63,7 @@ export default [
   },
   {
     // Unit tests use Vitest's globals directly (describe/it/expect/vi).
-    files: ['tests/unit/**/*.spec.js'],
+    files: ['tests/unit/**/*.spec.{js,jsx}'],
     languageOptions: {
       globals: { ...globals.browser, ...globals.vitest },
     },

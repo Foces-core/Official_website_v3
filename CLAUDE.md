@@ -5,9 +5,10 @@ Instructions and invariants for Claude working in this repository.
 ## Critical Pointers
 
 - **Live Production URL:** [https://focess-five.vercel.app/](https://focess-five.vercel.app/)
-- **Architecture decisions:** [`docs/adr/`](docs/adr/README.md) (ADR-0001 through ADR-0010).
+- **Architecture decisions:** [`docs/adr/`](docs/adr/README.md) (see the index there for the current range).
 - **Agent instructions & map:** [`AGENTS.md`](AGENTS.md).
-- **Domain glossary:** [`CONTEXT.md`](CONTEXT.md) and [`UBIQUITOUS_LANGUAGE.md`](UBIQUITOUS_LANGUAGE.md).
+- **Domain glossary (single, canonical):** [`CONTEXT.md`](CONTEXT.md) — seam definitions, aliases to avoid,
+  relationships, and flagged ambiguities. There is no second glossary.
 - **Standards & contributing:** [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Non-Negotiable Invariants

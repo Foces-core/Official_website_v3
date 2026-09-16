@@ -91,11 +91,13 @@ jobs:
           PID_ASSETS=$!
           pnpm check:specs &
           PID_SPECS=$!
+          pnpm check:prompts &
+          PID_PROMPTS=$!
           git diff --check &
           PID_DIFF=$!
 
           failed=0
-          for pid in "$PID_LINT" "$PID_FORMAT" "$PID_AUDIT" "$PID_KNIP" "$PID_WORKFLOWS" "$PID_ASSETS" "$PID_SPECS" "$PID_DIFF"; do
+          for pid in "$PID_LINT" "$PID_FORMAT" "$PID_AUDIT" "$PID_KNIP" "$PID_WORKFLOWS" "$PID_ASSETS" "$PID_SPECS" "$PID_PROMPTS" "$PID_DIFF"; do
             wait "$pid" || failed=1
           done
           if [ "$failed" -ne 0 ]; then
