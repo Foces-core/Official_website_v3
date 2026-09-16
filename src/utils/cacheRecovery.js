@@ -65,9 +65,9 @@ export async function unregisterServiceWorkers({ worker } = {}) {
     if (!container || typeof container.getRegistrations !== 'function') return 0;
     const registrations = await container.getRegistrations();
     const results = await Promise.all(
-      registrations.map((registration) => {
+      registrations.map(async (registration) => {
         try {
-          return registration.unregister();
+          return await registration.unregister();
         } catch {
           return false;
         }

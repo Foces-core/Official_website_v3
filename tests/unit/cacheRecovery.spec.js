@@ -12,6 +12,16 @@ describe('cacheRecovery', () => {
     expect(getErrorCode(new Error('Failed to load module script'))).toMatch(/^CHUNK-/);
   });
 
+  it('getErrorCode is a deterministic golden value per input', () => {
+    expect(getErrorCode(new Error('Loading chunk 5 failed'))).toBe('CHUNK-FYVGBE');
+    expect(getErrorCode(new TypeError('x is not a function'))).toBe('APP-R50GXJ');
+    expect(getErrorCode(null)).toBe('APP-D5CB1L');
+    expect(getErrorCode(undefined)).toBe('APP-D5CB1L');
+    expect(getErrorCode('plain string')).toBe('APP-GT0EGK');
+    // Short base-36 hash: exercises the padStart(7, '0') padding path.
+    expect(getErrorCode('zz')).toBe('APP-0BGUOT');
+  });
+
   it('getErrorCode prefixes genuine crashes with APP and is stable', () => {
     const first = getErrorCode(new TypeError('x is not a function'));
     const second = getErrorCode(new TypeError('x is not a function'));
@@ -44,12 +54,37 @@ describe('cacheRecovery', () => {
     expect(await purgeAppCaches({ caches: failing })).toBe(0);
   });
 
+  it('purgeAppCaches counts rejected deletes as failures', async () => {
+    const fakeCaches = {
+      keys: () => Promise.resolve(['good-v1', 'poisoned-v2']),
+      delete: (key) =>
+        key === 'good-v1' ? Promise.resolve(true) : Promise.reject(new Error('locked')),
+    };
+    expect(await purgeAppCaches({ caches: fakeCaches })).toBe(1);
+  });
+
   it('unregisterServiceWorkers removes every registration', async () => {
     const worker = {
       getRegistrations: () =>
         Promise.resolve([
           { unregister: () => Promise.resolve(true) },
           { unregister: () => Promise.resolve(false) },
+        ]),
+    };
+    expect(await unregisterServiceWorkers({ worker })).toBe(1);
+  });
+
+  it('unregisterServiceWorkers counts per-registration rejections as failures', async () => {
+    const worker = {
+      getRegistrations: () =>
+        Promise.resolve([
+          { unregister: () => Promise.resolve(true) },
+          { unregister: () => Promise.reject(new Error('gone')) },
+          {
+            unregister: () => {
+              throw new Error('sync boom');
+            },
+          },
         ]),
     };
     expect(await unregisterServiceWorkers({ worker })).toBe(1);
