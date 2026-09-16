@@ -157,6 +157,18 @@ create` → **wait for every gate to finish** — the four required checks
   commit messages), GitHub's default code scanning (CodeQL), and the
   CodeRabbit review → resolve any failures/findings with follow-up commits
   → merge when all green.
+- **Review loop (every PR — human-authored or bot).** After CI is green:
+  (1) check for reviewer input — `gh pr view --json
+reviews,comments,reviewDecision` plus inline threads — and request a
+  reviewer if none is assigned. (2) Address every finding with follow-up
+  commits (never dismiss without reason), push, and wait for the next
+  review round. (3) Repeat until `reviewDecision` is APPROVED (or only
+  non-blocking nits remain) — then merge. Be credit-aware: bounded waits
+  only (a few CI-length polls, one rerun for an infra flake). If no new
+  reviews arrive, the branch churns under you (bot force-pushes), or a red
+  check needs human judgment, stop and report instead of polling forever.
+  Never self-approve your own PR, and never merge it without the required
+  approval unless the human explicitly instructs the bypass.
 - **The remote moves on its own** (Dependabot, Renovate, other agents push
   daily). Before pushing anything, `git fetch origin` and rebase/merge the
   latest `main`; never force-push. If a push is rejected, fetch + rebase +
