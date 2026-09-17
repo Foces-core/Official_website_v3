@@ -40,7 +40,7 @@ function Execom() {
               {/* Portrait widths: w-28/sm:w-40/md:w-52 (~112-208px) — 1x
                   viewports download the 400w srcset candidate. */}
               <BlurImage
-                className="object-cover object-top w-full h-full grayscale group-hover:filter-none transition-all duration-500"
+                className="advisor-photo object-cover object-top w-full h-full grayscale group-hover:filter-none transition-all duration-500"
                 src={advisor.img}
                 srcSet={advisor.srcset}
                 sizes="(min-width: 768px) 220px, (min-width: 640px) 170px, 130px"

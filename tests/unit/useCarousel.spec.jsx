@@ -19,6 +19,8 @@ let harness;
 function TrackProbe({
   total = 4,
   mode = 'flat',
+  slidesPerView = 1,
+  spaceBetween = 0,
   onActiveChange,
   autoplayDelay = 0,
   initialIndex,
@@ -30,6 +32,8 @@ function TrackProbe({
     elRef,
     total,
     mode,
+    slidesPerView,
+    spaceBetween,
     autoplayDelay,
     initialIndex,
     onActiveChange,
@@ -58,6 +62,8 @@ function TrackProbe({
 TrackProbe.propTypes = {
   total: PropTypes.number,
   mode: PropTypes.oneOf(['flat', 'cube']),
+  slidesPerView: PropTypes.number,
+  spaceBetween: PropTypes.number,
   onActiveChange: PropTypes.func,
   autoplayDelay: PropTypes.number,
   initialIndex: PropTypes.number,
@@ -234,6 +240,50 @@ describe('useCarousel — pointer drag', () => {
     expect(move.defaultPrevented).toBe(true);
     finish();
     expect(inst(harness).activeIndex).toBe(5);
+  });
+
+  it('vertical drag releases to page scroll, settles nowhere', () => {
+    harness.render(<TrackProbe total={4} mode="flat" />);
+    const root = harness.container.querySelector('.probe-root');
+    const track = root.querySelector('.swiper-wrapper');
+    const pointer = (type, x, y) =>
+      new PointerEventCtor(type, {
+        pointerId: 1,
+        pointerType: 'touch',
+        clientX: x,
+        clientY: y,
+        bubbles: true,
+        cancelable: true,
+      });
+    track.dispatchEvent(pointer('pointerdown', 400, 400));
+    const move = pointer('pointermove', 405, 480);
+    track.dispatchEvent(move);
+    expect(move.defaultPrevented).toBe(false);
+    track.dispatchEvent(pointer('pointerup', 405, 480));
+    expect(inst(harness).activeIndex).toBe(4);
+  });
+
+  it('flat: marks only the middle visible slide as center', () => {
+    harness.render(<TrackProbe total={4} mode="flat" slidesPerView={3} />);
+    const root = harness.container.querySelector('.probe-root');
+    const els = slideEls(root);
+    const centerEls = () => els.filter((el) => el.hasAttribute('data-slide-center'));
+    // Starts at raw 4 (middle copy): visible 4, 5, 6 — center is 5.
+    expect(centerEls()).toEqual([els[5]]);
+    inst(harness).slideNext();
+    expect(centerEls()).toEqual([els[6]]);
+    inst(harness).slidePrev();
+    inst(harness).slidePrev();
+    expect(centerEls()).toEqual([els[4]]);
+  });
+
+  it('cube: center matches active', () => {
+    harness.render(<TrackProbe total={4} mode="cube" faceWidth={300} />);
+    const root = harness.container.querySelector('.probe-root');
+    const els = slideEls(root);
+    expect(els.filter((el) => el.hasAttribute('data-slide-center'))).toEqual([els[4]]);
+    inst(harness).slideNext();
+    expect(els.filter((el) => el.hasAttribute('data-slide-center'))).toEqual([els[5]]);
   });
 });
 

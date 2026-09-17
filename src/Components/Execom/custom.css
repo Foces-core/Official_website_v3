@@ -6,13 +6,12 @@
     width: 250px;
 }
 
-/* The hand-rolled carousel owns its touch gesture (same rule as the About
-   cube): rotating the cube / dragging the flat slider must never scroll the
-   page, and a pan-y allowance would let diagonal drags jump the viewport.
-   The hook's pointer handlers preventDefault non-passive pointermoves to
-   cover the gesture in JS (ADR-0007). */
+/* The hand-rolled carousel owns only the horizontal gesture: touch-action
+   stays pan-y so a vertical swipe scrolls the page, and the hook's pointer
+   handlers claim the gesture (preventDefault) only after the drag locks to
+   the x-axis (ADR-0007). */
 .execom-swiper {
-    touch-action: none;
+    touch-action: pan-y;
 }
 
 /* Cube visibility: every face is absolutely positioned by the hook; only the
@@ -34,6 +33,24 @@
 [data-carousel-mode='cube'][data-carousel-ready] [data-slide-prev] {
     visibility: visible;
     pointer-events: auto;
+}
+
+/* Position-owned color: the centered card stays in color, phone and desktop
+   alike (cube shows one face; flat colors only the middle card). Desktop
+   adds hover coloring through the card's group-hover class; touch has no
+   hover, so phones color the centered card only. Unlayered CSS beats
+   Tailwind's layered `grayscale` utility, so no !important is needed. */
+.execom-swiper [data-slide-center] img,
+.execom-cube-swiper [data-slide-center] img {
+    filter: none;
+}
+
+/* Advisor portrait: grayscale until hover on desktop, always color on
+   touch devices where hover never fires. */
+@media (hover: none) {
+    .advisor-photo {
+        filter: none;
+    }
 }
 
 .container-execom {
@@ -71,9 +88,9 @@
         height: 390px;
     }
     .execom-cube-swiper {
-        /* Rotating the cube must never scroll the page — the carousel owns
-           the whole gesture (same rule as the About cube). */
-        touch-action: none;
+        /* Horizontal drags rotate the cube; vertical swipes scroll the page
+           (the hook releases vertical gestures back to the browser). */
+        touch-action: pan-y;
         perspective: 1200px;
     }
 }

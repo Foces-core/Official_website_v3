@@ -60,6 +60,8 @@ export default function useCarousel({
     dragging: false,
     pointerId: null,
     dragStartX: 0,
+    dragStartY: 0,
+    dragAxis: null,
     dragOffset: 0,
     lastMoveX: 0,
     lastMoveT: 0,
@@ -103,10 +105,16 @@ export default function useCarousel({
     if (!t) return;
     const children = Array.from(t.children);
     const raw = s.raw;
+    // Center owns the color state: cube shows one face (center = active);
+    // flat shows slidesPerView cards with only the middle one colored.
+    const { mode: m, slidesPerView: spv } = p();
+    const center =
+      m === 'cube' ? raw : Math.min(raw + Math.floor((spv - 1) / 2), children.length - 1);
     children.forEach((slide, i) => {
       slide.toggleAttribute('data-slide-active', i === raw);
       slide.toggleAttribute('data-slide-next', i === raw + 1);
       slide.toggleAttribute('data-slide-prev', i === raw - 1);
+      slide.toggleAttribute('data-slide-center', i === center);
     });
   }
 
@@ -216,6 +224,8 @@ export default function useCarousel({
     if (s.autoplayTimer) stopAutoplay();
     s.pointerId = e.pointerId;
     s.dragStartX = e.clientX;
+    s.dragStartY = e.clientY ?? 0;
+    s.dragAxis = null;
     s.dragOffset = 0;
     s.lastMoveX = e.clientX;
     s.lastMoveT = performance.now();
@@ -229,8 +239,32 @@ export default function useCarousel({
 
   function onPointerMove(e) {
     if (!s.dragging || e.pointerId !== s.pointerId) return;
-    e.preventDefault();
+    // Gesture ownership: the carousel claims only horizontal drags. A
+    // vertical-dominant move is a page scroll — release it back to the
+    // browser (touch-action: pan-y) instead of preventDefault-ing it.
     const dx = e.clientX - s.dragStartX;
+    const dy = (e.clientY ?? 0) - s.dragStartY;
+    if (!s.dragAxis) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      if (Math.abs(dy) > Math.abs(dx)) {
+        s.dragging = false;
+        const pid = s.pointerId;
+        try {
+          track()?.releasePointerCapture?.(pid);
+        } catch {
+          /* ignore */
+        }
+        s.pointerId = null;
+        s.dragOffset = 0;
+        if (s.dragAutoplayWasOn) {
+          s.dragAutoplayWasOn = false;
+          startAutoplay();
+        }
+        return;
+      }
+      s.dragAxis = 'x';
+    }
+    e.preventDefault();
     const now = performance.now();
     s.velocity = (e.clientX - s.lastMoveX) / Math.max(1, now - s.lastMoveT);
     s.lastMoveX = e.clientX;
@@ -244,6 +278,7 @@ export default function useCarousel({
   function onPointerUp(e) {
     if (!s.dragging || e.pointerId !== s.pointerId) return;
     s.dragging = false;
+    s.dragAxis = null;
     const pid = s.pointerId;
     try {
       track()?.releasePointerCapture?.(pid);
