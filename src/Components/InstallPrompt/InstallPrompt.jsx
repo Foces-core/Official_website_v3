@@ -92,8 +92,8 @@ export default function InstallPrompt() {
   return (
     // role=region, not dialog: this is a non-modal toast, and a dialog role
     // without aria-modal confuses AT (and selector-based tooling). Sits at
-    // top-right below the fixed navbar (z-10) and one z-layer below the
-    // mobile nav overlay (z-50) so the menu always wins if both ever mount.
+    // top-right below the fixed navbar (z-50) and one z-layer below the
+    // mobile nav overlay (z-[60]) so the menu always wins if both ever mount.
     <div
       role="region"
       aria-label="Install FOCES app"

@@ -135,6 +135,16 @@ function Root() {
   // is the capability.
   const { splash } = useExperienceCapabilities();
   const hiddenRef = useRef(false);
+  const { pathname } = useLocation();
+
+  // The build injects a static hero <img> into index.html for the home LCP
+  // (vite.config.js). HeroSection removes it on mount — but only home mounts
+  // HeroSection. On any other route (e.g. a direct load of /contact) the
+  // static copy would stay in the DOM forever as a giant floating FOCES logo,
+  // so the router root removes it whenever home isn't going to.
+  useEffect(() => {
+    if (pathname !== '/') document.getElementById('hero-lcp-static')?.remove();
+  }, [pathname]);
 
   useEffect(() => {
     const splash = document.getElementById('boot-splash');
