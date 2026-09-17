@@ -13,7 +13,7 @@ import useOfflineToast from '../../hooks/useOfflineToast.js';
  * transitions, so a dismiss can never nag-loop while staying offline.
  *
  * role=status (polite live region): screen readers announce the state change
- * without stealing focus. Sits below the mobile nav overlay (z-50) so the
+ * without stealing focus. Sits below the mobile nav overlay (z-[60]) so the
  * menu always wins if both ever mount.
  */
 export default function OfflineToast() {

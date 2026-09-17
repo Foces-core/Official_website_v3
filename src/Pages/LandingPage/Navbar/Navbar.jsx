@@ -264,7 +264,7 @@ export default function Navbar() {
       id={isMobile ? 'nav-items-mobile' : 'nav-items'}
       className={
         isMobile
-          ? `Items nav-overlay z-50 fixed inset-0 flex flex-col items-center [justify-content:safe_center] gap-8 pb-10 overflow-y-auto overscroll-contain backdrop-blur-md ${
+          ? `Items nav-overlay z-[60] fixed inset-0 flex flex-col items-center [justify-content:safe_center] gap-8 pb-10 overflow-y-auto overscroll-contain backdrop-blur-md ${
               isDark ? 'nav-w bg-[#0b0b0c]/95' : 'nav-b bg-[#F5F5F5]/95'
             }`
           : `Items z-10 flex items-center justify-center gap-[clamp(0.75rem,2vw,2.25rem)] whitespace-nowrap min-[768px]:justify-self-center ${
@@ -329,8 +329,11 @@ export default function Navbar() {
 
   return (
     <>
+      {/* Fixed bar sits at z-50: above page content (≤ z-20) and the
+          toast pills (z-40), below the mobile overlay (z-60) so the open
+          menu + its close button always win. */}
       <div
-        className={`fixed z-10 left-0 top-0 w-full shadow ${
+        className={`fixed z-50 left-0 top-0 w-full shadow ${
           isDark ? 'nav-w' : 'nav-b'
         } flex items-center px-5 pt-4 pb-2 font-semibold max-[767px]:pl-4 max-[767px]:py-2 max-[767px]:h-auto max-[767px]:w-screen min-[768px]:grid min-[768px]:grid-cols-[1fr_auto_1fr] ${
           isScrolled || currentItem === 'contact'
