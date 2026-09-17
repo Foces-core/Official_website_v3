@@ -135,16 +135,6 @@ function Root() {
   // is the capability.
   const { splash } = useExperienceCapabilities();
   const hiddenRef = useRef(false);
-  const { pathname } = useLocation();
-
-  // The build injects a static hero <img> into index.html for the home LCP
-  // (vite.config.js). HeroSection removes it on mount — but only home mounts
-  // HeroSection. On any other route (e.g. a direct load of /contact) the
-  // static copy would stay in the DOM forever as a giant floating FOCES logo,
-  // so the router root removes it whenever home isn't going to.
-  useEffect(() => {
-    if (pathname !== '/') document.getElementById('hero-lcp-static')?.remove();
-  }, [pathname]);
 
   useEffect(() => {
     const splash = document.getElementById('boot-splash');
@@ -214,6 +204,19 @@ function Root() {
 }
 
 const container = document.getElementById('root');
+
+// The build injects a static hero <img> into index.html for the home LCP
+// (vite.config.js); home's HeroSection removes it on mount. A direct load of
+// any other route (/contact, /events) never mounts HeroSection, so the
+// static copy would linger as a giant floating FOCES logo. Remove it here —
+// synchronously before first render, gated on the route so home keeps its
+// LCP element until HeroSection takes over. Module scripts are deferred, so
+// the static hero has already painted (and counted for LCP) by the time this
+// runs; an effect would be a frame too late and flash on direct loads.
+if (window.location.pathname !== '/') {
+  document.getElementById('hero-lcp-static')?.remove();
+}
+
 const root = createRoot(container);
 
 root.render(
