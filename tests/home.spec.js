@@ -194,6 +194,51 @@ test.describe('Cube touch rotation', () => {
     expect(result.prevented).toBe(true);
   });
 
+  test('a second finger mid-drag neither re-anchors nor ends the rotation', async ({ page }) => {
+    // Regression guard for single-touch ownership in useCubeDrag: the drag
+    // belongs to the touch that started it. All events dispatch
+    // synchronously in one evaluate (same determinism reasoning as
+    // dragCube) — rotation deltas are exact, immune to auto-spin drift.
+    await scrollToCube(page);
+    const rots = await page.evaluate(() => {
+      const el = document.getElementById('boxDiv-about');
+      const rect = el.getBoundingClientRect();
+      const x0 = rect.left + rect.width / 2;
+      const y0 = rect.top + rect.height / 2;
+      const t = (id, x, y) => new Touch({ identifier: id, target: el, clientX: x, clientY: y });
+      const fire = (type, touches, changed) =>
+        el.dispatchEvent(
+          new TouchEvent(type, {
+            touches,
+            targetTouches: touches,
+            changedTouches: changed,
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+      const rot = () => {
+        const m = el.style.transform.match(/rotateY\((-?[\d.]+)deg\)/);
+        return m ? parseFloat(m[1]) : null;
+      };
+      // Finger 1 drags right 60px: +36deg at 0.6 sens.
+      fire('touchstart', [t(1, x0, y0)], [t(1, x0, y0)]);
+      fire('touchmove', [t(1, x0 + 60, y0)], [t(1, x0 + 60, y0)]);
+      const afterFirst = rot();
+      // Finger 2 lands and drags left 60px: must be ignored, no jump.
+      fire('touchstart', [t(1, x0 + 60, y0), t(2, x0 + 60, y0)], [t(2, x0 + 60, y0)]);
+      fire('touchmove', [t(1, x0 + 60, y0), t(2, x0, y0)], [t(2, x0, y0)]);
+      const afterSecond = rot();
+      // Finger 2 lifts while finger 1 stays down: the drag continues.
+      fire('touchend', [t(1, x0 + 60, y0)], [t(2, x0, y0)]);
+      fire('touchmove', [t(1, x0 + 100, y0)], [t(1, x0 + 100, y0)]);
+      const afterResume = rot();
+      fire('touchend', [], [t(1, x0 + 100, y0)]);
+      return { afterFirst, afterSecond, afterResume };
+    });
+    expect(rots.afterSecond).toBeCloseTo(rots.afterFirst, 5);
+    expect(rots.afterResume - rots.afterFirst).toBeCloseTo(24, 0);
+  });
+
   test('rapid touch drags fire the easter egg toast on phones (easier 8-spin bar)', async ({
     page,
     isMobile,

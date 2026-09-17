@@ -132,6 +132,10 @@ export const cardData = [
       [Sebin400, 400],
     ]),
     blur: SebinBlur,
+    // Per-photo crop: this portrait needs centering while the roster default
+    // is object-top. Lives in data (not a name check in the component) so no
+    // member is ever special-cased by name in shared UI.
+    imgPosition: 'object-center',
     role: 'Project Coordinator',
   },
   {

@@ -1,6 +1,6 @@
 import { validateContactForm, isSpamSubmission } from './validateContactForm.js';
 
-export const CONTACT_EMAIL = 'Sebinmathew543@gmail.com';
+export const CONTACT_EMAIL = 'foces@ceconline.edu';
 
 /**
  * Pure decision: which toast autoClose delay applies for an outcome type?

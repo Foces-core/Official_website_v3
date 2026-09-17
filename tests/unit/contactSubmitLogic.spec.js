@@ -8,7 +8,14 @@ import {
 
 describe('contactSubmitLogic pure outcome resolver', () => {
   it('defines the canonical club contact email', () => {
-    expect(CONTACT_EMAIL).toBe('Sebinmathew543@gmail.com');
+    expect(CONTACT_EMAIL).toBe('foces@ceconline.edu');
+  });
+
+  it('never falls back to a personal freemail address', () => {
+    // Regression: the club contact used to be a personal gmail. The
+    // address on the Contact page and in the mailto fallback must belong
+    // to the club, so a personal-address regression fails CI here.
+    expect(CONTACT_EMAIL).not.toMatch(/@(gmail|yahoo|outlook|hotmail|icloud)\./i);
   });
 
   describe('resolveSendChannel', () => {
@@ -43,7 +50,7 @@ describe('contactSubmitLogic pure outcome resolver', () => {
         message: 'Excited for the hackathon!',
       });
 
-      expect(href).toContain('mailto:Sebinmathew543@gmail.com');
+      expect(href).toContain('mailto:foces@ceconline.edu');
       expect(href).toContain('subject=Hello%20FOCES');
       expect(href).toContain('body=Name%3A%20Alice');
     });

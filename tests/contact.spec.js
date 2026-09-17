@@ -3,6 +3,10 @@ import { test, expect } from '@playwright/test';
 test.describe('Contact', () => {
   test('contact page loads with form', async ({ page }) => {
     await page.goto('/contact', { waitUntil: 'networkidle' });
+    // Regression: the build-injected static hero LCP img used to linger on
+    // direct non-home loads as a giant floating FOCES logo (only home's
+    // HeroSection removed it). The router root must clear it before paint.
+    await expect(page.locator('#hero-lcp-static')).toHaveCount(0);
     await expect(page.locator('form')).toBeVisible();
     expect(await page.locator('form input, form textarea').count()).toBeGreaterThan(0);
   });

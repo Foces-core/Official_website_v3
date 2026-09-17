@@ -139,7 +139,7 @@ describe('buildMailtoHref', () => {
   };
 
   it('builds a mailto href to the FOCES inbox', () => {
-    expect(buildMailtoHref(values)).toMatch(/^mailto:Sebinmathew543@gmail\.com\?/);
+    expect(buildMailtoHref(values)).toMatch(/^mailto:foces@ceconline\.edu\?/);
   });
 
   it('URL-encodes the subject and body', () => {
@@ -209,7 +209,7 @@ describe('useContactForm submit flow', () => {
       expect.anything(),
     );
     expect(mailtoClick).toHaveBeenCalledTimes(1);
-    expect(mailtoClick.mock.instances[0].href).toMatch(/^mailto:Sebinmathew543@gmail\.com\?/);
+    expect(mailtoClick.mock.instances[0].href).toMatch(/^mailto:foces@ceconline\.edu\?/);
     expect(readValues()).toEqual(VALID_VALUES);
     expect(readSubmitting()).toBe('false');
   });

@@ -13,6 +13,9 @@ test.describe('Events', () => {
 
   test('event cards render', async ({ page }) => {
     await page.goto('/events', { waitUntil: 'networkidle' });
+    // Same static-hero leak guard as the contact page: a direct load must
+    // never leave the home LCP img in the DOM.
+    await expect(page.locator('#hero-lcp-static')).toHaveCount(0);
     await expect(page.locator('main img').first()).toBeVisible();
     expect(await page.locator('main').count()).toBeGreaterThan(0);
   });
