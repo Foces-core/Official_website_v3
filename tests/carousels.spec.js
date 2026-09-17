@@ -156,7 +156,7 @@ test.describe('Execom mobile cube drag', () => {
     expect(seen.every((name) => typeof name === 'string' && name.length > 0)).toBe(true);
   });
 
-  test('rotating the cube never scrolls the page', async ({ page }) => {
+  test('horizontal drags claim the gesture, vertical swipes scroll the page', async ({ page }) => {
     await gotoHome(page);
     await page.evaluate(() =>
       document.getElementById('execom')?.scrollIntoView({ block: 'center' }),
@@ -184,16 +184,25 @@ test.describe('Execom mobile cube drag', () => {
         });
 
       slide.dispatchEvent(pointer('pointerdown', x0, y0));
-      const move = pointer('pointermove', x0 - 80, y0);
-      slide.dispatchEvent(move);
+      const horizontal = pointer('pointermove', x0 - 80, y0);
+      slide.dispatchEvent(horizontal);
       slide.dispatchEvent(pointer('pointerup', x0 - 80, y0));
+
+      slide.dispatchEvent(pointer('pointerdown', x0, y0));
+      const vertical = pointer('pointermove', x0, y0 + 80);
+      slide.dispatchEvent(vertical);
+      slide.dispatchEvent(pointer('pointerup', x0, y0 + 80));
       return {
         touchAction: getComputedStyle(swiper).touchAction,
-        prevented: move.defaultPrevented,
+        horizontalPrevented: horizontal.defaultPrevented,
+        verticalPrevented: vertical.defaultPrevented,
       };
     });
 
-    expect(result.touchAction).toBe('none');
-    expect(result.prevented).toBe(true);
+    // Vertical swipes belong to page scroll (touch-action pan-y); only
+    // horizontal drags rotate the cube.
+    expect(result.touchAction).toBe('pan-y');
+    expect(result.horizontalPrevented).toBe(true);
+    expect(result.verticalPrevented).toBe(false);
   });
 });
