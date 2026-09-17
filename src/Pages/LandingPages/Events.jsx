@@ -59,7 +59,10 @@ function Events() {
                   alt={evt.name}
                   loading={index === 0 ? 'eager' : 'lazy'}
                   decoding="async"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
+                  // The square posters carry header text at the top that the
+                  // h-64 banner would slice in half — anchor to the bottom so
+                  // the top text crops out fully instead of showing cut off.
+                  className="w-full h-full object-cover object-bottom group-hover:scale-105 transition-transform duration-500 ease-out"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#141416] via-transparent to-transparent opacity-90 z-10 pointer-events-none" />
                 <span className="absolute top-4 left-4 bg-black/70 backdrop-blur-md text-cyan-400 text-xs font-semibold px-3 py-1 rounded-full border border-cyan-500/30 z-20">

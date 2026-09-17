@@ -17,7 +17,8 @@ import '../Execom/custom.css';
  * mobile cube) — now both render through the shared useCarousel seam, which
  * owns the 3D cube (rotateY 90° per face, no shadows — they smear on the dark
  * bg), the flat fallback (low-power/reduced-motion), swipe/touch drag with
- * gesture ownership (touch-action: none + preventDefault), the arrow-key
+ * horizontal-only gesture ownership (touch-action: pan-y + x-axis lock, so
+ * vertical swipes scroll the page), the arrow-key
  * arbitration registration, and the on-screen autoplay gate.
  *
  * The DOM contract the E2E suite and CSS rely on is unchanged: the root keeps
@@ -100,7 +101,7 @@ function TeamCarousel({
                 }`}
               >
                 <BlurImage
-                  className={`object-cover ${d.name === 'Sebin Mathew' ? 'object-center' : 'object-top'} w-full h-full ${isDesktop ? 'card-hover' : ''} grayscale group-hover:filter-none transition-all duration-300`}
+                  className={`object-cover ${d.name === 'Sebin Mathew' ? 'object-center' : 'object-top'} w-full h-full ${isDesktop ? 'card-hover' : ''} grayscale ${isDesktop ? 'group-hover:filter-none' : ''} transition-all duration-300`}
                   src={d.img}
                   srcSet={d.srcset}
                   sizes={cardSizes}

@@ -55,7 +55,7 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: 250px;
-    border: 0.25px solid rgb(75, 75, 75);
+    border: 1px solid rgb(82, 82, 91);
 }
 
 #back-about {
@@ -64,7 +64,7 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: 250px;
-    border: 0.025px solid rgb(75, 75, 75);
+    border: 1px solid rgb(82, 82, 91);
 }
 
 #left-about {
@@ -74,7 +74,7 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: 250px;
-    border: 0.025px solid rgb(75, 75, 75);
+    border: 1px solid rgb(82, 82, 91);
 }
 
 #right-about {
@@ -84,7 +84,7 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: 250px;
-    border: 0.025px solid rgb(75, 75, 75);
+    border: 1px solid rgb(82, 82, 91);
 }
 
 #top-about {
@@ -94,7 +94,7 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: 250px;
-    border: 0.025px groove rgb(75, 75, 75);
+    border: 1px solid rgb(82, 82, 91);
 }
 
 #bottom-about {
@@ -104,7 +104,7 @@
     background-position: center;
     background-repeat: no-repeat;
     background-size: 250px;
-    border: 0.025px solid rgb(75, 75, 75);
+    border: 1px solid rgb(82, 82, 91);
 }
 
 .shadow-about {
