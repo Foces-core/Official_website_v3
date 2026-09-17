@@ -83,6 +83,21 @@ describe('validateTeam — shape rules', () => {
     const member = { name: 'A Member', img: '/a.webp', srcset: null, role: 'Lead' };
     expect(validateTeam([member]).join('\n')).toContain('srcset must be a non-empty string');
   });
+
+  it('accepts an optional per-photo imgPosition crop', () => {
+    const member = { name: 'A Member', img: '/a.webp', role: 'Lead', imgPosition: 'object-center' };
+    expect(validateTeam([member])).toEqual([]);
+  });
+
+  it('flags an imgPosition that is present but empty', () => {
+    const member = { name: 'A Member', img: '/a.webp', role: 'Lead', imgPosition: '' };
+    expect(validateTeam([member]).join('\n')).toContain('imgPosition must be a non-empty string');
+  });
+
+  it('rejects an explicit imgPosition: null (supplied but invalid)', () => {
+    const member = { name: 'A Member', img: '/a.webp', role: 'Lead', imgPosition: null };
+    expect(validateTeam([member]).join('\n')).toContain('imgPosition must be a non-empty string');
+  });
 });
 
 describe('teamData integrity (src/data/team.js)', () => {
@@ -135,5 +150,17 @@ describe('teamData integrity (src/data/team.js)', () => {
     expect(cubeSlides[0]).toBe(cardData[0]);
     expect(cubeSlides[cardData.length]).toBe(cardData[0]);
     expect(cubeSlides[cardData.length * 2]).toBe(cardData[0]);
+  });
+
+  it('never special-cases a member by name in the shared carousel', () => {
+    // Regression: a per-photo crop used to live as `d.name === '…'` in
+    // TeamCarousel.jsx. Crops belong to data (imgPosition, guarded above);
+    // a name comparison in shared UI fails this spec. Attribute reads such
+    // as alt={d.name} are fine — only comparisons are banned.
+    const carouselSource = readFileSync(
+      join(process.cwd(), 'src', 'Components', 'Execom', 'TeamCarousel.jsx'),
+      'utf8',
+    );
+    expect(carouselSource).not.toMatch(/d\.name\s*[!=]==/);
   });
 });

@@ -9,7 +9,7 @@ import { isNonEmptyString, checkUniqueKey } from './validationRules.js';
  * validateEvents.js: shape only. Whether the referenced webp files exist is
  * enforced by the bundler (a missing import fails the build).
  *
- * @param {Array<{name: string, img: string, srcset?: string, blur?: string, role: string}>} members
+ * @param {Array<{name: string, img: string, srcset?: string, blur?: string, role: string, imgPosition?: string}>} members
  * @returns {string[]}
  */
 export function validateTeam(members) {
@@ -51,6 +51,17 @@ export function validateTeam(members) {
     // must be rejected, while an omitted blur stays valid.
     if (Object.prototype.hasOwnProperty.call(member, 'blur') && !isNonEmptyString(member.blur)) {
       problems.push(`${label}: blur must be a non-empty string when present`);
+    }
+
+    // `imgPosition` is optional (the carousel defaults to object-top) but
+    // must be a non-empty string when present — same own-property semantics
+    // as `blur`/`srcset` above. Per-photo crops live here in data so shared
+    // UI never special-cases a member by name.
+    if (
+      Object.prototype.hasOwnProperty.call(member, 'imgPosition') &&
+      !isNonEmptyString(member.imgPosition)
+    ) {
+      problems.push(`${label}: imgPosition must be a non-empty string when present`);
     }
   });
 

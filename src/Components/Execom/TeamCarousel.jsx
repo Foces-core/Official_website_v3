@@ -101,7 +101,7 @@ function TeamCarousel({
                 }`}
               >
                 <BlurImage
-                  className={`object-cover ${d.name === 'Sebin Mathew' ? 'object-center' : 'object-top'} w-full h-full ${isDesktop ? 'card-hover' : ''} grayscale ${isDesktop ? 'group-hover:filter-none' : ''} transition-all duration-300`}
+                  className={`object-cover ${d.imgPosition ?? 'object-top'} w-full h-full ${isDesktop ? 'card-hover' : ''} grayscale ${isDesktop ? 'group-hover:filter-none' : ''} transition-all duration-300`}
                   src={d.img}
                   srcSet={d.srcset}
                   sizes={cardSizes}
