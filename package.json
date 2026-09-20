@@ -41,6 +41,7 @@
     "probe:perf": "node scripts/probes/perf-test.mjs",
     "probe:perf:quick": "node scripts/probes/perf-probe.mjs",
     "probe:boot": "node scripts/probes/boot-profile.mjs",
+    "probe:boot-errors": "node scripts/probes/boot-errors-probe.mjs",
     "clean": "rm -rf dist test-results playwright-report",
     "prepare": "husky"
   },

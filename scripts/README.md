@@ -37,9 +37,13 @@ pnpm probe:carousel
 pnpm probe:mobile
 pnpm probe:img
 pnpm probe:firefox
+pnpm probe:boot-errors         # does the app paint? (console/page errors, boot splash gone)
 
 # Override the target URL
 PREVIEW_URL=https://focess-five.vercel.app pnpm probe:wcag
+
+# Boot-failure triage against any deployment (server healthy, page blank?)
+PROBE_TARGET=https://focess-five.vercel.app pnpm probe:boot-errors
 
 # Perf (manual lab measurement — see below)
 pnpm probe:perf                 # full multi-profile Lighthouse run
@@ -84,6 +88,20 @@ build. Use its output to answer "which chunk is costing boot CPU?"
 `perf-test.mjs` / Lighthouse. The boot-behavioral regression it guards
 (the carousel sections must not mount/fetch at boot) is enforced in CI by
 the E2E spec `tests/carousel-lazy.spec.js`, so no CI wiring is needed here.
+
+### Boot-failure triage (`boot-errors-probe.mjs`)
+
+For "the server returns 200 but the page is blank" reports: loads the page
+in a fresh browser (no service worker), captures every console error, page
+error, and failed request, then reports whether React painted (root has
+children, boot splash gone). Exits 1 when the app did not paint or a page
+error fired — safe to hand to CI later if wanted. Crash-safe: a failed run
+still prints everything collected and always closes the browser.
+
+```bash
+pnpm probe:boot-errors                                   # local preview
+PROBE_TARGET=https://focess-five.vercel.app pnpm probe:boot-errors  # live site
+```
 
 ### Shared Constants
 
