@@ -15,7 +15,7 @@ Three operational improvements were identified during architecture review:
 
 1. **Contact draft persistence (`src/utils/contactDraft.js`):** Auto-saves non-empty form inputs (excluding the hidden honeypot) to `sessionStorage` on change. The hook `useContactForm` hydrates state on mount and clears storage on successful submission or spam discard.
 2. **Build-time pre-compression (`vite.config.js`):** Added a zero-dependency Vite build plugin leveraging `node:zlib` to generate `.br` (Brotli quality 11) and `.gz` (Gzip level 9) assets during production builds.
-3. **Staging crawler exclusion (`index.html`, `public/robots.txt`):** Configured `<meta name="robots" content="noindex, nofollow" />` and root `robots.txt` to prevent indexing until downstream release.
+3. **Staging crawler exclusion (`index.html`, `public/robots.txt`):** Configured `<meta name="robots" content="noindex, nofollow" />` and root `robots.txt` to prevent indexing until downstream release. _(Superseded by ADR-0017 — the site is now publicly indexable.)_
 
 ## Consequences
 

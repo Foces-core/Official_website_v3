@@ -46,8 +46,10 @@ function Events() {
               data-aos-duration="300"
               className="group relative rounded-2xl overflow-hidden bg-[#141416] border border-white/10 hover:border-white/30 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-cyan-500/10 flex flex-col justify-between"
             >
-              {/* Image Banner */}
-              <div className="relative h-64 w-full overflow-hidden bg-gray-900">
+              {/* Image Banner — aspect-square so the entire square poster
+                  (header text included) fits without cropping; the old h-64
+                  box sliced the artwork no matter which edge it anchored to. */}
+              <div className="relative aspect-square w-full overflow-hidden bg-gray-900">
                 <BlurImage
                   src={evt.photos[0].url}
                   srcSet={evt.photos[0].srcset}
@@ -59,9 +61,6 @@ function Events() {
                   alt={evt.name}
                   loading={index === 0 ? 'eager' : 'lazy'}
                   decoding="async"
-                  // The square posters carry header text at the top that the
-                  // h-64 banner would slice in half — anchor to the bottom so
-                  // the top text crops out fully instead of showing cut off.
                   className="w-full h-full object-cover object-bottom group-hover:scale-105 transition-transform duration-500 ease-out"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#141416] via-transparent to-transparent opacity-90 z-10 pointer-events-none" />

@@ -16,6 +16,23 @@ import {
 const FEAT_PAD = 112;
 const FEAT_GAP = 50;
 
+/**
+ * True when the primary input has no hover (touch phones/tablets). Devices
+ * without hover cannot rely on :hover styling, so hover-revealed affordances
+ * (e.g. the advisor portrait's color) need a touch-specific policy instead.
+ * Zero-throw; injectable window for specs.
+ *
+ * @param {Window | null} [win]
+ * @returns {boolean}
+ */
+export function isTouchPrimary(win = typeof window !== 'undefined' ? window : null) {
+  try {
+    return Boolean(win?.matchMedia?.('(hover: none)')?.matches);
+  } catch {
+    return false;
+  }
+}
+
 export function getFeaturingLayout(width) {
   const slidesPerView = featuringSlidesPerView(width);
   const spaceBetween = FEAT_GAP;
@@ -26,22 +43,28 @@ export function getFeaturingLayout(width) {
   return { slidesPerView, spaceBetween, sizes };
 }
 
-export function getTeamLayout(width, flatCube, isDesktop) {
-  if (!flatCube || !isDesktop) {
-    return {
-      slidesPerView: 1,
-      spaceBetween: flatCube ? 20 : 0,
-      sizes: isDesktop ? '360px' : '320px',
-    };
+function getInactiveTeamLayout(flatCube, isDesktop) {
+  return {
+    slidesPerView: 1,
+    spaceBetween: flatCube ? 20 : 0,
+    sizes: isDesktop ? '360px' : '320px',
+  };
+}
+
+function getFlatTeamSizes(width) {
+  if (width >= TEAM_WIDE_MIN) return 'calc((80vw - 168px) / 4)';
+  if (width >= TEAM_3COL_MIN) return 'calc((80vw - 144px) / 3)';
+  if (width >= TEAM_2COL_MIN) {
+    const vw = width < 768 ? '83.33vw' : '80vw';
+    return `calc((${vw} - 116px) / 2)`;
   }
+  return '360px';
+}
+
+export function getTeamLayout(width, flatCube, isDesktop) {
+  if (!flatCube || !isDesktop) return getInactiveTeamLayout(flatCube, isDesktop);
   const slidesPerView = teamSlidesPerView(width);
   const spaceBetween = teamGap(width);
-  let sizes;
-  if (width >= TEAM_WIDE_MIN) sizes = 'calc((80vw - 168px) / 4)';
-  else if (width >= TEAM_3COL_MIN) sizes = 'calc((80vw - 144px) / 3)';
-  else if (width >= TEAM_2COL_MIN) {
-    const vw = width < 768 ? '83.33vw' : '80vw';
-    sizes = `calc((${vw} - 116px) / 2)`;
-  } else sizes = isDesktop ? '360px' : '320px';
+  const sizes = getFlatTeamSizes(width);
   return { slidesPerView, spaceBetween, sizes };
 }

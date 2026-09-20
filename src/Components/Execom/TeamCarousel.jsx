@@ -1,12 +1,14 @@
-import { useRef, useCallback } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 import useCarousel from '../../hooks/useCarousel.js';
 import { useViewportWidth } from '../../hooks/useViewportWidth.js';
+import useIdleReveal from '../../hooks/useIdleReveal.js';
 import BlurImage from '../BlurImage/BlurImage';
 import useCarouselKeyboard from '../../hooks/useCarouselKeyboard.js';
-import { copyFor } from '../../utils/carouselWrap.js';
+import { copyFor, neighborIndices } from '../../utils/carouselWrap.js';
 import { getTeamLayout } from '../../utils/viewportPolicy.js';
+import { prioritizeAssetFetch } from '../../utils/priorityScheduler.js';
 
 import '../Execom/custom.css';
 
@@ -68,11 +70,27 @@ function TeamCarousel({
   // Arrow-key arbitration: one deep module, one line (see hooks/useCarouselKeyboard.js).
   useCarouselKeyboard({ widgetId, instanceRef, wrapperRef: wrapRef });
 
+  // Neighbor prefetch: lazy slides outside the viewport start fetching only
+  // when they become visible, so a quick advance stalls on the network. Warm
+  // the HTTP cache for active ±1 as soon as the active slide settles.
+  useEffect(() => {
+    for (const i of neighborIndices(activeIndex, total)) {
+      const url = slidesData[i]?.img;
+      if (url) prioritizeAssetFetch(url);
+    }
+  }, [activeIndex, total, slidesData]);
+
   const containerClass = isDesktop
     ? `hidden sm:block ${flatCube ? 'px-12' : 'max-w-[360px] mx-auto py-4'}`
     : 'block sm:hidden max-w-[320px] mx-auto py-4';
 
   const showNavArrows = isDesktop && flatCube;
+
+  // Declutter: the flat-mode arrows hide after 2.5s of inactivity over the
+  // carousel area and re-reveal on hover/pointer/key activity (useIdleReveal;
+  // focusin keeps them visible while keyboard-focused). Starts visible; a
+  // hook failure can only ever leave them always-on, never missing.
+  const arrowsVisible = useIdleReveal(wrapRef);
 
   const goToSlide = useCallback(
     (i) => {
@@ -126,7 +144,9 @@ function TeamCarousel({
               type="button"
               aria-label="Previous team member"
               onClick={() => instanceRef.current?.slidePrev()}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-colors duration-200 backdrop-blur-sm"
+              className={`absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-all duration-300 backdrop-blur-sm ${
+                arrowsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}
             >
               <FaChevronLeft />
             </button>
@@ -134,7 +154,9 @@ function TeamCarousel({
               type="button"
               aria-label="Next team member"
               onClick={() => instanceRef.current?.slideNext()}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-colors duration-200 backdrop-blur-sm"
+              className={`absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-all duration-300 backdrop-blur-sm ${
+                arrowsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}
             >
               <FaChevronRight />
             </button>
@@ -146,8 +168,13 @@ function TeamCarousel({
           generated from the raw index; they map to the logical slides and
           jump within the current copy. Sits as the root's direct sibling
           (selectors in the E2E suite depend on .execom-swiper + div /
-          .execom-cube-swiper + div). */}
-      <div className="flex justify-center gap-2 mt-2 pb-1">
+          .execom-cube-swiper + div). Fades with the arrows on idle — focus
+          still reveals (useIdleReveal's activeElement guard). */}
+      <div
+        className={`flex justify-center gap-2 mt-2 pb-1 transition-all duration-300 ${
+          arrowsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+      >
         {slidesData.map((d, i) => (
           <button
             key={i}

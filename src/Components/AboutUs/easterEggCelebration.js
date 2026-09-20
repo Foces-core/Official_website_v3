@@ -1,4 +1,5 @@
 import { createParticleSpec, stepParticle } from './confettiSim.js';
+import { randomUnit } from '../../utils/secureRandom.js';
 
 // Celebration policies for the About cube easter egg — pure logic, no React.
 //
@@ -58,15 +59,15 @@ function createBurstElement(cx, cy, stack) {
 
 function createParticleElement(index, colors, emojis) {
   const el = document.createElement('span');
-  const useEmoji = index % 3 === 0 && Math.random() < 0.5;
+  const useEmoji = index % 3 === 0 && randomUnit() < 0.5;
   if (useEmoji) {
     el.className = 'about-particle about-particle--emoji';
-    el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
-    el.style.setProperty('--s', `${16 + Math.random() * 14}px`);
+    el.textContent = emojis[Math.floor(randomUnit() * emojis.length)];
+    el.style.setProperty('--s', `${16 + randomUnit() * 14}px`);
   } else {
     el.className = 'about-particle';
     el.style.setProperty('--c', colors[index % colors.length]);
-    el.style.setProperty('--s', `${6 + Math.random() * 9}px`);
+    el.style.setProperty('--s', `${6 + randomUnit() * 9}px`);
   }
   el.style.opacity = '0';
   el.style.transform = 'translate(-50%, -50%) scale(0.1)';
@@ -131,7 +132,7 @@ export function fire({
   setLastToast,
 }) {
   const msg = pickEasterMessage(getLastToast(), messages, () =>
-    Math.floor(Math.random() * messages.length),
+    Math.floor(randomUnit() * messages.length),
   );
   setLastToast(msg);
   const toast = pushToast(stack, msg, MAX_TOASTS);

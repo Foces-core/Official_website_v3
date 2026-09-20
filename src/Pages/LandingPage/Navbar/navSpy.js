@@ -22,6 +22,41 @@ const NEAR_BOTTOM_MARGIN_PX = 50;
 // treatment. Consumed by Navbar's is-scrolled wiring (coalesceToFrame).
 export const SCROLLED_THRESHOLD_PX = 150;
 
+// Hide-on-scroll-down / show-on-scroll-up policy thresholds: a scroll tick
+// smaller than MIN_DELTA is jitter (trackpad momentum, elastic overscroll)
+// and must not flip visibility; the bar always returns near the top so the
+// hero keeps its brand row. Deliberately not exported (knip): the spec pins
+// them through behavior.
+const NAV_HIDE_MIN_DELTA_PX = 4;
+const NAV_SHOW_NEAR_TOP_PX = 80;
+
+/**
+ * Decide whether the fixed navbar bar should be hidden after a scroll tick.
+ * Classic declutter pattern: scrolling down past a small delta hides the bar
+ * (content wins), any upward scroll or proximity to the top reveals it.
+ *
+ * @param {{ lastY: number, y: number, drawerOpen?: boolean,
+ *           minDeltaPx?: number, nearTopPx?: number }} input
+ * @returns {boolean | null} true = hide, false = show,
+ *           null = sub-threshold jitter, keep the current state
+ */
+export function shouldHideNavbar({
+  lastY,
+  y,
+  drawerOpen = false,
+  minDeltaPx = NAV_HIDE_MIN_DELTA_PX,
+  nearTopPx = NAV_SHOW_NEAR_TOP_PX,
+}) {
+  // The mobile drawer lives inside the bar — never hide under an open menu.
+  if (drawerOpen) return false;
+  if (!Number.isFinite(lastY) || !Number.isFinite(y)) return false;
+  if (y <= nearTopPx) return false;
+  const delta = y - lastY;
+  if (delta >= minDeltaPx) return true;
+  if (delta <= -minDeltaPx) return false;
+  return null;
+}
+
 /**
  * Decide the active navbar section for a given scroll position.
  *

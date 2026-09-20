@@ -23,3 +23,20 @@ export function wrapTarget(activeIndex, total) {
 export function copyFor(activeIndex, total) {
   return Math.floor(activeIndex / total);
 }
+
+// The logical neighbors of a slide index (wrap-aware, self excluded) — the
+// prefetch list for "the user is about to swipe/advance here". Pure and
+// total: unusable inputs yield []. Small lists dedupe (total 2: prev = next).
+export function neighborIndices(index, total, radius = 1) {
+  if (!Number.isInteger(index) || !Number.isInteger(total)) return [];
+  if (total <= 1) return [];
+  const r = Math.min(Math.max(radius, 0), total - 1);
+  return [
+    ...new Set(
+      Array.from({ length: r * 2 }, (_, k) => {
+        const side = k % 2 === 0 ? index - Math.floor(k / 2) - 1 : index + Math.ceil(k / 2);
+        return normalizeIndex(side, total);
+      }),
+    ),
+  ];
+}

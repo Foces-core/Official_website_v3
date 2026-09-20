@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { scheduleErrorAutoReload } from '../../utils/errorRecoveryLogic.js';
+import usePersistentErrorRecovery from '../../hooks/usePersistentErrorRecovery.js';
 import { isChunkError } from '../../utils/chunkRecovery.js';
 import {
   getErrorCode,
@@ -10,10 +10,9 @@ import {
 
 function ErrorFallback({ error, resetError }) {
   const [clearing, setClearing] = useState(false);
-  useEffect(() => {
-    const cancel = scheduleErrorAutoReload({ delayMs: 1200 });
-    return cancel;
-  }, []);
+  // Recovery policy (auto-reload → escalate to cache purge) lives in the
+  // hook; this component only renders the fallback and the manual escapes.
+  usePersistentErrorRecovery({ delayMs: 1200 });
 
   const handleReload = () => {
     if (resetError) resetError();

@@ -57,7 +57,6 @@ const server = http.createServer((req, res) => {
       'Content-Type': mime[ext] || 'application/octet-stream',
       'Content-Length': data.length,
       'Cache-Control': 'no-cache',
-      'Access-Control-Allow-Origin': '*',
       Connection: 'close',
     });
     res.end(data);

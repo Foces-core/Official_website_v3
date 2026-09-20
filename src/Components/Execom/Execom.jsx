@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useMemo, useRef } from 'react';
 import BlurImage from '../BlurImage/BlurImage';
 import useDeviceProfile from '../../hooks/useLowPower.js';
+import useInViewOnce from '../../hooks/useInViewOnce.js';
 import TeamCarousel from './TeamCarousel';
 import { cardData, cubeSlides, advisor } from '../../data/team.js';
+import { isTouchPrimary } from '../../utils/viewportPolicy.js';
 
 import MeetTheTeam from '../../assets/MeetTheTeam.svg';
 
@@ -13,12 +15,19 @@ function Execom() {
   const [activeCube, setActiveCube] = React.useState(0);
   // Each TeamCarousel marks itself interacted on pointer use via useCarouselKeyboard.
 
+  // Advisor portrait color policy: hover-reveal on desktop (mouse exists),
+  // reveal-once-when-scrolled-into-view on touch (no hover to reveal with).
+  const advisorBannerRef = useRef(null);
+  const advisorInView = useInViewOnce(advisorBannerRef);
+  const touch = useMemo(() => isTouchPrimary(), []);
+
   // The section id lives on the ScrollGate wrapper in App.jsx, not here —
   // the wrapper is always present, so anchors/scrollspy always find it.
   return (
     <section className="min-h-full flex flex-col pt-10 pb-20 overflow-hidden scroll-mt-24">
       {/* Advisor banner — separate thin strip at the top of the section */}
       <div
+        ref={advisorBannerRef}
         className="m-auto w-[90%] sm:w-5/6 md:w-4/5 px-2 pb-10"
         role="group"
         aria-label="Advisor"
@@ -34,13 +43,20 @@ function Execom() {
             className="absolute -bottom-24 right-0 w-72 h-48 bg-cyan-500/10 blur-[90px] rounded-full pointer-events-none"
           />
 
-          {/* Framed portrait — grayscale by default, colour on hover */}
+          {/* Framed portrait — grayscale until hover (desktop) or until the
+              banner first scrolls into view (touch, where hover never fires). */}
           <div className="relative w-28 sm:w-40 md:w-52 shrink-0 p-3 sm:p-4">
             <div className="relative h-full min-h-28 overflow-hidden rounded-2xl ring-1 ring-white/15 shadow-[0_12px_32px_rgba(0,0,0,0.5)]">
               {/* Portrait widths: w-28/sm:w-40/md:w-52 (~112-208px) — 1x
                   viewports download the 400w srcset candidate. */}
               <BlurImage
-                className="advisor-photo object-cover object-top w-full h-full grayscale group-hover:filter-none transition-all duration-500"
+                className={`advisor-photo object-cover object-top w-full h-full ${
+                  touch
+                    ? advisorInView
+                      ? 'filter-none'
+                      : 'grayscale'
+                    : 'grayscale group-hover:filter-none card-hover'
+                } transition-all duration-500`}
                 src={advisor.img}
                 srcSet={advisor.srcset}
                 sizes="(min-width: 768px) 220px, (min-width: 640px) 170px, 130px"

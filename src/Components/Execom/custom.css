@@ -45,13 +45,11 @@
     filter: none;
 }
 
-/* Advisor portrait: grayscale until hover on desktop, always color on
-   touch devices where hover never fires. */
-@media (hover: none) {
-    .advisor-photo {
-        filter: none;
-    }
-}
+/* Advisor portrait color policy lives in Execom.jsx: grayscale until hover
+   on desktop; on touch (no hover), grayscale until the banner first scrolls
+   into view (useInViewOnce toggles filter-none). The old blanket
+   `@media (hover: none) { filter: none }` rule always colored the portrait
+   on phones — replaced by the in-view gate. */
 
 .container-execom {
     border-radius: 24px;

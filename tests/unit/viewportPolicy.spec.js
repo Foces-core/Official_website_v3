@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { getFeaturingLayout, getTeamLayout } from '../../src/utils/viewportPolicy.js';
+import {
+  getFeaturingLayout,
+  getTeamLayout,
+  isTouchPrimary,
+} from '../../src/utils/viewportPolicy.js';
 
 describe('viewportPolicy', () => {
   describe('getFeaturingLayout', () => {
@@ -20,9 +24,15 @@ describe('viewportPolicy', () => {
       expect(sizes).toBe('calc((100vw - 112px - 100px) / 3)');
     });
     it('boundary 500 and 750', () => {
-      expect(getFeaturingLayout(500).slidesPerView).toBe(2);
-      expect(getFeaturingLayout(750).slidesPerView).toBe(3);
-      expect(getFeaturingLayout(749).slidesPerView).toBe(2);
+      expect(getFeaturingLayout(500)).toMatchObject({
+        slidesPerView: 2,
+        sizes: 'calc((100vw - 112px - 50px) / 2)',
+      });
+      expect(getFeaturingLayout(750)).toMatchObject({
+        slidesPerView: 3,
+        sizes: 'calc((100vw - 112px - 100px) / 3)',
+      });
+      expect(getFeaturingLayout(749)).toMatchObject({ slidesPerView: 2 });
     });
   });
 
@@ -59,6 +69,53 @@ describe('viewportPolicy', () => {
       const { slidesPerView, sizes } = getTeamLayout(500, true, true);
       expect(slidesPerView).toBe(1);
       expect(sizes).toBe('360px');
+    });
+    it('keeps layout and image sizing aligned at each desktop breakpoint', () => {
+      expect(getTeamLayout(640, true, true)).toMatchObject({
+        slidesPerView: 2,
+        sizes: 'calc((83.33vw - 116px) / 2)',
+      });
+      expect(getTeamLayout(768, true, true)).toMatchObject({
+        slidesPerView: 2,
+        sizes: 'calc((80vw - 116px) / 2)',
+      });
+      expect(getTeamLayout(1024, true, true)).toMatchObject({
+        slidesPerView: 3,
+        sizes: 'calc((80vw - 144px) / 3)',
+      });
+      expect(getTeamLayout(1280, true, true)).toMatchObject({
+        slidesPerView: 4,
+        sizes: 'calc((80vw - 168px) / 4)',
+      });
+    });
+  });
+
+  describe('isTouchPrimary', () => {
+    const winWithHover = (hoverNone) => ({
+      matchMedia: (query) => {
+        if (query !== '(hover: none)') throw new Error(`unexpected query: ${query}`);
+        return { matches: hoverNone };
+      },
+    });
+
+    it('true when the device reports no hover capability (touch)', () => {
+      expect(isTouchPrimary(winWithHover(true))).toBe(true);
+    });
+
+    it('false when hover exists (desktop)', () => {
+      expect(isTouchPrimary(winWithHover(false))).toBe(false);
+    });
+
+    it('zero-throw: false on missing window, missing matchMedia, or throw', () => {
+      expect(isTouchPrimary(null)).toBe(false);
+      expect(isTouchPrimary({})).toBe(false);
+      expect(
+        isTouchPrimary({
+          matchMedia: () => {
+            throw new Error('boom');
+          },
+        }),
+      ).toBe(false);
     });
   });
 });

@@ -1,3 +1,6 @@
-# Block all search crawlers for upstream repo staging/development
+# Open to all search crawlers — the site is public (supersedes the staging
+# block from ADR-0012; see ADR-0017).
 User-agent: *
-Disallow: /
+Allow: /
+
+Sitemap: https://foces.ceconline.edu/sitemap.xml
