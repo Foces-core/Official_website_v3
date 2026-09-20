@@ -56,8 +56,11 @@ export function scheduleErrorAutoReload({
     return () => {};
   }
 
-  safeSessionSet(AUTO_RELOAD_KEY, '1', storage);
-
+  // The flag is stamped ONLY when the reload actually fires — never at
+  // schedule time. Under React.StrictMode an effect runs → cleanup cancels
+  // the timer → runs again; a schedule-time stamp would make the canceled
+  // attempt look completed, so the second mount would skip the reload and
+  // wrongly escalate to cache purging.
   const doReload =
     reloadFn ||
     (() => {
@@ -66,7 +69,10 @@ export function scheduleErrorAutoReload({
       }
     });
 
-  const timer = setTimeout(doReload, delayMs);
+  const timer = setTimeout(() => {
+    safeSessionSet(AUTO_RELOAD_KEY, '1', storage);
+    doReload();
+  }, delayMs);
   return () => clearTimeout(timer);
 }
 

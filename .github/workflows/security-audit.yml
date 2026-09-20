@@ -63,6 +63,19 @@ jobs:
         run: |
           pnpm audit --audit-level=high --json > audit.json || AUDIT_FAILED=1
           if [ "${AUDIT_FAILED:-0}" -eq 1 ]; then
+            # Distinguish real advisories from transport errors: only file
+            # an issue when the audit REPORTED vulnerabilities.
+            HAS_VULNS=$(node -e "
+              const a = JSON.parse(require('fs').readFileSync('audit.json', 'utf8'));
+              const n = Object.values(a.advisories || {}).filter(
+                (v) => v.severity === 'high' || v.severity === 'critical',
+              ).length;
+              console.log(n > 0 ? 'yes' : 'no');
+            " 2>/dev/null || echo no)
+            if [ "$HAS_VULNS" != "yes" ]; then
+              echo "Audit command failed without reported advisories (registry/transport error) — not filing an issue."
+              exit 1
+            fi
             echo "outcome=failure" >> "$GITHUB_OUTPUT"
             {
               echo "### pnpm audit findings"
@@ -74,7 +87,9 @@ jobs:
           fi
           echo "outcome=success" >> "$GITHUB_OUTPUT"
       - name: File security issue on failure
-        if: failure()
+        # Only a genuine audit failure (advisories found) files an issue —
+        # infra failures (checkout/install) must not open noise.
+        if: failure() && steps.audit.outputs.outcome == 'failure'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

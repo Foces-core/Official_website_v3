@@ -117,11 +117,6 @@ org/github-workflow.json` for workflows). `pnpm-workspace.yaml`
   through the shared `tests/unit/harness.jsx`. CI runs it in the
   lint-and-build job; E2E never imports it. Behavior lives in pure tested
   modules — see [ADR-0009](docs/adr/0009-pure-logic-test-seams.md).
-- `pnpm test:mutation` runs Stryker against the pure decision modules
-  (scoped: pass `--mutate <file>`). Its break threshold is 80%; keep the
-  mutation score at or above that mark when changing a covered module.
-  Deliberately NOT in CI (slow, noisy under contention) — run locally on a
-  quiet machine, matching the AGENTS.md policy.
 - For UI changes, verify desktop + mobile viewports.
 - `pnpm test:mutation` runs [StrykerJS](https://stryker-mutator.io/) mutation
   testing over the same pure modules `check:specs` guards (`stryker.config.mjs`
