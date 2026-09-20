@@ -23,6 +23,8 @@ Status conventions: **Accepted** (settled), **Proposed** (under review),
 | [0014](0014-section-scroll-overlay-lifecycle-and-route-prefetch.md) | Section scroll deepening, overlay lifecycle, and route prefetch                  | Accepted |
 | [0015](0015-cache-poison-recovery.md)                               | Cache-poison recovery: SPA fallback, SW MIME guard, error codes                  | Accepted |
 | [0016](0016-execom-carousel-scroll-release.md)                      | Execom carousels release vertical swipes to page scroll                          | Accepted |
+| [0017](0017-public-indexing.md)                                     | Public indexing: lift the staging no-index                                       | Accepted |
+| [0018](0018-idle-reveal-and-hide-on-scroll.md)                      | Idle-reveal controls and hide-on-scroll navbar                                   | Accepted |
 
 ## Adding a new ADR
 
