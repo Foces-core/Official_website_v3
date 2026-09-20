@@ -88,9 +88,12 @@ function TeamCarousel({
 
   // Declutter: the flat-mode arrows hide after 2.5s of inactivity over the
   // carousel area and re-reveal on hover/pointer/key activity (useIdleReveal;
-  // focusin keeps them visible while keyboard-focused). Starts visible; a
-  // hook failure can only ever leave them always-on, never missing.
+  // focusin keeps them visible while keyboard-focused). The dots run on
+  // their OWN timer and pulse on slide change — visible while cycling, then
+  // they fade. Starts visible; a hook failure can only ever leave them
+  // always-on, never missing.
   const arrowsVisible = useIdleReveal(wrapRef);
+  const dotsVisible = useIdleReveal(wrapRef, { pulse: activeIndex });
 
   const goToSlide = useCallback(
     (i) => {
@@ -163,16 +166,15 @@ function TeamCarousel({
           </>
         )}
       </div>
-
       {/* Custom 11-dot indicator — the 3-copy wrap means the dots can't be
           generated from the raw index; they map to the logical slides and
           jump within the current copy. Sits as the root's direct sibling
           (selectors in the E2E suite depend on .execom-swiper + div /
           .execom-cube-swiper + div). Fades with the arrows on idle — focus
-          still reveals (useIdleReveal's activeElement guard). */}
+          still reveals (useIdleReveal's activeElement guard). */}{' '}
       <div
         className={`flex justify-center gap-2 mt-2 pb-1 transition-all duration-300 ${
-          arrowsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          dotsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
         {slidesData.map((d, i) => (

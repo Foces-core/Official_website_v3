@@ -1,9 +1,10 @@
 // Pure decision for pointer-idle UI reveals (e.g. carousel nav arrows):
 // controls stay visible while the user is active, then hide once the area
 // has been idle past the threshold. The wiring hook (useIdleReveal) feeds
-// pointer/key/focus activity in as `lastActivityAt`; this module only
-// decides. Deletion test: delete this, and the hide timing scatters as a
-// magic number inside the carousel component.
+// pointer/key/focus activity in as `lastActivityAt` (and activity pulses as
+// a changed `pulse` value); this module only decides. Deletion test: delete
+// this, and the hide timing scatters as a magic number inside the carousel
+// component.
 
 export const DEFAULT_IDLE_REVEAL_MS = 2500;
 
