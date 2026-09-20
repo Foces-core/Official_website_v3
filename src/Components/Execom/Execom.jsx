@@ -55,7 +55,7 @@ function Execom() {
                     ? advisorInView
                       ? 'filter-none'
                       : 'grayscale'
-                    : 'grayscale group-hover:filter-none'
+                    : 'grayscale group-hover:filter-none card-hover'
                 } transition-all duration-500`}
                 src={advisor.img}
                 srcSet={advisor.srcset}

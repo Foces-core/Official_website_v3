@@ -7,7 +7,8 @@ import BlurImage from '../../Components/BlurImage/BlurImage';
 import featuring from '../../assets/featuring.svg';
 import { echoSlides, carouselSlides } from '../../data/echoSlides.js';
 import { getFeaturingLayout } from '../../utils/viewportPolicy.js';
-import { copyFor } from '../../utils/carouselWrap.js';
+import { copyFor, neighborIndices } from '../../utils/carouselWrap.js';
+import { prioritizeAssetFetch } from '../../utils/priorityScheduler.js';
 import useCarouselKeyboard from '../../hooks/useCarouselKeyboard.js';
 import useIdleReveal from '../../hooks/useIdleReveal.js';
 import './Featuring.css';
@@ -63,6 +64,17 @@ function Featuring() {
       el.setAttribute('aria-label', `${(i % echoSlides.length) + 1} / ${echoSlides.length}`),
     );
   }, [instanceRef]);
+
+  // Neighbor prefetch: the last slides sit beyond the browser's lazy-load
+  // margin in the 3-copy track, so clicking quickly to them stalls on the
+  // network. Warm the HTTP cache for active ±1 as the slide settles — once
+  // cached, BlurImage's complete-image fast path shows them with no fade.
+  useEffect(() => {
+    for (const i of neighborIndices(activeSlide, echoSlides.length)) {
+      const url = echoSlides[i]?.image;
+      if (url) prioritizeAssetFetch(url);
+    }
+  }, [activeSlide]);
 
   const goToSlide = useCallback(
     (i) => {
@@ -151,8 +163,12 @@ function Featuring() {
       </div>
       {/* Custom 4-dot indicator — the 3-copy wrap means the dots can't be
           generated from the raw index; they map to the logical slides and
-          jump within the current copy. */}
-      <div className="flex justify-center gap-2 mt-2 feat-dots">
+          jump within the current copy. Fades with the arrows on idle. */}
+      <div
+        className={`flex justify-center gap-2 mt-2 feat-dots transition-all duration-300 ${
+          arrowsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+      >
         {echoSlides.map((slide, i) => (
           <button
             key={i}

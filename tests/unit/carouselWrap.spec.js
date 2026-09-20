@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeIndex, wrapTarget, copyFor } from '../../src/utils/carouselWrap.js';
+import {
+  normalizeIndex,
+  wrapTarget,
+  copyFor,
+  neighborIndices,
+} from '../../src/utils/carouselWrap.js';
 
 // The seam is the pure wrap math behind the seamless-infinite carousels
 // (Execom's TeamCarousel AND the Featuring ECHO carousel): 3 copies of the
@@ -48,5 +53,26 @@ describe('copyFor', () => {
     expect(copyFor(7, 4)).toBe(1);
     expect(copyFor(8, 4)).toBe(2);
     expect(copyFor(11, 4)).toBe(2);
+  });
+});
+
+describe('neighborIndices — the prefetch list around a slide', () => {
+  it('returns wrap-aware prev/next at radius 1, self excluded', () => {
+    expect(neighborIndices(0, 4)).toEqual([3, 1]);
+    expect(neighborIndices(2, 4)).toEqual([1, 3]);
+  });
+
+  it('radius 2 returns two on each side, still wrap-aware', () => {
+    expect(neighborIndices(0, 5, 2)).toEqual([4, 1, 3, 2]);
+  });
+
+  it('clamps radius to total-1 and degrades small lists', () => {
+    expect(neighborIndices(0, 2, 5)).toEqual([1]);
+    expect(neighborIndices(0, 1)).toEqual([]);
+  });
+
+  it('is empty on unusable inputs', () => {
+    expect(neighborIndices(0.5, 4)).toEqual([]);
+    expect(neighborIndices(0, NaN)).toEqual([]);
   });
 });
