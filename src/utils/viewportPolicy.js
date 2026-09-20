@@ -16,6 +16,23 @@ import {
 const FEAT_PAD = 112;
 const FEAT_GAP = 50;
 
+/**
+ * True when the primary input has no hover (touch phones/tablets). Devices
+ * without hover cannot rely on :hover styling, so hover-revealed affordances
+ * (e.g. the advisor portrait's color) need a touch-specific policy instead.
+ * Zero-throw; injectable window for specs.
+ *
+ * @param {Window | null} [win]
+ * @returns {boolean}
+ */
+export function isTouchPrimary(win = typeof window !== 'undefined' ? window : null) {
+  try {
+    return Boolean(win?.matchMedia?.('(hover: none)')?.matches);
+  } catch {
+    return false;
+  }
+}
+
 export function getFeaturingLayout(width) {
   const slidesPerView = featuringSlidesPerView(width);
   const spaceBetween = FEAT_GAP;

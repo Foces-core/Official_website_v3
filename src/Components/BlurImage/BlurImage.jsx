@@ -29,7 +29,16 @@ import { createImageSpec } from '../../utils/imageSpec.js';
 function stripObjectFit(className) {
   return className
     .split(/\s+/)
-    .filter((c) => c.length > 0 && !c.startsWith('object-'))
+    .filter(
+      (c) =>
+        c.length > 0 &&
+        !c.startsWith('object-') &&
+        // Filters (grayscale, filter-none, …) belong to the <img> only. If the
+        // wrapper also carried one, the parent filter would re-gray the
+        // composite and defeat rules that un-gray the img itself (e.g. the
+        // carousel's [data-slide-center] color rule on touch devices).
+        !/(^|:)(grayscale|filter-)/.test(c),
+    )
     .join(' ');
 }
 

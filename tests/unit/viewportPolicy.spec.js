@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { getFeaturingLayout, getTeamLayout } from '../../src/utils/viewportPolicy.js';
+import {
+  getFeaturingLayout,
+  getTeamLayout,
+  isTouchPrimary,
+} from '../../src/utils/viewportPolicy.js';
 
 describe('viewportPolicy', () => {
   describe('getFeaturingLayout', () => {
@@ -59,6 +63,35 @@ describe('viewportPolicy', () => {
       const { slidesPerView, sizes } = getTeamLayout(500, true, true);
       expect(slidesPerView).toBe(1);
       expect(sizes).toBe('360px');
+    });
+  });
+
+  describe('isTouchPrimary', () => {
+    const winWithHover = (hoverNone) => ({
+      matchMedia: (query) => {
+        if (query !== '(hover: none)') throw new Error(`unexpected query: ${query}`);
+        return { matches: hoverNone };
+      },
+    });
+
+    it('true when the device reports no hover capability (touch)', () => {
+      expect(isTouchPrimary(winWithHover(true))).toBe(true);
+    });
+
+    it('false when hover exists (desktop)', () => {
+      expect(isTouchPrimary(winWithHover(false))).toBe(false);
+    });
+
+    it('zero-throw: false on missing window, missing matchMedia, or throw', () => {
+      expect(isTouchPrimary(null)).toBe(false);
+      expect(isTouchPrimary({})).toBe(false);
+      expect(
+        isTouchPrimary({
+          matchMedia: () => {
+            throw new Error('boom');
+          },
+        }),
+      ).toBe(false);
     });
   });
 });
