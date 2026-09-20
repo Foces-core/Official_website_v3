@@ -43,22 +43,28 @@ export function getFeaturingLayout(width) {
   return { slidesPerView, spaceBetween, sizes };
 }
 
-export function getTeamLayout(width, flatCube, isDesktop) {
-  if (!flatCube || !isDesktop) {
-    return {
-      slidesPerView: 1,
-      spaceBetween: flatCube ? 20 : 0,
-      sizes: isDesktop ? '360px' : '320px',
-    };
+function getInactiveTeamLayout(flatCube, isDesktop) {
+  return {
+    slidesPerView: 1,
+    spaceBetween: flatCube ? 20 : 0,
+    sizes: isDesktop ? '360px' : '320px',
+  };
+}
+
+function getFlatTeamSizes(width) {
+  if (width >= TEAM_WIDE_MIN) return 'calc((80vw - 168px) / 4)';
+  if (width >= TEAM_3COL_MIN) return 'calc((80vw - 144px) / 3)';
+  if (width >= TEAM_2COL_MIN) {
+    const vw = width < 768 ? '83.33vw' : '80vw';
+    return `calc((${vw} - 116px) / 2)`;
   }
+  return '360px';
+}
+
+export function getTeamLayout(width, flatCube, isDesktop) {
+  if (!flatCube || !isDesktop) return getInactiveTeamLayout(flatCube, isDesktop);
   const slidesPerView = teamSlidesPerView(width);
   const spaceBetween = teamGap(width);
-  let sizes;
-  if (width >= TEAM_WIDE_MIN) sizes = 'calc((80vw - 168px) / 4)';
-  else if (width >= TEAM_3COL_MIN) sizes = 'calc((80vw - 144px) / 3)';
-  else if (width >= TEAM_2COL_MIN) {
-    const vw = width < 768 ? '83.33vw' : '80vw';
-    sizes = `calc((${vw} - 116px) / 2)`;
-  } else sizes = isDesktop ? '360px' : '320px';
+  const sizes = getFlatTeamSizes(width);
   return { slidesPerView, spaceBetween, sizes };
 }
