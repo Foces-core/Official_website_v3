@@ -72,6 +72,19 @@ describe('useIdleReveal', () => {
     expect(state()).toBe('true');
   });
 
+  it('never hides while focus stays inside the target', () => {
+    act(() => harness.render(<Probe />));
+
+    // Real focus (not a synthetic event): the guard checks activeElement.
+    const arrow = harness.container.querySelector('[data-testid="arrow"]');
+    act(() => {
+      arrow.focus();
+    });
+    // Far past the idle window — a focused arrow must stay visible.
+    act(() => vi.advanceTimersByTime(IDLE_MS * 10));
+    expect(state()).toBe('true');
+  });
+
   it('re-hides only after fresh silence (no timer leak stacking)', () => {
     act(() => harness.render(<Probe />));
 

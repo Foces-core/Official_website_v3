@@ -40,6 +40,14 @@ export default function useIdleReveal(targetRef, { idleMs = DEFAULT_IDLE_REVEAL_
     const armTimer = () => {
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
+        // A focused control inside the target must never hide under the
+        // pointer-idle policy: keyboard users would lose the visible focus
+        // indicator to opacity-0. Reveal for as long as focus stays inside.
+        if (el.ownerDocument?.activeElement && el.contains(el.ownerDocument.activeElement)) {
+          setVisible(true);
+          armTimer();
+          return;
+        }
         setVisible(
           shouldShowIdleReveal({
             lastActivityAt: lastActivityRef.current,

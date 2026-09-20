@@ -1,10 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
-import {
-  scheduleErrorAutoReload,
-  shouldEscalateToCacheRecovery,
-  markCacheRecoveryDone,
-} from '../../utils/errorRecoveryLogic.js';
+import usePersistentErrorRecovery from '../../hooks/usePersistentErrorRecovery.js';
 import { isChunkError } from '../../utils/chunkRecovery.js';
 import {
   getErrorCode,
@@ -14,27 +10,9 @@ import {
 
 function ErrorFallback({ error, resetError }) {
   const [clearing, setClearing] = useState(false);
-  useEffect(() => {
-    // Second failure in one session = the plain reload didn't fix it (stale
-    // SW precache / poisoned chunk cache replay the same failure forever).
-    // Escalate automatically: purge caches + drop the controlling SW +
-    // reload — the same thing the manual button does, without the hunting.
-    // Bounded by markCacheRecoveryDone, so this runs at most once per session.
-    if (shouldEscalateToCacheRecovery()) {
-      markCacheRecoveryDone();
-      let cancelled = false;
-      (async () => {
-        await purgeAppCaches();
-        await unregisterServiceWorkers();
-        if (!cancelled) window.location.reload();
-      })();
-      return () => {
-        cancelled = true;
-      };
-    }
-    const cancel = scheduleErrorAutoReload({ delayMs: 1200 });
-    return cancel;
-  }, []);
+  // Recovery policy (auto-reload → escalate to cache purge) lives in the
+  // hook; this component only renders the fallback and the manual escapes.
+  usePersistentErrorRecovery({ delayMs: 1200 });
 
   const handleReload = () => {
     if (resetError) resetError();

@@ -68,6 +68,8 @@ export default function Navbar() {
   // (shouldHideNavbar in navSpy.js — pure, unit-tested). focusin on the bar
   // re-reveals it so keyboard users never focus invisible links.
   const [navHidden, setNavHidden] = useState(false);
+  // Scroll baseline starts at the real position (browser may restore the
+  // page mid-scroll); the effect re-stamps it before listening.
   const lastYRef = useRef(0);
   const drawerOpenRef = useRef(false);
   const [currentItem, setCurrentItem] = useState(navItems[0].id);
@@ -124,8 +126,18 @@ export default function Navbar() {
   // and the hide-on-scroll-down visibility decision.
   useEffect(() => {
     drawerOpenRef.current = isMobile && showItems;
+    // Clamp to [0, maxScroll]: iOS elastic overscroll can report y past the
+    // document end, and the spring-back would read as an upward scroll.
+    const clampedY = () => {
+      const max = Math.max(
+        0,
+        document.documentElement.scrollHeight - document.documentElement.clientHeight,
+      );
+      return Math.min(Math.max(window.scrollY, 0), max);
+    };
+    lastYRef.current = clampedY();
     const scheduleScrolled = coalesceToFrame(() => {
-      const y = window.scrollY;
+      const y = clampedY();
       setIsScrolled(y > SCROLLED_THRESHOLD_PX);
       const decision = shouldHideNavbar({
         lastY: lastYRef.current,
