@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import useScrollLock from '../../hooks/useScrollLock.js';
 import useFocusRestore from '../../hooks/useFocusRestore.js';
 
-function Modal({ images, open, onClose }) {
+function Modal({ images, open, onClose, startIndex = 0 }) {
   const lightboxRef = useRef(null);
   const imagesAvailable = Boolean(images && images.length > 0);
   const isOverlayActive = open && imagesAvailable;
@@ -24,12 +24,18 @@ function Modal({ images, open, onClose }) {
   // index.html). srcSet is left undefined so the lightbox uses src directly.
   const slides = images.map((url) => ({ src: url, srcSet: undefined }));
 
+  // The gallery opens at the photo the user pointed at: `index` seeds the
+  // lightbox's internal carousel (uncontrolled — navigation stays internal).
+  // Closing unmounts the Lightbox entirely (return null above), so every
+  // re-open re-seeds from the current startIndex — a thumbnail launch never
+  // resumes the previous position.
   return (
     <Lightbox
       ref={lightboxRef}
       open={open}
       close={onClose}
       slides={slides}
+      index={startIndex}
       plugins={[Counter]}
       controller={{ closeOnBackdropClick: true }}
       carousel={{ finite: slides.length <= 1, preload: 1, swipe: true }}
@@ -53,6 +59,7 @@ Modal.propTypes = {
   images: PropTypes.arrayOf(PropTypes.string).isRequired,
   open: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
+  startIndex: PropTypes.number,
 };
 
 export default Modal;

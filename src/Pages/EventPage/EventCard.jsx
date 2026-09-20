@@ -46,11 +46,18 @@ GalleryTrigger.propTypes = {
  */
 function EventCard({ Events, priority = false, reverse = false }) {
   const [Expanding, setExpanding] = useState(false);
+  // Which photo the gallery opens on: the poster opens at 0, a thumbnail at
+  // its own index — the gallery starts where the user pointed, not at the top.
+  const [galleryStart, setGalleryStart] = useState(0);
   // INP: every callback/allocation below used to be re-created on each render
   // of the events list (e.g. a sibling card opening its modal re-renders all
   // cards). Memoized so a parent re-render does no per-card allocation work
   // and React can bail out of prop-identity churn.
-  const handleOpenGallery = useCallback(() => setExpanding(true), []);
+  const openGalleryAt = useCallback((index) => {
+    setGalleryStart(index);
+    setExpanding(true);
+  }, []);
+  const handleOpenGallery = useCallback(() => openGalleryAt(0), [openGalleryAt]);
   const handleCloseGallery = useCallback(() => setExpanding(false), []);
 
   // photos are { url, srcset } pairs (see src/utils/eventPhotos.js) — no more
@@ -117,7 +124,7 @@ function EventCard({ Events, priority = false, reverse = false }) {
             {photos.slice(1, 4).map((photo, idx) => (
               <GalleryTrigger
                 key={idx}
-                onOpen={handleOpenGallery}
+                onOpen={() => openGalleryAt(idx + 1)}
                 label={`View photo ${idx + 2}`}
                 className="w-20 h-16 rounded-xl overflow-hidden border border-white/10 cursor-pointer hover:opacity-80 transition-opacity flex-none"
               >
@@ -136,7 +143,12 @@ function EventCard({ Events, priority = false, reverse = false }) {
         )}
       </div>
 
-      <Modal images={modalImages} open={Expanding} onClose={handleCloseGallery} />
+      <Modal
+        images={modalImages}
+        open={Expanding}
+        onClose={handleCloseGallery}
+        startIndex={galleryStart}
+      />
 
       {/* Details Section */}
       <div className="w-full md:w-1/2 flex flex-col justify-between text-white space-y-3 md:space-y-4">

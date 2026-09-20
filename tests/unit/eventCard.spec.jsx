@@ -4,8 +4,8 @@ import EventCard from '../../src/Pages/EventPage/EventCard.jsx';
 import { createHarness } from './harness.jsx';
 
 vi.mock('../../src/Pages/EventPage/Modal.jsx', () => ({
-  default: ({ open, onClose }) => (
-    <div id="mock-modal" data-open={String(open)}>
+  default: ({ open, onClose, startIndex }) => (
+    <div id="mock-modal" data-open={String(open)} data-start-index={String(startIndex)}>
       <button id="modal-close" onClick={onClose}>
         Close
       </button>
@@ -82,5 +82,35 @@ describe('EventCard component & GalleryTrigger wiring', () => {
       primaryTrigger.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
     });
     expect(modal.getAttribute('data-open')).toBe('true');
+  });
+
+  it('opens the gallery at the clicked thumbnail, poster resets to photo 1', () => {
+    act(() => {
+      harness.render(<EventCard Events={mockEvent} />);
+    });
+    const modal = container.querySelector('#mock-modal');
+    const primaryTrigger = container.querySelector(
+      '[aria-label="Open photo gallery for Hackathon 2026"]',
+    );
+    const thumbTrigger = container.querySelector('[aria-label="View photo 2"]');
+
+    act(() => {
+      thumbTrigger.click();
+    });
+    expect(modal.getAttribute('data-open')).toBe('true');
+    // Thumbnail 1 maps to photo index 1 (0-based) — the second photo.
+    expect(modal.getAttribute('data-start-index')).toBe('1');
+
+    act(() => {
+      container.querySelector('#modal-close').click();
+    });
+    expect(modal.getAttribute('data-open')).toBe('false');
+
+    // Poster always opens at the first photo.
+    act(() => {
+      primaryTrigger.click();
+    });
+    expect(modal.getAttribute('data-open')).toBe('true');
+    expect(modal.getAttribute('data-start-index')).toBe('0');
   });
 });
