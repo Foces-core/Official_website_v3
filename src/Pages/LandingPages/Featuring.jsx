@@ -31,9 +31,12 @@ function Featuring() {
 
   // Declutter: the prev/next arrows hide after 2.5s of inactivity over the
   // section and re-reveal on pointer/key activity (focusin keeps them visible
-  // while keyboard-focused). Starts visible; a hook failure can only leave
-  // them always-on, never missing.
+  // while keyboard-focused). The dots run on their OWN timer: they also
+  // re-reveal whenever the slide changes (pulse), so cycling keeps them up
+  // and they fade once browsing stops. Starts visible; a hook failure can
+  // only leave them always-on, never missing.
   const arrowsVisible = useIdleReveal(sectionRef);
+  const dotsVisible = useIdleReveal(sectionRef, { pulse: activeSlide });
 
   const { instanceRef, trackRef } = useCarousel({
     elRef,
@@ -163,10 +166,10 @@ function Featuring() {
       </div>
       {/* Custom 4-dot indicator — the 3-copy wrap means the dots can't be
           generated from the raw index; they map to the logical slides and
-          jump within the current copy. Fades with the arrows on idle. */}
+          jump within the current copy. Fades with the arrows on idle. */}{' '}
       <div
         className={`flex justify-center gap-2 mt-2 feat-dots transition-all duration-300 ${
-          arrowsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          dotsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
         {echoSlides.map((slide, i) => (

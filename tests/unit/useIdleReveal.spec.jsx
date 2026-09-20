@@ -6,9 +6,9 @@ import { createHarness } from './harness.jsx';
 
 const IDLE_MS = 1000;
 
-function Probe({ idleMs = IDLE_MS }) {
+function Probe({ idleMs = IDLE_MS, pulse }) {
   const ref = useRef(null);
-  const visible = useIdleReveal(ref, { idleMs });
+  const visible = useIdleReveal(ref, { idleMs, pulse });
   return (
     <div ref={ref} data-testid="area">
       <button type="button" data-testid="arrow">
@@ -18,7 +18,10 @@ function Probe({ idleMs = IDLE_MS }) {
   );
 }
 
-Probe.propTypes = { idleMs: PropTypes.number };
+Probe.propTypes = {
+  idleMs: PropTypes.number,
+  pulse: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+};
 
 describe('useIdleReveal', () => {
   let harness;
@@ -104,5 +107,22 @@ describe('useIdleReveal', () => {
     // Must not throw setState-on-unmounted warnings.
     act(() => vi.advanceTimersByTime(IDLE_MS * 5));
     expect(true).toBe(true);
+  });
+
+  it('pulse change re-reveals without any pointer activity', () => {
+    act(() => harness.render(<Probe />));
+
+    act(() => vi.advanceTimersByTime(IDLE_MS));
+    expect(state()).toBe('false');
+
+    // Slide changed (pulse 0 → 1): dots re-reveal (next tick), window restarts.
+    act(() => {
+      harness.render(<Probe pulse={1} />);
+    });
+    act(() => vi.advanceTimersByTime(1));
+    expect(state()).toBe('true');
+
+    act(() => vi.advanceTimersByTime(IDLE_MS));
+    expect(state()).toBe('false');
   });
 });
