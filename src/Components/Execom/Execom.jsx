@@ -56,7 +56,7 @@ function Execom() {
                       ? 'filter-none'
                       : 'grayscale'
                     : 'grayscale group-hover:filter-none card-hover'
-                } transition-all duration-500`}
+                } transition-all duration-600`}
                 src={advisor.img}
                 srcSet={advisor.srcset}
                 sizes="(min-width: 768px) 220px, (min-width: 640px) 170px, 130px"

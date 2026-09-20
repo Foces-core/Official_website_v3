@@ -94,7 +94,7 @@ export default function BlurImage({
           src={blurSrc}
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
+          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-600"
           style={{ opacity: loaded ? 0 : 1, filter: 'blur(20px)', transform: 'scale(1.1)' }}
         />
       )}
@@ -111,7 +111,7 @@ export default function BlurImage({
         fetchPriority={priorityAttr}
         onLoad={handleLoad}
         onError={handleError}
-        className={`transition-opacity duration-500 ${showBlur && !loaded ? 'opacity-0' : 'opacity-100'} ${className}`}
+        className={`transition-opacity duration-600 ${showBlur && !loaded ? 'opacity-0' : 'opacity-100'} ${className}`}
         width={width}
         height={height}
         {...rest}

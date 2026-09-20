@@ -30,7 +30,7 @@ import { getAdapter } from '../utils/carouselAdapters.js';
  * @param {number} [opts.spaceBetween=0] — flat mode gap between slides (px)
  * @param {number} [opts.autoplayDelay=0] — ms between autoplay turns (0 = off)
  * @param {number} [opts.initialIndex] — raw index to start at
- * @param {number} [opts.speed=350] — transition ms for animated moves
+ * @param {number} [opts.speed=420] — transition ms for animated moves
  * @param {(normalizedIndex: number) => void} [opts.onActiveChange] — fired
  *   with the normalized (0..total-1) index on every settle
  * @returns {{ instanceRef: React.RefObject<object>, trackRef: React.RefObject<HTMLElement> }}
@@ -44,7 +44,7 @@ export default function useCarousel({
   spaceBetween = 0,
   autoplayDelay = 0,
   initialIndex,
-  speed = 350,
+  speed = 420,
   onActiveChange,
 }) {
   const trackRef = useRef(null);

@@ -5,7 +5,7 @@ import { blurImageReducer } from '../../src/Components/BlurImage/useBlurImage.js
 import { createHarness } from './harness.jsx';
 
 // The shared image primitive's state machine: loaded / removed (placeholder)
-// / fetch-priority elevation, with a 500ms placeholder-removal timer — all
+// / fetch-priority elevation, with a 600ms placeholder-removal timer — all
 // owned by the pure blurImageReducer (the hook only feeds it events and runs
 // side effects). The old implementation set state inside the render body when
 // src changed — a render-phase write; SRC_CHANGED now arrives via a layout
@@ -46,7 +46,7 @@ describe('BlurImage state machine', () => {
     expect(harness.container.querySelectorAll('img')).toHaveLength(1);
   });
 
-  it('reveals the full image on load and removes the placeholder 500ms later', async () => {
+  it('reveals the full image on load and removes the placeholder 600ms later', async () => {
     harness.render(<BlurImage src="full.jpg" blurSrc="blur.jpg" alt="Photo" />);
     const img = fullImg(harness.container, 'full.jpg');
     await act(async () => {
@@ -57,7 +57,7 @@ describe('BlurImage state machine', () => {
     expect(blurImg(harness.container)).not.toBeNull();
 
     await act(async () => {
-      vi.advanceTimersByTime(500);
+      vi.advanceTimersByTime(600);
     });
     expect(blurImg(harness.container)).toBeNull();
   });
@@ -80,7 +80,7 @@ describe('BlurImage state machine', () => {
       img.dispatchEvent(new Event('load'));
     });
     await act(async () => {
-      vi.advanceTimersByTime(500);
+      vi.advanceTimersByTime(600);
     });
     expect(blurImg(harness.container)).toBeNull();
 

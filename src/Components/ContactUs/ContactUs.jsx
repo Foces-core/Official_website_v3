@@ -95,7 +95,7 @@ function ContactUs() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Visit FOCES Facebook page"
-                  className="bg-white text-black p-2 rounded-md hover:bg-cyan-400 hover:text-black transition-all duration-200"
+                  className="bg-white text-black p-2 rounded-md hover:bg-cyan-400 hover:text-black transition-all duration-300"
                 >
                   <FaFacebookF size={18} className="w-4.5 h-4.5" aria-hidden="true" />
                 </a>
@@ -105,7 +105,7 @@ function ContactUs() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Visit FOCES X (Twitter) profile"
-                  className="bg-white text-black p-2 rounded-md hover:bg-cyan-400 hover:text-black transition-all duration-200"
+                  className="bg-white text-black p-2 rounded-md hover:bg-cyan-400 hover:text-black transition-all duration-300"
                 >
                   <FaXTwitter size={18} className="w-4.5 h-4.5" aria-hidden="true" />
                 </a>
@@ -115,7 +115,7 @@ function ContactUs() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Visit FOCES Instagram page"
-                  className="bg-white text-black p-2 rounded-md hover:bg-cyan-400 hover:text-black transition-all duration-200"
+                  className="bg-white text-black p-2 rounded-md hover:bg-cyan-400 hover:text-black transition-all duration-300"
                 >
                   <FaInstagram size={18} className="w-4.5 h-4.5" aria-hidden="true" />
                 </a>
@@ -125,7 +125,7 @@ function ContactUs() {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Visit FOCES LinkedIn profile"
-                  className="bg-white text-black p-2 rounded-md hover:bg-cyan-400 hover:text-black transition-all duration-200"
+                  className="bg-white text-black p-2 rounded-md hover:bg-cyan-400 hover:text-black transition-all duration-300"
                 >
                   <FaLinkedinIn size={18} className="w-4.5 h-4.5" aria-hidden="true" />
                 </a>
