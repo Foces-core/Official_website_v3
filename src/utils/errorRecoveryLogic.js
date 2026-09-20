@@ -2,6 +2,7 @@ import { safeSessionGet, safeSessionSet, safeSessionRemove } from './safeStorage
 
 export const AUTO_RELOAD_KEY = 'foces:error-auto-reloaded';
 export const CHUNK_RETRY_KEY = 'chunk-reload-retry';
+export const CACHE_RECOVERY_KEY = 'foces:error-cache-recovered';
 
 /**
  * True only when the browser explicitly reports offline. A reload without a
@@ -76,6 +77,33 @@ export function scheduleErrorAutoReload({
  */
 export function resetErrorAutoReload({ storage } = {}) {
   safeSessionRemove(AUTO_RELOAD_KEY, storage);
+}
+
+/**
+ * True when the error is persistent in this session and the plain auto-reload
+ * has already been spent: the fallback should escalate to cache recovery
+ * (purge caches + drop the service worker + reload) instead of replaying the
+ * same poisoned state. Bounded — the escalation runs at most once per session
+ * (its own flag), so worst case is one free reload + one recovery reload,
+ * then the screen stays put for the user to act on.
+ *
+ * @param {{ storage?: Storage | null }} [options]
+ * @returns {boolean}
+ */
+export function shouldEscalateToCacheRecovery({ storage } = {}) {
+  return (
+    safeSessionGet(AUTO_RELOAD_KEY, null, storage) === '1' &&
+    safeSessionGet(CACHE_RECOVERY_KEY, null, storage) !== '1'
+  );
+}
+
+/**
+ * Marks the cache-recovery escalation as spent for this session.
+ *
+ * @param {{ storage?: Storage | null }} [options]
+ */
+export function markCacheRecoveryDone({ storage } = {}) {
+  safeSessionSet(CACHE_RECOVERY_KEY, '1', storage);
 }
 
 /**

@@ -1,11 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   AUTO_RELOAD_KEY,
+  CACHE_RECOVERY_KEY,
   CHUNK_RETRY_KEY,
   isOffline,
   shouldAutoReloadOnError,
   scheduleErrorAutoReload,
   resetErrorAutoReload,
+  shouldEscalateToCacheRecovery,
+  markCacheRecoveryDone,
   hasLazyChunkReloaded,
   recordLazyChunkReload,
   clearLazyChunkRetry,
@@ -84,6 +87,24 @@ describe('errorRecoveryLogic auto-reload policies', () => {
       mockStorage.setItem(AUTO_RELOAD_KEY, '1');
       resetErrorAutoReload({ storage: mockStorage });
       expect(mockStorage.getItem(AUTO_RELOAD_KEY)).toBeNull();
+    });
+  });
+
+  describe('Persistent-error escalation policy', () => {
+    it('does not escalate on a first error (auto-reload still pending)', () => {
+      expect(shouldEscalateToCacheRecovery({ storage: mockStorage })).toBe(false);
+    });
+
+    it('escalates only after the plain auto-reload was spent this session', () => {
+      mockStorage.setItem(AUTO_RELOAD_KEY, '1');
+      expect(shouldEscalateToCacheRecovery({ storage: mockStorage })).toBe(true);
+    });
+
+    it('runs the escalation at most once per session (no recovery loops)', () => {
+      mockStorage.setItem(AUTO_RELOAD_KEY, '1');
+      markCacheRecoveryDone({ storage: mockStorage });
+      expect(mockStorage.getItem(CACHE_RECOVERY_KEY)).toBe('1');
+      expect(shouldEscalateToCacheRecovery({ storage: mockStorage })).toBe(false);
     });
   });
 
