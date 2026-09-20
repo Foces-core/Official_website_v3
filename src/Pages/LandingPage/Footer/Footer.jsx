@@ -1,5 +1,5 @@
 import { FaSquareFacebook, FaInstagram, FaXTwitter, FaLinkedin, FaHeart } from 'react-icons/fa6';
-import FocesLogo from '../../../assets/FOCES White.svg';
+import FocesLogo from '../../../assets/FOCES-White.svg';
 
 function Footer() {
   return (

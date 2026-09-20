@@ -1,5 +1,5 @@
 import { useRef, useCallback, useEffect } from 'react';
-import FocesLogo from '../../assets/FOCES White.svg';
+import FocesLogo from '../../assets/FOCES-White.svg';
 import '../AboutUs/AboutUs.css';
 import useExperienceCapabilities from '../../hooks/useExperienceCapabilities.js';
 import { useCubeDrag } from '../../hooks/useCubeDrag.js';
