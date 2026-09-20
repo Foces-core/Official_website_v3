@@ -13,7 +13,7 @@ import { prioritizeAssetFetch } from '../../utils/priorityScheduler.js';
  *   - ERROR        — reveal the element so broken-image alt text renders
  *   - INTERACT     — elevate fetch priority once per src (eager images are
  *                    already 'high' → no-op)
- *   - REMOVE_PLACEHOLDER — drop the blur layer after the 500ms cross-fade
+ *   - REMOVE_PLACEHOLDER — drop the blur layer after the 600ms cross-fade
  *
  * `loaded`/`removed`/`priorityAttr` map 1:1 to the four states that used to
  * be separate useState calls in BlurImage.jsx (mount, loaded, failed,
@@ -63,11 +63,11 @@ export function blurImageReducer(state, action) {
 /**
  * useBlurImage — the blur-up image state machine. Four pieces of state that
  * used to live in BlurImage.jsx: loaded / removed (placeholder) / fetch
- * priority elevation, plus the 500ms placeholder-removal timer.
+ * priority elevation, plus the 600ms placeholder-removal timer.
  *
  * The reducer owns all transitions (see blurImageReducer); the hook only
  * feeds it events and performs side effects that cannot live in a reducer
- * (the 500ms timer, the priority-elevation fetch guard, the cached-image
+ * (the 600ms timer, the priority-elevation fetch guard, the cached-image
  * fast path). `src` changes are dispatched from a useLayoutEffect — not from
  * the render body — so the render phase stays free of state writes; the
  * layout timing means the reset lands before paint (no stale-frame flash).
@@ -123,7 +123,7 @@ export function useBlurImage({ src, blurSrc, eager = false }) {
   const handleLoad = useCallback(() => {
     dispatch({ type: 'LOADED' });
     // Remove the placeholder from the DOM after the cross-fade completes
-    timerRef.current = setTimeout(() => dispatch({ type: 'REMOVE_PLACEHOLDER' }), 500);
+    timerRef.current = setTimeout(() => dispatch({ type: 'REMOVE_PLACEHOLDER' }), 600);
   }, []);
 
   const handleError = useCallback(() => {

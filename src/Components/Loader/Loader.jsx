@@ -1,7 +1,7 @@
 import './Loader.css';
 import { useViewportWidth } from '../../hooks/useViewportWidth.js';
 import { isSmallScreen } from '../../utils/breakpoints.js';
-import LogoBlack from '../../assets/FOCES Black.svg';
+import LogoBlack from '../../assets/FOCES-Black.svg';
 
 const Loader = () => {
   // Narrow-screen tagline pick: policy in breakpoints.js, reactivity from

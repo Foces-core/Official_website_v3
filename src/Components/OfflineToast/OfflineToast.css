@@ -2,7 +2,7 @@
    instant because reconnect must clear the notice immediately, not after a
    fade). Reduced-motion users get no slide. */
 .offline-toast {
-    animation: offline-toast-in 0.25s ease-out;
+    animation: offline-toast-in 0.35s ease-out;
 }
 
 @keyframes offline-toast-in {

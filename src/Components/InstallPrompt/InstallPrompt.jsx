@@ -3,7 +3,7 @@ import './InstallPrompt.css';
 import { readSessionFlag, writeSessionFlag } from '../../utils/sessionCookie.js';
 
 const TOAST_MS = 7000; // how long the toast stays before fading out
-const FADE_MS = 350; // exit animation length — keep in sync with InstallPrompt.css
+const FADE_MS = 450; // exit animation length — keep in sync with InstallPrompt.css
 
 // Session-cookie key: once the toast has shown, it stays silent for the rest
 // of the browser session (beforeinstallprompt re-fires on every page load,

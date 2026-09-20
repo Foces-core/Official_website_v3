@@ -44,7 +44,7 @@ function Events() {
               key={evt.id}
               data-aos="fade-up"
               data-aos-duration="300"
-              className="group relative rounded-2xl overflow-hidden bg-[#141416] border border-white/10 hover:border-white/30 transition-all duration-300 shadow-xl hover:shadow-2xl hover:shadow-cyan-500/10 flex flex-col justify-between"
+              className="group relative rounded-2xl overflow-hidden bg-[#141416] border border-white/10 hover:border-white/30 transition-all duration-400 shadow-xl hover:shadow-2xl hover:shadow-cyan-500/10 flex flex-col justify-between"
             >
               {/* Image Banner — aspect-square so the entire square poster
                   (header text included) fits without cropping; the old h-64
@@ -61,7 +61,7 @@ function Events() {
                   alt={evt.name}
                   loading={index === 0 ? 'eager' : 'lazy'}
                   decoding="async"
-                  className="w-full h-full object-cover object-bottom group-hover:scale-105 transition-transform duration-500 ease-out"
+                  className="w-full h-full object-cover object-bottom group-hover:scale-105 transition-transform duration-600 ease-out"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#141416] via-transparent to-transparent opacity-90 z-10 pointer-events-none" />
                 <span className="absolute top-4 left-4 bg-black/70 backdrop-blur-md text-cyan-400 text-xs font-semibold px-3 py-1 rounded-full border border-cyan-500/30 z-20">
@@ -102,7 +102,7 @@ function Events() {
             viewTransition={smoothScroll}
             onMouseEnter={() => import('../EventPage/Eventpage.jsx').catch(() => {})}
             onTouchStart={() => import('../EventPage/Eventpage.jsx').catch(() => {})}
-            className="inline-flex items-center space-x-3 bg-white text-black font-bold text-base px-8 py-3.5 rounded-xl shadow-lg hover:bg-cyan-400 hover:text-black transition-all duration-300 transform hover:scale-105"
+            className="inline-flex items-center space-x-3 bg-white text-black font-bold text-base px-8 py-3.5 rounded-xl shadow-lg hover:bg-cyan-400 hover:text-black transition-all duration-400 transform hover:scale-105"
           >
             <span>Explore All Events</span>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

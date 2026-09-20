@@ -23,7 +23,7 @@
     border-radius: 6px;
     background: linear-gradient(90deg, #161618 0%, #1e1e22 40%, #161618 80%);
     background-size: 800px 12px;
-    animation: shimmer-sweep 1.8s ease-in-out infinite;
+    animation: shimmer-sweep 1.5s ease-in-out infinite;
 }
 
 .skeleton-bar--wide {

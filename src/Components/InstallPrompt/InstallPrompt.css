@@ -3,10 +3,10 @@
    (duration must match FADE_MS in InstallPrompt.jsx). */
 
 .install-toast {
-    animation: install-toast-in 0.35s ease-out both;
+    animation: install-toast-in 0.45s ease-out both;
     transition:
-        opacity 0.35s ease,
-        transform 0.35s ease;
+        opacity 0.45s ease,
+        transform 0.45s ease;
 }
 
 .install-toast--leaving {
