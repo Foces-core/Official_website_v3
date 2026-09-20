@@ -84,7 +84,7 @@ function Featuring() {
       const sw = instanceRef.current;
       if (!sw) return;
       const copy = copyFor(sw.activeIndex, echoSlides.length);
-      sw.slideTo(copy * echoSlides.length + i, 350);
+      sw.slideTo(copy * echoSlides.length + i, 420);
     },
     [instanceRef],
   );
@@ -118,7 +118,7 @@ function Featuring() {
           type="button"
           aria-label="Previous ECHO photos"
           onClick={() => instanceRef.current?.slidePrev()}
-          className={`absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-all duration-300 backdrop-blur-sm ${
+          className={`absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-all duration-400 backdrop-blur-sm ${
             arrowsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
         >
@@ -139,7 +139,7 @@ function Featuring() {
                     animates the whole card while BlurImage fades independently. */}
                 <div data-aos="flip-right" data-aos-duration="1000">
                   <BlurImage
-                    className="h-full w-full rounded-2xl object-cover transition-all duration-300 shadow-xl hover:scale-105 hover:ring-2 hover:ring-white/50 hover:shadow-[0_0_25px_6px_rgba(255,255,255,0.25)]"
+                    className="h-full w-full rounded-2xl object-cover transition-all duration-400 shadow-xl hover:scale-105 hover:ring-2 hover:ring-white/50 hover:shadow-[0_0_25px_6px_rgba(255,255,255,0.25)]"
                     src={image}
                     srcSet={imageSet}
                     sizes={slideSizes}
@@ -157,7 +157,7 @@ function Featuring() {
           type="button"
           aria-label="Next ECHO photos"
           onClick={() => instanceRef.current?.slideNext()}
-          className={`absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-all duration-300 backdrop-blur-sm ${
+          className={`absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-all duration-400 backdrop-blur-sm ${
             arrowsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
         >
@@ -168,7 +168,7 @@ function Featuring() {
           generated from the raw index; they map to the logical slides and
           jump within the current copy. Fades with the arrows on idle. */}{' '}
       <div
-        className={`flex justify-center gap-2 mt-2 feat-dots transition-all duration-300 ${
+        className={`flex justify-center gap-2 mt-2 feat-dots transition-all duration-400 ${
           dotsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
@@ -185,7 +185,7 @@ function Featuring() {
             className="flex items-center justify-center min-w-6 min-h-6 rounded-full"
           >
             <span
-              className={`h-2 rounded-full transition-all duration-300 ${
+              className={`h-2 rounded-full transition-all duration-400 ${
                 activeSlide === i ? 'w-6 bg-white' : 'w-2 bg-white/50 hover:bg-white/80'
               }`}
             />

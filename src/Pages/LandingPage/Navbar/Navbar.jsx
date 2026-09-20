@@ -365,7 +365,7 @@ export default function Navbar() {
         onFocus={() => setNavHidden(false)}
         className={`fixed z-50 left-0 top-0 w-full shadow ${
           isDark ? 'nav-w' : 'nav-b'
-        } flex items-center px-5 pt-4 pb-2 font-semibold max-[767px]:pl-4 max-[767px]:py-2 max-[767px]:h-auto max-[767px]:w-screen min-[768px]:grid min-[768px]:grid-cols-[1fr_auto_1fr] motion-safe:transition-transform motion-safe:duration-300 ${
+        } flex items-center px-5 pt-4 pb-2 font-semibold max-[767px]:pl-4 max-[767px]:py-2 max-[767px]:h-auto max-[767px]:w-screen min-[768px]:grid min-[768px]:grid-cols-[1fr_auto_1fr] motion-safe:transition-transform motion-safe:duration-400 ${
           navHidden ? '-translate-y-full' : 'translate-y-0'
         } ${
           isScrolled || currentItem === 'contact'
@@ -406,7 +406,7 @@ export default function Navbar() {
                 : isDark
                   ? 'bg-[#F5F5F5] text-[#101011]'
                   : 'bg-black text-[#F5F5F5]'
-            } flex justify-center items-center rounded-3xl whitespace-nowrap select-none max-[767px]:w-auto max-[767px]:h-auto max-[767px]:px-4 max-[767px]:py-1.5 max-[767px]:text-[0.7rem] max-[767px]:font-medium max-[767px]:tracking-wide transition-colors duration-200 ${
+            } flex justify-center items-center rounded-3xl whitespace-nowrap select-none max-[767px]:w-auto max-[767px]:h-auto max-[767px]:px-4 max-[767px]:py-1.5 max-[767px]:text-[0.7rem] max-[767px]:font-medium max-[767px]:tracking-wide transition-colors duration-300 ${
               showItems && isMobile ? 'hidden' : ''
             }`}
             onClick={handleJoinFocesClick}

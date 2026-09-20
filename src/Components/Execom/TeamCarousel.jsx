@@ -100,7 +100,7 @@ function TeamCarousel({
       const sw = instanceRef.current;
       if (!sw) return;
       const copy = copyFor(sw.activeIndex, total);
-      sw.slideTo(copy * total + i, 350);
+      sw.slideTo(copy * total + i, 420);
     },
     [instanceRef, total],
   );
@@ -122,7 +122,7 @@ function TeamCarousel({
                 }`}
               >
                 <BlurImage
-                  className={`object-cover ${d.imgPosition ?? 'object-top'} w-full h-full ${isDesktop ? 'card-hover' : ''} grayscale ${isDesktop ? 'group-hover:filter-none' : ''} transition-all duration-300`}
+                  className={`object-cover ${d.imgPosition ?? 'object-top'} w-full h-full ${isDesktop ? 'card-hover' : ''} grayscale ${isDesktop ? 'group-hover:filter-none' : ''} transition-all duration-400`}
                   src={d.img}
                   srcSet={d.srcset}
                   sizes={cardSizes}
@@ -147,7 +147,7 @@ function TeamCarousel({
               type="button"
               aria-label="Previous team member"
               onClick={() => instanceRef.current?.slidePrev()}
-              className={`absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-all duration-300 backdrop-blur-sm ${
+              className={`absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-all duration-400 backdrop-blur-sm ${
                 arrowsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
               }`}
             >
@@ -157,7 +157,7 @@ function TeamCarousel({
               type="button"
               aria-label="Next team member"
               onClick={() => instanceRef.current?.slideNext()}
-              className={`absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-all duration-300 backdrop-blur-sm ${
+              className={`absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-all duration-400 backdrop-blur-sm ${
                 arrowsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
               }`}
             >
@@ -173,7 +173,7 @@ function TeamCarousel({
           .execom-cube-swiper + div). Fades with the arrows on idle — focus
           still reveals (useIdleReveal's activeElement guard). */}{' '}
       <div
-        className={`flex justify-center gap-2 mt-2 pb-1 transition-all duration-300 ${
+        className={`flex justify-center gap-2 mt-2 pb-1 transition-all duration-400 ${
           dotsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
@@ -190,7 +190,7 @@ function TeamCarousel({
             className="flex items-center justify-center min-w-6 min-h-6 rounded-full"
           >
             <span
-              className={`h-2 rounded-full transition-all duration-300 ${
+              className={`h-2 rounded-full transition-all duration-400 ${
                 activeIndex === i ? 'w-6 bg-[#007aff]' : 'w-2 bg-[#4f4f54]'
               }`}
             />

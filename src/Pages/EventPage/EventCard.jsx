@@ -78,7 +78,7 @@ function EventCard({ Events, priority = false, reverse = false }) {
     <div
       className={`w-[92%] md:w-[95%] max-w-sm md:max-w-6xl bg-[#161618]/90 md:bg-[#161618]/80 backdrop-blur-md border border-white/10 rounded-2xl md:rounded-3xl my-6 md:mt-10 p-5 md:p-8 flex flex-col md:flex-row ${
         reverse ? 'md:flex-row-reverse' : ''
-      } items-center gap-8 shadow-xl md:shadow-2xl hover:border-white/30 transition-all duration-300`}
+      } items-center gap-8 shadow-xl md:shadow-2xl hover:border-white/30 transition-all duration-400`}
       data-aos="fade-up"
       data-aos-duration="1000"
       onMouseEnter={handleInteraction}
@@ -168,7 +168,7 @@ function EventCard({ Events, priority = false, reverse = false }) {
                 href={Events.websiteUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-xl text-sm font-semibold transition-all duration-200"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-xl text-sm font-semibold transition-all duration-300"
               >
                 <span>🌐 Visit Past Event Site</span>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
