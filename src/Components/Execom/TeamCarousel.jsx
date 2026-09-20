@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 import useCarousel from '../../hooks/useCarousel.js';
 import { useViewportWidth } from '../../hooks/useViewportWidth.js';
+import useIdleReveal from '../../hooks/useIdleReveal.js';
 import BlurImage from '../BlurImage/BlurImage';
 import useCarouselKeyboard from '../../hooks/useCarouselKeyboard.js';
 import { copyFor } from '../../utils/carouselWrap.js';
@@ -74,6 +75,12 @@ function TeamCarousel({
 
   const showNavArrows = isDesktop && flatCube;
 
+  // Declutter: the flat-mode arrows hide after 2.5s of inactivity over the
+  // carousel area and re-reveal on hover/pointer/key activity (useIdleReveal;
+  // focusin keeps them visible while keyboard-focused). Starts visible; a
+  // hook failure can only ever leave them always-on, never missing.
+  const arrowsVisible = useIdleReveal(wrapRef);
+
   const goToSlide = useCallback(
     (i) => {
       const sw = instanceRef.current;
@@ -126,7 +133,9 @@ function TeamCarousel({
               type="button"
               aria-label="Previous team member"
               onClick={() => instanceRef.current?.slidePrev()}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-colors duration-200 backdrop-blur-sm"
+              className={`absolute left-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-all duration-300 backdrop-blur-sm ${
+                arrowsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}
             >
               <FaChevronLeft />
             </button>
@@ -134,7 +143,9 @@ function TeamCarousel({
               type="button"
               aria-label="Next team member"
               onClick={() => instanceRef.current?.slideNext()}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-colors duration-200 backdrop-blur-sm"
+              className={`absolute right-0 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-all duration-300 backdrop-blur-sm ${
+                arrowsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+              }`}
             >
               <FaChevronRight />
             </button>

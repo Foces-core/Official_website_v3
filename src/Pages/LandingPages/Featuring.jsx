@@ -9,6 +9,7 @@ import { echoSlides, carouselSlides } from '../../data/echoSlides.js';
 import { getFeaturingLayout } from '../../utils/viewportPolicy.js';
 import { copyFor } from '../../utils/carouselWrap.js';
 import useCarouselKeyboard from '../../hooks/useCarouselKeyboard.js';
+import useIdleReveal from '../../hooks/useIdleReveal.js';
 import './Featuring.css';
 
 function Featuring() {
@@ -26,6 +27,12 @@ function Featuring() {
   const elRef = useRef(null);
   const carouselRef = useRef(null);
   const sectionRef = useRef(null);
+
+  // Declutter: the prev/next arrows hide after 2.5s of inactivity over the
+  // section and re-reveal on pointer/key activity (focusin keeps them visible
+  // while keyboard-focused). Starts visible; a hook failure can only leave
+  // them always-on, never missing.
+  const arrowsVisible = useIdleReveal(sectionRef);
 
   const { instanceRef, trackRef } = useCarousel({
     elRef,
@@ -96,7 +103,9 @@ function Featuring() {
           type="button"
           aria-label="Previous ECHO photos"
           onClick={() => instanceRef.current?.slidePrev()}
-          className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-colors duration-200 backdrop-blur-sm"
+          className={`absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-all duration-300 backdrop-blur-sm ${
+            arrowsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
         >
           <FaChevronLeft />
         </button>
@@ -133,7 +142,9 @@ function Featuring() {
           type="button"
           aria-label="Next ECHO photos"
           onClick={() => instanceRef.current?.slideNext()}
-          className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-colors duration-200 backdrop-blur-sm"
+          className={`absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 hover:bg-black/70 text-white text-lg transition-all duration-300 backdrop-blur-sm ${
+            arrowsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
         >
           <FaChevronRight />
         </button>

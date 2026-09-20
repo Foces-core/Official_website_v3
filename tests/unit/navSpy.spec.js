@@ -4,6 +4,7 @@ import {
   pickOnViewport,
   resolveNavAction,
   resolveLogoAction,
+  shouldHideNavbar,
 } from '../../src/Pages/LandingPage/Navbar/navSpy.js';
 
 describe('pickActiveSection — the navbar scrollspy decision', () => {
@@ -264,5 +265,35 @@ describe('pickOnViewport - route awareness edges', () => {
         doc,
       }),
     ).toBeNull();
+  });
+});
+
+describe('shouldHideNavbar — hide on scroll-down, show on scroll-up', () => {
+  it('hides after a downward tick past the jitter threshold', () => {
+    expect(shouldHideNavbar({ lastY: 200, y: 210 })).toBe(true);
+  });
+
+  it('reveals on any upward tick past the jitter threshold', () => {
+    expect(shouldHideNavbar({ lastY: 210, y: 200 })).toBe(false);
+  });
+
+  it('treats sub-threshold movement as jitter (null = keep current state)', () => {
+    expect(shouldHideNavbar({ lastY: 200, y: 202 })).toBeNull();
+    expect(shouldHideNavbar({ lastY: 200, y: 200 })).toBeNull();
+  });
+
+  it('always reveals near the top so the hero keeps its brand row', () => {
+    expect(shouldHideNavbar({ lastY: 100, y: 90 })).toBe(false);
+    expect(shouldHideNavbar({ lastY: 0, y: 80 })).toBe(false);
+  });
+
+  it('never hides under an open mobile drawer', () => {
+    expect(shouldHideNavbar({ lastY: 200, y: 400, drawerOpen: true })).toBe(false);
+  });
+
+  it('fails safe (visible) on unusable inputs', () => {
+    expect(shouldHideNavbar({})).toBe(false);
+    expect(shouldHideNavbar({ lastY: 'x', y: 10 })).toBe(false);
+    expect(shouldHideNavbar({ lastY: 0, y: NaN })).toBe(false);
   });
 });

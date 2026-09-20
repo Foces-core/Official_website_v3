@@ -18,6 +18,7 @@ import {
   pickOnViewport,
   resolveNavAction,
   resolveLogoAction,
+  shouldHideNavbar,
   SCROLLED_THRESHOLD_PX,
 } from './navSpy.js';
 import {
@@ -63,6 +64,12 @@ export default function Navbar() {
   const [joinPressed, setJoinPressed] = useState(false);
   const joinTimer = useRef(null);
   const [isScrolled, setIsScrolled] = useState(false);
+  // Declutter: the fixed bar hides on scroll-down and returns on scroll-up
+  // (shouldHideNavbar in navSpy.js — pure, unit-tested). focusin on the bar
+  // re-reveals it so keyboard users never focus invisible links.
+  const [navHidden, setNavHidden] = useState(false);
+  const lastYRef = useRef(0);
+  const drawerOpenRef = useRef(false);
   const [currentItem, setCurrentItem] = useState(navItems[0].id);
   // Roving tabindex (ARIA APG): exactly one link owns tabindex=0. When the
   // user arrow-keys through the links, the tabstop follows the focused link.
@@ -113,18 +120,28 @@ export default function Navbar() {
     setShowItems(!showItems);
   }; // Coalesce scroll-driven state to one update per animation frame so the
   // navbar doesn't re-render on every scroll tick (same coalescer as the
-  // scrollspy — navSpy.js).
+  // scrollspy — navSpy.js). One listener drives both the scrolled treatment
+  // and the hide-on-scroll-down visibility decision.
   useEffect(() => {
-    const scheduleScrolled = coalesceToFrame(() =>
-      setIsScrolled(window.scrollY > SCROLLED_THRESHOLD_PX),
-    );
+    drawerOpenRef.current = isMobile && showItems;
+    const scheduleScrolled = coalesceToFrame(() => {
+      const y = window.scrollY;
+      setIsScrolled(y > SCROLLED_THRESHOLD_PX);
+      const decision = shouldHideNavbar({
+        lastY: lastYRef.current,
+        y,
+        drawerOpen: drawerOpenRef.current,
+      });
+      lastYRef.current = y;
+      setNavHidden((prev) => (decision === null ? prev : decision));
+    });
     window.addEventListener('scroll', scheduleScrolled, { passive: true });
 
     return () => {
       scheduleScrolled.cancel();
       window.removeEventListener('scroll', scheduleScrolled);
     };
-  }, []);
+  }, [isMobile, showItems]);
 
   const handleItemClick = (id, e) => {
     // Where the click goes (route / cross-route-anchor / same-page scroll) is
@@ -333,9 +350,12 @@ export default function Navbar() {
           toast pills (z-40), below the mobile overlay (z-60) so the open
           menu + its close button always win. */}
       <div
+        onFocus={() => setNavHidden(false)}
         className={`fixed z-50 left-0 top-0 w-full shadow ${
           isDark ? 'nav-w' : 'nav-b'
-        } flex items-center px-5 pt-4 pb-2 font-semibold max-[767px]:pl-4 max-[767px]:py-2 max-[767px]:h-auto max-[767px]:w-screen min-[768px]:grid min-[768px]:grid-cols-[1fr_auto_1fr] ${
+        } flex items-center px-5 pt-4 pb-2 font-semibold max-[767px]:pl-4 max-[767px]:py-2 max-[767px]:h-auto max-[767px]:w-screen min-[768px]:grid min-[768px]:grid-cols-[1fr_auto_1fr] motion-safe:transition-transform motion-safe:duration-300 ${
+          navHidden ? '-translate-y-full' : 'translate-y-0'
+        } ${
           isScrolled || currentItem === 'contact'
             ? 'bg-[#101011e6] border-b border-[#ffffff1a]'
             : 'bg-transparent'
