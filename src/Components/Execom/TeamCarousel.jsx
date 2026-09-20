@@ -154,8 +154,7 @@ function TeamCarousel({
                 onPointerLeave={() => setHoveredSlideIndex(null)}
               >
                 <BlurImage
-                  className={`object-cover ${d.imgPosition ?? 'object-top'} w-full h-full ${isDesktop ? 'card-hover' : ''} ${isDesktop && hoveredSlideIndex === index ? 'filter-none' : 'grayscale'} transition-all duration-400`}
-                  src={d.img}
+                  className={`object-cover ${d.imgPosition ?? 'object-top'} w-full h-full ${isDesktop ? 'card-hover' : ''} ${isDesktop && hoveredSlideIndex === index ? 'filter-none' : 'grayscale'} transition-all duration-400`}`r`n                  src={d.img}
                   srcSet={d.srcset}
                   sizes={cardSizes}
                   blurSrc={d.blur}
