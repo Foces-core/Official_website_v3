@@ -42,7 +42,7 @@ jobs:
             api.github.com:443 github.com:443 objects.githubusercontent.com:443
             registry.npmjs.org:443
       - name: Checkout
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v5
         with:
           # Audit never pushes; do not leave the job token in .git/config
           # while third-party install scripts run (CWE-522).
