@@ -160,8 +160,9 @@ reviews,comments,reviewDecision` plus inline threads — and request a
   reviewer if none is assigned. (2) Request the manual CodeRabbit review:
   auto-review is skipped for this OSS repo (the `CodeRabbit` check reports
   "Review skipped: manual review required"), so comment `@coderabbitai full
-review` on the PR and wait for the review run to finish — never merge
-  while it is still running. (3) Address every finding (human or
+review` on the PR and wait for the review run to finish — it typically
+  takes ~5-8 min, so give it a few minutes and re-check for the posted
+  review before moving on — never merge while it is still running. (3) Address every finding (human or
   CodeRabbit) with follow-up commits (never dismiss without reason), push,
   and wait for the next review round. (4) Repeat until `reviewDecision` is
   APPROVED AND the manual review finished with no unresolved blocking
