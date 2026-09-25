@@ -39,9 +39,14 @@
    alike (cube shows one face; flat colors only the middle card). Desktop
    adds hover coloring through the card's group-hover class; touch has no
    hover, so phones color the centered card only. Unlayered CSS beats
-   Tailwind's layered `grayscale` utility, so no !important is needed. */
+   Tailwind's layered `grayscale` utility, so no !important is needed.
+   Both img and wrapper div are cleared: BlurImage keeps filter classes off
+   the wrapper, but the div selector guards against any future leak — a
+   grayscale parent would keep the whole card gray even with img cleared. */
 .execom-swiper [data-slide-center] img,
-.execom-cube-swiper [data-slide-center] img {
+.execom-swiper [data-slide-center] div,
+.execom-cube-swiper [data-slide-center] img,
+.execom-cube-swiper [data-slide-center] div {
     filter: none;
 }
 
