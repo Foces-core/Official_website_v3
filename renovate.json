@@ -13,11 +13,7 @@
     {
       "_comment": "vitest 5 passes `pnpm test:unit` but silently breaks the mutation-testing gate. @stryker-mutator/vitest-runner 10.0.0 (the latest release) declares peer `vitest: '>=2.0.0'` yet its dry run collects 68 of the suite's 843 tests; five spec files never execute in the sandbox, so every mutant scores as survived and the score reads 0.00. AGENTS.md 2.1 makes scoped mutation testing mandatory for src/utils, src/data, src/hooks and pure *.js under Components/Pages, so upgrading would disable that gate repo-wide. Unpin when a Stryker release supports vitest 5 - see PR #213.",
       "matchPackageNames": ["vitest", "@vitest/coverage-v8", "@vitest/ui"],
-      "allowedVersions": {
-        "vitest": "<5",
-        "@vitest/coverage-v8": "<5",
-        "@vitest/ui": "<5"
-      }
+      "allowedVersions": "<5"
     }
   ]
 }
