@@ -32,10 +32,12 @@ arrived, reproducing the same inert-configuration failure from the other side.
    `auto_merge != null`, i.e. only when Renovate itself judged the update to
    qualify. The workflow therefore cannot widen Renovate's scope: a major gets
    no approval and stays open for a human.
-3. **The three required checks still gate the merge** (`Lint & Build`,
-   `E2E (Playwright)`, `Probes (structural checks)`), and CodeQL still runs.
-   GitHub cancels auto-merge if any of them fails, so nothing lands on a red
-   build. Nothing here weakens protection for human-authored PRs.
+3. **The required checks still gate the merge** — the three that existed when
+   this was written (`Lint & Build`, `E2E (Playwright)`,
+   `Probes (structural checks)`); ADR-0022 has since promoted
+   `Validate commit messages` to required, so there are four now. CodeQL still
+   runs. GitHub cancels auto-merge if any of them fails, so nothing lands on a
+   red build. Nothing here weakens protection for human-authored PRs.
 
 ## Consequences
 
