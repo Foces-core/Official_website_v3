@@ -33,14 +33,18 @@ pnpm build      # production build (image optimizer + PWA precache)
    - `perf/` — performance / bandwidth work (e.g. `perf/responsive-images`)
    - `a11y/` — accessibility work (e.g. `a11y/modal-focus-trap`)
    - `chore/` or `docs/` — maintenance, tooling, docs
-2. Make small, focused commits. We follow **Conventional Commits**:
-   `feat:`, `fix:`, `perf:`, `a11y:`, `chore:`, `docs:` prefixes, ~50-char
+2. Make small, focused commits. We follow **Conventional Commits**, and the
+   **scope is required**: `feat(scope):`, `fix(scope):`, `perf(scope):`,
+   `a11y(scope):`, `chore(scope):`, `docs(scope):` prefixes, ~50-char
    subject, body only when it explains _why_. **[Husky](https://typicode.github.io/husky/)
    hooks enforce this** locally: `lint-staged` lints _and formats_ your
    staged files ([ESLint](https://eslint.org/) `--fix` +
    [Prettier](https://prettier.io/)) before every commit, and
-   [commitlint](https://commitlint.js.org/) validates the message (`a11y:`
-   is allowed). CI runs the same commitlint check on every PR. Emergency
+   [commitlint](https://commitlint.js.org/) rejects a missing scope
+   (`scope-empty`) as well as an unknown type (`a11y:` is allowed). CI runs
+   the same commitlint check on every PR, and as of ADR-0022
+   `Validate commit messages` is a **branch-protection required check**, so a
+   bad message blocks the merge rather than just showing up red. Emergency
    bypass: `git commit --no-verify` (don't make it a habit).
 3. Open a pull request against `main` — the body auto-fills from
    `.github/pull_request_template.md`. Fill it in properly: the

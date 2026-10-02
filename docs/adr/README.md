@@ -28,6 +28,7 @@ Status conventions: **Accepted** (settled), **Proposed** (under review),
 | [0019](0019-prerender-and-seo-head-tags.md)                         | Prerendered route snapshots, per-route head tags, and event structured data      | Accepted |
 | [0020](0020-ai-crawlability.md)                                     | AI crawlability: llms.txt, explicit AI-bot access, site identity data            | Accepted |
 | [0021](0021-renovate-platform-automerge.md)                         | Renovate platform auto-merge, gated on CI                                        | Accepted |
+| [0022](0022-required-checks-and-scoped-commits.md)                  | Required checks: promote commit-message validation, require scoped commits       | Accepted |
 
 ## Adding a new ADR
 

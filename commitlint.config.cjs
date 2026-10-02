@@ -3,6 +3,11 @@
 module.exports = {
   extends: ['@commitlint/config-conventional'],
   rules: {
+    // AGENTS.md 3.1 documents the format as `type(scope):` — enforce it.
+    // config-conventional leaves scope optional, so a bare `chore:` used to
+    // pass. `Validate commit messages` is a branch-protection required check,
+    // so this now blocks the merge instead of merely documenting intent.
+    'scope-empty': [2, 'never'],
     'type-enum': [
       2,
       'always',

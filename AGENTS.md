@@ -147,9 +147,9 @@ queues a run.
   a direct push bypasses CodeRabbit, the PR-time checks, and review entirely.
 - **Flow:** `git fetch origin` → branch off an up-to-date `main` →
   commit (§3.1) → push → open a PR with `gh pr create` →
-  **wait for every gate** — the three branch-protection required checks
-  (Lint & Build, E2E (Playwright), Probes (structural checks)), plus the
-  Validate commit messages CI check, CodeQL, and the CodeRabbit review
+  **wait for every gate** — the four branch-protection required checks
+  (Lint & Build, E2E (Playwright), Probes (structural checks), Validate
+  commit messages), CodeQL, and the CodeRabbit review
   → resolve failures/findings with follow-up commits → merge when all green.
 - **Dependabot PRs auto-merge** once the four CI checks pass
   (`.github/workflows/auto-merge-dependabot.yml` polls CI, then squash-merges
@@ -159,7 +159,7 @@ queues a run.
   GitHub already reports `auto_merge` (ADR-0021). `lockFileMaintenance` is in
   the same rule, so those merge themselves as well. **Majors** get no approval
   and still need the full review loop above. This is the one scoped exception
-  to the CodeRabbit step: nothing human reviews these, the gate is the three
+  to the CodeRabbit step: nothing human reviews these, the gate is the four
   required checks + `minimumReleaseAge: 1 day`.
 - **Bot dependency PRs that conflict — agents action this, no asking.** Auto-merge
   only fires on a clean head, so the conflicted case is the one thing left for a
@@ -170,7 +170,7 @@ queues a run.
 --ours pnpm-lock.yaml` → `pnpm install` to regenerate → confirm
   `pnpm install --frozen-lockfile` and `pnpm test:unit` are clean → push with
   `git push --force-with-lease=refs/heads/<branch>:<known-tip> <url> HEAD:<branch>`
-  → merge via the REST endpoint once the three required checks pass. Ask only
+  → merge via the REST endpoint once the four required checks pass. Ask only
   if the rebase changes something other than those two files.
 - **Review loop (every PR — human-authored or bot).** After CI is green:
   (1) check reviewer input — `gh pr view --json
