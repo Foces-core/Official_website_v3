@@ -156,10 +156,22 @@ queues a run.
   and deletes the branch). Everything else merges manually.
 - **Renovate patch/minor PRs auto-merge too** — `platformAutomerge: true` plus
   `.github/workflows/renovate-auto-approve.yml`, which approves only PRs where
-  GitHub already reports `auto_merge` (ADR-0021). Majors and `lockFileMaintenance`
-  get no approval and still need the full review loop above. This is the one
-  scoped exception to the CodeRabbit step: nothing human reviews these, the
-  gate is the three required checks + `minimumReleaseAge: 1 day`.
+  GitHub already reports `auto_merge` (ADR-0021). `lockFileMaintenance` is in
+  the same rule, so those merge themselves as well. **Majors** get no approval
+  and still need the full review loop above. This is the one scoped exception
+  to the CodeRabbit step: nothing human reviews these, the gate is the three
+  required checks + `minimumReleaseAge: 1 day`.
+- **Bot dependency PRs that conflict — agents action this, no asking.** Auto-merge
+  only fires on a clean head, so the conflicted case is the one thing left for a
+  runner. When `gh pr view <n>` reports `CONFLICTING` (typically a bot PR behind
+  after other merges landed): `git fetch origin <branch>` → check it out →
+  `git rebase origin/main` → resolve `pnpm-workspace.yaml` by keeping `main`'s
+  other override lines and applying only the PR's own line → `git checkout
+--ours pnpm-lock.yaml` → `pnpm install` to regenerate → confirm
+  `pnpm install --frozen-lockfile` and `pnpm test:unit` are clean → push with
+  `git push --force-with-lease=refs/heads/<branch>:<known-tip> <url> HEAD:<branch>`
+  → merge via the REST endpoint once the three required checks pass. Ask only
+  if the rebase changes something other than those two files.
 - **Review loop (every PR — human-authored or bot).** After CI is green:
   (1) check reviewer input — `gh pr view --json
 reviews,comments,reviewDecision` plus inline threads — and request a

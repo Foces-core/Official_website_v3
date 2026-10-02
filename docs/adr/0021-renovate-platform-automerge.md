@@ -22,9 +22,9 @@ arrived, reproducing the same inert-configuration failure from the other side.
 
 1. **`"platformAutomerge": true`** in `renovate.json`. Renovate now asks GitHub
    to queue the merge for the PRs its own `packageRules` mark `automerge: true`
-   — minor, patch, pin and digest only. Majors declare no `automerge` rule, so
-   they are never queued. `minimumReleaseAge: 1 day` still holds every update
-   back before a PR is even opened.
+   — minor, patch, pin, digest and `lockFileMaintenance`. Majors declare no
+   `automerge` rule, so they are never queued. `minimumReleaseAge: 1 day` still
+   holds every update back before a PR is even opened.
 2. **`.github/workflows/renovate-auto-approve.yml`** supplies the missing
    approval, mirroring the existing `auto-merge-dependabot.yml` pattern. It
    polls the four CI checks on the PR head with the same bounded loop, aborts
@@ -48,8 +48,10 @@ arrived, reproducing the same inert-configuration failure from the other side.
   scoped exception to the review loop in AGENTS.md §2.3. The compensating
   control is `minimumReleaseAge: 1 day`: a bad release has a day to surface
   upstream before this repo ever sees it, and CI still has to go fully green.
-- **Follow-ups:** `lockFileMaintenance` is not one of the `matchUpdateTypes`
-  in the automerge rule, so those PRs stay manual — add
-  `"lockFileMaintenance"` to that rule if the churn is worth it. Revisit this
-  ADR if CodeRabbit's check ever becomes required, or if `minimumReleaseAge`
-  is lowered.
+- **Follow-ups:** `lockFileMaintenance` is included in the same `automerge`
+  rule, so those PRs merge themselves too — they are the ones that churned most
+  in this repo, since every other merge invalidated their lockfile. What still
+  needs a human (or an agent following AGENTS.md §2.3) is the **conflicted**
+  case: auto-merge never fires on a dirty head, and Renovate only rebases on its
+  own schedule. Revisit this ADR if CodeRabbit's check ever becomes required,
+  or if `minimumReleaseAge` is lowered.

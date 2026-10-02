@@ -7,7 +7,8 @@
 # (ADR-0021). This workflow polls the four CI checks on the PR head until they
 # complete, then approves, and only when GitHub already reports auto-merge
 # enabled: Renovate sets that flag itself, and only for the packageRules that
-# declare `automerge: true` (minor, patch, pin, digest). Majors therefore stay
+# declare `automerge: true` (minor, patch, pin, digest, lockFileMaintenance).
+# Majors therefore stay
 # unapproved and unmerged — humans merge those.
 #
 # A failing check aborts the job and leaves the PR open: nothing merges on a
