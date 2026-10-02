@@ -113,6 +113,25 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const SERVER_ORIGIN = `http://127.0.0.1:${PORT}`;
 
 /**
+ * Publish what this run actually did as `dist/prerender.json`.
+ *
+ * Skipping the snapshots is deliberately non-fatal (a host without a browser
+ * must not break the deploy), which makes "silently shipped no prerendered
+ * HTML" the exact failure to fear — it is invisible in the served pages and
+ * invisible in CI logs nobody reads. This marker makes it observable from
+ * outside: `curl https://<host>/prerender.json`.
+ *
+ * @param {{status: 'written'|'skipped', routes?: string[], reason?: string}} status
+ */
+function writeStatusMarker(status) {
+  try {
+    fs.writeFileSync(path.join(dist, 'prerender.json'), `${JSON.stringify(status, null, 2)}\n`);
+  } catch {
+    // A status marker must never be the reason a build fails.
+  }
+}
+
+/**
  * Drop the `<link>` tags the prerender session itself created.
  *
  * Scrolling the page mounts every ScrollGate section, and Vite's preload
@@ -209,6 +228,7 @@ function checkHead(routePath, html) {
 
 if (process.env.SKIP_PRERENDER === '1') {
   console.log('prerender: SKIP_PRERENDER=1 — skipping route snapshots.');
+  writeStatusMarker({ status: 'skipped', reason: 'SKIP_PRERENDER=1' });
   process.exit(0);
 }
 
@@ -227,6 +247,7 @@ if (!chromePath) {
     'prerender: Chrome not found — route snapshots were NOT written. ' +
     'Install a browser (`pnpm exec playwright install chromium`), set CHROME_PATH, ' +
     'or set PRERENDER_STRICT=1 to make this fatal.';
+  writeStatusMarker({ status: 'skipped', reason: 'no browser found' });
   if (strict) {
     console.error(message);
     process.exit(1);
@@ -242,6 +263,7 @@ if (!fs.existsSync(path.join(dist, 'index.html'))) {
 const server = await startServer();
 let browser;
 const failures = [];
+const writtenRoutes = [];
 try {
   browser = await puppeteer.launch({
     executablePath: chromePath,
@@ -277,9 +299,13 @@ try {
     const outPath = path.join(dist, route === '/' ? 'index.html' : `${route.slice(1)}/index.html`);
     fs.mkdirSync(path.dirname(outPath), { recursive: true });
     fs.writeFileSync(outPath, html);
+    writtenRoutes.push(route);
     console.log(
       `prerender: ${route} -> ${path.relative(root, outPath)} (${(html.length / 1024).toFixed(0)}KB)`,
     );
+  }
+  if (writtenRoutes.length) {
+    writeStatusMarker({ status: 'written', routes: writtenRoutes });
   }
 } catch (err) {
   // Same policy as a missing browser: a broken Chromium (Vercel's image ships
@@ -289,6 +315,7 @@ try {
     console.error('prerender failed:', err.message);
     process.exitCode = 1;
   } else {
+    writeStatusMarker({ status: 'skipped', reason: `browser launch failed: ${err.message}` });
     console.warn(
       `[foces] prerender could not launch a browser (${err.message}). ` +
         'Route snapshots were NOT written; the SPA shell still ships. ' +
