@@ -1,6 +1,6 @@
 {
   "framework": "vite",
-  "buildCommand": "pnpm exec playwright install chromium || pnpm exec playwright install chromium --only-shell || true; pnpm run build",
+  "buildCommand": "dnf install -y nss nspr atk at-spi2-atk at-spi2-core cups-libs libdrm libxkbcommon libXcomposite libXdamage libXext libXfixes libXrandr libxshmfence mesa-libgbm alsa-lib pango cairo || yum install -y nss nspr || true; pnpm exec playwright install chromium || true; pnpm run build",
   "outputDirectory": "dist",
   "headers": [
     {
