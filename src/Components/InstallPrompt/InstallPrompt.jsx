@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './InstallPrompt.css';
 import { readSessionFlag, writeSessionFlag } from '../../utils/sessionCookie.js';
 
@@ -31,6 +31,11 @@ export default function InstallPrompt() {
   const [deferred, setDeferred] = useState(null);
   const [dismissed, setDismissed] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const dismissTimer = useRef(null);
+
+  // The dismiss fade-out timer must never fire after unmount (React setState
+  // on an unmounted tree).
+  useEffect(() => () => clearTimeout(dismissTimer.current), []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -75,7 +80,8 @@ export default function InstallPrompt() {
 
   const dismiss = () => {
     setLeaving(true);
-    setTimeout(() => setDismissed(true), FADE_MS);
+    clearTimeout(dismissTimer.current);
+    dismissTimer.current = setTimeout(() => setDismissed(true), FADE_MS);
   };
 
   const install = async () => {

@@ -136,7 +136,7 @@ export function fire({
   );
   setLastToast(msg);
   const toast = pushToast(stack, msg, MAX_TOASTS);
-  setTimeout(() => toast.remove(), TOAST_MS);
+  const toastTimer = setTimeout(() => toast.remove(), TOAST_MS);
 
   const burst = createBurstElement(cx, cy, stack);
   const particles = createParticles(count, colors, emojis);
@@ -147,6 +147,7 @@ export function fire({
   const cancelLoop = startConfettiLoop(particles, burst);
 
   return () => {
+    clearTimeout(toastTimer);
     cancelLoop();
     burst.remove();
   };

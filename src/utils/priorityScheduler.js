@@ -5,6 +5,12 @@
  * (hover, touch, focus, click) over background idle tasks.
  */
 
+// Bounded FIFO of already-prioritized URLs. Dedupe prevents repeat work per
+// URL, but the app is a long-lived SPA session — an unbounded Set would grow
+// with every unique image the user interacts with. Evicting the oldest entry
+// past the cap keeps the guard cheap while capping memory; an evicted URL can
+// simply be prioritized again if the user returns to it.
+const MAX_PRIORITIZED_URLS = 200;
 const prioritizedUrls = new Set();
 
 /**
@@ -77,6 +83,9 @@ export function scheduleBackgroundTask(taskFn) {
  */
 export function prioritizeAssetFetch(url) {
   if (typeof url !== 'string' || !url.trim() || prioritizedUrls.has(url)) return;
+  if (prioritizedUrls.size >= MAX_PRIORITIZED_URLS) {
+    prioritizedUrls.delete(prioritizedUrls.values().next().value);
+  }
   prioritizedUrls.add(url);
 
   scheduleUserBlockingTask(() => {

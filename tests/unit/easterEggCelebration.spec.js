@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   pickEasterMessage,
   pushToast,
@@ -129,6 +129,29 @@ describe('fire — celebration trigger seam', () => {
     expect(p.querySelector('.about-burst')).not.toBeNull();
     c();
     expect(p.querySelector('.about-burst')).toBeNull();
+  });
+  it('cleanup clears the pending toast-removal timer', () => {
+    vi.useFakeTimers();
+    const p = document.createElement('div');
+    const s = document.createElement('div');
+    p.appendChild(s);
+    let l = '';
+    const c = fire({
+      cx: 0,
+      cy: 0,
+      count: 0,
+      messages: ['X'],
+      stack: s,
+      getLastToast: () => l,
+      setLastToast: (m) => {
+        l = m;
+      },
+    });
+    c();
+    vi.advanceTimersByTime(5000);
+    // Timer was cleared on cleanup, so the toast is left for the DOM owner.
+    expect(s.querySelector('.about-toast')).not.toBeNull();
+    vi.useRealTimers();
   });
   it('removes previous burst before creating new', () => {
     const p = document.createElement('div');

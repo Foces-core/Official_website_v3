@@ -67,6 +67,7 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
   // Wind-down / auto-rotation
   const windingRef = useRef(false);
   const windRaf = useRef(null);
+  const snapTimerRef = useRef(null);
   const manualUntilRef = useRef(0);
 
   // Easter-egg tracking
@@ -97,7 +98,8 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
     rotXRef.current = tx;
     rotYRef.current = ty;
     applyTransform();
-    setTimeout(() => {
+    if (snapTimerRef.current != null) clearTimeout(snapTimerRef.current);
+    snapTimerRef.current = setTimeout(() => {
       if (boxRef.current) boxRef.current.style.transition = 'none';
     }, CUBE_PHYSICS.snapMs);
     manualUntilRef.current = Date.now() + SNAP_GRACE_MS;
@@ -340,6 +342,7 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
         window.removeEventListener('mouseup', mouseHandlersRef.current.up);
       }
       if (windRaf.current != null) cancelAnimationFrame(windRaf.current);
+      if (snapTimerRef.current != null) clearTimeout(snapTimerRef.current);
     },
     [],
   );
