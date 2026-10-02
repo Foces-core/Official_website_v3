@@ -166,6 +166,20 @@ describe('prioritizeAssetFetch', () => {
     expect(images).toHaveLength(1);
   });
 
+  it('caps the dedupe set so an evicted URL can be prioritized again', async () => {
+    stubPostTask();
+    stubImage();
+    const cap = 200;
+    for (let i = 0; i < cap + 1; i += 1) prioritizeAssetFetch(`/assets/img-${i}.webp`);
+    await Promise.resolve();
+    expect(images).toHaveLength(cap + 1);
+    // Adding the (cap + 1)th distinct URL evicted the oldest, so img-0 is no
+    // longer deduped and fetches again.
+    prioritizeAssetFetch('/assets/img-0.webp');
+    await Promise.resolve();
+    expect(images).toHaveLength(cap + 2);
+  });
+
   it('ignores empty or non-string URLs', async () => {
     stubPostTask();
     stubImage();
