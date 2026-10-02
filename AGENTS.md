@@ -146,11 +146,11 @@ queues a run.
 - **Never push straight to `main`.** Branch protection requires a PR —
   a direct push bypasses CodeRabbit, the PR-time checks, and review entirely.
 - **Flow:** `git fetch origin` → branch off an up-to-date `main` →
-  commit (§3.1) → push the branch → open a PR with `gh pr create` →
-  **wait for every gate** — the four required checks (Lint & Build,
-  E2E (Playwright), Probes (structural checks), Validate commit messages),
-  CodeQL, and the CodeRabbit review → resolve failures/findings with
-  follow-up commits → merge when all green.
+  commit (§3.1) → push → open a PR with `gh pr create` →
+  **wait for every gate** — the three branch-protection required checks
+  (Lint & Build, E2E (Playwright), Probes (structural checks)), plus the
+  Validate commit messages CI check, CodeQL, and the CodeRabbit review
+  → resolve failures/findings with follow-up commits → merge when all green.
 - **Dependabot PRs auto-merge** once the four CI checks pass
   (`.github/workflows/auto-merge-dependabot.yml` polls CI, then squash-merges
   and deletes the branch). Everything else merges manually.
