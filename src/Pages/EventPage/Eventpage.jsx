@@ -2,6 +2,7 @@ import EventCard from './EventCard.jsx';
 import Navbar from '../LandingPage/Navbar/Navbar.jsx';
 import Footer from '../LandingPage/Footer/Footer.jsx';
 import { featuredEvents } from '../../data/events.js';
+import Seo from '../../Components/Seo/Seo';
 
 function Eventpage() {
   const eventsList = featuredEvents;
@@ -19,6 +20,8 @@ function Eventpage() {
   // old per-resize re-render of the whole card list is gone.
   return (
     <div className="overflow-x-hidden flex flex-col bg-[#0b0b0c] min-h-screen">
+      {/* Events-route head tags + JSON-LD Event structured data (SEO). */}
+      <Seo path="/events" events={featuredEvents} />
       {skipLink}
       <Navbar />
       <main

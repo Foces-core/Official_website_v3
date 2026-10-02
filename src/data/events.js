@@ -52,6 +52,9 @@ export const featuredEvents = [
     name: 'The Prompt Paradox 2.0',
     tag: 'AI & Prompt Engineering',
     date: '21st June 2026',
+    // ISO dates feed the JSON-LD Event schema (src/utils/seoMeta.js —
+    // Google rich results). `date` stays the human-facing label.
+    startDate: '2026-06-21',
     photos: [
       photoTriplet(
         promptParadoxPoster,
@@ -74,6 +77,7 @@ export const featuredEvents = [
     name: 'Agentic Coding Workshop',
     tag: 'Hands-on Workshop',
     date: '9th July 2026',
+    startDate: '2026-07-09',
     photos: [
       photoTriplet(agenticCodingPoster, agenticCodingPoster800, agenticCodingPoster400),
       photoTriplet(agenticMentor, agenticMentor800, agenticMentor400),
@@ -86,6 +90,8 @@ export const featuredEvents = [
     name: 'Coding Arena 4.0',
     tag: 'Bootcamp',
     date: '27th July - 5th Aug',
+    startDate: '2026-07-27',
+    endDate: '2026-08-05',
     photos: [
       photoTriplet(codingArenaPoster, codingArenaPoster800, codingArenaPoster400),
       // java_algorithm_lecture.webp is intrinsically 576px wide — the -800

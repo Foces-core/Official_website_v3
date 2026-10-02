@@ -10,6 +10,25 @@ import {
 const STRING_FIELDS = ['tag', 'date', 'desc'];
 
 /**
+ * True only for a real YYYY-MM-DD calendar date. `Date.parse` alone is not
+ * enough: it silently rolls impossible days over ('2026-02-30' parses as
+ * 2026-03-02), so a round-trip through UTC components catches them.
+ *
+ * @param {unknown} value
+ * @returns {boolean}
+ */
+function isCalendarDate(value) {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const parsed = new Date(`${value}T00:00:00Z`);
+  if (Number.isNaN(parsed.getTime())) return false;
+  return (
+    parsed.getUTCFullYear() === Number(value.slice(0, 4)) &&
+    parsed.getUTCMonth() + 1 === Number(value.slice(5, 7)) &&
+    parsed.getUTCDate() === Number(value.slice(8, 10))
+  );
+}
+
+/**
  * Validates the event data shape (src/data/events.js). Returns an array of
  * human-readable problem strings; an empty array means the list is valid.
  *
@@ -54,6 +73,22 @@ export function validateEvents(events) {
 
     if (event.websiteUrl != null && !isNonEmptyString(event.websiteUrl)) {
       problems.push(`${label}: websiteUrl must be a non-empty string when present`);
+    }
+
+    // ISO dates feed the JSON-LD Event schema (src/utils/seoMeta.js). Optional
+    // fields, but when present they must be well-formed calendar dates.
+    for (const field of ['startDate', 'endDate']) {
+      if (event[field] == null) continue;
+      if (!isCalendarDate(event[field])) {
+        problems.push(`${label}: ${field} must be an ISO date (YYYY-MM-DD)`);
+      }
+    }
+    if (
+      isCalendarDate(event.startDate) &&
+      isCalendarDate(event.endDate) &&
+      Date.parse(`${event.endDate}T00:00:00Z`) <= Date.parse(`${event.startDate}T00:00:00Z`)
+    ) {
+      problems.push(`${label}: endDate must be after startDate`);
     }
 
     // photos are { url, srcset, blur? } objects (src/utils/eventPhotos.js) —

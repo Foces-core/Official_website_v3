@@ -11,6 +11,7 @@ import ErrorBoundary from './Components/ErrorBoundary/ErrorBoundary';
 import ChunkErrorFallback from './Components/ErrorFallback/ChunkErrorFallback';
 import HeroSection from './Pages/LandingPage/HeroSection/HeroSection';
 import Navbar from './Pages/LandingPage/Navbar/Navbar';
+import Seo from './Components/Seo/Seo';
 import { useLocation } from 'react-router';
 import { initAOS } from './utils/aosGating.js';
 import { lazyWithRetry } from './utils/lazyWithRetry.js';
@@ -76,6 +77,9 @@ function App() {
 
   return (
     <div className="App bg-[#101011]">
+      {/* Home-route head tags (title/description/OG/canonical). Other routes
+          mount their own Seo instance. */}
+      <Seo path="/" />
       <a href="#main-content" className="skip-link">
         Skip to content
       </a>

@@ -35,6 +35,48 @@
     <link rel="canonical" href="https://foces.ceconline.edu/" />
     <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
+    <!-- Site identity structured data (schema.org Organization + WebSite):
+         static here so no-JS crawlers and AI fetchers see it without running
+         JS. Seo.jsx owns the same payload at runtime (src/utils/seoMeta.js
+         siteJsonLd) and keeps it in sync on client-side navigations; the
+         prerender snapshots carry whichever rendered. -->
+    <script type="application/ld+json" id="foces-site-jsonld">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://foces.ceconline.edu/#organization",
+            "name": "FOCES - Forum of Computer Engineering Students",
+            "alternateName": "FOCES",
+            "url": "https://foces.ceconline.edu",
+            "logo": "https://foces.ceconline.edu/og-image.jpg",
+            "email": "foces@ceconline.edu",
+            "address": {
+              "@type": "PostalAddress",
+              "streetAddress": "Chengannur P.O.",
+              "addressLocality": "Alappuzha District",
+              "addressRegion": "Kerala",
+              "addressCountry": "IN"
+            },
+            "sameAs": [
+              "https://www.facebook.com/focescec",
+              "https://www.instagram.com/foces_cec",
+              "https://x.com/foces_cec",
+              "https://www.linkedin.com/in/foces-cec-423176229/"
+            ]
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://foces.ceconline.edu/#website",
+            "url": "https://foces.ceconline.edu",
+            "name": "FOCES - Forum of Computer Engineering Students",
+            "publisher": { "@id": "https://foces.ceconline.edu/#organization" }
+          }
+        ]
+      }
+    </script>
+
     <!-- Open Graph / Facebook / WhatsApp -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://foces.ceconline.edu/" />
@@ -240,9 +282,40 @@
           opacity: 0;
         }
       }
+
+      /* No-JS fallback note (see <noscript> below) — plain readable text on
+         the theme background, no JS involved. */
+      .noscript-note {
+        font-family: system-ui, sans-serif;
+        color: #fff;
+        padding: 2rem;
+        max-width: 42rem;
+      }
+      .noscript-note a {
+        color: #22d3ee;
+      }
     </style>
   </head>
   <body class="bg-[#101011] text-white">
+    <!-- No-JS fallback: crawlers and users with JS disabled get the club
+         essentials as real HTML (per-route snapshots handle the routes —
+         see docs/adr/0019). -->
+    <noscript>
+      <div class="noscript-note">
+        <h1>FOCES - Forum of Computer Engineering Students, CEC</h1>
+        <p>
+          FOCES is the official forum of the Computer Engineering department at College of
+          Engineering Chengannur. We run workshops, bootcamps, and competitions for students —
+          recent events include The Prompt Paradox 2.0 (AI prompt engineering contest, 21 June
+          2026), the Agentic Coding Workshop (9 July 2026), and Coding Arena 4.0 (competitive
+          programming bootcamp, 27 July to 5 Aug 2026).
+        </p>
+        <p>
+          This site needs JavaScript for the full experience. Contact us at
+          <a href="mailto:foces@ceconline.edu">foces@ceconline.edu</a>.
+        </p>
+      </div>
+    </noscript>
     <div id="root"></div>
     <div id="boot-splash" role="status" aria-live="polite">
       <div class="coffee-wrap">

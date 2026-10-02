@@ -47,17 +47,49 @@ export const QUIET_CHROMIUM_ARGS = [
 ];
 
 function findPlaywrightChromium() {
+  // PLAYWRIGHT_BROWSERS_PATH (when set) relocates the registry — honor it so
+  // project-local installs work; default to the standard user cache.
+  const cache =
+    process.env.PLAYWRIGHT_BROWSERS_PATH || path.join(os.homedir(), '.cache', 'ms-playwright');
   try {
-    const cache = path.join(os.homedir(), '.cache', 'ms-playwright');
     if (!existsSync(cache)) return null;
-    const dirs = readdirSync(cache).filter((d) => d.startsWith('chromium'));
-    for (const dir of dirs) {
+    // Prefer the headless shell (chromium_headless_shell-*) — same engine,
+    // markedly lower memory — then fall back to full Chromium builds.
+    const dirs = readdirSync(cache).filter(
+      (d) => d.startsWith('chromium_headless_shell') || d.startsWith('chromium'),
+    );
+    const sorted = dirs.sort((a, b) => {
+      const shell = (d) => (d.startsWith('chromium_headless_shell') ? 0 : 1);
+      return shell(a) - shell(b);
+    });
+    for (const dir of sorted) {
       const candidates =
         process.platform === 'win32'
-          ? [path.join(cache, dir, 'chrome.exe')]
+          ? [
+              path.join(cache, dir, 'chrome-headless-shell-win64.exe'),
+              path.join(cache, dir, 'chrome.exe'),
+            ]
           : process.platform === 'darwin'
-            ? [path.join(cache, dir, 'chrome-mac', 'Chromium.app', 'Contents', 'MacOS', 'Chromium')]
-            : [path.join(cache, dir, 'chrome-linux', 'chrome')];
+            ? [
+                path.join(cache, dir, 'chrome-headless-shell-mac', 'chrome-headless-shell'),
+                path.join(
+                  cache,
+                  dir,
+                  'chrome-mac',
+                  'Chromium.app',
+                  'Contents',
+                  'MacOS',
+                  'Chromium',
+                ),
+              ]
+            : [
+                // Modern Playwright lands `chrome-linux64/` (>= v18) and
+                // `chrome-headless-shell-linux64/`; older revisions used
+                // `chrome-linux/`. Check all.
+                path.join(cache, dir, 'chrome-headless-shell-linux64', 'chrome-headless-shell'),
+                path.join(cache, dir, 'chrome-linux64', 'chrome'),
+                path.join(cache, dir, 'chrome-linux', 'chrome'),
+              ];
       for (const c of candidates) {
         if (existsSync(c)) return c;
       }
