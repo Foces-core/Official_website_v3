@@ -92,10 +92,11 @@ export function headTagsForRoute(route) {
  * three together if a handle changes.
  *
  * @param {string} [origin] - canonical origin (overridable for tests)
- * @returns {string} the complete <script type="application/ld+json"> tag
+ * @returns {string} the JSON document (callers assign it to a script's
+ *   textContent — never an HTML string, so no tag-stripping regex is needed)
  */
 export function siteJsonLd(origin = SITE_ORIGIN) {
-  return `<script type="application/ld+json">${JSON.stringify({
+  return JSON.stringify({
     '@context': 'https://schema.org',
     '@graph': [
       {
@@ -128,7 +129,7 @@ export function siteJsonLd(origin = SITE_ORIGIN) {
         publisher: { '@id': `${origin}/#organization` },
       },
     ],
-  })}</script>`;
+  });
 }
 
 /**
@@ -139,7 +140,8 @@ export function siteJsonLd(origin = SITE_ORIGIN) {
  *
  * @param {Array<object>} events - entries from src/data/events.js
  * @param {string} [origin] - canonical origin (overridable for tests)
- * @returns {string} the complete <script type="application/ld+json"> tag
+ * @returns {string} the JSON document (callers assign it to a script's
+ *   textContent — never an HTML string, so no tag-stripping regex is needed)
  */
 export function eventJsonLd(events, origin = SITE_ORIGIN) {
   const graph = (events || []).map((event) => ({
@@ -169,8 +171,8 @@ export function eventJsonLd(events, origin = SITE_ORIGIN) {
     ...(event.websiteUrl ? { url: event.websiteUrl } : {}),
   }));
 
-  return `<script type="application/ld+json">${JSON.stringify({
+  return JSON.stringify({
     '@context': 'https://schema.org',
     '@graph': graph,
-  })}</script>`;
+  });
 }

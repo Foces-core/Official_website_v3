@@ -59,7 +59,7 @@ export default function Seo({ path, events }) {
     const siteScript = existingSiteLd ?? document.createElement('script');
     siteScript.type = 'application/ld+json';
     siteScript.id = 'foces-site-jsonld';
-    siteScript.textContent = siteJsonLd().replace(/^<script[^>]*>|<\/script>$/g, '');
+    siteScript.textContent = siteJsonLd();
     if (!existingSiteLd) document.head.appendChild(siteScript);
 
     // Event structured data: only rendered on the events route.
@@ -68,7 +68,7 @@ export default function Seo({ path, events }) {
       const script = existingLd ?? document.createElement('script');
       script.type = 'application/ld+json';
       script.id = 'foces-event-jsonld';
-      script.textContent = eventJsonLd(events).replace(/^<script[^>]*>|<\/script>$/g, '');
+      script.textContent = eventJsonLd(events);
       if (!existingLd) document.head.appendChild(script);
     } else if (existingLd) {
       existingLd.remove();

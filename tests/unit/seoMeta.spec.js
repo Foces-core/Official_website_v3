@@ -83,19 +83,21 @@ describe('seoMeta', () => {
       endDate: '2026-08-05',
     };
 
-    it('emits one ld+json script with an @graph entry per event', () => {
-      const tag = eventJsonLd([base, { ...base, name: 'Other', startDate: '2026-07-01' }]);
-      expect(tag.startsWith('<script type="application/ld+json">')).toBe(true);
-      expect(tag.endsWith('</script>')).toBe(true);
+    it('emits a JSON document with an @graph entry per event', () => {
+      const json = eventJsonLd([base, { ...base, name: 'Other', startDate: '2026-07-01' }]);
+      // Raw JSON, never an HTML string: callers assign it to a script's
+      // textContent, so there is no tag to strip back off.
+      expect(json.startsWith('{')).toBe(true);
+      expect(json).not.toContain('<script');
 
-      const parsed = JSON.parse(tag.replace(/^<script[^>]*>|<\/script>$/g, ''));
+      const parsed = JSON.parse(json);
       expect(parsed['@context']).toBe('https://schema.org');
       expect(parsed['@graph']).toHaveLength(2);
       expect(parsed['@graph'][0]['@type']).toBe('Event');
     });
 
     it('carries name, dates, place, and organizer for an event', () => {
-      const parsed = JSON.parse(eventJsonLd([base]).replace(/^<script[^>]*>|<\/script>$/g, ''));
+      const parsed = JSON.parse(eventJsonLd([base]));
       const ev = parsed['@graph'][0];
       expect(ev.name).toBe('Coding Arena 4.0');
       expect(ev.startDate).toBe('2026-07-27');
@@ -108,42 +110,35 @@ describe('seoMeta', () => {
     });
 
     it('adds url only when the event has a websiteUrl', () => {
-      const withUrl = JSON.parse(
-        eventJsonLd([{ ...base, websiteUrl: 'https://example.com/x' }]).replace(
-          /^<script[^>]*>|<\/script>$/g,
-          '',
-        ),
-      );
+      const withUrl = JSON.parse(eventJsonLd([{ ...base, websiteUrl: 'https://example.com/x' }]));
       expect(withUrl['@graph'][0].url).toBe('https://example.com/x');
 
-      const withoutUrl = JSON.parse(eventJsonLd([base]).replace(/^<script[^>]*>|<\/script>$/g, ''));
+      const withoutUrl = JSON.parse(eventJsonLd([base]));
       expect(Object.hasOwn(withoutUrl['@graph'][0], 'url')).toBe(false);
     });
 
     it('omits endDate when absent instead of emitting null', () => {
-      const parsed = JSON.parse(
-        eventJsonLd([{ ...base, endDate: undefined }]).replace(/^<script[^>]*>|<\/script>$/g, ''),
-      );
+      const parsed = JSON.parse(eventJsonLd([{ ...base, endDate: undefined }]));
       expect(Object.hasOwn(parsed['@graph'][0], 'endDate')).toBe(false);
     });
 
     it('tolerates a null/empty event list with an empty @graph', () => {
       for (const input of [null, undefined, []]) {
-        const parsed = JSON.parse(eventJsonLd(input).replace(/^<script[^>]*>|<\/script>$/g, ''));
+        const parsed = JSON.parse(eventJsonLd(input));
         expect(parsed['@graph']).toEqual([]);
       }
     });
   });
 
   describe('siteJsonLd', () => {
-    const strip = (tag) => JSON.parse(tag.replace(/^<script[^>]*>|<\/script>$/g, ''));
+    const strip = (json) => JSON.parse(json);
 
     it('emits an Organization + WebSite @graph', () => {
-      const tag = siteJsonLd();
-      expect(tag.startsWith('<script type="application/ld+json">')).toBe(true);
-      expect(tag.endsWith('</script>')).toBe(true);
+      const json = siteJsonLd();
+      expect(json.startsWith('{')).toBe(true);
+      expect(json).not.toContain('<script');
 
-      const parsed = strip(tag);
+      const parsed = strip(json);
       expect(parsed['@context']).toBe('https://schema.org');
       const types = parsed['@graph'].map((n) => n['@type']).sort();
       expect(types).toEqual(['Organization', 'WebSite']);
