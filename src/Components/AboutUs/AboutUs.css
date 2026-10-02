@@ -228,7 +228,7 @@
     -webkit-backdrop-filter: blur(6px);
     backdrop-filter: blur(6px);
     box-shadow: 0 0 20px rgba(34, 211, 238, 0.25);
-    animation: about-toast 1.6s ease forwards;
+    animation: about-toast 1.8s ease forwards;
 }
 
 @keyframes about-toast {
