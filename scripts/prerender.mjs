@@ -110,10 +110,37 @@ function startServer() {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+const SERVER_ORIGIN = `http://127.0.0.1:${PORT}`;
+
+/**
+ * Drop the `<link>` tags the prerender session itself created.
+ *
+ * Scrolling the page mounts every ScrollGate section, and Vite's preload
+ * helper appends a `<link>` per chunk and per lazy stylesheet as it does. Those
+ * tags point at this script's throwaway server, so serializing them into the
+ * snapshot would do two harmful things:
+ *
+ *   1. Bake `http://127.0.0.1:4179` into production HTML, so every visitor's
+ *      browser tries to fetch that dead origin.
+ *   2. Turn the lazy sections into eager boot downloads — the exact deferral
+ *      ScrollGate exists for (and that tests/scroll-gate.spec.js asserts).
+ *
+ * The shell's own tags (entry chunk, vendor runtime, fonts, CSS) are emitted
+ * by `vite build` as root-relative paths and are untouched by this. React
+ * re-adds whatever it needs at runtime, so nothing is lost for real visitors.
+ *
+ * @param {string} html - serialized snapshot
+ * @returns {string} snapshot without session-injected link tags
+ */
+function stripSessionLinks(html) {
+  const pattern = new RegExp(`<link\\b[^>]*href="${SERVER_ORIGIN}/[^"]*"[^>]*>\\s*`, 'g');
+  return html.replace(pattern, '');
+}
+
 async function renderRoute(browser, routePath) {
   const page = await browser.newPage();
   await page.setViewport({ width: 1280, height: 800 });
-  await page.goto(`http://127.0.0.1:${PORT}${routePath}`, {
+  await page.goto(`${SERVER_ORIGIN}${routePath}`, {
     waitUntil: 'networkidle0',
     timeout: 60_000,
   });
@@ -132,7 +159,7 @@ async function renderRoute(browser, routePath) {
   // Let lazy chunks finish mounting + their skeletons resolve.
   await sleep(800);
 
-  const html = await page.content();
+  const html = stripSessionLinks(await page.content());
   await page.close();
   return html;
 }
@@ -143,6 +170,15 @@ function checkExpectedContent(routePath, html) {
     (s) => !lower.includes(s.toLowerCase()),
   );
   return missing;
+}
+
+// Tripwire for the failure mode stripSessionLinks exists to prevent: a
+// throwaway-server origin surviving into the shipped snapshot is always a bug,
+// and it is invisible until someone inspects production HTML.
+function checkNoServerOrigin(routePath, html) {
+  return html.includes(SERVER_ORIGIN)
+    ? [`prerender origin leaked into HTML: ${SERVER_ORIGIN}`]
+    : [];
 }
 
 function checkHead(routePath, html) {
@@ -178,8 +214,25 @@ if (process.env.SKIP_PRERENDER === '1') {
 
 const chromePath = resolveChrome();
 if (!chromePath) {
-  console.error('prerender: Chrome not found — set CHROME_PATH or run `pnpm test:install`.');
-  process.exit(1);
+  // A missing browser must never take the whole deploy down: the SPA shell,
+  // the per-route head tags in index.html and the <noscript> summary all still
+  // ship, so the site works — it just loses the prerendered route snapshots
+  // until a browser is available. Hosts without one (Vercel's build image ships
+  // no Chromium) therefore degrade instead of failing.
+  //
+  // PRERENDER_STRICT=1 restores the fail-fast behavior for CI and local runs
+  // that must not silently publish snapshot-less output.
+  const strict = process.env.PRERENDER_STRICT === '1';
+  const message =
+    'prerender: Chrome not found — route snapshots were NOT written. ' +
+    'Install a browser (`pnpm exec playwright install chromium`), set CHROME_PATH, ' +
+    'or set PRERENDER_STRICT=1 to make this fatal.';
+  if (strict) {
+    console.error(message);
+    process.exit(1);
+  }
+  console.warn(`[foces] ${message}`);
+  process.exit(0);
 }
 if (!fs.existsSync(path.join(dist, 'index.html'))) {
   console.error('prerender: dist/index.html missing — run `vite build` first.');
@@ -209,7 +262,7 @@ try {
   for (const route of ROUTES) {
     const html = await renderRoute(browser, route);
     const missing = checkExpectedContent(route, html);
-    const headProblems = checkHead(route, html);
+    const headProblems = [...checkHead(route, html), ...checkNoServerOrigin(route, html)];
     if (missing.length || headProblems.length) {
       failures.push({ route, missing, headProblems });
       if (process.env.PRERENDER_DEBUG === '1') {
@@ -229,8 +282,19 @@ try {
     );
   }
 } catch (err) {
-  console.error('prerender failed:', err.message);
-  process.exitCode = 1;
+  // Same policy as a missing browser: a broken Chromium (Vercel's image ships
+  // none of the shared libraries headless Chrome needs) must not fail the
+  // deploy. PRERENDER_STRICT=1 keeps the fail-fast path for CI.
+  if (process.env.PRERENDER_STRICT === '1') {
+    console.error('prerender failed:', err.message);
+    process.exitCode = 1;
+  } else {
+    console.warn(
+      `[foces] prerender could not launch a browser (${err.message}). ` +
+        'Route snapshots were NOT written; the SPA shell still ships. ' +
+        'Set PRERENDER_STRICT=1 to make this fatal.',
+    );
+  }
 } finally {
   if (browser) await browser.close().catch(() => {});
   server.close();

@@ -1,6 +1,6 @@
 {
   "framework": "vite",
-  "buildCommand": "pnpm run build",
+  "buildCommand": "pnpm exec playwright install --with-deps chromium || true; pnpm run build",
   "outputDirectory": "dist",
   "headers": [
     {

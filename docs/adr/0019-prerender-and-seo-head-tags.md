@@ -35,6 +35,21 @@ event data did not exist at all.
 5. **No framework migration.** Vercel's rewrites already fall back
    extension-less paths to the SPA shell; the prerendered files shadow them
    because real files win over rewrites. Users keep the identical SPA.
+6. **Session-injected link tags are stripped.** Scrolling the page to mount the
+   ScrollGate sections makes Vite's preload helper append a `<link>` per chunk
+   and per lazy stylesheet, pointed at the prerender script's throwaway server.
+   Serializing those would bake `http://127.0.0.1:4179` into production HTML and
+   turn every lazy section into an eager boot download — defeating the very
+   deferral ScrollGate exists for (`tests/scroll-gate.spec.js` caught this).
+   `stripSessionLinks` removes them, and a build-time check fails the run if that
+   origin ever reaches a snapshot.
+7. **A missing browser degrades, it does not fail.** Vercel's build image ships
+   no Chromium, so prerendering there would otherwise break every deploy.
+   Without a browser (or with one that cannot launch) the script warns and exits
+   0: the SPA shell, the head tags and the `<noscript>` summary still ship, only
+   the snapshots are skipped. `PRERENDER_STRICT=1` restores fail-fast for CI and
+   local runs. `vercel.json` installs Chromium best-effort so production still
+   gets the snapshots.
 
 ## Consequences
 
