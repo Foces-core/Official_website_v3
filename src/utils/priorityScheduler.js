@@ -88,7 +88,10 @@ export function prioritizeAssetFetch(url) {
   }
   prioritizedUrls.add(url);
 
-  scheduleUserBlockingTask(() => {
+  // Fire-and-forget by design: the scheduler owns its own error containment
+  // (every path resolves, never rejects). `void` marks the promise as
+  // deliberately unawaited for the reliability linter.
+  void scheduleUserBlockingTask(() => {
     try {
       const img = new Image();
       if ('fetchPriority' in img) {
