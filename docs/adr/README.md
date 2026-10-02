@@ -27,6 +27,7 @@ Status conventions: **Accepted** (settled), **Proposed** (under review),
 | [0018](0018-idle-reveal-and-hide-on-scroll.md)                      | Idle-reveal controls and hide-on-scroll navbar                                   | Accepted |
 | [0019](0019-prerender-and-seo-head-tags.md)                         | Prerendered route snapshots, per-route head tags, and event structured data      | Accepted |
 | [0020](0020-ai-crawlability.md)                                     | AI crawlability: llms.txt, explicit AI-bot access, site identity data            | Accepted |
+| [0021](0021-renovate-platform-automerge.md)                         | Renovate platform auto-merge, gated on CI                                        | Accepted |
 
 ## Adding a new ADR
 

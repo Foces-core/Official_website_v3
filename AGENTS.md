@@ -154,6 +154,12 @@ queues a run.
 - **Dependabot PRs auto-merge** once the four CI checks pass
   (`.github/workflows/auto-merge-dependabot.yml` polls CI, then squash-merges
   and deletes the branch). Everything else merges manually.
+- **Renovate patch/minor PRs auto-merge too** — `platformAutomerge: true` plus
+  `.github/workflows/renovate-auto-approve.yml`, which approves only PRs where
+  GitHub already reports `auto_merge` (ADR-0021). Majors and `lockFileMaintenance`
+  get no approval and still need the full review loop above. This is the one
+  scoped exception to the CodeRabbit step: nothing human reviews these, the
+  gate is the three required checks + `minimumReleaseAge: 1 day`.
 - **Review loop (every PR — human-authored or bot).** After CI is green:
   (1) check reviewer input — `gh pr view --json
 reviews,comments,reviewDecision` plus inline threads — and request a
