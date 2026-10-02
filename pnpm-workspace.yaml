@@ -11,6 +11,16 @@ allowBuilds:
 # Dev-only (stryker -> typed-rest-client -> qs): the exact-pinned qs 6.15.1
 # carries DoS advisories (GHSA-q8mj-m7cp-5q26, GHSA-x5fp-wj9c-mxmx,
 # GHSA-4mjr-xmp4-gh2g) that fail `pnpm audit` in CI - force the patched 6.16.0.
+# brace-expansion is transitive (eslint -> minimatch/glob -> brace-expansion)
+# and three separate major lines are in the tree, each with its own advisories:
+# 1.x needs 1.1.21, 2.x needs 2.1.7, 5.x needs 5.0.12. Every parent already
+# declares a range that permits the patched version (^1.1.7, ^2.0.1, ^5.0.0),
+# so these pins only pull the fixes the lockfile was too stale to resolve - a
+# plain `pnpm dedupe` does not upgrade, and `pnpm update --depth` rewrites the
+# direct dependency ranges too.
 overrides:
   nanoid: ^6.0.0
   qs: 6.16.0
+  'brace-expansion@>=1.0.0 <1.1.21': 1.1.21
+  'brace-expansion@>=2.0.0 <2.1.7': 2.1.7
+  'brace-expansion@>=4.0.0 <5.0.12': 5.0.12
