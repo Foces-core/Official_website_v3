@@ -1,14 +1,21 @@
 # yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
-# Auto-merge dependabot PRs once CI passes.
+# Supply the missing approval on Renovate PRs so platform auto-merge can fire.
 #
-# GitHub has no native "auto-merge dependabot PRs" flag in dependabot.yml, so
-# this workflow polls the four CI checks (Lint & Build, E2E, Probes, Validate
-# commit messages) on the PR head until they complete, then squash-merges the
-# PR and deletes its branch. A failing check aborts the job and leaves the PR
-# open — nothing merges on a red build. Non-CI checks (e.g. the stale
-# Vercel official-website-v3 status) are deliberately ignored: they fail on
-# every commit regardless of code.
-name: Auto-merge dependabot PRs
+# Branch protection requires one approving review, and Renovate cannot approve
+# its own PRs — so `platformAutomerge: true` in renovate.json on its own would
+# queue every Renovate PR forever, waiting on an approval that never arrives
+# (ADR-0021). This workflow polls the four CI checks on the PR head until they
+# complete, then approves, and only when GitHub already reports auto-merge
+# enabled: Renovate sets that flag itself, and only for the packageRules that
+# declare `automerge: true` (minor, patch, pin, digest, lockFileMaintenance).
+# Majors therefore stay
+# unapproved and unmerged — humans merge those.
+#
+# A failing check aborts the job and leaves the PR open: nothing merges on a
+# red build, because GitHub cancels auto-merge when a required check fails.
+# Non-CI checks (e.g. the stale Vercel status) are deliberately ignored: they
+# fail on every commit regardless of code.
+name: Auto-approve Renovate PRs
 on:
   pull_request:
     branches: [main]
@@ -18,13 +25,12 @@ concurrency:
 permissions:
   contents: read
 jobs:
-  auto-merge:
+  auto-approve:
     permissions:
-      contents: write
       pull-requests: write
     timeout-minutes: 20
     runs-on: ubuntu-latest
-    if: github.actor == 'dependabot[bot]' && github.event.pull_request.draft == false
+    if: github.event.pull_request.user.login == 'renovate[bot]' && github.event.pull_request.draft == false
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2
@@ -34,10 +40,9 @@ jobs:
             api.github.com:443 github.com:443 objects.githubusercontent.com:443
       # Exact-name comparison, not a regex: the parentheses in
       # "E2E (Playwright)" and "Probes (structural checks)" are regex groups,
-      # so a `test()` match silently dropped both and the gate only ever saw
-      # Lint & Build and Validate commit messages. Approval also requires all
-      # four names present and completed — `total > 0` merged as soon as the
-      # first check to finish, finished.
+      # so a `test()` match would silently drop both of them from the gate.
+      # Approval also requires all four names to be present and completed —
+      # `total > 0` would approve as soon as whichever check finishes first.
       - name: Wait for CI checks to pass
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -76,18 +81,27 @@ jobs:
           done
           echo "Timed out waiting for CI to finish."
           exit 1
-      # Branch protection requires one approving review; dependabot cannot
-      # self-approve, so the workflow approves on the bot's behalf before the
-      # merge is queued.
-      - name: Approve dependabot PR
+      # Approve only when Renovate itself asked GitHub to queue the merge.
+      # `auto_merge` is null for every other Renovate PR (majors, and anything
+      # whose packageRule omits `automerge`), so those get no approval and
+      # stay open for a human — this workflow never widens Renovate's scope.
+      - name: Approve Renovate PR when auto-merge is enabled
         if: github.event.pull_request.state == 'open'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR: ${{ github.event.pull_request.number }}
           PR_URL: ${{ github.event.pull_request.html_url }}
-        run: gh pr review --approve "$PR_URL"
-      - name: Merge (squash + delete branch)
-        if: github.event.pull_request.state == 'open'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
-        run: gh pr merge --squash --delete-branch --auto "$PR_URL"
+        run: |
+          MERGEABLE=$(gh api "repos/Foces-core/Official_website_v3/pulls/${PR}" --jq '.auto_merge != null')
+          if [ "$MERGEABLE" != "true" ]; then
+            echo "Auto-merge is not enabled on #${PR} — leaving the approval to a human."
+            exit 0
+          fi
+          ALREADY=$(gh api "repos/Foces-core/Official_website_v3/pulls/${PR}/reviews" \
+            --jq '[.[] | select(.user.login == "github-actions[bot]" and .state == "APPROVED")] | length')
+          if [ "$ALREADY" -gt 0 ]; then
+            echo "Already approved."
+            exit 0
+          fi
+          gh pr review --approve "$PR_URL"
+          echo "Approved #${PR}."
