@@ -147,7 +147,12 @@ export function fire({
   const cancelLoop = startConfettiLoop(particles, burst);
 
   return () => {
+    // The toast goes with the rest of the celebration. AboutUs calls this
+    // cleanup before firing the next one, so cancelling the timer alone would
+    // leave the previous toast on screen until the stack evicted it — and on
+    // unmount it would orphan the node entirely.
     clearTimeout(toastTimer);
+    toast.remove();
     cancelLoop();
     burst.remove();
   };

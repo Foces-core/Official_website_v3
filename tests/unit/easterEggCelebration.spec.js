@@ -137,7 +137,7 @@ describe('fire — celebration trigger seam', () => {
     c();
     expect(p.querySelector('.about-burst')).toBeNull();
   });
-  it('cleanup clears the pending toast-removal timer', () => {
+  it('cleanup removes the toast instead of leaving it to the stack', () => {
     vi.useFakeTimers();
     const p = document.createElement('div');
     const s = document.createElement('div');
@@ -154,10 +154,13 @@ describe('fire — celebration trigger seam', () => {
         l = m;
       },
     });
-    c();
-    vi.advanceTimersByTime(5000);
-    // Timer was cleared on cleanup, so the toast is left for the DOM owner.
     expect(s.querySelector('.about-toast')).not.toBeNull();
+    c();
+    // AboutUs runs this cleanup before firing the next celebration, so a
+    // surviving toast would linger on screen until MAX_TOASTS evicted it.
+    expect(s.querySelector('.about-toast')).toBeNull();
+    // And its removal timer must not fire against the detached node.
+    expect(() => vi.advanceTimersByTime(5000)).not.toThrow();
   });
   it('removes previous burst before creating new', () => {
     const p = document.createElement('div');
