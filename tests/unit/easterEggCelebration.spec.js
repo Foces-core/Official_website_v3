@@ -1,9 +1,16 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import {
   pickEasterMessage,
   pushToast,
   fire,
 } from '../../src/Components/AboutUs/easterEggCelebration.js';
+
+// Fake timers must never outlive a test: under mutation testing the new
+// cleanup assertion fails often, and a leaked fake-timer install makes every
+// later test in the file hang until the 5s test timeout (noisy, slow runs).
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 describe('pickEasterMessage', () => {
   const M = ['DARE to spin! 🎉', 'DOMINATE the cube! 🔥', 'Spin champion! 🌀'];
@@ -151,7 +158,6 @@ describe('fire — celebration trigger seam', () => {
     vi.advanceTimersByTime(5000);
     // Timer was cleared on cleanup, so the toast is left for the DOM owner.
     expect(s.querySelector('.about-toast')).not.toBeNull();
-    vi.useRealTimers();
   });
   it('removes previous burst before creating new', () => {
     const p = document.createElement('div');
