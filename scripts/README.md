@@ -92,9 +92,10 @@ the E2E spec `tests/carousel-lazy.spec.js`, so no CI wiring is needed here.
 ### Boot-failure triage (`boot-errors-probe.mjs`)
 
 For "the server returns 200 but the page is blank" reports: loads the page
-in a fresh browser (no service worker), captures every console error, page
+in a fresh browser (no service worker), collects every console error, page
 error, and failed request, then reports whether React painted (root has
-children, boot splash gone). Exits 1 when the app did not paint or a page
+children, boot splash gone) and prints up to the first 20 collected errors.
+Exits 1 when the app did not paint or a page
 error fired — safe to hand to CI later if wanted. Crash-safe: a failed run
 still prints everything collected and always closes the browser.
 
