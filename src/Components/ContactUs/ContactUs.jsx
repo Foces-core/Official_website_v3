@@ -9,6 +9,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../ContactUs/notification.css';
 import useContactForm, { CONTACT_EMAIL } from '../../hooks/useContactForm.js';
+import Seo from '../Seo/Seo';
 
 function ContactUs() {
   const { values, setField, submit, isSubmitting } = useContactForm();
@@ -18,6 +19,7 @@ function ContactUs() {
       className="contact-container bg-[#101011] flex flex-col min-h-screen justify-between scroll-mt-24"
       id="contact"
     >
+      <Seo path="/contact" />
       <Navbar />
       <h1 className="sr-only">Contact FOCES</h1>
 

@@ -25,6 +25,8 @@ Status conventions: **Accepted** (settled), **Proposed** (under review),
 | [0016](0016-execom-carousel-scroll-release.md)                      | Execom carousels release vertical swipes to page scroll                          | Accepted |
 | [0017](0017-public-indexing.md)                                     | Public indexing: lift the staging no-index                                       | Accepted |
 | [0018](0018-idle-reveal-and-hide-on-scroll.md)                      | Idle-reveal controls and hide-on-scroll navbar                                   | Accepted |
+| [0019](0019-prerender-and-seo-head-tags.md)                         | Prerendered route snapshots, per-route head tags, and event structured data      | Accepted |
+| [0020](0020-ai-crawlability.md)                                     | AI crawlability: llms.txt, explicit AI-bot access, site identity data            | Accepted |
 
 ## Adding a new ADR
 

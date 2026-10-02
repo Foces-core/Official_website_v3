@@ -199,6 +199,27 @@ review` on the PR and wait for the review run to finish — it typically
   from the loop above must have finished with no unresolved blocking
   findings (non-blocking nits may remain).
 
+### §2.4 Context discipline (agents)
+
+Main-context budget is the scarcest resource in a long agent session — the
+whole transcript plus every tool result stays resident, and nothing is
+evicted except overflow compaction. Burn it carelessly and the session ends
+mid-task. Work like this:
+
+- **Search, don't read.** Locate with `grep`/`glob` or a compressed
+  subagent (`cavecrew-investigator`) instead of `cat`-ing whole files or
+  logs. Read only the window you need (`offset`/`limit`).
+- **Delegate broad exploration.** A subagent result is injected verbatim, so
+  prefer compressed output contracts (`cavecrew-*`) over prose agents when the
+  answer is a finding list.
+- **Never dump long tool output.** Quote the shortest decisive line (the
+  error, the failing assertion) and move on.
+- **Write findings to disk.** Conclusions belong in code comments, ADRs, or
+  spec files — cite `path:line` later instead of carrying the payload in
+  context.
+- **Trim the plan, not the code.** Short progress notes; no restating file
+  contents back to the user; never repeat a large blob already in context.
+
 ## §3 Output
 
 ### §3.1 Commits

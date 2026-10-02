@@ -23,6 +23,15 @@ describe('featuredEvents data integrity', () => {
     expect(typeof blur).toBe('string');
     expect(blur.length).toBeGreaterThan(0);
   });
+
+  it('every event carries a valid ISO startDate (JSON-LD feed)', () => {
+    // Production wiring guard: seoMeta.eventJsonLd reads startDate/endDate.
+    // An event without a machine-readable date silently drops out of Google
+    // event rich results.
+    for (const event of featuredEvents) {
+      expect(event.startDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    }
+  });
 });
 
 describe('validateEvents — optional photo blur', () => {
@@ -57,5 +66,40 @@ describe('validateEvents — optional photo blur', () => {
   it('rejects an explicit photo blur: null (supplied but invalid)', () => {
     const problems = validateEvents([event([photo({ blur: null })])]);
     expect(problems.join('\n')).toContain('blur must be a non-empty string when present');
+  });
+});
+
+describe('validateEvents — ISO event dates (JSON-LD feed)', () => {
+  const event = (overrides = {}) => ({
+    id: 1,
+    name: 'Test Event',
+    tag: 'Tag',
+    date: '1st Jan 2026',
+    desc: 'Description',
+    photos: [{ url: '/p.webp', srcset: '/p.webp 1000w' }],
+    ...overrides,
+  });
+
+  it('accepts events without ISO dates (fields optional)', () => {
+    expect(validateEvents([event()])).toEqual([]);
+  });
+
+  it('accepts well-formed startDate/endDate', () => {
+    expect(validateEvents([event({ startDate: '2026-07-27', endDate: '2026-08-05' })])).toEqual([]);
+  });
+
+  it('flags a malformed date', () => {
+    const problems = validateEvents([event({ startDate: '27 July 2026' })]);
+    expect(problems.join('\n')).toContain('startDate must be an ISO date (YYYY-MM-DD)');
+  });
+
+  it('flags an impossible calendar date', () => {
+    const problems = validateEvents([event({ startDate: '2026-02-30' })]);
+    expect(problems.join('\n')).toContain('startDate must be an ISO date (YYYY-MM-DD)');
+  });
+
+  it('flags endDate not after startDate', () => {
+    const problems = validateEvents([event({ startDate: '2026-07-27', endDate: '2026-07-27' })]);
+    expect(problems.join('\n')).toContain('endDate must be after startDate');
   });
 });

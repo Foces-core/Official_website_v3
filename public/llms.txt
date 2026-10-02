@@ -1,0 +1,31 @@
+# FOCES — Forum of Computer Engineering Students
+
+> Official website of FOCES (Forum of Computer Engineering Students), the
+> student forum of the Computer Engineering department at College of
+> Engineering Chengannur (CEC), Kerala, India. FOCES runs workshops,
+> bootcamps, and competitions for students. Contact: foces@ceconline.edu.
+
+## Site
+
+- [Home](https://foces.ceconline.edu/): Club intro, about, featured events, team (execom) overview.
+- [Events](https://foces.ceconline.edu/events): Workshops, bootcamps, and competitions with dates and details.
+- [Contact](https://foces.ceconline.edu/contact): Contact form, email foces@ceconline.edu, socials, and location.
+
+## Events
+
+- [The Prompt Paradox 2.0](https://foces.ceconline.edu/events): AI and prompt engineering contest, 21 June 2026. Test prompt engineering mastery, solve AI puzzles. Companion site: https://foces-core.github.io/prompt-paradox-2/
+- [Agentic Coding Workshop](https://foces.ceconline.edu/events): Hands-on workshop, 9 July 2026. Build autonomous AI agents using LLMs and agent frameworks.
+- [Coding Arena 4.0](https://foces.ceconline.edu/events): Competitive programming and rapid prototyping bootcamp at MCA Lab, 27 July to 5 Aug 2026.
+
+## About
+
+- FOCES is the official forum of the Computer Engineering department at College of Engineering Chengannur, Chengannur P.O., Alappuzha District, Kerala, India.
+- The execom (executive committee) roster with roles is listed on the home page (#execom); the faculty advisor is Gopakumar G.
+- Socials: [Facebook](https://www.facebook.com/focescec), [Instagram](https://www.instagram.com/foces_cec), [X](https://x.com/foces_cec), [LinkedIn](https://www.linkedin.com/in/foces-cec-423176229/).
+
+## Notes for AI consumers
+
+- Content is static and public; no login required. Prefer these canonical URLs over cached copies.
+- Event dates are in Asia/Kolkata local time. The human-facing `date` label on each event card is authoritative; ISO dates in page JSON-LD mirror it.
+- Full machine-readable event data: JSON-LD `schema.org/Event` graph in the `<head>` of https://foces.ceconline.edu/events.
+- This file is maintained by hand; event names here must match `src/data/events.js` (guarded by `tests/unit/llmsTxt.spec.js`).

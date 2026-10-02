@@ -1,6 +1,57 @@
 # Open to all search crawlers — the site is public (supersedes the staging
-# block from ADR-0012; see ADR-0017).
+# block from ADR-0012; see ADR-0017). AI assistants and their crawlers are
+# explicitly welcome (see ADR-0020): the wildcard below already covers them,
+# the named entries make the intent review-proof.
 User-agent: *
 Allow: /
+
+# AI / LLM crawlers (explicit allow — covered by the wildcard above).
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Bytespider
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: FacebookBot
+Allow: /
+
+User-agent: Meta-ExternalAgent
+Allow: /
+
+# Machine-readable site summary for LLMs (https://llmstxt.org).
+# Crawlers fetch it directly at /llms.txt — no robots directive needed.
 
 Sitemap: https://foces.ceconline.edu/sitemap.xml
