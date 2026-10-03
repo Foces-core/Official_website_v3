@@ -49,7 +49,20 @@ jobs:
           SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           for _ in $(seq 1 45); do
-            RAW=$(gh api "repos/Foces-core/Official_website_v3/commits/${SHA}/check-runs")
+            # Fail closed: if the API call fails or returns nothing, ROW ends
+            # up empty for every name below, the `*)` arm catches it, and the
+            # gate reports failure instead of drifting to "approve".
+            if ! RAW=$(gh api "repos/Foces-core/Official_website_v3/commits/${SHA}/check-runs" 2>/dev/null) || [ -z "$RAW" ]; then
+              echo "Could not read check runs — leaving PR open."
+              exit 1
+            fi
+            # jq's `.check_runs[]` iterates object values too, so a
+            # non-array payload could still be walked. Require the array
+            # the API is documented to return before iterating.
+            if ! jq -e '(.check_runs | type) == "array"' >/dev/null 2>&1 <<<"$RAW"; then
+              echo "Unreadable check runs response — leaving PR open."
+              exit 1
+            fi
             MISSING=""
             PENDING=""
             FAILED=""
@@ -60,12 +73,13 @@ jobs:
                   elif .status != "completed" then "pending"
                   elif (.conclusion == "success" or .conclusion == "skipped" or .conclusion == "neutral") then "ok"
                   else "failed"
-                  end' <<<"$RAW")
+                  end' <<<"$RAW" 2>/dev/null)
               case "$ROW" in
                 ok) ;;
                 pending) PENDING="${PENDING}${NAME}; " ;;
                 missing) MISSING="${MISSING}${NAME}; " ;;
                 failed) FAILED="${FAILED}${NAME}; " ;;
+                *) FAILED="${FAILED}${NAME} (status unreadable); " ;;
               esac
             done
             if [ -n "$FAILED" ]; then
