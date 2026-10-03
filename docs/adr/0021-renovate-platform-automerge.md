@@ -31,7 +31,10 @@ arrived, reproducing the same inert-configuration failure from the other side.
    on red, and approves — but only when the PR already reports
    `auto_merge != null`, i.e. only when Renovate itself judged the update to
    qualify. The workflow therefore cannot widen Renovate's scope: a major gets
-   no approval and stays open for a human.
+   no approval and stays open for a human. The gate **fails closed**: an
+   unreadable API response, a rate-limited `gh api`, or malformed JSON all
+   leave the PR open rather than approving it (a first version treated an
+   empty `ROW` as success, which would have approved on any API error).
 3. **The required checks still gate the merge** — the three that existed when
    this was written (`Lint & Build`, `E2E (Playwright)`,
    `Probes (structural checks)`); ADR-0022 has since promoted
