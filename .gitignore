@@ -55,3 +55,15 @@ src/assets/fonts/*.subset.woff2
 # Stryker mutation-testing workspace + reports
 .stryker-tmp/
 reports/
+
+# Local agent tooling (per-machine installs, never part of the site).
+# .agents/skills/* is installed from third-party repos and skills-lock.json
+# pins those local installs, so committing either would couple every
+# contributor to one machine's skill set.
+.agents/
+.claude/
+skills-lock.json
+
+# Downloaded working data (event resources, hashed filenames).
+# Locally fetched and 2.4 MB of binaries; nothing in the app or CI reads it.
+data/
