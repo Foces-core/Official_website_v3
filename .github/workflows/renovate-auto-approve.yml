@@ -56,6 +56,13 @@ jobs:
               echo "Could not read check runs — leaving PR open."
               exit 1
             fi
+            # jq's `.check_runs[]` iterates object values too, so a
+            # non-array payload could still be walked. Require the array
+            # the API is documented to return before iterating.
+            if ! jq -e '(.check_runs | type) == "array"' >/dev/null 2>&1 <<<"$RAW"; then
+              echo "Unreadable check runs response — leaving PR open."
+              exit 1
+            fi
             MISSING=""
             PENDING=""
             FAILED=""
