@@ -112,7 +112,7 @@ function AboutUs() {
           lastToastRef.current = m;
         },
       });
-    });
+    }).catch(() => undefined);
   }, [confetti, celebrationMotion, boxRef]);
 
   useEffect(() => {

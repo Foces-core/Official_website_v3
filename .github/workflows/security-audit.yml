@@ -57,7 +57,7 @@ jobs:
           node-version: 24
           cache: pnpm
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --prefer-offline
+        run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
       - name: Audit dependencies (fail on high/critical CVEs)
         id: audit
         run: |

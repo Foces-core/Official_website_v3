@@ -170,7 +170,9 @@ function Root() {
     //     PNG + @fontsource woff2s start at parse time, so painting the page
     //     early costs nothing; keeping an opaque splash over them is what
     //     inflated LCP (measured 9s of occlusion at 4x throttle).
-    paintReady().then(hide);
+    paintReady()
+      .then(hide)
+      .catch(() => hide());
 
     const onLoad = () => hide();
     window.addEventListener('load', onLoad, { once: true });
