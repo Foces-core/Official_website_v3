@@ -27,7 +27,11 @@ export default function usePersistentErrorRecovery({ delayMs = 1200 } = {}) {
         await purgeAppCaches();
         await unregisterServiceWorkers();
         if (!cancelled) window.location.reload();
-      })();
+      })().catch(() => {
+        // Recovery is best-effort: a failed purge must not become an
+        // unhandled rejection. The stays-broken page is what the next
+        // successful recovery would have fixed anyway.
+      });
       return () => {
         cancelled = true;
       };

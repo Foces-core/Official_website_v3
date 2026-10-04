@@ -49,7 +49,7 @@ export default function useRoutePrefetch({ slowNetwork = false, idleDelayMs = 12
 
   const handlePrefetch = useCallback(
     (id) => {
-      prefetchRoute(id, { slowNetwork });
+      prefetchRoute(id, { slowNetwork }).catch(() => undefined);
     },
     [slowNetwork],
   );

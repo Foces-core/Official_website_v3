@@ -73,7 +73,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --prefer-offline
+        run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
 
       - name: Static checks (lint, format, audit, knip, workflows, assets, specs, git diff)
         run: |
@@ -168,7 +168,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --prefer-offline
+        run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
 
       # Unit tests + build only. The full static-checks block also lints the
       # workflow YAML itself, which is arch-independent; the arch-specific risk
@@ -240,7 +240,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --prefer-offline
+        run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
 
       - name: Get Playwright version
         id: playwright-version
@@ -324,7 +324,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --prefer-offline
+        run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
 
       - name: Get Playwright version
         id: playwright-version
@@ -412,7 +412,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile --prefer-offline
+        run: pnpm install --frozen-lockfile --prefer-offline --ignore-scripts
 
       - name: Lint commit messages (pull request)
         if: github.event_name == 'pull_request'

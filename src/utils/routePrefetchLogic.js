@@ -166,7 +166,7 @@ export function scheduleIdlePrefetch({
     return NOOP;
   }
   const timer = setTimeoutFn(() => {
-    prefetchDefaultRoutes({ slowNetwork, connection, nav });
+    prefetchDefaultRoutes({ slowNetwork, connection, nav }).catch(() => undefined);
   }, delayMs);
   return createCancelHandle(timer, clearTimeoutFn);
 }
