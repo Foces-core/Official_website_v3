@@ -23,6 +23,7 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:unit": "vitest run",
+    "crap:gate": "node scripts/crap-gate.mjs",
     "test:unit:watch": "vitest",
     "test:unit:ui": "vitest --ui",
     "test:mutation": "stryker run",

@@ -37,10 +37,30 @@ export default [
       'import-x/no-duplicates': 'error',
       'import-x/no-named-as-default': 'off',
       'import-x/no-named-as-default-member': 'off',
-      // Complexity cap moved to AGENTS.md as a governance rule —
-      // future agents MUST keep functions at cyclomatic complexity ≤ 4.
-      // No ESLint gate is enforced; rely on code review + the agent
-      // AGENTS.md directive to keep scores low without a runtime gate.
+    },
+  },
+  // Cyclomatic complexity cap, enforced rather than documented.
+  //
+  // Previously this lived only as an AGENTS.md note with no runtime gate.
+  //
+  // Ratchet, NOT aspiration. Measured across src/ before setting: worst is 33
+  // (Navbar.jsx), and 81 functions exceed 4. A max of 4 would have failed the
+  // build on 81 errors, so the cap starts at the real ceiling and tightens only
+  // as code is refactored. Lower it in the same PR that brings real code under.
+  //
+  // CRAP(m) = c^2 * (1 - cov)^3 + c; see scripts/crap-gate.mjs.
+  {
+    files: ['src/**/*.js', 'src/**/*.jsx'],
+    rules: {
+      complexity: ['error', { max: 33 }],
+    },
+  },
+  {
+    // Test files are excluded on purpose: assertion and fixture branching is
+    // not production risk, and gating it produces churn without signal.
+    files: ['tests/**/*.js', 'tests/**/*.jsx', '**/*.test.js', '**/*.spec.js'],
+    rules: {
+      complexity: 'off',
     },
   },
   {
