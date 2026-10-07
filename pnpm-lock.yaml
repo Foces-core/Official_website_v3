@@ -187,7 +187,7 @@ importers:
         version: 11.4.0(react-router@8.4.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react@19.3.0)
       '@sentry/vite-plugin':
         specifier: ^5.4.0
-        version: 5.4.0(rollup@4.64.0)(supports-color@7.2.0)
+        version: 5.4.1(rollup@4.64.0)(supports-color@7.2.0)
       '@vercel/analytics':
         specifier: ^2.0.1
         version: 2.0.1(react@19.3.0)
@@ -2387,8 +2387,8 @@ packages:
     resolution: {integrity: sha512-PJT8i3xsaSEAwVjgVrVClpFVB9+caxn4AVlUbgjt3/NwkoggKmSaoSUq5vpvzFPO11H1V+50qz9xxCw9gc9EzQ==}
     engines: {node: '>=18'}
 
-  '@sentry/vite-plugin@5.4.0':
-    resolution: {integrity: sha512-fFJgCxs5hDyAm9BbZJ+LbA+LK2tjX5OoD0v0ARU4StR6KQmGUduoPs69yJ9AfqZ0om3Rlp5JDliiwFcNkasORA==}
+  '@sentry/vite-plugin@5.4.1':
+    resolution: {integrity: sha512-poFfn3sQbSFaZpXH8CG27D0eNtDD64wFEniQCb853e7huko9vOl4UP3BjT3vsrnmVuRqagnbxItza10MOC7ysA==}
     engines: {node: '>= 18'}
 
   '@simple-libs/child-process-utils@2.0.0':
@@ -7522,7 +7522,7 @@ snapshots:
       '@sentry/conventions': 0.16.0
       '@sentry/core': 10.76.0
 
-  '@sentry/vite-plugin@5.4.0(rollup@4.64.0)(supports-color@7.2.0)':
+  '@sentry/vite-plugin@5.4.1(rollup@4.64.0)(supports-color@7.2.0)':
     dependencies:
       '@sentry/bundler-plugins': 10.76.0(rollup@4.64.0)(supports-color@7.2.0)
     transitivePeerDependencies:
