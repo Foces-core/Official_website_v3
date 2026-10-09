@@ -11,6 +11,11 @@ import OfflineToast from './Components/OfflineToast/OfflineToast.jsx';
 import ErrorBoundary from './Components/ErrorBoundary/ErrorBoundary.jsx';
 import { lazyWithRetry } from './utils/lazyWithRetry.js';
 import { SPLASH_FAILSAFE_MS, skipSplash, paintReady } from './utils/bootSplashLogic.js';
+import {
+  CSS_PROBE_FAILSAFE_MS,
+  cssLooksApplied,
+  recordCssReload,
+} from './utils/cssRecoveryLogic.js';
 import { shouldReloadOnResume } from './utils/resumeReload.js';
 import useExperienceCapabilities from './hooks/useExperienceCapabilities.js';
 import './assets/fonts-latin.css';
@@ -130,6 +135,37 @@ function ResumeReloadGuard() {
  * Slow/low-end devices (ADR-0001) skip the splash: it is removed immediately,
  * not painted.
  */
+// The entry stylesheet (assets/index-*.css) has no JS import to reject on
+// failure — when its <link> 404s (stale deploy hash, a proxy hiccup) React
+// still mounts and the page renders fully unstyled (giant hero images, jammed
+// navbar, serif fallback). Probe the index.css body background once the page
+// settles and recover with the same one-shot reload policy as lazy chunks —
+// decision in src/utils/cssRecoveryLogic.js, wiring here.
+function CssRecoveryGuard() {
+  useEffect(() => {
+    let settled = false;
+    const probe = () => {
+      if (settled) return;
+      settled = true;
+      let background = '';
+      try {
+        background = getComputedStyle(document.body).backgroundColor;
+      } catch {
+        // Keep the '' default — an unreadable body counts as missing CSS.
+      }
+      if (!cssLooksApplied(background)) recordCssReload();
+    };
+    const failsafe = setTimeout(probe, CSS_PROBE_FAILSAFE_MS);
+    if (document.readyState === 'complete') probe();
+    else window.addEventListener('load', probe, { once: true });
+    return () => {
+      clearTimeout(failsafe);
+      window.removeEventListener('load', probe);
+    };
+  }, []);
+  return null;
+}
+
 function Root() {
   // The slowNetwork splash gate lives in the experience-tier matrix — splash
   // is the capability.
@@ -226,6 +262,7 @@ root.render(
     <Router>
       <ScrollToTop />
       <ResumeReloadGuard />
+      <CssRecoveryGuard />
       <Root />
       <DeferredAnalytics />
       <InstallPrompt />
