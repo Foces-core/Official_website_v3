@@ -86,7 +86,8 @@ Merged branches are deleted in the same task that merges them — never accumula
   `carouselWrap.js` (shared wrap math), `scrollLock.js` (ref-counted body lock), `navigationCoordinator.js` (unified scroll/overlay/lock coordinator),
   `overlayLifecycle.js` (pure focus/trap/escape helpers), `routePrefetchLogic.js` (pure route loaders),
   `analyticsProbe.js` (pure Vercel-script gate behind DeferredAnalytics),
-  `DeferredAnalytics.jsx`, `lazyWithRetry.js`, `sessionCookie.js`, `scrollToSectionLogic.js`, `bootSplashLogic.js`.
+  `DeferredAnalytics.jsx`, `lazyWithRetry.js`, `sessionCookie.js`, `scrollToSectionLogic.js`, `bootSplashLogic.js`,
+  `cssRecoveryLogic.js` (unstyled-boot probe + one-shot reload).
 - `src/hooks/` — `useLowPower.js` (`useDeviceProfile` driving all perf degradation),
   `useViewportWidth.js` (reactive width over `breakpoints.js`),
   `useCarousel.js` (hand-rolled carousel engine with internal autoplay visibility gating), `useCubeDrag.js` (cube orchestration),
