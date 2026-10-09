@@ -496,7 +496,7 @@ jobs:
         if: always()
         # Pinned to a commit using the node24 runtime — the v1 tag still ships
         # node20, which is deprecated on GH runners (renovate can digest-bump).
-        uses: vercel/repository-dispatch/actions/status@61881006269f0b5ac2cb186b198c54be6afe90e1
+        uses: vercel/repository-dispatch/actions/status@bad8e8a0bbca4c5f5fa22483d080cb71ee5aad11
         with:
           name: 'Vercel - focces: lint'
 
