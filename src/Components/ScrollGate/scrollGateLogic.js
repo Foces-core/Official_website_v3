@@ -32,3 +32,42 @@ export function shouldMountSection(top, viewportHeight, marginFraction = 0.5) {
 export function shouldMountAtBoot(top, viewportHeight) {
   return top < viewportHeight * 0.9;
 }
+
+/**
+ * Idle-arm rule: decides which gate is safe to arm (pre-mount) during browser
+ * idle time after load, before the user has scrolled. The FIRST gate below the
+ * fold is armed — usually the cube section (about) — because the most likely
+ * first real interaction on the page is the first scroll/first nav-anchor tap,
+ * and pre-mounting one section makes that interaction respond instantly while
+ * still costing nothing during boot (runs after load, in idle).
+ *
+ * @param {{
+ *   ids: string[],
+ *   tops?: (string | null)[],
+ *   viewportHeight: number,
+ *   armedIds?: string[],
+ * }} input
+ *   ids          Gate ids in DOM order.
+ *   tops         Top edge per id (px, same order) — null when not mounted.
+ *                Defaults to ids.map(() => null) (no DOM knowledge).
+ *   viewportHeight
+ *   armedIds     Gates already armed or mounted.
+ * @returns {string | null} the next gate id to arm, or null when none.
+ */
+export function nextGateToArmAtIdle({ ids, tops, viewportHeight, armedIds = [] } = {}) {
+  if (!Array.isArray(ids) || ids.length === 0) return null;
+  const armed = new Set(armedIds);
+  const forTops = Array.isArray(tops) ? tops : ids.map(() => null);
+  for (let i = 0; i < ids.length; i += 1) {
+    const id = ids[i];
+    if (armed.has(id)) continue;
+    // A gate whose placeholder already sits within the pre-load margin
+    // (mounted-none yet, top within 0.5 viewport below fold) wins outright.
+    const top = forTops[i];
+    if (top == null || top <= viewportHeight * 1.5) return id;
+    // Later gates stay deferred: arming them early pulls their chunk during
+    // the exact window that must stay free for first-interaction responsiveness.
+    return null;
+  }
+  return null;
+}

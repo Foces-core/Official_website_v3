@@ -28,6 +28,7 @@
     "test:unit:ui": "vitest --ui",
     "test:mutation": "stryker run",
     "test:install": "playwright install chromium",
+    "ci:fast": "node scripts/ci-fast.mjs",
     "knip": "knip",
     "lint:workflows": "node scripts/maintenance/actionlint-check.mjs",
     "check:assets": "node scripts/maintenance/check-orphan-assets.mjs",

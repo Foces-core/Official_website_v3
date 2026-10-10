@@ -97,7 +97,12 @@ export default function Navbar() {
       setCurrentItem((prev) => (prev === next ? prev : next));
     };
 
-    const schedulePick = coalesceToFrame(routeAwarePick);
+    // 8ms idle deadline: on fast devices the scrollspy read+state can run in
+    // the idle slice before the next vsync, so fast scrolling on a fast
+    // device spawns MORE spy updates per second than the plain per-frame
+    // rate — smoother highlight tracking. Slow devices fall back to plain
+    // rAF coalescing (no requestIdleCallback cost).
+    const schedulePick = coalesceToFrame(routeAwarePick, null, { deadlineMs: 8 });
     routeAwarePick();
 
     window.addEventListener('scroll', schedulePick, { passive: true });
@@ -136,17 +141,23 @@ export default function Navbar() {
       return Math.min(Math.max(window.scrollY, 0), max);
     };
     lastYRef.current = clampedY();
-    const scheduleScrolled = coalesceToFrame(() => {
-      const y = clampedY();
-      setIsScrolled(y > SCROLLED_THRESHOLD_PX);
-      const decision = shouldHideNavbar({
-        lastY: lastYRef.current,
-        y,
-        drawerOpen: drawerOpenRef.current,
-      });
-      lastYRef.current = y;
-      setNavHidden((prev) => (decision === null ? prev : decision));
-    });
+    // Same 8ms idle early-fire as the scrollspy (see above): hide/show
+    // decisions keep up with fast flicks instead of waiting a full frame.
+    const scheduleScrolled = coalesceToFrame(
+      () => {
+        const y = clampedY();
+        setIsScrolled(y > SCROLLED_THRESHOLD_PX);
+        const decision = shouldHideNavbar({
+          lastY: lastYRef.current,
+          y,
+          drawerOpen: drawerOpenRef.current,
+        });
+        lastYRef.current = y;
+        setNavHidden((prev) => (decision === null ? prev : decision));
+      },
+      null,
+      { deadlineMs: 8 },
+    );
     window.addEventListener('scroll', scheduleScrolled, { passive: true });
 
     return () => {

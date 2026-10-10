@@ -5,6 +5,7 @@ import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
 import ChunkErrorFallback from '../ErrorFallback/ChunkErrorFallback';
 import { isDesktopViewport } from '../../utils/breakpoints.js';
 import { shouldMountAtBoot, shouldMountSection } from './scrollGateLogic.js';
+import { registerDeferredGate, unregisterDeferredGate } from './gateIdleCoordinator.js';
 
 // Real section heights, cached after first mount so the placeholder matches
 // the real content on subsequent visits (no layout shift on return). Keyed by
@@ -47,6 +48,19 @@ export default function ScrollGate({ id, placeholderHeight = '110vh', label, chi
     window.addEventListener('scroll', arm, { passive: true, once: true });
     return () => window.removeEventListener('scroll', arm);
   }, [armed]);
+
+  // Idle-arm prerender: register this still-deferred gate with the page-level
+  // coordinator so — after load, during idle, before any scroll — exactly one
+  // below-fold section mounts early. The user's first interaction (first
+  // scroll or first nav-anchor tap) then lands on a section that is already
+  // mounted instead of one behind a chunk download. Cheap: runs in idle, off
+  // the boot window; the coordinator aborts if a scroll starts first.
+  useEffect(() => {
+    if (mounted || armed) return undefined;
+    const arm = () => setMounted(true);
+    registerDeferredGate(id, arm);
+    return () => unregisterDeferredGate(id);
+  }, [mounted, armed, id]);
 
   useEffect(() => {
     if (mounted) return;

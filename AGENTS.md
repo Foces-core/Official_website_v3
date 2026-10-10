@@ -103,6 +103,14 @@ Merged branches are deleted in the same task that merges them — never accumula
 
 ## §2 Behaviour
 
+### §2.1a Known environment issue (Windows builds)
+
+- **`pnpm build` fails with `ERR_SWC_NATIVE_CACHE` / "DACL grants replacement rights"** on this machine:
+  upstream swc-project/swc#12442 (fixed in #12452, 2026-10-01). Until the patched
+  release: set `SWC_NATIVE_BINDING_CACHE=C:\Users\sebin\.swc-cache` (a directory
+  under the user profile whose ancestors only grant user/SYSTEM/Administrators).
+  Already fixed locally by that env var; no repo change needed.
+
 ### §2.1 Architecture contract (non-negotiable)
 
 One line each — the full contract lives in `CONTRIBUTING.md`:

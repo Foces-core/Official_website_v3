@@ -10,12 +10,14 @@ function Events() {
   // motion-OK devices, instant cut otherwise (smoothScroll capability).
   const { smoothScroll } = useExperienceCapabilities();
   return (
-    <section className="bg-[#0b0b0c] text-white py-16 px-4 md:px-12 relative overflow-hidden scroll-mt-24">
+    <section className="bg-[#0b0b0c] text-white py-16 px-3 md:px-8 relative overflow-hidden scroll-mt-24">
       {/* Background Decorative Neon Glows */}
       <div className="absolute top-1/4 -left-32 w-96 h-96 bg-cyan-600/15 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-10 -right-32 w-96 h-96 bg-purple-600/15 blur-[120px] rounded-full pointer-events-none" />
 
-      <div className="max-w-7xl mx-auto flex flex-col items-center">
+      {/* Full-bleed-ish container: matches the FEATURING carousel width so
+          the two sections read as the same design system. */}
+      <div className="w-[min(100%,calc(100vw-2rem))] md:w-[min(100%,calc(100vw-4rem))] mx-auto flex flex-col items-center">
         {/* Section Header — matches the FEATURING heading sizing */}
         <div
           className="flex flex-col items-center text-center mb-10"
@@ -37,8 +39,11 @@ function Events() {
           </p>
         </div>
 
-        {/* Featured Events Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full mb-10">
+        {/* Featured Events Cards Grid — cards are large square posters like the
+            FEATURING slides above them: 2-up on md, and on lg either 2 rows of
+            wide 2-up cards or 3-up; gap + inner padding bumped so the grid
+            breathes instead of hugging the carousel above. */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-12 w-full mb-12">
           {featuredEvents.map((evt, index) => (
             <div
               key={evt.id}
@@ -70,13 +75,13 @@ function Events() {
               </div>
 
               {/* Card Content */}
-              <div className="p-6 flex flex-col flex-grow justify-between">
+              <div className="p-7 md:p-8 flex flex-col flex-grow justify-between">
                 <div>
                   <div className="text-xs text-gray-400 font-medium mb-1">{evt.date}</div>
-                  <h3 className="text-xl font-bold text-white group-hover:text-cyan-300 transition-colors mb-2">
+                  <h3 className="text-xl md:text-2xl font-bold text-white group-hover:text-cyan-300 transition-colors mb-3">
                     {evt.name}
                   </h3>
-                  <p className="text-gray-400 text-sm line-clamp-3 leading-relaxed mb-4">
+                  <p className="text-gray-400 text-sm md:text-[0.95rem] line-clamp-3 leading-relaxed mb-5">
                     {evt.desc}
                   </p>
                   {evt.websiteUrl && (
