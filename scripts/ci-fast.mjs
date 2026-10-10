@@ -18,6 +18,17 @@
  */
 import { spawn } from 'node:child_process';
 import { performance } from 'node:perf_hooks';
+import { existsSync } from 'node:fs';
+
+// Windows + @swc/core 1.16 native-cache validation bug (upstream
+// swc-project/swc#12442, fixed in #12452): on this machine the default cache
+// root fails the DACL check, so every cmd spawn (husky pre-push included)
+// needs the clean-profile cache root pointed at. Auto-set it for the child
+// lanes when the profile directory exists and the var isn't already set.
+if (process.platform === 'win32' && !process.env.SWC_NATIVE_BINDING_CACHE) {
+  const fallback = 'C:\\Users\\sebin\\.swc-cache';
+  if (existsSync(fallback)) process.env.SWC_NATIVE_BINDING_CACHE = fallback;
+}
 
 const LANE_LABEL = {
   lint: 'eslint',
