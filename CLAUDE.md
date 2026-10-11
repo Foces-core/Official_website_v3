@@ -9,17 +9,17 @@ Instructions and invariants for Claude working in this repository.
 - **Agent instructions & map:** [`AGENTS.md`](AGENTS.md).
 - **Domain glossary (single, canonical):** [`CONTEXT.md`](CONTEXT.md) — seam definitions, aliases to avoid,
   relationships, and flagged ambiguities. There is no second glossary.
-- **Standards & contributing:** [`CONTRIBUTING.md`](CONTRIBUTING.md).
+- **Standards & contributing:** [`CONTRIBUTING.md`](CONTRIBUTING.md).## Non-Negotiable Invariants
 
-## Non-Negotiable Invariants
-
-1. **`foces-webv23/` is OFF-LIMITS:** Archived Sanity studio. Never lint, build, or upgrade it.
-2. **Package manager:** Use **pnpm** exclusively in the repository root.
-3. **Commit convention:** Conventional Commits only (`feat|fix|perf|a11y|chore|docs|test|refactor|ci|build|style|revert(scope):`).
-4. **Pure module seam contract (ADR-0009):** Logic lives in pure tested `.js` modules under `src/utils/`, `src/data/`, `src/hooks/`, `src/Components/`, and `src/Pages/`. Components are JSX wiring. Every pure module must be imported by a unit test in `tests/unit/` (`pnpm check:specs`).
-5. **Performance & accessibility:** Performance degrades gracefully on low-end devices via `useDeviceProfile()` (`slowNetwork`, `lowPower`, `reducedMotion`). Respect WCAG 2.2 keyboard and motion contracts.
-6. **No dead code:** Clean up unused imports, dead exports, and unused styles (`pnpm knip`).
-7. **CodeRabbit review enforcement:** Automated assertive reviews run on all PRs with `request_changes_workflow: true`. Critical findings must be resolved before merging.
+0. **Windows SWC build bug (known):** `pnpm build` may fail with `ERR_SWC_NATIVE_CACHE`
+   ("DACL grants replacement rights") — upstream swc-project/swc#12442, fixed in #12452.
+   Workaround on this machine: `SWC_NATIVE_BINDING_CACHE=C:\Users\sebin\.swc-cache`. **`foces-webv23/` is OFF-LIMITS:** Archived Sanity studio. Never lint, build, or upgrade it.
+1. **Package manager:** Use **pnpm** exclusively in the repository root.
+2. **Commit convention:** Conventional Commits only (`feat|fix|perf|a11y|chore|docs|test|refactor|ci|build|style|revert(scope):`).
+3. **Pure module seam contract (ADR-0009):** Logic lives in pure tested `.js` modules under `src/utils/`, `src/data/`, `src/hooks/`, `src/Components/`, and `src/Pages/`. Components are JSX wiring. Every pure module must be imported by a unit test in `tests/unit/` (`pnpm check:specs`).
+4. **Performance & accessibility:** Performance degrades gracefully on low-end devices via `useDeviceProfile()` (`slowNetwork`, `lowPower`, `reducedMotion`). Respect WCAG 2.2 keyboard and motion contracts.
+5. **No dead code:** Clean up unused imports, dead exports, and unused styles (`pnpm knip`).
+6. **CodeRabbit review enforcement:** Automated assertive reviews run on all PRs with `request_changes_workflow: true`. Critical findings must be resolved before merging.
 
 ## Verification Commands
 

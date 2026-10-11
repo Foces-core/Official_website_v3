@@ -18,6 +18,7 @@ import { lazyWithRetry } from './utils/lazyWithRetry.js';
 import useExperienceCapabilities from './hooks/useExperienceCapabilities.js';
 import useAosFailsafe from './hooks/useAosFailsafe.js';
 import { scrollToSectionWhenReady, targetIdFromLocation } from './utils/navigationCoordinator.js';
+import { notifyLoadDone } from './Components/ScrollGate/gateIdleCoordinator.js';
 
 // Below-the-fold sections are code-split: the carousel sections (Featuring +
 // Execom) and the cube logic only download once the user scrolls to them,
@@ -63,6 +64,19 @@ function App() {
   // CSS net, so the hook is a no-op there. Lives in App: AOS only runs on the
   // landing page (initAOS is module-scoped here).
   useAosFailsafe();
+
+  // First-interaction prerender: after 'load', during idle, the gate
+  // coordinator mounts exactly one deferred below-fold section so the first
+  // scroll / first nav-anchor tap responds instantly. Aborts if a scroll
+  // starts first — real interaction then takes over.
+  useEffect(() => {
+    if (document.readyState === 'complete') {
+      notifyLoadDone();
+      return undefined;
+    }
+    window.addEventListener('load', notifyLoadDone, { once: true });
+    return () => window.removeEventListener('load', notifyLoadDone);
+  }, []);
 
   const pageH1 = <h1 className="sr-only">FOCES - Forum of Computer Engineering Students</h1>;
 

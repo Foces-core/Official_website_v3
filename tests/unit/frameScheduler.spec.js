@@ -70,6 +70,107 @@ describe('frameScheduler', () => {
     });
   });
 
+  describe('coalesceToFrame deadline option (early idle fire)', () => {
+    // Fake DOM window exposing rAF + requestIdleCallback: the coalescer reads
+    // win.requestIdleCallback only when a deadline was passed.
+    const fakeWin = () => {
+      const idleCallbacks = new Map();
+      let idleId = 0;
+      return {
+        requestAnimationFrame: (cb) => {
+          rafCallbacks.set(++rafId, cb);
+          return rafId;
+        },
+        cancelAnimationFrame: (id) => {
+          rafCallbacks.delete(id);
+        },
+        requestIdleCallback: (cb, opts) => {
+          idleCallbacks.set(++idleId, { cb, opts });
+          return idleId;
+        },
+        cancelIdleCallback: (id) => {
+          idleCallbacks.delete(id);
+        },
+        fireIdle(timeRemaining = 50, didTimeout = false) {
+          const cbs = [...idleCallbacks.values()];
+          idleCallbacks.clear();
+          cbs.forEach(({ cb }) => cb({ timeRemaining: () => timeRemaining, didTimeout }));
+        },
+        pendingIdle: idleCallbacks,
+      };
+    };
+
+    it('fires inside the first idle window with enough budget, without rAF', () => {
+      const run = vi.fn();
+      const win = fakeWin();
+      const schedule = coalesceToFrame(run, win, { deadlineMs: 8 });
+      schedule();
+      schedule();
+      schedule();
+      win.fireIdle(50);
+      expect(run).toHaveBeenCalledTimes(1);
+    });
+
+    it('falls back to the next rAF when the idle window offers no budget', () => {
+      const run = vi.fn();
+      const win = fakeWin();
+      const schedule = coalesceToFrame(run, win, { deadlineMs: 8 });
+      schedule();
+      win.fireIdle(2); // not enough budget, no timeout
+      expect(run).not.toHaveBeenCalled();
+      fireFrame();
+      expect(run).toHaveBeenCalledTimes(1);
+    });
+
+    it('runs immediately when the idle deadline times out', () => {
+      const run = vi.fn();
+      const win = fakeWin();
+      const schedule = coalesceToFrame(run, win, { deadlineMs: 8 });
+      schedule();
+      win.fireIdle(0, true); // didTimeout
+      expect(run).toHaveBeenCalledTimes(1);
+    });
+
+    it('coalesces across the idle+rAF mixed path (only one run total)', () => {
+      const run = vi.fn();
+      const win = fakeWin();
+      const schedule = coalesceToFrame(run, win, { deadlineMs: 8 });
+      schedule();
+      win.fireIdle(2); // low budget -> schedules rAF
+      schedule(); // coalesced with the pending rAF
+      fireFrame();
+      win.fireIdle(50); // nothing pending anymore
+      expect(run).toHaveBeenCalledTimes(1);
+    });
+
+    it('cancel drops both the idle and rAF pending work', () => {
+      const run = vi.fn();
+      const win = fakeWin();
+      const schedule = coalesceToFrame(run, win, { deadlineMs: 8 });
+      schedule();
+      win.fireIdle(2); // re-scheduled onto rAF
+      schedule.cancel();
+      win.fireIdle(50);
+      fireFrame();
+      expect(run).not.toHaveBeenCalled();
+    });
+
+    it('ignores a deadline when requestIdleCallback is missing', () => {
+      const run = vi.fn();
+      const schedule = coalesceToFrame(
+        run,
+        {
+          requestAnimationFrame: (cb) => rafCallbacks.set(++rafId, cb),
+          cancelAnimationFrame: (id) => rafCallbacks.delete(id),
+        },
+        { deadlineMs: 8 },
+      );
+      schedule();
+      fireFrame();
+      expect(run).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('deferToNextPaint', () => {
     it('runs callback only after two animation frames', () => {
       const cb = vi.fn();
