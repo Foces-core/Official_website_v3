@@ -3,8 +3,11 @@
 # (x64 + arm64, per the 2026-09-17 GitHub changelog "Ubuntu 26 generally
 # available") but post-date that snapshot, and the x86 `Lint & Build` job runs
 # actionlint on the ARM64 job's `runs-on:` line, so CI fails here even though
-# GitHub schedules the job fine. Extend the label list the way actionlint's own
-# error message recommends; remove once 1.7.13+ ships the labels natively.
-runner_labels:
-  - ubuntu-26.04
-  - ubuntu-26.04-arm
+# GitHub schedules the job fine. Add the labels via the documented
+# `self-hosted-runner.labels` mechanism (verified against the pinned 1.7.12
+# binary: the key is read, top-level `runner_labels` is not); drop this file
+# once 1.7.13+ ships the labels natively.
+self-hosted-runner:
+  labels:
+    - ubuntu-26.04
+    - ubuntu-26.04-arm
