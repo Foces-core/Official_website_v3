@@ -141,7 +141,7 @@ jobs:
     # converting that job into a matrix would rename its check and leave the PR
     # permanently unmergeable.
     name: Lint & Build (Linux ARM64)
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     timeout-minutes: 15
     permissions:
       contents: read
