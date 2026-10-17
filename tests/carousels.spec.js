@@ -127,6 +127,16 @@ test.describe('Execom / Meet the team carousel', () => {
       .toBe('none');
   });
 
+  test('image keeps hover color while the pointer moves into its caption', async ({ page }) => {
+    const card = page.locator('.execom-swiper [data-slide-center] .container-execom');
+    const image = card.locator('img:not([aria-hidden="true"])');
+
+    await image.hover();
+    await expect(image).toHaveCSS('filter', 'none');
+    await card.locator(':scope > div.absolute').hover();
+    await expect(image).toHaveCSS('filter', 'none');
+  });
+
   test('arrow keys still work after clicking a dot', async ({ page }) => {
     await page.locator('.execom-swiper + div button[aria-label]').nth(3).click();
     await page.waitForTimeout(300);
