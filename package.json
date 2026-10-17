@@ -26,7 +26,7 @@
     "crap:gate": "node scripts/crap-gate.mjs",
     "test:unit:watch": "vitest",
     "test:unit:ui": "vitest --ui",
-    "test:mutation": "stryker run",
+    "test:mutation": "stryker run stryker.config.mjs",
     "test:install": "playwright install chromium",
     "ci:fast": "node scripts/ci-fast.mjs",
     "knip": "knip",
