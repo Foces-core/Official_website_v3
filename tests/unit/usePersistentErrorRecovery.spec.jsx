@@ -7,6 +7,7 @@ vi.mock('../../src/utils/errorRecoveryLogic.js', () => ({
   scheduleErrorAutoReload: vi.fn(() => () => {}),
   shouldEscalateToCacheRecovery: vi.fn(() => false),
   markCacheRecoveryDone: vi.fn(),
+  isOffline: vi.fn(() => false),
 }));
 vi.mock('../../src/utils/cacheRecovery.js', () => ({
   purgeAppCaches: vi.fn(async () => 0),
@@ -17,6 +18,7 @@ import {
   scheduleErrorAutoReload,
   shouldEscalateToCacheRecovery,
   markCacheRecoveryDone,
+  isOffline,
 } from '../../src/utils/errorRecoveryLogic.js';
 import { purgeAppCaches, unregisterServiceWorkers } from '../../src/utils/cacheRecovery.js';
 
@@ -32,6 +34,7 @@ describe('usePersistentErrorRecovery', () => {
     harness = createHarness();
     vi.clearAllMocks();
     shouldEscalateToCacheRecovery.mockReturnValue(false);
+    isOffline.mockReturnValue(false);
   });
 
   afterEach(() => {
@@ -47,6 +50,7 @@ describe('usePersistentErrorRecovery', () => {
 
   it('escalates on a persistent error: mark, purge, unregister, reload', async () => {
     shouldEscalateToCacheRecovery.mockReturnValue(true);
+    markCacheRecoveryDone.mockReturnValue(true);
     const reload = vi.fn();
     vi.stubGlobal('location', { reload });
 
@@ -64,6 +68,7 @@ describe('usePersistentErrorRecovery', () => {
 
   it('cancel handle stops nothing on unmount (no post-unmount reload)', async () => {
     shouldEscalateToCacheRecovery.mockReturnValue(true);
+    markCacheRecoveryDone.mockReturnValue(true);
     const reload = vi.fn();
     vi.stubGlobal('location', { reload });
 
@@ -74,5 +79,40 @@ describe('usePersistentErrorRecovery', () => {
     });
     expect(reload).not.toHaveBeenCalled();
     vi.unstubAllGlobals();
+  });
+
+  it('defers persistent-error escalation until the connection returns', () => {
+    shouldEscalateToCacheRecovery.mockReturnValue(true);
+    isOffline.mockReturnValue(true);
+    act(() => harness.render(<Probe />));
+    expect(purgeAppCaches).not.toHaveBeenCalled();
+    expect(unregisterServiceWorkers).not.toHaveBeenCalled();
+
+    isOffline.mockReturnValue(false);
+    act(() => window.dispatchEvent(new Event('online')));
+    expect(markCacheRecoveryDone).toHaveBeenCalledTimes(1);
+  });
+
+  it('cancels and reschedules the first-error reload across a connection flap', () => {
+    const cancel = vi.fn();
+    scheduleErrorAutoReload.mockReturnValue(cancel);
+    act(() => harness.render(<Probe />));
+    expect(scheduleErrorAutoReload).toHaveBeenCalledTimes(1);
+
+    isOffline.mockReturnValue(true);
+    act(() => window.dispatchEvent(new Event('offline')));
+    expect(cancel).toHaveBeenCalledTimes(1);
+
+    isOffline.mockReturnValue(false);
+    act(() => window.dispatchEvent(new Event('online')));
+    expect(scheduleErrorAutoReload).toHaveBeenCalledTimes(2);
+  });
+
+  it('does not purge caches when the escalation guard cannot be persisted', () => {
+    shouldEscalateToCacheRecovery.mockReturnValue(true);
+    markCacheRecoveryDone.mockReturnValue(false);
+    act(() => harness.render(<Probe />));
+    expect(purgeAppCaches).not.toHaveBeenCalled();
+    expect(unregisterServiceWorkers).not.toHaveBeenCalled();
   });
 });

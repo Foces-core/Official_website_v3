@@ -13,7 +13,7 @@ import { lazyWithRetry } from './utils/lazyWithRetry.js';
 import { SPLASH_FAILSAFE_MS, skipSplash, paintReady } from './utils/bootSplashLogic.js';
 import {
   CSS_PROBE_FAILSAFE_MS,
-  cssLooksApplied,
+  resolveCssProbeAction,
   recordCssReload,
 } from './utils/cssRecoveryLogic.js';
 import { shouldReloadOnResume } from './utils/resumeReload.js';
@@ -146,20 +146,30 @@ function CssRecoveryGuard() {
     let settled = false;
     const probe = () => {
       if (settled) return;
-      settled = true;
       let background = '';
       try {
         background = getComputedStyle(document.body).backgroundColor;
       } catch {
         // Keep the '' default — an unreadable body counts as missing CSS.
       }
-      if (!cssLooksApplied(background)) recordCssReload();
+      const action = resolveCssProbeAction({
+        bodyBackground: background,
+        online: navigator.onLine !== false,
+      });
+      if (action === 'done') {
+        settled = true;
+      } else if (action === 'reload') {
+        settled = true;
+        recordCssReload();
+      }
     };
     const failsafe = setTimeout(probe, CSS_PROBE_FAILSAFE_MS);
+    window.addEventListener('online', probe);
     if (document.readyState === 'complete') probe();
     else window.addEventListener('load', probe, { once: true });
     return () => {
       clearTimeout(failsafe);
+      window.removeEventListener('online', probe);
       window.removeEventListener('load', probe);
     };
   }, []);

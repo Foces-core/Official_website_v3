@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import emailjs from '@emailjs/browser';
 import {
@@ -31,15 +31,15 @@ function openMailtoHref(href) {
  */
 export default function useContactForm() {
   const [values, setValues] = useState(() => loadContactDraft());
+  const valuesRef = useRef(values);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const setField = (e) => {
     const { name, value } = e.target;
-    setValues((prev) => {
-      const next = { ...prev, [name]: value };
-      saveContactDraft(next);
-      return next;
-    });
+    const next = { ...valuesRef.current, [name]: value };
+    valuesRef.current = next;
+    setValues(next);
+    saveContactDraft(next);
   };
 
   const submit = async (e) => {
@@ -47,13 +47,14 @@ export default function useContactForm() {
     if (isSubmitting) return;
 
     setIsSubmitting(true);
+    const submittedValues = { ...values };
 
     const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
     const templateId = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
     const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
     const outcome = await resolveSubmissionOutcome({
-      values,
+      values: submittedValues,
       onLine: typeof navigator !== 'undefined' ? navigator.onLine : true,
       serviceId,
       templateId,
@@ -65,8 +66,12 @@ export default function useContactForm() {
       console.error('EmailJS send error:', outcome.error);
     }
 
-    if (outcome.shouldReset) {
+    const formUnchangedSinceSubmit = Object.keys(EMPTY_VALUES).every(
+      (key) => valuesRef.current[key] === submittedValues[key],
+    );
+    if (outcome.shouldReset && formUnchangedSinceSubmit) {
       clearContactDraft();
+      valuesRef.current = EMPTY_VALUES;
       setValues(EMPTY_VALUES);
     }
 

@@ -386,22 +386,34 @@ export default function Navbar() {
       >
         {/* Left: FOCES logo */}
         <div className="min-[768px]:justify-self-start flex items-center">
-          <img
-            src={isDark ? LogoWhite : LogoGrey}
-            alt="FOCES"
-            loading="eager"
-            decoding="async"
-            className={`h-auto w-[clamp(88px,8vw,140px)] flex-none cursor-pointer ${isMobile ? 'hidden' : ''}`}
+          <button
+            type="button"
+            aria-label="FOCES home"
+            className={`flex-none ${isMobile ? 'hidden' : ''}`}
             onClick={handleLogoClick}
-          />
-          <img
-            src={isDark ? LogoWhite : LogoGrey}
-            alt="FOCES"
-            loading="eager"
-            decoding="async"
-            className={`h-auto w-[clamp(56px,19vw,84px)] cursor-pointer ${isMobile ? '' : 'hidden'}`}
+          >
+            <img
+              src={isDark ? LogoWhite : LogoGrey}
+              alt=""
+              loading="eager"
+              decoding="async"
+              className="h-auto w-[clamp(88px,8vw,140px)]"
+            />
+          </button>
+          <button
+            type="button"
+            aria-label="FOCES home"
+            className={isMobile ? '' : 'hidden'}
             onClick={handleLogoClick}
-          />
+          >
+            <img
+              src={isDark ? LogoWhite : LogoGrey}
+              alt=""
+              loading="eager"
+              decoding="async"
+              className="h-auto w-[clamp(56px,19vw,84px)]"
+            />
+          </button>
         </div>
 
         {/* Center: nav links (desktop only — mobile renders as a full-screen overlay) */}

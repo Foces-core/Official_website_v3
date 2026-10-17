@@ -53,7 +53,13 @@ export function markInteracted(id) {
 // plain click, and locking the arrow keys on every click would freeze the
 // carousels/cube for anyone who clicked anywhere on the page.
 function isInteractiveControl(el) {
-  if (!el || el === document.body || el === document.documentElement) return false;
+  if (
+    !el ||
+    typeof document === 'undefined' ||
+    el === document.body ||
+    el === document.documentElement
+  )
+    return false;
   const tag = el.tagName;
   if (
     tag === 'A' ||
@@ -70,9 +76,23 @@ function isInteractiveControl(el) {
   return false;
 }
 
+function focusedWidget(active) {
+  if (!active) return null;
+  for (const [id, widget] of widgets) {
+    if (widget.isOnScreen() && widget.el?.contains(active)) return id;
+  }
+  return null;
+}
+
 // Which widget currently owns the arrow keys, or null (a foreign control has
 // focus, or nothing is on screen).
 export function getArrowOwner() {
+  const active = typeof document === 'undefined' ? null : document.activeElement;
+  // Explicit keyboard focus on a widget (for example, the tab-focusable cube)
+  // takes precedence over stale pointer history from another widget.
+  const focused = focusedWidget(active);
+  if (focused) return focused;
+
   let best = null;
   let bestT = -1;
   for (const [id, w] of widgets) {
@@ -86,7 +106,6 @@ export function getArrowOwner() {
   if (!best) return null;
   // A focused control outside the winning widget (nav link, input, ...) owns
   // the keys. Controls inside the widget itself don't.
-  const active = document.activeElement;
   const el = widgets.get(best)?.el;
   if (isInteractiveControl(active) && !(el && el.contains(active))) return null;
   return best;
@@ -95,7 +114,8 @@ export function getArrowOwner() {
 // True while focus is on an interactive control (link/button/input/...).
 // Arrow keys on those controls drive the control, not the page widgets.
 export function isControlFocused() {
-  return isInteractiveControl(document.activeElement);
+  const active = typeof document === 'undefined' ? null : document.activeElement;
+  return isInteractiveControl(active) && !focusedWidget(active);
 }
 
 export function subscribeKeyboardArbitration(fn) {

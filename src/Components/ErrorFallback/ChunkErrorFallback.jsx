@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 /**
  * ChunkErrorFallback — compact fallback for a single lazy island (ScrollGate
  * section, footer) when its chunk fails to load.
@@ -8,7 +10,19 @@
  * (reload is safe then; Fix-1 gates only the *automatic* recoveries).
  */
 export default function ChunkErrorFallback() {
-  const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
+  const [offline, setOffline] = useState(
+    () => typeof navigator !== 'undefined' && navigator.onLine === false,
+  );
+
+  useEffect(() => {
+    const update = () => setOffline(navigator.onLine === false);
+    window.addEventListener('online', update);
+    window.addEventListener('offline', update);
+    return () => {
+      window.removeEventListener('online', update);
+      window.removeEventListener('offline', update);
+    };
+  }, []);
 
   return (
     <div

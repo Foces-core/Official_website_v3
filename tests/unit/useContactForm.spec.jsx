@@ -265,6 +265,27 @@ describe('useContactForm submit flow', () => {
     expect(readSubmitting()).toBe('false');
   });
 
+  it('preserves edits made while a successful submission is in flight', async () => {
+    let resolveSend;
+    emailjs.send.mockReturnValue(
+      new Promise((resolve) => {
+        resolveSend = resolve;
+      }),
+    );
+    fill();
+    act(() => {
+      container.querySelector('#submit-btn').click();
+    });
+    type('message', 'A newer message');
+    await act(async () => {
+      resolveSend({});
+    });
+
+    expect(readValues()).toEqual({ ...VALID_VALUES, message: 'A newer message' });
+    expect(readSubmitting()).toBe('false');
+    expect(sessionStorage.getItem('foces_contact_draft_v1')).toContain('A newer message');
+  });
+
   it('saves typing changes to sessionStorage and restores draft on mount', () => {
     type('name', 'Margaret Hamilton');
     expect(readValues().name).toBe('Margaret Hamilton');
