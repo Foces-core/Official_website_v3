@@ -75,6 +75,14 @@ const slideEls = (root) => [...root.querySelectorAll('.swiper-slide')];
 const activeEl = (root) => slideEls(root).find((el) => el.hasAttribute('data-slide-active'));
 
 const inst = (harness) => harness.container.querySelector('.probe-root').__carouselEngine__;
+const enableVisibilityObservation = () =>
+  vi.stubGlobal(
+    'IntersectionObserver',
+    class {
+      observe() {}
+      disconnect() {}
+    },
+  );
 
 beforeEach(() => {
   harness = createHarness();
@@ -155,6 +163,7 @@ describe('useCarousel — instance contract', () => {
 
   it('startAutoplay advances; stopAutoplay halts', () => {
     vi.useFakeTimers();
+    enableVisibilityObservation();
     harness.render(<TrackProbe total={4} autoplayDelay={100} />);
     inst(harness).startAutoplay();
     vi.advanceTimersByTime(100);
@@ -166,8 +175,20 @@ describe('useCarousel — instance contract', () => {
     expect(inst(harness).activeIndex).toBe(6);
   });
 
+  it('keeps autoplay disabled when visibility cannot be observed', () => {
+    vi.stubGlobal('IntersectionObserver', undefined);
+    vi.useFakeTimers();
+    harness.render(<TrackProbe total={4} autoplayDelay={100} />);
+    inst(harness).startAutoplay();
+
+    vi.advanceTimersByTime(500);
+
+    expect(inst(harness).activeIndex).toBe(4);
+  });
+
   it('pauses autoplay during drag and resumes on release', () => {
     vi.useFakeTimers();
+    enableVisibilityObservation();
     harness.render(<TrackProbe total={4} autoplayDelay={100} />);
     const root = harness.container.querySelector('.probe-root');
     const track = root.querySelector('.swiper-wrapper');
@@ -304,7 +325,9 @@ describe('useCarousel — pointer drag', () => {
 
   it('pointer cancellation resumes autoplay without advancing the slide', () => {
     vi.useFakeTimers();
+    enableVisibilityObservation();
     harness.render(<TrackProbe total={4} mode="flat" autoplayDelay={100} />);
+    inst(harness).startAutoplay();
     const root = harness.container.querySelector('.probe-root');
     const { cancel } = dragStart(root, 400, 320);
 
@@ -399,6 +422,7 @@ describe('useCarousel — cube face gating across 3-copy wrap', () => {
 describe('useCarousel — seamless 3-copy wrap', () => {
   it('jumps back one copy when advancing past the last', () => {
     vi.useFakeTimers();
+    enableVisibilityObservation();
     harness.render(<TrackProbe total={4} autoplayDelay={100} />);
     const root = harness.container.querySelector('.probe-root');
     inst(harness).startAutoplay();

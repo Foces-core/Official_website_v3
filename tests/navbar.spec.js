@@ -37,6 +37,19 @@ test.describe('Navbar', () => {
     await expect.poll(() => page.evaluate(() => document.activeElement?.id)).toBe('nav-toggle');
   });
 
+  test('mobile menu Tab key cycles through tabbable items only', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'mobile menu only');
+    await page.goto('/', { waitUntil: 'networkidle' });
+    await waitForLoaderGone(page);
+    await page.locator('#nav-toggle').click();
+
+    await expect(page.locator('#nav-close')).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.locator('#nav-items-mobile a[tabindex="0"]')).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.locator('#nav-close')).toBeFocused();
+  });
+
   test('fixed bar layers above page content', async ({ page }) => {
     // Regression: the bar used to sit at z-10, below page layers (carousel
     // arrows z-20, toast pills z-40), and only won by stacking-context luck.

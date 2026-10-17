@@ -19,6 +19,7 @@ During the codebase architecture review, two areas of high friction and shallow 
 
 2. **Hero Waves WebGL Stage Adapter (`src/Components/HeroStage/heroWavesStage.js`):**
    - Encapsulates Three.js and Vanta Waves dynamic loading, low-power/wide-screen gating (`shouldInitHeroWaves`), background priority task scheduling, iOS WebGL context-loss cleanup, and instance teardown (`destroy`).
+   - `HeroSection` observes viewport width and tears down or initializes the stage when crossing the 1024px wide-screen gate; resizing within the same breakpoint does not restart the render loop.
    - Reduces `HeroSection.jsx` to declarative UI presentation and a 3-line lifecycle effect.
    - Guarded by unit tests with mock schedulers and loaders in `tests/unit/heroWavesStage.spec.js`.
 

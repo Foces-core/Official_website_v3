@@ -77,11 +77,24 @@ describe('scheduleBackgroundTask', () => {
     ).resolves.toBeUndefined();
   });
 
+  it('contains an asynchronously rejected task on the idle-callback path', async () => {
+    stubRequestIdleCallback();
+    await expect(
+      scheduleBackgroundTask(() => Promise.reject(new Error('boom'))),
+    ).resolves.toBeUndefined();
+  });
+
   it('contains a throwing task on the 200ms timeout path', async () => {
     await expect(
       scheduleBackgroundTask(() => {
         throw new Error('boom');
       }),
+    ).resolves.toBeUndefined();
+  });
+
+  it('contains an asynchronously rejected task on the timeout path', async () => {
+    await expect(
+      scheduleBackgroundTask(() => Promise.reject(new Error('boom'))),
     ).resolves.toBeUndefined();
   });
 
@@ -117,6 +130,13 @@ describe('scheduleUserBlockingTask', () => {
       scheduleUserBlockingTask(() => {
         throw new Error('boom');
       }),
+    ).resolves.toBeUndefined();
+  });
+
+  it('contains an asynchronously rejected task on the rAF fallback path', async () => {
+    stubRequestAnimationFrame();
+    await expect(
+      scheduleUserBlockingTask(() => Promise.reject(new Error('boom'))),
     ).resolves.toBeUndefined();
   });
 

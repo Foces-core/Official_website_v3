@@ -36,11 +36,11 @@ import { notifyLoadDone } from './Components/ScrollGate/gateIdleCoordinator.js';
 // backgrounded tab that iOS evicted from memory — is retried once and then
 // recovered with a single clean reload instead of surfacing the error
 // fallback (see docs/adr/0008).
-const AboutUs = lazyWithRetry(() => import('./Components/AboutUs/AboutUs'));
-const Featuring = lazyWithRetry(() => import('./Pages/LandingPages/Featuring'));
-const Events = lazyWithRetry(() => import('./Pages/LandingPages/Events'));
-const Execom = lazyWithRetry(() => import('./Components/Execom/Execom'));
-const Footer = lazyWithRetry(() => import('./Pages/LandingPage/Footer/Footer'));
+const AboutUs = lazyWithRetry(() => import('./Components/AboutUs/AboutUs'), 'about');
+const Featuring = lazyWithRetry(() => import('./Pages/LandingPages/Featuring'), 'featuring');
+const Events = lazyWithRetry(() => import('./Pages/LandingPages/Events'), 'home-events');
+const Execom = lazyWithRetry(() => import('./Components/Execom/Execom'), 'execom');
+const Footer = lazyWithRetry(() => import('./Pages/LandingPage/Footer/Footer'), 'footer');
 
 // AOS hides [data-aos] elements (opacity/transform) until they scroll into
 // view. The gate check runs at module scope, before React renders, so when

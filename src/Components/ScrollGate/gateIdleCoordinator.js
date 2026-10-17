@@ -72,25 +72,47 @@ function scheduleIdleArm() {
   };
 
   const delay = 1500; // well after 'load'; keep off the LCP path
-  let timer = setTimeout(() => {
-    timer = null;
-    if (typeof win.requestIdleCallback === 'function') {
-      win.requestIdleCallback(armNext, { timeout: 4000 });
-    } else {
-      armNext();
-    }
-  }, delay);
+  let timer = null;
+  let idleCallbackId = null;
+  let cancelled = false;
+  const removeScrollListener = () => {
+    win.removeEventListener('scroll', abortOnFirstScroll);
+  };
   // If a scroll begins before the idle arm fires, abort the arm: the real
   // interaction path takes over and prerolling is no longer "idle".
   const abortOnFirstScroll = () => {
+    cancelled = true;
     if (timer != null) {
       clearTimeout(timer);
       timer = null;
-      idleScheduled = false;
-      window.removeEventListener('scroll', abortOnFirstScroll);
+    }
+    if (idleCallbackId != null && typeof win.cancelIdleCallback === 'function') {
+      win.cancelIdleCallback(idleCallbackId);
+      idleCallbackId = null;
+    }
+    idleScheduled = false;
+    removeScrollListener();
+  };
+  const runIfNotCancelled = () => {
+    removeScrollListener();
+    if (cancelled) return;
+    idleScheduled = false;
+    armNext();
+  };
+  // Route both scheduler paths through one guard. A scroll can happen after
+  // the delay timer expires but before the browser grants idle time.
+  const scheduleArm = () => {
+    if (typeof win.requestIdleCallback === 'function') {
+      idleCallbackId = win.requestIdleCallback(runIfNotCancelled, { timeout: 4000 });
+    } else {
+      runIfNotCancelled();
     }
   };
-  window.addEventListener('scroll', abortOnFirstScroll, { passive: true, once: true });
+  timer = setTimeout(() => {
+    timer = null;
+    scheduleArm();
+  }, delay);
+  win.addEventListener('scroll', abortOnFirstScroll, { passive: true, once: true });
 }
 
 // Optional host-page provider: a page can register a snapshot function so the

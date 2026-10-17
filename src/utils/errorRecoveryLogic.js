@@ -121,8 +121,8 @@ export function markCacheRecoveryDone({ storage } = {}) {
  * @param {{ storage?: Storage | null }} [options]
  * @returns {boolean}
  */
-export function hasLazyChunkReloaded({ storage } = {}) {
-  return safeSessionGet(CHUNK_RETRY_KEY, null, storage) === 'true';
+export function hasLazyChunkReloaded({ storage, key = CHUNK_RETRY_KEY } = {}) {
+  return safeSessionGet(key, null, storage) === 'true';
 }
 
 /**
@@ -136,12 +136,13 @@ export function hasLazyChunkReloaded({ storage } = {}) {
  */
 export function recordLazyChunkReload({
   storage,
+  key = CHUNK_RETRY_KEY,
   win = typeof window !== 'undefined' ? window : null,
   reloadFn,
 } = {}) {
   if (isOffline(win)) return;
   // A retry without a durable guard can repeat forever on a broken chunk.
-  if (!safeSessionSet(CHUNK_RETRY_KEY, 'true', storage)) return;
+  if (!safeSessionSet(key, 'true', storage)) return;
   const doReload =
     reloadFn ||
     (() => {
@@ -157,6 +158,6 @@ export function recordLazyChunkReload({
  *
  * @param {{ storage?: Storage | null }} [options]
  */
-export function clearLazyChunkRetry({ storage } = {}) {
-  safeSessionRemove(CHUNK_RETRY_KEY, storage);
+export function clearLazyChunkRetry({ storage, key = CHUNK_RETRY_KEY } = {}) {
+  safeSessionRemove(key, storage);
 }

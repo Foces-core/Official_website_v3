@@ -94,6 +94,31 @@ describe('useRoutePrefetch hook', () => {
     }
   });
 
+  it('starts background prefetch if load completes before the passive listener attaches', () => {
+    const readyStateDescriptor = Object.getOwnPropertyDescriptor(document, 'readyState');
+    let readyStateReads = 0;
+    Object.defineProperty(document, 'readyState', {
+      configurable: true,
+      get: () => (readyStateReads++ === 0 ? 'loading' : 'complete'),
+    });
+    const scheduleSpy = vi
+      .spyOn(routePrefetchLogic, 'scheduleIdlePrefetch')
+      .mockReturnValue(() => {});
+    const foresightSpy = vi
+      .spyOn(routePrefetchLogic, 'initForesightPrefetch')
+      .mockReturnValue(() => {});
+
+    try {
+      harness.render(<TestPrefetchComponent slowNetwork={false} idleDelayMs={600} />);
+
+      expect(readyStateReads).toBeGreaterThan(1);
+      expect(scheduleSpy).toHaveBeenCalledWith({ delayMs: 600, slowNetwork: false });
+      expect(foresightSpy).toHaveBeenCalled();
+    } finally {
+      Object.defineProperty(document, 'readyState', readyStateDescriptor);
+    }
+  });
+
   it('keeps direct intent prefetch available before window load', () => {
     Object.defineProperty(document, 'readyState', { value: 'loading', configurable: true });
     const prefetchSpy = vi.spyOn(routePrefetchLogic, 'prefetchRoute');

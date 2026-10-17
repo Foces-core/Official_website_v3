@@ -4,11 +4,15 @@ import ddd from '../../../assets/ddd.svg';
 import focespng from '../../../assets/foces.png';
 import foces1 from '../../../assets/foces1.svg';
 import useExperienceCapabilities from '../../../hooks/useExperienceCapabilities.js';
+import { useViewportWidth } from '../../../hooks/useViewportWidth.js';
 import { initHeroWavesStage } from '../../../Components/HeroStage/heroWavesStage.js';
+import { isWideScreen } from '../../../utils/breakpoints.js';
 
 function HeroSection() {
   const myRef = useRef(null);
   const { webgl } = useExperienceCapabilities();
+  const viewportWidth = useViewportWidth();
+  const wideScreen = isWideScreen(viewportWidth);
 
   // Remove the static LCP hero that the build injected into index.html.
   // It ensured the browser could paint the hero image before React mounted
@@ -23,7 +27,7 @@ function HeroSection() {
       width: window.innerWidth,
     });
     return destroy;
-  }, [webgl]);
+  }, [webgl, wideScreen]);
 
   return (
     <div
