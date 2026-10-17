@@ -228,6 +228,53 @@ describe('useCubeDrag', () => {
     expect(el.style.transform).toContain('rotateY(359.5deg)');
   });
 
+  it('pauses idle rotation while the cube is outside the observer margin and resumes on re-entry', () => {
+    let onIntersect;
+    const observe = vi.fn();
+    const disconnect = vi.fn();
+    vi.stubGlobal(
+      'IntersectionObserver',
+      class IntersectionObserverMock {
+        constructor(callback) {
+          onIntersect = callback;
+        }
+        observe = observe;
+        disconnect = disconnect;
+      },
+    );
+    harness.render(<Probe />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    expect(observe).toHaveBeenCalledWith(el);
+
+    act(() => onIntersect([{ isIntersecting: false }]));
+    fireFrames(1);
+    expect(el.style.transform).toBe('');
+    expect(rafCallbacks.size).toBe(0);
+
+    act(() => onIntersect([{ isIntersecting: true }]));
+    fireFrames(1);
+    expect(el.style.transform).toContain('rotateY(359.5deg)');
+
+    harness.unmount();
+    expect(disconnect).toHaveBeenCalledOnce();
+  });
+
+  it('winds down after a fast release, then snaps to the nearest face', () => {
+    harness.render(<Probe idleSpin={false} />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    act(() => {
+      mousedown(el, 0);
+      mousemove(1000);
+      mouseup();
+    });
+
+    expect(rafCallbacks.size).toBe(1);
+    fireFrames(240);
+    expect(el.style.transition).toContain('400ms');
+    expect(el.style.transform).toMatch(/rotateY\(-?\d+deg\)/);
+    expect(rafCallbacks.size).toBe(0);
+  });
+
   it('skips the idle auto-spin when the idleSpin capability is off', () => {
     harness.render(<Probe idleSpin={false} />);
     expect(rafCallbacks.size).toBe(0);
@@ -258,5 +305,18 @@ describe('useCubeDrag', () => {
       mouseup();
     });
     expect(() => harness.unmount()).not.toThrow();
+  });
+
+  it('removes active mouse listeners when unmounted during a drag', () => {
+    harness.render(<Probe idleSpin={false} />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    const remove = vi.spyOn(window, 'removeEventListener');
+    act(() => mousedown(el, 0));
+
+    harness.unmount();
+
+    expect(remove).toHaveBeenCalledWith('mousemove', expect.any(Function));
+    expect(remove).toHaveBeenCalledWith('mouseup', expect.any(Function));
+    remove.mockRestore();
   });
 });
