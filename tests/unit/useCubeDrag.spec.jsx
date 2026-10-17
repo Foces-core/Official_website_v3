@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act } from 'react';
 import PropTypes from 'prop-types';
 import { useCubeDrag } from '../../src/hooks/useCubeDrag.js';
-import { registerWidget, markInteracted } from '../../src/utils/keyboardLock.js';
+import { registerWidget, markInteracted, getArrowOwner } from '../../src/utils/keyboardLock.js';
 import { SPIN_BARS } from '../../src/Components/AboutUs/easterEggLogic.js';
 import { createHarness } from './harness.jsx';
 
@@ -32,7 +32,7 @@ afterEach(() => {
   rafCallbacks.clear();
 });
 
-function Probe({ onEggFire = vi.fn(), spinConfig = SPIN_BARS.desktop, idleSpin = true }) {
+function Probe({ onEggFire, spinConfig = SPIN_BARS.desktop, idleSpin = true }) {
   const { boxRef, handlers } = useCubeDrag({
     idleSpin,
     spinConfig,
@@ -60,6 +60,23 @@ const touchEvent = (target, type, changedTouches = [], touches = []) => {
   });
   target.dispatchEvent(event);
   return event;
+};
+const completeTouchDrag = (el, owner, distance) => {
+  touchEvent(el, 'touchstart', [owner], [owner]);
+  owner.clientX = distance;
+  touchEvent(el, 'touchmove', [owner], [owner]);
+  touchEvent(el, 'touchend', [owner], []);
+};
+const makeCubeVisible = (el) => {
+  el.getClientRects = () => [{}];
+  el.getBoundingClientRect = () => ({
+    width: 100,
+    height: 100,
+    top: 0,
+    left: 0,
+    right: 100,
+    bottom: 100,
+  });
 };
 
 // Fire `n` queued animation frames (the idle auto-spin and wind-down both
@@ -105,6 +122,19 @@ describe('useCubeDrag', () => {
 
     expect(el.style.transform).toContain('rotateY(1800deg)');
     expect(onEggFire).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not throw when a rapid spin has no optional egg callback', () => {
+    harness.render(<Probe idleSpin={false} />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+
+    expect(() => {
+      act(() => {
+        mousedown(el, 0);
+        mousemove(3000);
+        mouseup();
+      });
+    }).not.toThrow();
   });
 
   it('a small drag rotates but never fires the egg', () => {
@@ -155,6 +185,168 @@ describe('useCubeDrag', () => {
       touchEvent(el, 'touchend', [owner], []);
     });
     expect(el.style.transform).toContain('rotateY(0.6deg)');
+  });
+
+  it('does not let a second touchstart steal ownership from an active touch', () => {
+    harness.render(<Probe idleSpin={false} />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    const owner = { identifier: 11, clientX: 0 };
+    const other = { identifier: 22, clientX: 500 };
+
+    act(() => {
+      touchEvent(el, 'touchstart', [owner], [owner]);
+      touchEvent(el, 'touchstart', [other], [owner, other]);
+      owner.clientX = 20;
+      touchEvent(el, 'touchmove', [owner], [owner, other]);
+    });
+
+    expect(el.style.transform).toContain('rotateY(12deg)');
+  });
+
+  it('falls back to the current touch when changedTouches is unavailable', () => {
+    harness.render(<Probe idleSpin={false} />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    const owner = { identifier: 11, clientX: 0 };
+    const event = new Event('touchstart', { bubbles: true, cancelable: true });
+    Object.defineProperty(event, 'touches', { value: [owner] });
+
+    act(() => el.dispatchEvent(event));
+    owner.clientX = 20;
+    act(() => touchEvent(el, 'touchmove', [owner], [owner]));
+
+    expect(el.style.transform).toContain('rotateY(12deg)');
+  });
+
+  it('restores the starting angle when the owning touch is cancelled', () => {
+    const onEggFire = vi.fn();
+    harness.render(<Probe onEggFire={onEggFire} />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    const owner = { identifier: 11, clientX: 0 };
+
+    act(() => {
+      touchEvent(el, 'touchstart', [owner], [owner]);
+      owner.clientX = 100;
+      touchEvent(el, 'touchmove', [owner], [owner]);
+    });
+    expect(el.style.transform).toContain('rotateY(60deg)');
+
+    act(() => touchEvent(el, 'touchcancel', [owner], []));
+
+    expect(el.style.transform).toContain('rotateY(0deg)');
+    expect(onEggFire).not.toHaveBeenCalled();
+  });
+
+  it('resumes an interrupted wind-down after restoring the pre-touch angle', () => {
+    harness.render(<Probe idleSpin={false} />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+
+    act(() => {
+      mousedown(el, 0);
+      mousemove(1000);
+      mouseup();
+      fireFrames(1);
+    });
+    const beforeTouch = el.style.transform;
+    expect(rafCallbacks.size).toBe(1);
+
+    const owner = { identifier: 11, clientX: 0 };
+    act(() => {
+      touchEvent(el, 'touchstart', [owner], [owner]);
+      owner.clientX = 20;
+      touchEvent(el, 'touchmove', [owner], [owner]);
+      touchEvent(el, 'touchcancel', [owner], []);
+    });
+
+    expect(el.style.transform).toBe(beforeTouch);
+    expect(rafCallbacks.size).toBe(1);
+    fireFrames(1);
+    expect(el.style.transform).not.toBe(beforeTouch);
+  });
+
+  it('does not count spin progress from a cancelled touch gesture', () => {
+    const onEggFire = vi.fn();
+    harness.render(<Probe onEggFire={onEggFire} spinConfig={SPIN_BARS.touch} idleSpin={false} />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    const owner = { identifier: 11, clientX: 0 };
+
+    act(() => {
+      touchEvent(el, 'touchstart', [owner], [owner]);
+      owner.clientX = 1200; // 8 full 90-degree spins at 0.6 degrees per pixel
+      touchEvent(el, 'touchmove', [owner], [owner]);
+      touchEvent(el, 'touchcancel', [owner], []);
+    });
+
+    expect(el.style.transform).toContain('rotateY(0deg)');
+    expect(onEggFire).not.toHaveBeenCalled();
+  });
+
+  it('counts touch spin progress only after the gesture ends normally', () => {
+    const onEggFire = vi.fn();
+    harness.render(<Probe onEggFire={onEggFire} spinConfig={SPIN_BARS.touch} idleSpin={false} />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    const owner = { identifier: 11, clientX: 0 };
+
+    act(() => completeTouchDrag(el, owner, 1200));
+
+    expect(onEggFire).toHaveBeenCalledTimes(1);
+  });
+
+  it('counts exactly one spin once for a 90-degree touch drag', () => {
+    const onEggFire = vi.fn();
+    harness.render(
+      <Probe onEggFire={onEggFire} spinConfig={{ target: 2, gap: 800 }} idleSpin={false} />,
+    );
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    const owner = { identifier: 11, clientX: 0 };
+
+    act(() => {
+      completeTouchDrag(el, owner, 150);
+      expect(onEggFire).not.toHaveBeenCalled();
+      owner.clientX = 0;
+      completeTouchDrag(el, owner, 150);
+    });
+
+    expect(onEggFire).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses the latest egg callback after the hook rerenders', () => {
+    const firstCallback = vi.fn();
+    const latestCallback = vi.fn();
+    harness.render(<Probe onEggFire={firstCallback} idleSpin={false} />);
+    harness.render(<Probe onEggFire={latestCallback} idleSpin={false} />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    const unregister = registerWidget('cube', () => true, el);
+    markInteracted('cube');
+
+    act(() => {
+      for (let i = 0; i < 20; i += 1) arrowKey('ArrowRight');
+    });
+
+    expect(firstCallback).not.toHaveBeenCalled();
+    expect(latestCallback).toHaveBeenCalledTimes(1);
+    unregister();
+  });
+
+  it('ignores cancellation of a non-owner touch while the owner is still dragging', () => {
+    harness.render(<Probe idleSpin={false} />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    const owner = { identifier: 11, clientX: 0 };
+    const other = { identifier: 22, clientX: 300 };
+
+    act(() => {
+      touchEvent(el, 'touchstart', [owner], [owner]);
+      owner.clientX = 30;
+      touchEvent(el, 'touchmove', [owner], [owner, other]);
+      touchEvent(el, 'touchcancel', [other], [owner]);
+    });
+
+    expect(el.style.transform).toContain('rotateY(18deg)');
+
+    act(() => {
+      owner.clientX = 40;
+      touchEvent(el, 'touchmove', [owner], [owner]);
+    });
+    expect(el.style.transform).toContain('rotateY(24deg)');
   });
 
   it('ends the drag when changedTouches is empty and the owner is no longer down', () => {
@@ -218,6 +410,30 @@ describe('useCubeDrag', () => {
     expect(el.style.transform).toContain('rotateY(-90deg)');
   });
 
+  it('pauses idle auto-spin during the manual arrow grace period and resumes later', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    harness.render(<Probe />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    el.getBoundingClientRect = () => ({
+      width: 100,
+      height: 100,
+      top: 0,
+      left: 0,
+      right: 100,
+      bottom: 100,
+    });
+    el.getClientRects = () => [el.getBoundingClientRect()];
+    el.focus();
+    act(() => arrowKey('ArrowRight'));
+
+    fireFrames(1);
+    expect(el.style.transform).toContain('rotateY(-90deg)');
+
+    act(() => vi.advanceTimersByTime(3001));
+    fireFrames(1);
+    expect(el.style.transform).toContain('rotateY(269.5deg)');
+  });
+
   it('moves left by one face and ignores non-arrow keys', () => {
     harness.render(<Probe />);
     const el = harness.container.querySelector('[data-testid="cube"]');
@@ -231,6 +447,39 @@ describe('useCubeDrag', () => {
 
     expect(el.style.transform).toContain('rotateY(90deg)');
     unregister();
+  });
+
+  it('pointer interaction gives the cube keyboard ownership over another widget', () => {
+    harness.render(<Probe idleSpin={false} />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    makeCubeVisible(el);
+    const unregisterRival = registerWidget('featuring', () => true, null);
+    markInteracted('featuring');
+
+    act(() => el.dispatchEvent(new Event('pointerdown', { bubbles: true })));
+    act(() => arrowKey('ArrowRight'));
+
+    expect(getArrowOwner()).toBe('cube');
+    expect(el.style.transform).toContain('rotateY(-90deg)');
+    unregisterRival();
+  });
+
+  it('focus interaction keeps cube keyboard ownership after focus leaves it', () => {
+    harness.render(<Probe idleSpin={false} />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    makeCubeVisible(el);
+    const unregisterRival = registerWidget('featuring', () => true, null);
+    markInteracted('featuring');
+
+    act(() => {
+      el.focus();
+      el.blur();
+      arrowKey('ArrowRight');
+    });
+
+    expect(getArrowOwner()).toBe('cube');
+    expect(el.style.transform).toContain('rotateY(-90deg)');
+    unregisterRival();
   });
 
   it('idle auto-spin rotates the cube on its own while nothing owns it', () => {
@@ -290,6 +539,45 @@ describe('useCubeDrag', () => {
     expect(rafCallbacks.size).toBe(0);
   });
 
+  it('keyboard input cancels wind-down before applying the new angle', () => {
+    harness.render(<Probe idleSpin={false} />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    const unregister = registerWidget('cube', () => true, el);
+    markInteracted('cube');
+    act(() => {
+      mousedown(el, 0);
+      mousemove(1000);
+      mouseup();
+    });
+    expect(rafCallbacks.size).toBe(1);
+
+    act(() => arrowKey('ArrowRight'));
+    expect(el.style.transform).toContain('rotateY(510deg)');
+    expect(rafCallbacks.size).toBe(0);
+    fireFrames(2);
+    expect(el.style.transform).toContain('rotateY(510deg)');
+    unregister();
+  });
+
+  it('a new drag cancels the previous wind-down frame', () => {
+    harness.render(<Probe idleSpin={false} />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    act(() => {
+      mousedown(el, 0);
+      mousemove(1000);
+      mouseup();
+    });
+    expect(rafCallbacks.size).toBe(1);
+
+    act(() => {
+      mousedown(el, 0);
+      fireFrames(1);
+    });
+    expect(rafCallbacks.size).toBe(0);
+    expect(el.style.transform).toContain('rotateY(600deg)');
+    act(mouseup);
+  });
+
   it('skips the idle auto-spin when the idleSpin capability is off', () => {
     harness.render(<Probe idleSpin={false} />);
     expect(rafCallbacks.size).toBe(0);
@@ -320,6 +608,35 @@ describe('useCubeDrag', () => {
       mouseup();
     });
     expect(() => harness.unmount()).not.toThrow();
+    expect(rafCallbacks.size).toBe(0);
+  });
+
+  it('replaces the snap timer, restores transition after settling, and clears it on unmount', () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+    harness.render(<Probe idleSpin={false} />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    const owner = { identifier: 11, clientX: 0 };
+
+    act(() => {
+      touchEvent(el, 'touchstart', [owner], [owner]);
+      touchEvent(el, 'touchend', [owner], []);
+      touchEvent(el, 'touchstart', [owner], [owner]);
+      touchEvent(el, 'touchend', [owner], []);
+    });
+    expect(vi.getTimerCount()).toBe(1);
+    expect(el.style.transition).toContain('400ms');
+
+    act(() => vi.advanceTimersByTime(400));
+    expect(el.style.transition).toBe('none');
+    expect(vi.getTimerCount()).toBe(0);
+
+    act(() => {
+      touchEvent(el, 'touchstart', [owner], [owner]);
+      touchEvent(el, 'touchend', [owner], []);
+    });
+    expect(vi.getTimerCount()).toBe(1);
+    harness.unmount();
+    expect(vi.getTimerCount()).toBe(0);
   });
 
   it('removes active mouse listeners when unmounted during a drag', () => {
@@ -332,6 +649,7 @@ describe('useCubeDrag', () => {
 
     expect(remove).toHaveBeenCalledWith('mousemove', expect.any(Function));
     expect(remove).toHaveBeenCalledWith('mouseup', expect.any(Function));
+    expect(getArrowOwner()).toBeNull();
     remove.mockRestore();
   });
 });

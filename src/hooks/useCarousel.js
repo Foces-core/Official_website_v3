@@ -298,6 +298,26 @@ export default function useCarousel({
     }
   }
 
+  function onPointerCancel(e) {
+    if (!s.dragging || e.pointerId !== s.pointerId) return;
+    s.dragging = false;
+    s.dragAxis = null;
+    const pid = s.pointerId;
+    try {
+      track()?.releasePointerCapture?.(pid);
+    } catch {
+      /* ignore */
+    }
+    s.pointerId = null;
+    s.dragOffset = 0;
+    s.velocity = 0;
+    goTo(s.raw, true);
+    if (s.dragAutoplayWasOn) {
+      s.dragAutoplayWasOn = false;
+      startAutoplay();
+    }
+  }
+
   function onTransitionEnd(e) {
     if (e.target !== track()) return;
     const { total: n } = p();
@@ -329,6 +349,7 @@ export default function useCarousel({
     onPointerDown,
     onPointerMove,
     onPointerUp,
+    onPointerCancel,
     onTransitionEnd,
   };
 
@@ -386,7 +407,7 @@ export default function useCarousel({
     t.addEventListener('pointerdown', handlersRef.current.onPointerDown);
     t.addEventListener('pointermove', handlersRef.current.onPointerMove, { passive: false });
     t.addEventListener('pointerup', handlersRef.current.onPointerUp);
-    t.addEventListener('pointercancel', handlersRef.current.onPointerUp);
+    t.addEventListener('pointercancel', handlersRef.current.onPointerCancel);
     t.addEventListener('transitionend', handlersRef.current.onTransitionEnd);
     let resizeRaf = 0;
     const onResize = () => {
@@ -406,7 +427,7 @@ export default function useCarousel({
       t.removeEventListener('pointerdown', handlersRef.current.onPointerDown);
       t.removeEventListener('pointermove', handlersRef.current.onPointerMove);
       t.removeEventListener('pointerup', handlersRef.current.onPointerUp);
-      t.removeEventListener('pointercancel', handlersRef.current.onPointerUp);
+      t.removeEventListener('pointercancel', handlersRef.current.onPointerCancel);
       t.removeEventListener('transitionend', handlersRef.current.onTransitionEnd);
       window.removeEventListener('resize', onResize);
     };

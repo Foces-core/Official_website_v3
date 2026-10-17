@@ -77,13 +77,72 @@ test('visited /events route renders offline from the runtime chunk cache', async
 }) => {
   await page.goto('/events', { waitUntil: 'load' });
   await waitForServiceWorkerControl(page);
-  await expect(page.locator('main img').first()).toBeVisible();
+  const image = page.locator('main img').first();
+  await expect(image).toBeVisible();
+  await expect
+    .poll(() => image.evaluate((img) => img.naturalWidth), { timeout: 30_000 })
+    .toBeGreaterThan(0);
 
   await context.setOffline(true);
   await page.reload({ waitUntil: 'load' });
 
-  await expect(page.locator('main img').first()).toBeVisible();
+  await expect(image).toBeVisible();
+  await expect
+    .poll(() => image.evaluate((img) => img.naturalWidth), { timeout: 30_000 })
+    .toBeGreaterThan(0);
   await expect(page.getByText('Something went wrong')).toHaveCount(0);
 
   await context.setOffline(false);
+});
+
+test('missing image SPA fallbacks are not stored in the image cache', async ({ page, context }) => {
+  await page.goto('/', { waitUntil: 'load' });
+  await waitForServiceWorkerControl(page);
+
+  const path = `/__missing-image-cache-guard-${Date.now()}.png`;
+  const online = await page.evaluate(async (url) => {
+    const response = await fetch(url, { cache: 'no-store' });
+    return {
+      status: response.status,
+      contentType: response.headers.get('content-type'),
+    };
+  }, path);
+  expect(online).toEqual({ status: 200, contentType: 'text/html; charset=utf-8' });
+
+  await context.setOffline(true);
+  const offline = await page.evaluate(async (url) => {
+    try {
+      const response = await fetch(url, { cache: 'no-store' });
+      return { status: response.status, contentType: response.headers.get('content-type') };
+    } catch {
+      return { failed: true };
+    }
+  }, path);
+  expect(offline).toEqual({ failed: true });
+
+  await context.setOffline(false);
+});
+
+test('service-worker activation deletes only the retired image cache', async ({
+  page,
+  context,
+}) => {
+  await page.goto('/', { waitUntil: 'load' });
+  await waitForServiceWorkerControl(page);
+  await page.evaluate(async () => {
+    await caches.open('images-cache-v2');
+    await caches.open('unrelated-cache');
+    await Promise.all(
+      (await navigator.serviceWorker.getRegistrations()).map((r) => r.unregister()),
+    );
+  });
+  await page.close();
+
+  const freshPage = await context.newPage();
+  await freshPage.goto('/', { waitUntil: 'load' });
+  await waitForServiceWorkerControl(freshPage);
+  const cacheNames = await freshPage.evaluate(() => caches.keys());
+
+  expect(cacheNames).not.toContain('images-cache-v2');
+  expect(cacheNames).toContain('unrelated-cache');
 });
