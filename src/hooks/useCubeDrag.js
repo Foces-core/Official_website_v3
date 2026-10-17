@@ -55,6 +55,9 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
   // Drag state
   const startX = useRef(0);
   const startRotY = useRef(0);
+  const startRotX = useRef(0);
+  const deferSpinRef = useRef(false);
+  const pendingTouchAngle = useRef(0);
   const lastMove = useRef({ t: 0, y: 0 });
   const velY = useRef(0);
   const isDraggingRef = useRef(false);
@@ -155,7 +158,10 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
       windRaf.current = null;
     }
     startX.current = clientX;
+    startRotX.current = rotXRef.current;
     startRotY.current = rotYRef.current;
+    deferSpinRef.current = false;
+    pendingTouchAngle.current = 0;
     lastMove.current = { t: Date.now(), y: rotYRef.current };
     velY.current = 0;
     manualUntilRef.current = Date.now() + DRAG_OVERRIDE_MS;
@@ -170,7 +176,9 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
       const ny = startRotY.current + delta;
       const dt = Math.max(now - lastMove.current.t, 1);
       velY.current = emaVelocity(velY.current, ny - lastMove.current.y, dt);
-      accumulateAngle(Math.abs(ny - lastMove.current.y));
+      const moved = Math.abs(ny - lastMove.current.y);
+      if (deferSpinRef.current) pendingTouchAngle.current += moved;
+      else accumulateAngle(moved);
       lastMove.current = { t: now, y: ny };
       rotYRef.current = ny;
       applyTransform();
@@ -198,6 +206,7 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
     if (!t) return;
     activeTouchId.current = t.identifier;
     beginDrag(t.clientX);
+    deferSpinRef.current = true;
   };
   const handleTouchMove = (e) => {
     if (!isDraggingRef.current) return;
@@ -213,7 +222,32 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
     );
     if (!ownerEnded && ownerStillDown) return;
     activeTouchId.current = null;
+    if (deferSpinRef.current) accumulateAngle(pendingTouchAngle.current);
+    pendingTouchAngle.current = 0;
+    deferSpinRef.current = false;
     endDrag();
+  };
+  const handleTouchCancel = (e) => {
+    if (!isDraggingRef.current) return;
+    const ownerCanceled = getActiveTouch(e.changedTouches, null, activeTouchId.current);
+    const ownerStillDown = Array.from(e.touches ?? []).some(
+      (touch) => touch.identifier === activeTouchId.current,
+    );
+    if (!ownerCanceled && ownerStillDown) return;
+    activeTouchId.current = null;
+    pendingTouchAngle.current = 0;
+    deferSpinRef.current = false;
+    isDraggingRef.current = false;
+    velY.current = 0;
+    stopWindDown();
+    if (snapTimerRef.current != null) {
+      clearTimeout(snapTimerRef.current);
+      snapTimerRef.current = null;
+    }
+    if (boxRef.current) boxRef.current.style.transition = 'none';
+    rotXRef.current = startRotX.current;
+    rotYRef.current = startRotY.current;
+    applyTransform();
   };
 
   const mouseHandlersRef = useRef(null);
@@ -358,7 +392,7 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
       onTouchStart: handleTouchStart,
       onTouchMove: handleTouchMove,
       onTouchEnd: handleTouchEnd,
-      onTouchCancel: handleTouchEnd,
+      onTouchCancel: handleTouchCancel,
       onMouseDown: handleMouseDown,
     },
   };

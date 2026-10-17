@@ -46,6 +46,16 @@ describe('BlurImage state machine', () => {
     expect(harness.container.querySelectorAll('img')).toHaveLength(1);
   });
 
+  it('applies placeholder and eager policy updates when the src stays the same', () => {
+    harness.render(<BlurImage src="full.jpg" alt="Photo" />);
+    harness.render(<BlurImage src="full.jpg" blurSrc="blur.jpg" alt="Photo" loading="eager" />);
+
+    const img = fullImg(harness.container, 'full.jpg');
+    expect(blurImg(harness.container)).not.toBeNull();
+    expect(img.className).toContain('opacity-0');
+    expect(img.getAttribute('fetchpriority')).toBe('high');
+  });
+
   it('reveals the full image on load and removes the placeholder 600ms later', async () => {
     harness.render(<BlurImage src="full.jpg" blurSrc="blur.jpg" alt="Photo" />);
     const img = fullImg(harness.container, 'full.jpg');
@@ -114,6 +124,7 @@ describe('blurImageReducer — the pure state machine', () => {
     removed: true, // placeholder already gone (no blurSrc) unless overridden
     priorityAttr: undefined, // lazy policy
     prevSrc: 'a.jpg',
+    prevBlurSrc: undefined,
     ...overrides,
   });
 
@@ -129,6 +140,7 @@ describe('blurImageReducer — the pure state machine', () => {
       removed: false, // placeholder back for the new pair
       priorityAttr: undefined,
       prevSrc: 'b.jpg',
+      prevBlurSrc: 'blur.jpg',
     });
   });
 
@@ -143,6 +155,26 @@ describe('blurImageReducer — the pure state machine', () => {
     expect(next).toBe(state);
   });
 
+  it('shows a newly supplied placeholder when the src stays the same', () => {
+    const next = blurImageReducer(base(), {
+      type: 'SRC_CHANGED',
+      src: 'a.jpg',
+      blurSrc: 'blur.jpg',
+      eager: false,
+    });
+    expect(next.removed).toBe(false);
+  });
+
+  it('raises fetch priority when the same image becomes eager', () => {
+    const next = blurImageReducer(base(), {
+      type: 'SRC_CHANGED',
+      src: 'a.jpg',
+      blurSrc: undefined,
+      eager: true,
+    });
+    expect(next.priorityAttr).toBe('high');
+  });
+
   it('SRC_CHANGED re-applies the eager policy for the new src', () => {
     const next = blurImageReducer(base(), {
       type: 'SRC_CHANGED',
@@ -155,6 +187,7 @@ describe('blurImageReducer — the pure state machine', () => {
       removed: true,
       priorityAttr: 'high',
       prevSrc: 'b.jpg',
+      prevBlurSrc: undefined,
     });
   });
 
@@ -172,6 +205,7 @@ describe('blurImageReducer — the pure state machine', () => {
       removed: true,
       priorityAttr: undefined,
       prevSrc: 'a.jpg',
+      prevBlurSrc: undefined,
     });
   });
 

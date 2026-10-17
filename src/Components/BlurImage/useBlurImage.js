@@ -31,16 +31,24 @@ function initialState({ src, blurSrc, eager }) {
     removed: !blurSrc,
     priorityAttr: eager ? 'high' : undefined,
     prevSrc: src,
+    prevBlurSrc: blurSrc,
   };
 }
 
 export function blurImageReducer(state, action) {
   switch (action.type) {
     case 'SRC_CHANGED':
-      // Bail when the src is unchanged: SRC_CHANGED is dispatched on every
-      // mount/update cycle, and returning the SAME state object is what tells
-      // useReducer to skip the re-render.
-      if (action.src === state.prevSrc) return state;
+      if (action.src === state.prevSrc) {
+        const blurChanged = action.blurSrc !== state.prevBlurSrc;
+        const eagerChanged = action.eager && state.priorityAttr !== 'high';
+        if (!blurChanged && !eagerChanged) return state;
+        return {
+          ...state,
+          removed: blurChanged && !state.loaded ? !action.blurSrc : state.removed,
+          priorityAttr: action.eager ? 'high' : state.priorityAttr,
+          prevBlurSrc: action.blurSrc,
+        };
+      }
       return initialState({ src: action.src, blurSrc: action.blurSrc, eager: action.eager });
     case 'LOADED':
       return { ...state, loaded: true };

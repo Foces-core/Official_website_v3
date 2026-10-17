@@ -93,6 +93,15 @@ describe('useCarousel — instance contract', () => {
     expect(activeEl(harness.container)).toBe(slideEls(harness.container)[4]);
   });
 
+  it('preserves an explicit zero initial index and clamps out-of-range navigation', () => {
+    harness.render(<TrackProbe total={4} initialIndex={0} />);
+    expect(inst(harness).activeIndex).toBe(0);
+    inst(harness).slideTo(-5, 0);
+    expect(inst(harness).activeIndex).toBe(0);
+    inst(harness).slideTo(99, 0);
+    expect(inst(harness).activeIndex).toBe(11);
+  });
+
   it('slideNext / slidePrev move by one', () => {
     harness.render(<TrackProbe total={4} />);
     inst(harness).slideNext();
@@ -107,6 +116,13 @@ describe('useCarousel — instance contract', () => {
     inst(harness).slideTo(7, 0);
     expect(inst(harness).activeIndex).toBe(7);
     expect(activeEl(harness.container)).toBe(slideEls(harness.container)[7]);
+  });
+
+  it('preserves an explicit zero transition duration', () => {
+    harness.render(<TrackProbe total={4} />);
+    const track = harness.container.querySelector('.swiper-wrapper');
+    inst(harness).slideTo(5, 0);
+    expect(track.style.transition).toContain('transform 0ms');
   });
 
   it('fires onActiveChange with NORMALIZED index', () => {
@@ -203,6 +219,34 @@ describe('useCarousel — cube mode', () => {
     inst(harness).slideNext();
     expect(track.style.transform).toContain('rotateY(-450deg)');
   });
+
+  it('flat mode never applies cube face transforms to its slides', () => {
+    harness.render(<TrackProbe total={4} mode="flat" />);
+    const root = harness.container.querySelector('.probe-root');
+    const faces = slideEls(root);
+    expect(faces.every((slide) => slide.style.transform === '')).toBe(true);
+    inst(harness).slideNext();
+    expect(faces.every((slide) => slide.style.transform === '')).toBe(true);
+  });
+
+  it('reconfigures track styling when the mode and flat layout props change', () => {
+    harness.render(<TrackProbe total={4} mode="flat" slidesPerView={1} spaceBetween={0} />);
+    const root = harness.container.querySelector('.probe-root');
+    const track = root.querySelector('.swiper-wrapper');
+    const firstSlide = slideEls(root)[0];
+    Object.defineProperty(firstSlide, 'offsetParent', { configurable: true, value: {} });
+    firstSlide.getBoundingClientRect = () => ({ width: 100 });
+
+    harness.render(<TrackProbe total={4} mode="flat" slidesPerView={2} spaceBetween={20} />);
+    expect(track.style.columnGap).toBe('20px');
+    expect(firstSlide.style.flex).toBe('0 0 calc(0.5*(100% - 20px))');
+
+    harness.render(<TrackProbe total={4} mode="cube" faceWidth={300} />);
+    expect(root.getAttribute('data-carousel-mode')).toBe('cube');
+    expect(root.style.perspective).toBe('1200px');
+    expect(track.style.transformStyle).toBe('preserve-3d');
+    expect(firstSlide.style.position).toBe('absolute');
+  });
 });
 
 describe('useCarousel — pointer drag', () => {
@@ -219,7 +263,12 @@ describe('useCarousel — pointer drag', () => {
     track.dispatchEvent(pointer('pointerdown', fromX));
     const move = pointer('pointermove', toX);
     track.dispatchEvent(move);
-    return { track, move, finish: () => track.dispatchEvent(pointer('pointerup', toX)) };
+    return {
+      track,
+      move,
+      finish: () => track.dispatchEvent(pointer('pointerup', toX)),
+      cancel: () => track.dispatchEvent(pointer('pointercancel', toX)),
+    };
   };
 
   it('flat: drag previews offset, prevents default, settles on next index', () => {
@@ -239,6 +288,51 @@ describe('useCarousel — pointer drag', () => {
     expect(track.style.transform).toContain('rotateY(-384deg)');
     expect(move.defaultPrevented).toBe(true);
     finish();
+    expect(inst(harness).activeIndex).toBe(5);
+  });
+
+  it('pointer cancellation restores the starting slide without settling the drag', () => {
+    harness.render(<TrackProbe total={4} mode="flat" />);
+    const root = harness.container.querySelector('.probe-root');
+    const { track, cancel } = dragStart(root, 400, 320);
+
+    cancel();
+
+    expect(inst(harness).activeIndex).toBe(4);
+    expect(track.style.transform).toContain('translate3d(0px, 0, 0)');
+  });
+
+  it('pointer cancellation resumes autoplay without advancing the slide', () => {
+    vi.useFakeTimers();
+    harness.render(<TrackProbe total={4} mode="flat" autoplayDelay={100} />);
+    const root = harness.container.querySelector('.probe-root');
+    const { cancel } = dragStart(root, 400, 320);
+
+    cancel();
+    expect(inst(harness).activeIndex).toBe(4);
+    vi.advanceTimersByTime(100);
+    expect(inst(harness).activeIndex).toBe(5);
+  });
+
+  it('ignores a second pointer and a cancellation from a different pointer id', () => {
+    harness.render(<TrackProbe total={4} mode="flat" />);
+    const root = harness.container.querySelector('.probe-root');
+    const track = root.querySelector('.swiper-wrapper');
+    const pointer = (type, pointerId, x) =>
+      new PointerEventCtor(type, {
+        pointerId,
+        pointerType: 'touch',
+        clientX: x,
+        bubbles: true,
+        cancelable: true,
+      });
+
+    track.dispatchEvent(pointer('pointerdown', 1, 400));
+    track.dispatchEvent(pointer('pointermove', 1, 320));
+    track.dispatchEvent(pointer('pointerdown', 2, 200));
+    track.dispatchEvent(pointer('pointercancel', 2, 200));
+    expect(inst(harness).activeIndex).toBe(4);
+    track.dispatchEvent(pointer('pointerup', 1, 320));
     expect(inst(harness).activeIndex).toBe(5);
   });
 

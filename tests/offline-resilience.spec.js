@@ -77,13 +77,44 @@ test('visited /events route renders offline from the runtime chunk cache', async
 }) => {
   await page.goto('/events', { waitUntil: 'load' });
   await waitForServiceWorkerControl(page);
-  await expect(page.locator('main img').first()).toBeVisible();
+  const image = page.locator('main img').first();
+  await expect(image).toBeVisible();
+  await expect.poll(() => image.evaluate((img) => img.naturalWidth)).toBeGreaterThan(0);
 
   await context.setOffline(true);
   await page.reload({ waitUntil: 'load' });
 
-  await expect(page.locator('main img').first()).toBeVisible();
+  await expect(image).toBeVisible();
+  await expect.poll(() => image.evaluate((img) => img.naturalWidth)).toBeGreaterThan(0);
   await expect(page.getByText('Something went wrong')).toHaveCount(0);
+
+  await context.setOffline(false);
+});
+
+test('missing image SPA fallbacks are not stored in the image cache', async ({ page, context }) => {
+  await page.goto('/', { waitUntil: 'load' });
+  await waitForServiceWorkerControl(page);
+
+  const path = `/__missing-image-cache-guard-${Date.now()}.png`;
+  const online = await page.evaluate(async (url) => {
+    const response = await fetch(url, { cache: 'no-store' });
+    return {
+      status: response.status,
+      contentType: response.headers.get('content-type'),
+    };
+  }, path);
+  expect(online).toEqual({ status: 200, contentType: 'text/html; charset=utf-8' });
+
+  await context.setOffline(true);
+  const offline = await page.evaluate(async (url) => {
+    try {
+      const response = await fetch(url, { cache: 'no-store' });
+      return { status: response.status, contentType: response.headers.get('content-type') };
+    } catch {
+      return { failed: true };
+    }
+  }, path);
+  expect(offline).toEqual({ failed: true });
 
   await context.setOffline(false);
 });

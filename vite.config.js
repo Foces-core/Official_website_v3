@@ -281,22 +281,33 @@ export default defineConfig(({ mode }) => {
                 },
               },
             },
-            {
-              // CacheFirst strategy for all static images (handling query params like ?w=1000 or asset hashes)
-              urlPattern: /\.(?:png|jpg|jpeg|svg|webp|avif)(?:\?.*)?$/i,
+            ...[
+              ['png', 'image/png'],
+              ['jpg|jpeg', 'image/jpeg'],
+              ['svg', 'image/svg+xml'],
+              ['webp', 'image/webp'],
+              ['avif', 'image/avif'],
+            ].map(([extensions, mimeType]) => ({
+              // Match the response MIME type as well as the extension. SPA
+              // fallbacks can return 200 HTML for missing image URLs; caching
+              // those responses makes broken images persist offline. v3 also
+              // prevents poisoned entries from the less restrictive v2 cache
+              // from being served after this worker activates.
+              urlPattern: new RegExp(`\\.(?:${extensions})(?:\\?.*)?$`, 'i'),
               handler: 'CacheFirst',
               options: {
-                cacheName: 'images-cache-v2',
+                cacheName: 'images-cache-v3',
                 expiration: {
                   maxEntries: 1000,
                   maxAgeSeconds: 60 * 60 * 24 * 365, // 365 Days (1 Year)
                   purgeOnQuotaError: false,
                 },
                 cacheableResponse: {
-                  statuses: [0, 200],
+                  statuses: [200],
+                  headers: { 'content-type': mimeType },
                 },
               },
-            },
+            })),
           ],
         },
       }),
