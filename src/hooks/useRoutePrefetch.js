@@ -44,6 +44,10 @@ export default function useRoutePrefetch({ slowNetwork = false, idleDelayMs = 12
     if (loadDone) return undefined;
     const onLoad = () => setLoadDone(true);
     window.addEventListener('load', onLoad, { once: true });
+    // `load` may have fired after the render-time state initializer but
+    // before this passive effect subscribed. Recheck after subscribing so
+    // either the event or the completed state releases background prefetch.
+    if (readLoadComplete()) onLoad();
     return () => window.removeEventListener('load', onLoad);
   }, [loadDone]);
 

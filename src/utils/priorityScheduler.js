@@ -13,6 +13,14 @@
 const MAX_PRIORITIZED_URLS = 200;
 const prioritizedUrls = new Set();
 
+function runTaskSafely(taskFn) {
+  try {
+    return Promise.resolve(taskFn()).catch(() => undefined);
+  } catch {
+    return Promise.resolve(undefined);
+  }
+}
+
 /**
  * Schedule a high-priority task for immediate user interaction (user-blocking).
  * @param {Function} taskFn
@@ -31,11 +39,7 @@ export function scheduleUserBlockingTask(taskFn) {
 
   return new Promise((resolve) => {
     requestAnimationFrame(() => {
-      try {
-        resolve(taskFn());
-      } catch {
-        resolve(undefined);
-      }
+      resolve(runTaskSafely(taskFn));
     });
   });
 }
@@ -57,22 +61,14 @@ export function scheduleBackgroundTask(taskFn) {
   if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
     return new Promise((resolve) => {
       window.requestIdleCallback(() => {
-        try {
-          resolve(taskFn());
-        } catch {
-          resolve(undefined);
-        }
+        resolve(runTaskSafely(taskFn));
       });
     });
   }
 
   return new Promise((resolve) => {
     setTimeout(() => {
-      try {
-        resolve(taskFn());
-      } catch {
-        resolve(undefined);
-      }
+      resolve(runTaskSafely(taskFn));
     }, 200);
   });
 }
