@@ -97,7 +97,7 @@ export function initHeroWavesStage(containerEl, options = {}) {
     if (event && typeof event.preventDefault === 'function') {
       event.preventDefault();
     }
-    if (contextLost) return;
+    if (cancelled || contextLost) return;
     contextLost = true;
     loadGeneration += 1;
     initializationPending = false;
@@ -105,9 +105,9 @@ export function initHeroWavesStage(containerEl, options = {}) {
     restoreCanvas = event?.target || null;
     restoreCanvas?.addEventListener?.('webglcontextrestored', onContextRestored, true);
     console.info('Hero WebGL context lost — stopping Vanta (iOS background resume).');
-    if (vantaEffect && typeof vantaEffect.destroy === 'function') {
+    if (vantaEffect) {
       try {
-        vantaEffect.destroy();
+        vantaEffect.destroy?.();
       } catch {
         /* already destroyed */
       }
@@ -173,13 +173,11 @@ export function initHeroWavesStage(containerEl, options = {}) {
     containerEl.removeEventListener('webglcontextlost', onContextLost, true);
     containerEl.removeEventListener('webglcontextrestored', onContextRestored, true);
     restoreCanvas?.removeEventListener?.('webglcontextrestored', onContextRestored, true);
-    if (vantaEffect && typeof vantaEffect.destroy === 'function') {
-      try {
-        vantaEffect.destroy();
-      } catch {
-        /* already destroyed */
-      }
-      vantaEffect = null;
+    try {
+      vantaEffect?.destroy?.();
+    } catch {
+      /* already destroyed */
     }
+    vantaEffect = null;
   };
 }

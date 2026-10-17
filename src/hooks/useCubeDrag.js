@@ -24,6 +24,7 @@ import {
 import {
   shouldStartWindDown,
   computeDragDelta,
+  getActiveTouch,
   isIdleForAutoSpin,
 } from '../utils/cubeDragHelpers.js';
 
@@ -191,11 +192,6 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
 
   // Touch handlers — thin wrappers (CC 1-2), pure delta lives in helper.
   // Single-touch owned: extra fingers are ignored until the owner lifts.
-  const touchOf = (list) =>
-    list == null
-      ? null
-      : (Array.from(list).find((t) => t.identifier === activeTouchId.current) ?? null);
-
   const handleTouchStart = (e) => {
     if (isDraggingRef.current) return;
     const t = e.changedTouches?.[0] ?? e.touches?.[0];
@@ -205,13 +201,14 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
   };
   const handleTouchMove = (e) => {
     if (!isDraggingRef.current) return;
-    const t = touchOf(e.changedTouches) ?? touchOf(e.touches);
+    const t = getActiveTouch(e.changedTouches, e.touches, activeTouchId.current);
     if (!t) return;
     moveDrag(t.clientX);
   };
   const handleTouchEnd = (e) => {
     // A non-owner finger lifting while ours is still down: keep dragging.
-    if (e.touches?.length > 0 && !touchOf(e.changedTouches)) return;
+    const ownerEnded = getActiveTouch(e.changedTouches, null, activeTouchId.current);
+    if (e.touches?.length > 0 && !ownerEnded) return;
     activeTouchId.current = null;
     endDrag();
   };

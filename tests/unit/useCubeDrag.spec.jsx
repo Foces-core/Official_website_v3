@@ -52,6 +52,15 @@ const mousedown = (el, clientX) =>
 const mousemove = (clientX) => window.dispatchEvent(new MouseEvent('mousemove', { clientX }));
 const mouseup = () => window.dispatchEvent(new MouseEvent('mouseup'));
 const arrowKey = (key) => window.dispatchEvent(new KeyboardEvent('keydown', { key }));
+const touchEvent = (target, type, changedTouches = [], touches = []) => {
+  const event = new Event(type, { bubbles: true, cancelable: true });
+  Object.defineProperties(event, {
+    changedTouches: { value: changedTouches },
+    touches: { value: touches },
+  });
+  target.dispatchEvent(event);
+  return event;
+};
 
 // Fire `n` queued animation frames (the idle auto-spin and wind-down both
 // drive themselves through requestAnimationFrame).
@@ -113,6 +122,52 @@ describe('useCubeDrag', () => {
     expect(onEggFire).not.toHaveBeenCalled();
   });
 
+  it('ignores non-primary mouse buttons', () => {
+    harness.render(<Probe />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+
+    act(() => {
+      el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 2, clientX: 0 }));
+      mousemove(100);
+      mouseup();
+    });
+
+    expect(el.style.transform).toBe('');
+  });
+
+  it('tracks only the touch that started the drag and ignores other fingers lifting', () => {
+    harness.render(<Probe />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    const owner = { identifier: 11, clientX: 0 };
+    const other = { identifier: 22, clientX: 500 };
+
+    act(() => {
+      touchEvent(el, 'touchstart', [owner], [owner]);
+      touchEvent(el, 'touchmove', [other], [owner, other]);
+      touchEvent(el, 'touchend', [other], [owner]);
+      touchEvent(el, 'touchend', [], [owner]); // Some browsers omit changedTouches.
+    });
+    expect(el.style.transform).toBe('');
+
+    act(() => {
+      owner.clientX = 1;
+      touchEvent(el, 'touchmove', [owner], [owner, other]);
+      touchEvent(el, 'touchend', [owner], []);
+    });
+    expect(el.style.transform).toContain('rotateY(0.6deg)');
+  });
+
+  it('prevents touch scrolling only while the cube is being dragged', () => {
+    harness.render(<Probe />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    const idleEvent = touchEvent(el, 'touchmove');
+    expect(idleEvent.defaultPrevented).toBe(false);
+
+    act(() => touchEvent(el, 'touchstart', [{ identifier: 1, clientX: 0 }], []));
+    const draggingEvent = touchEvent(el, 'touchmove');
+    expect(draggingEvent.defaultPrevented).toBe(true);
+  });
+
   it('20 arrow presses fire the egg when the cube owns the arrow keys', () => {
     const onEggFire = vi.fn();
     harness.render(<Probe onEggFire={onEggFire} />);
@@ -146,6 +201,21 @@ describe('useCubeDrag', () => {
     act(() => arrowKey('ArrowRight'));
 
     expect(el.style.transform).toContain('rotateY(-90deg)');
+  });
+
+  it('moves left by one face and ignores non-arrow keys', () => {
+    harness.render(<Probe />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    const unregister = registerWidget('cube', () => true, el);
+    markInteracted('cube');
+
+    act(() => {
+      arrowKey('ArrowLeft');
+      arrowKey('Enter');
+    });
+
+    expect(el.style.transform).toContain('rotateY(90deg)');
+    unregister();
   });
 
   it('idle auto-spin rotates the cube on its own while nothing owns it', () => {
