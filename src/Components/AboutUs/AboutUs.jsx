@@ -91,7 +91,7 @@ function AboutUs() {
     celebrationCleanupRef.current = null;
 
     // fire() owns message pick, toast, particles, rAF — all spec-guarded.
-    scheduleBackgroundTask(() => {
+    void scheduleBackgroundTask(() => {
       const box = boxRef.current;
       if (!box) return;
       const wrapRect = wrap.getBoundingClientRect();
