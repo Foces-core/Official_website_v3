@@ -71,3 +71,10 @@ export function nextGateToArmAtIdle({ ids, tops, viewportHeight, armedIds = [] }
   }
   return null;
 }
+import { isDesktopViewport } from '../../utils/breakpoints.js';
+
+export function cacheMeasuredHeight(cache, { id, height, width }) {
+  if (height <= 0) return;
+  const bucket = isDesktopViewport(width) ? 'desktop' : 'mobile';
+  cache.set(`${id}:${bucket}`, height);
+}

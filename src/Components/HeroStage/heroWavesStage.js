@@ -1,5 +1,5 @@
 import { scheduleBackgroundTask } from '../../utils/priorityScheduler.js';
-import { isWideScreen } from '../../utils/breakpoints.js';
+import { shouldInitHeroWaves, VANTA_WAVES_CONFIG } from './heroWavesPolicy.js';
 
 /**
  * HeroWavesStage — deep adapter managing Three.js + Vanta Waves 3D canvas lifecycle.
@@ -7,34 +7,7 @@ import { isWideScreen } from '../../utils/breakpoints.js';
  * viewport/low-power gating, and cleanup.
  */
 
-export const VANTA_WAVES_CONFIG = {
-  mouseControls: true,
-  touchControls: true,
-  gyroControls: false,
-  scale: 1.0,
-  scaleMobile: 1.0,
-  color: 0x1a1a20,
-  backgroundColor: 0x0a0a0c,
-  shininess: 35.0,
-  waveHeight: 18.0,
-  waveSpeed: 0.75,
-  zoom: 0.85,
-};
-
-/**
- * Checks whether the hero waves 3D stage should mount for a given device & viewport.
- * `webgl` is the experience-tier capability (full tier only); the width
- * check keeps the stage off phones/tablets regardless.
- * @param {{ webgl?: boolean, width?: number }} profile
- * @returns {boolean}
- */
-export function shouldInitHeroWaves({
-  webgl = true,
-  width = typeof window !== 'undefined' ? window.innerWidth : 0,
-}) {
-  if (!webgl) return false;
-  return isWideScreen(width);
-}
+export { shouldInitHeroWaves, VANTA_WAVES_CONFIG } from './heroWavesPolicy.js';
 
 /**
  * Default dynamic loader for Three.js and Vanta Waves.
@@ -79,6 +52,10 @@ export function initHeroWavesStage(containerEl, options = {}) {
   let vantaEffect = null;
   let cancelled = false;
   let visibilityObserver = null;
+  let restoreCanvas = null;
+  let loadGeneration = 0;
+  let initializationPending = false;
+  let contextLost = false;
   // Unknown (null) once an observer is installed — the first callback may
   // arrive after the async loader resolves, so the loop must not assume the
   // hero is visible before that. Stays true when there is no observer
@@ -122,6 +99,13 @@ export function initHeroWavesStage(containerEl, options = {}) {
     if (event && typeof event.preventDefault === 'function') {
       event.preventDefault();
     }
+    if (contextLost) return;
+    contextLost = true;
+    loadGeneration += 1;
+    initializationPending = false;
+    paused = false;
+    restoreCanvas = event?.target || null;
+    restoreCanvas?.addEventListener?.('webglcontextrestored', onContextRestored, true);
     console.info('Hero WebGL context lost — stopping Vanta (iOS background resume).');
     if (vantaEffect && typeof vantaEffect.destroy === 'function') {
       try {
@@ -133,40 +117,54 @@ export function initHeroWavesStage(containerEl, options = {}) {
     vantaEffect = null;
   };
 
+  const onContextRestored = () => {
+    if (cancelled || !contextLost) return;
+    contextLost = false;
+    restoreCanvas?.removeEventListener?.('webglcontextrestored', onContextRestored, true);
+    restoreCanvas = null;
+    scheduleInitialization();
+  };
+
   containerEl.addEventListener('webglcontextlost', onContextLost, true);
+  containerEl.addEventListener('webglcontextrestored', onContextRestored, true);
 
-  scheduler(async () => {
-    try {
-      const [THREE, vantaMod] = await loader();
-      const WAVES = vantaMod?.default || vantaMod;
-      if (cancelled || !containerEl || typeof WAVES !== 'function') return;
-
-      vantaEffect = WAVES({
-        el: containerEl,
-        THREE,
-        ...VANTA_WAVES_CONFIG,
-      });
-
-      if (cancelled) {
-        if (vantaEffect && typeof vantaEffect.destroy === 'function') {
-          vantaEffect.destroy();
-          vantaEffect = null;
+  function scheduleInitialization() {
+    if (cancelled || contextLost || initializationPending || vantaEffect) return;
+    initializationPending = true;
+    const generation = ++loadGeneration;
+    scheduler(async () => {
+      try {
+        const [THREE, vantaMod] = await loader();
+        const WAVES = vantaMod?.default || vantaMod;
+        if (
+          cancelled ||
+          contextLost ||
+          generation !== loadGeneration ||
+          typeof WAVES !== 'function'
+        ) {
+          return;
         }
-      } else {
-        // If the hero mounted off-screen (deep link) or the observer has not
-        // reported yet (unknown), the loop must not render until it scrolls
-        // into view — the first visible callback resumes it.
+
+        const effect = WAVES({ el: containerEl, THREE, ...VANTA_WAVES_CONFIG });
+        if (cancelled || contextLost || generation !== loadGeneration) {
+          effect?.destroy?.();
+          return;
+        }
+        vantaEffect = effect;
         if (isVisible !== true) pauseLoop();
         if (typeof onInit === 'function') onInit(vantaEffect);
+      } catch (err) {
+        if (!cancelled && !contextLost && generation === loadGeneration) {
+          if (typeof onError === 'function') onError(err);
+          else console.warn('Vanta Waves init warning:', err);
+        }
+      } finally {
+        if (generation === loadGeneration) initializationPending = false;
       }
-    } catch (err) {
-      if (typeof onError === 'function') {
-        onError(err);
-      } else {
-        console.warn('Vanta Waves init warning:', err);
-      }
-    }
-  });
+    });
+  }
+
+  scheduleInitialization();
 
   return () => {
     cancelled = true;
@@ -175,6 +173,8 @@ export function initHeroWavesStage(containerEl, options = {}) {
       visibilityObserver = null;
     }
     containerEl.removeEventListener('webglcontextlost', onContextLost, true);
+    containerEl.removeEventListener('webglcontextrestored', onContextRestored, true);
+    restoreCanvas?.removeEventListener?.('webglcontextrestored', onContextRestored, true);
     if (vantaEffect && typeof vantaEffect.destroy === 'function') {
       try {
         vantaEffect.destroy();

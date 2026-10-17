@@ -4,6 +4,7 @@ import {
   wrapTarget,
   copyFor,
   neighborIndices,
+  shouldSyncCarouselIndex,
 } from '../../src/utils/carouselWrap.js';
 
 // The seam is the pure wrap math behind the seamless-infinite carousels
@@ -53,6 +54,29 @@ describe('copyFor', () => {
     expect(copyFor(7, 4)).toBe(1);
     expect(copyFor(8, 4)).toBe(2);
     expect(copyFor(11, 4)).toBe(2);
+  });
+});
+
+describe('shouldSyncCarouselIndex', () => {
+  it('syncs a visible responsive carousel when its logical index differs', () => {
+    expect(
+      shouldSyncCarouselIndex({ visible: true, currentIndex: 5, activeIndex: 8, total: 4 }),
+    ).toBe(true);
+  });
+
+  it('does not sync hidden carousels or a visible carousel already at the same slide', () => {
+    expect(
+      shouldSyncCarouselIndex({ visible: false, currentIndex: 5, activeIndex: 8, total: 4 }),
+    ).toBe(false);
+    expect(
+      shouldSyncCarouselIndex({ visible: true, currentIndex: 5, activeIndex: 9, total: 4 }),
+    ).toBe(false);
+  });
+
+  it('does not try to sync an empty carousel', () => {
+    expect(
+      shouldSyncCarouselIndex({ visible: true, currentIndex: 0, activeIndex: 0, total: 0 }),
+    ).toBe(false);
   });
 });
 

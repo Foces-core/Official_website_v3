@@ -129,6 +129,25 @@ describe('useCubeDrag', () => {
     unregister();
   });
 
+  it('rotates from the keyboard when the focused cube owns the arrow keys', () => {
+    harness.render(<Probe />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    el.getBoundingClientRect = () => ({
+      width: 100,
+      height: 100,
+      top: 0,
+      left: 0,
+      right: 100,
+      bottom: 100,
+    });
+    el.getClientRects = () => [el.getBoundingClientRect()];
+    el.focus();
+
+    act(() => arrowKey('ArrowRight'));
+
+    expect(el.style.transform).toContain('rotateY(-90deg)');
+  });
+
   it('idle auto-spin rotates the cube on its own while nothing owns it', () => {
     harness.render(<Probe />);
     const el = harness.container.querySelector('[data-testid="cube"]');

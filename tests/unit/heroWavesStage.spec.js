@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { initHeroWavesStage } from '../../src/Components/HeroStage/heroWavesStage.js';
 import {
   shouldInitHeroWaves,
-  initHeroWavesStage,
   VANTA_WAVES_CONFIG,
-} from '../../src/Components/HeroStage/heroWavesStage.js';
+} from '../../src/Components/HeroStage/heroWavesPolicy.js';
 
 describe('heroWavesStage', () => {
   beforeEach(() => {
@@ -33,6 +33,37 @@ describe('heroWavesStage', () => {
 
     it('defaults webgl on (capability profile shape)', () => {
       expect(shouldInitHeroWaves({ width: 1200 })).toBe(true);
+    });
+
+    it('defaults width to the current browser viewport', () => {
+      Object.defineProperty(window, 'innerWidth', { value: 1200, configurable: true });
+      expect(shouldInitHeroWaves({})).toBe(true);
+    });
+
+    it('disables the stage when evaluated without a browser viewport', () => {
+      const savedWindow = globalThis.window;
+      delete globalThis.window;
+      try {
+        expect(shouldInitHeroWaves({})).toBe(false);
+      } finally {
+        globalThis.window = savedWindow;
+      }
+    });
+  });
+
+  it('keeps the intended waves visual configuration', () => {
+    expect(VANTA_WAVES_CONFIG).toEqual({
+      mouseControls: true,
+      touchControls: true,
+      gyroControls: false,
+      scale: 1,
+      scaleMobile: 1,
+      color: 0x1a1a20,
+      backgroundColor: 0x0a0a0c,
+      shininess: 35,
+      waveHeight: 18,
+      waveSpeed: 0.75,
+      zoom: 0.85,
     });
   });
 
@@ -140,6 +171,41 @@ describe('heroWavesStage', () => {
 
       expect(mockEvent.preventDefault).toHaveBeenCalledTimes(1);
       expect(mockVantaInstance.destroy).toHaveBeenCalledTimes(1);
+    });
+
+    it('recreates the waves stage after the browser restores its WebGL context', async () => {
+      const listeners = {};
+      const el = {
+        addEventListener: vi.fn((event, fn) => {
+          listeners[event] = fn;
+        }),
+        removeEventListener: vi.fn(),
+      };
+      const first = { destroy: vi.fn() };
+      const second = { destroy: vi.fn() };
+      const createWaves = vi.fn().mockReturnValueOnce(first).mockReturnValueOnce(second);
+      const loader = vi.fn(async () => [{}, { default: createWaves }]);
+      const tasks = [];
+      const onInit = vi.fn();
+      const destroy = initHeroWavesStage(el, {
+        width: 1200,
+        scheduler: (task) => tasks.push(task),
+        loader,
+        onInit,
+      });
+
+      await tasks[0]();
+      listeners.webglcontextlost({ preventDefault: vi.fn() });
+      listeners.webglcontextrestored();
+      expect(tasks).toHaveLength(2);
+      await tasks[1]();
+
+      expect(loader).toHaveBeenCalledTimes(2);
+      expect(createWaves).toHaveBeenCalledTimes(2);
+      expect(first.destroy).toHaveBeenCalledTimes(1);
+      expect(onInit).toHaveBeenCalledTimes(2);
+      destroy();
+      expect(second.destroy).toHaveBeenCalledTimes(1);
     });
 
     describe('off-screen pause (CPU)', () => {

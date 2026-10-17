@@ -148,4 +148,27 @@ describe('contactDraft persistence', () => {
     expect(() => saveContactDraft({ name: 'Test' }, throwingStorage)).not.toThrow();
     expect(() => clearContactDraft(throwingStorage)).not.toThrow();
   });
+
+  it('falls back when reading the sessionStorage property itself throws', () => {
+    const descriptor = Object.getOwnPropertyDescriptor(window, 'sessionStorage');
+    Object.defineProperty(window, 'sessionStorage', {
+      configurable: true,
+      get() {
+        throw new Error('SecurityError');
+      },
+    });
+    try {
+      expect(loadContactDraft()).toEqual({
+        name: '',
+        email: '',
+        subject: '',
+        message: '',
+        website: '',
+      });
+      expect(() => saveContactDraft({ name: 'Test' })).not.toThrow();
+      expect(() => clearContactDraft()).not.toThrow();
+    } finally {
+      Object.defineProperty(window, 'sessionStorage', descriptor);
+    }
+  });
 });

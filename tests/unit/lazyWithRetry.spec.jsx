@@ -36,15 +36,20 @@ class Boundary extends Component {
 
 let harness;
 const reload = vi.fn();
+let sessionStorageDescriptor;
 
 beforeEach(() => {
   window.sessionStorage.clear();
+  sessionStorageDescriptor = Object.getOwnPropertyDescriptor(window, 'sessionStorage');
   reload.mockClear();
   harness = createHarness();
 });
 
 afterEach(() => {
   harness.unmount();
+  if (sessionStorageDescriptor) {
+    Object.defineProperty(window, 'sessionStorage', sessionStorageDescriptor);
+  }
   vi.restoreAllMocks();
 });
 
@@ -114,14 +119,11 @@ describe('lazyWithRetry — retry and reload recovery', () => {
 
 describe('lazyWithRetry — storage unavailable (Safari private mode etc.)', () => {
   function blockSessionStorage() {
-    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
-      throw new Error('storage blocked');
-    });
-    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-      throw new Error('storage blocked');
-    });
-    vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
-      throw new Error('storage blocked');
+    Object.defineProperty(window, 'sessionStorage', {
+      configurable: true,
+      get() {
+        throw new Error('storage blocked');
+      },
     });
   }
 
@@ -132,12 +134,12 @@ describe('lazyWithRetry — storage unavailable (Safari private mode etc.)', () 
     expect(document.getElementById('resolved')).toBeTruthy();
   });
 
-  it('still attempts the reload recovery when sessionStorage throws on the failure path', async () => {
+  it('avoids a reload loop when sessionStorage throws on the failure path', async () => {
     blockSessionStorage();
     vi.stubGlobal('location', { reload });
     const Lazy = lazyWithRetry(() => Promise.reject(new Error('stale asset hash')));
     await renderAndSettle(Lazy);
-    expect(reload).toHaveBeenCalledTimes(1);
+    expect(reload).not.toHaveBeenCalled();
     expect(document.getElementById('boundary-error').textContent).toBe('stale asset hash');
   });
 });

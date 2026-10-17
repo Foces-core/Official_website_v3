@@ -43,7 +43,7 @@ async function expectSmokeTest(page) {
   // visible, clickable (cursor-pointer) one. The static hero LCP
   // placeholder (#hero-lcp-static) also renders img[alt="FOCES"], so a bare
   // `:visible` scope would still match it.
-  await expect(page.locator('img[alt="FOCES"].cursor-pointer:visible').first()).toBeVisible();
+  await expect(page.getByRole('button', { name: 'FOCES home' })).toBeVisible();
   await page.locator('#about').scrollIntoViewIfNeeded();
   await expect(page.locator('#about').first()).toBeVisible();
   await expect(page.locator('footer')).toBeVisible();

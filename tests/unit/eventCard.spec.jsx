@@ -42,12 +42,14 @@ describe('EventCard component & GalleryTrigger wiring', () => {
     expect(container.textContent).toContain('March 15, 2026');
 
     const primaryTrigger = container.querySelector(
-      '[aria-label="Open photo gallery for Hackathon 2026"]',
+      '[aria-label="Click to View Gallery (2 Photos) for Hackathon 2026"]',
     );
     expect(primaryTrigger).not.toBeNull();
     expect(primaryTrigger.getAttribute('role')).toBe('button');
     expect(primaryTrigger.getAttribute('tabindex')).toBe('0');
     expect(primaryTrigger.getAttribute('aria-haspopup')).toBe('dialog');
+    expect(primaryTrigger.getAttribute('aria-label')).toContain('Click to View Gallery (2 Photos)');
+    expect(primaryTrigger.getAttribute('aria-label')).toContain('2 Photos');
 
     const thumbTrigger = container.querySelector('[aria-label="View photo 2"]');
     expect(thumbTrigger).not.toBeNull();
@@ -63,7 +65,7 @@ describe('EventCard component & GalleryTrigger wiring', () => {
     expect(modal.getAttribute('data-open')).toBe('false');
 
     const primaryTrigger = container.querySelector(
-      '[aria-label="Open photo gallery for Hackathon 2026"]',
+      '[aria-label="Click to View Gallery (2 Photos) for Hackathon 2026"]',
     );
 
     act(() => {
@@ -90,7 +92,7 @@ describe('EventCard component & GalleryTrigger wiring', () => {
     });
     const modal = container.querySelector('#mock-modal');
     const primaryTrigger = container.querySelector(
-      '[aria-label="Open photo gallery for Hackathon 2026"]',
+      '[aria-label="Click to View Gallery (2 Photos) for Hackathon 2026"]',
     );
     const thumbTrigger = container.querySelector('[aria-label="View photo 2"]');
 

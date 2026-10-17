@@ -19,7 +19,6 @@ import {
   registerWidget,
   markInteracted,
   getArrowOwner,
-  isControlFocused,
   rectIsOnScreen,
 } from '../utils/keyboardLock.js';
 import {
@@ -295,7 +294,7 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
     const onKey = (e) => {
       const isArrow = e.key === 'ArrowLeft' || e.key === 'ArrowRight';
       if (!isArrow) return;
-      const blocked = isControlFocused() || getArrowOwner() !== 'cube';
+      const blocked = getArrowOwner() !== 'cube';
       if (blocked) return;
       const el = boxRef.current;
       if (!el) return;
@@ -315,13 +314,19 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
   }, [applyTransform, registerSpin, stopWindDown]);
 
   useEffect(() => {
-    const unregister = registerWidget('cube', () => rectIsOnScreen(boxRef.current, 40));
-    const wrap = wrapRef?.current;
+    const unregister = registerWidget(
+      'cube',
+      () => rectIsOnScreen(boxRef.current, 40),
+      boxRef.current,
+    );
+    const wrap = wrapRef?.current ?? boxRef.current;
     const mark = () => markInteracted('cube');
     wrap?.addEventListener('pointerdown', mark, true);
+    wrap?.addEventListener('focusin', mark, true);
     return () => {
       unregister();
       wrap?.removeEventListener('pointerdown', mark, true);
+      wrap?.removeEventListener('focusin', mark, true);
     };
   }, [wrapRef]);
 

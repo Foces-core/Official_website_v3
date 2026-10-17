@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   shouldMountSection,
   shouldMountAtBoot,
+  cacheMeasuredHeight,
 } from '../../src/Components/ScrollGate/scrollGateLogic.js';
 
 describe('shouldMountSection', () => {
@@ -38,6 +39,17 @@ describe('shouldMountSection', () => {
 
   it('returns false for a section below the fold with a tiny margin', () => {
     expect(shouldMountSection(810, VIEWPORT, 0.01)).toBe(false);
+  });
+});
+
+describe('cacheMeasuredHeight', () => {
+  it('stores measurements under the viewport bucket active when the observer fires', () => {
+    const cache = new Map();
+    cacheMeasuredHeight(cache, { id: 'about', height: 700, width: 1200 });
+    cacheMeasuredHeight(cache, { id: 'about', height: 900, width: 390 });
+
+    expect(cache.get('about:desktop')).toBe(700);
+    expect(cache.get('about:mobile')).toBe(900);
   });
 });
 

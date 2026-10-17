@@ -10,8 +10,12 @@ const DEFAULT_DRAFT = {
 
 function getStorage(customStorage) {
   if (customStorage !== undefined) return customStorage;
-  if (typeof window !== 'undefined' && window.sessionStorage) {
-    return window.sessionStorage;
+  try {
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      return window.sessionStorage;
+    }
+  } catch {
+    // Storage can be inaccessible in restricted browser contexts.
   }
   return null;
 }

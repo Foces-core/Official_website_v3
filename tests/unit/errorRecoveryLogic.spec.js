@@ -103,6 +103,29 @@ describe('errorRecoveryLogic auto-reload policies', () => {
       expect(reloadFn).not.toHaveBeenCalled();
     });
 
+    it('does not reload when the one-shot guard cannot be persisted', () => {
+      const blockedStorage = {
+        getItem: () => null,
+        setItem: () => {
+          throw new Error('storage blocked');
+        },
+      };
+      const reloadFn = vi.fn();
+      scheduleErrorAutoReload({ storage: blockedStorage, delayMs: 100, reloadFn });
+      vi.advanceTimersByTime(100);
+      expect(reloadFn).not.toHaveBeenCalled();
+    });
+
+    it('does not fire a scheduled reload if the connection drops first', () => {
+      const win = { navigator: { onLine: true }, location: { reload: vi.fn() } };
+      const reloadFn = vi.fn();
+      scheduleErrorAutoReload({ storage: mockStorage, win, delayMs: 100, reloadFn });
+      win.navigator.onLine = false;
+      vi.advanceTimersByTime(100);
+      expect(reloadFn).not.toHaveBeenCalled();
+      expect(mockStorage.getItem(AUTO_RELOAD_KEY)).toBeNull();
+    });
+
     it('resets the error auto-reload flag', () => {
       mockStorage.setItem(AUTO_RELOAD_KEY, '1');
       resetErrorAutoReload({ storage: mockStorage });
@@ -126,6 +149,15 @@ describe('errorRecoveryLogic auto-reload policies', () => {
       expect(mockStorage.getItem(CACHE_RECOVERY_KEY)).toBe('1');
       expect(shouldEscalateToCacheRecovery({ storage: mockStorage })).toBe(false);
     });
+
+    it('reports when the escalation guard cannot be persisted', () => {
+      const blockedStorage = {
+        setItem: () => {
+          throw new Error('storage blocked');
+        },
+      };
+      expect(markCacheRecoveryDone({ storage: blockedStorage })).toBe(false);
+    });
   });
 
   describe('Lazy chunk recovery policy', () => {
@@ -140,6 +172,23 @@ describe('errorRecoveryLogic auto-reload policies', () => {
       recordLazyChunkReload({ storage: mockStorage, reloadFn });
       expect(mockStorage.getItem(CHUNK_RETRY_KEY)).toBe('true');
       expect(reloadFn).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not reload a chunk when its one-shot guard cannot be persisted', () => {
+      const blockedStorage = {
+        setItem: () => {
+          throw new Error('storage blocked');
+        },
+      };
+      const reloadFn = vi.fn();
+      recordLazyChunkReload({ storage: blockedStorage, reloadFn });
+      expect(reloadFn).not.toHaveBeenCalled();
+    });
+
+    it('tolerates a window without a reload function', () => {
+      const win = { navigator: { onLine: true }, location: {} };
+      expect(() => recordLazyChunkReload({ storage: mockStorage, win })).not.toThrow();
+      expect(mockStorage.getItem(CHUNK_RETRY_KEY)).toBe('true');
     });
 
     it('clears chunk retry flag', () => {

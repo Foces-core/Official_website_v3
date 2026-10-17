@@ -13,14 +13,16 @@
  * @param {Storage | null} [storage]
  * @returns {string | null}
  */
-export function safeSessionGet(
-  key,
-  defaultValue = null,
-  storage = typeof window !== 'undefined' ? window.sessionStorage : null,
-) {
+export function safeSessionGet(key, defaultValue = null, storage) {
   try {
-    if (!storage) return defaultValue;
-    const value = storage.getItem(key);
+    const target =
+      storage === undefined
+        ? typeof window !== 'undefined'
+          ? window.sessionStorage
+          : null
+        : storage;
+    if (!target) return defaultValue;
+    const value = target.getItem(key);
     return value !== null ? value : defaultValue;
   } catch {
     return defaultValue;
@@ -35,14 +37,16 @@ export function safeSessionGet(
  * @param {Storage | null} [storage]
  * @returns {boolean} true if write succeeded, false if blocked/failed
  */
-export function safeSessionSet(
-  key,
-  value,
-  storage = typeof window !== 'undefined' ? window.sessionStorage : null,
-) {
+export function safeSessionSet(key, value, storage) {
   try {
-    if (!storage) return false;
-    storage.setItem(key, String(value));
+    const target =
+      storage === undefined
+        ? typeof window !== 'undefined'
+          ? window.sessionStorage
+          : null
+        : storage;
+    if (!target) return false;
+    target.setItem(key, String(value));
     return true;
   } catch {
     return false;
@@ -56,13 +60,16 @@ export function safeSessionSet(
  * @param {Storage | null} [storage]
  * @returns {boolean}
  */
-export function safeSessionRemove(
-  key,
-  storage = typeof window !== 'undefined' ? window.sessionStorage : null,
-) {
+export function safeSessionRemove(key, storage) {
   try {
-    if (!storage) return false;
-    storage.removeItem(key);
+    const target =
+      storage === undefined
+        ? typeof window !== 'undefined'
+          ? window.sessionStorage
+          : null
+        : storage;
+    if (!target) return false;
+    target.removeItem(key);
     return true;
   } catch {
     return false;
@@ -76,9 +83,6 @@ export function safeSessionRemove(
  * @param {Storage | null} [storage]
  * @returns {boolean}
  */
-export function safeSessionHas(
-  key,
-  storage = typeof window !== 'undefined' ? window.sessionStorage : null,
-) {
+export function safeSessionHas(key, storage) {
   return safeSessionGet(key, null, storage) !== null;
 }

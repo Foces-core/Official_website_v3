@@ -2,9 +2,9 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import SectionSkeleton from '../SectionSkeleton/SectionSkeleton';
 import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
-import ChunkErrorFallback from '../ErrorFallback/ChunkErrorFallback';
 import { isDesktopViewport } from '../../utils/breakpoints.js';
-import { shouldMountAtBoot, shouldMountSection } from './scrollGateLogic.js';
+import ChunkErrorFallback from '../ErrorFallback/ChunkErrorFallback';
+import { cacheMeasuredHeight, shouldMountAtBoot, shouldMountSection } from './scrollGateLogic.js';
 import { registerDeferredGate, unregisterDeferredGate } from './gateIdleCoordinator.js';
 
 // Real section heights, cached after first mount so the placeholder matches
@@ -129,10 +129,9 @@ export default function ScrollGate({ id, placeholderHeight = '110vh', label, chi
     if (!mounted) return;
     const el = wrapRef.current;
     if (!el || typeof ResizeObserver === 'undefined') return;
-    const bucket = viewportBucket();
     const ro = new ResizeObserver((entries) => {
       const h = entries[0]?.contentRect.height;
-      if (h > 0) measuredHeights.set(`${id}:${bucket}`, h);
+      cacheMeasuredHeight(measuredHeights, { id, height: h, width: window.innerWidth });
     });
     ro.observe(el);
     return () => ro.disconnect();
