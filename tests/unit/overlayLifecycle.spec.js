@@ -93,6 +93,38 @@ describe('overlayLifecycle pure helpers', () => {
       expect(trapped).toBe(false);
     });
 
+    it('wraps from the last actually tabbable element, ignoring roving links at tabindex -1', () => {
+      const container = document.createElement('div');
+      const close = document.createElement('button');
+      const activeLink = document.createElement('a');
+      const inactiveLink = document.createElement('a');
+      close.textContent = 'Close';
+      activeLink.href = '#home';
+      activeLink.tabIndex = 0;
+      inactiveLink.href = '#events';
+      inactiveLink.tabIndex = -1;
+      container.append(close, activeLink, inactiveLink);
+      document.body.append(container);
+      for (const el of [close, activeLink, inactiveLink]) {
+        Object.defineProperty(el, 'offsetParent', { get: () => container });
+      }
+
+      const originalActive = document.activeElement;
+      activeLink.focus();
+      const event = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true });
+      const preventDefault = vi.spyOn(event, 'preventDefault');
+
+      expect(trapTabFocus(event, container)).toBe(true);
+      expect(preventDefault).toHaveBeenCalledOnce();
+      expect(document.activeElement).toBe(close);
+
+      Object.defineProperty(document, 'activeElement', {
+        value: originalActive,
+        configurable: true,
+      });
+      container.remove();
+    });
+
     it('wraps forward when focus outside container on Tab (not contained)', () => {
       const first = {
         focus: vi.fn(),

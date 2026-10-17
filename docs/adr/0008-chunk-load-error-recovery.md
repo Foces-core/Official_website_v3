@@ -17,10 +17,10 @@ Every lazy chunk in the app — the three routes _and_ the below-the-fold home
 sections in `App.jsx` — loads through `lazyWithRetry`
 (`src/utils/lazyWithRetry.js`): on a chunk-load failure it retries once
 after 300ms, then performs a single clean page reload guarded by a
-`chunk-reload-retry` session flag (no reload loops), and never crashes when
-`sessionStorage` itself is unavailable. The ErrorBoundary remains as the
-final safety net for genuine render errors, not for recoverable chunk
-failures.
+`chunk-reload-retry:<chunk-id>` session flag (no reload loops per lazy chunk),
+and never crashes when `sessionStorage` itself is unavailable. A successful
+import clears only that chunk's retry flag. The ErrorBoundary remains as the
+final safety net for genuine render errors, not for recoverable chunk failures.
 
 ## Consequences
 

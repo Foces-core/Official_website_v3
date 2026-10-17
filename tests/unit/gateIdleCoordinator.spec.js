@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { nextGateToArmAtIdle } from '../../src/Components/ScrollGate/scrollGateLogic.js';
 import {
   registerDeferredGate,
+  unregisterDeferredGate,
   notifyLoadDone,
   setGateSnapshotProvider,
   resetGateCoordinator,
@@ -94,9 +95,12 @@ describe('gateIdleCoordinator', () => {
 
   const fakeWindow = ({ idleAble }) => {
     const listeners = new Map();
+    const idleCallbacks = [];
+    const listenerOptions = [];
     // Minimal window stand-in: only what the coordinator touches.
     const w = {
-      addEventListener(type, fn) {
+      addEventListener(type, fn, options) {
+        listenerOptions.push({ type, options });
         if (!listeners.has(type)) listeners.set(type, new Set());
         listeners.get(type).add(fn);
       },
@@ -104,7 +108,8 @@ describe('gateIdleCoordinator', () => {
         listeners.get(type)?.delete(fn);
       },
       requestIdleCallback: idleAble
-        ? (cb) => {
+        ? (cb, options) => {
+            idleCallbacks.push({ cb, options });
             setTimeout(() => cb({ timeRemaining: () => 50, didTimeout: false }), 1);
             return 1;
           }
@@ -114,6 +119,8 @@ describe('gateIdleCoordinator', () => {
     return {
       w,
       listeners,
+      idleCallbacks,
+      listenerOptions,
       fire(type) {
         listeners.get(type)?.forEach((fn) => fn());
       },
@@ -124,7 +131,7 @@ describe('gateIdleCoordinator', () => {
 
   it('arms the first registered gate when no snapshot provider is wired', async () => {
     vi.useFakeTimers();
-    const { w } = fakeWindow({ idleAble: true });
+    const { w, idleCallbacks, listenerOptions } = fakeWindow({ idleAble: true });
     globalThis.window = w;
 
     const armA = vi.fn();
@@ -137,6 +144,76 @@ describe('gateIdleCoordinator', () => {
 
     expect(armB).toHaveBeenCalledTimes(1);
     expect(armA).not.toHaveBeenCalled();
+    expect(idleCallbacks[0].options).toEqual({ timeout: 4000 });
+    expect(listenerOptions.find(({ type }) => type === 'scroll').options).toEqual({
+      passive: true,
+      once: true,
+    });
+    vi.useRealTimers();
+  });
+
+  it('arms a gate registered after load once the previous idle pass found no target', async () => {
+    vi.useFakeTimers();
+    const { w } = fakeWindow({ idleAble: false });
+    globalThis.window = w;
+    notifyLoadDone();
+    await flush(1500);
+
+    const arm = vi.fn();
+    registerDeferredGate('late', arm);
+    await flush(1500);
+
+    expect(arm).toHaveBeenCalledOnce();
+    vi.useRealTimers();
+  });
+
+  it('skips an unregistered gate and arms the next pending gate', async () => {
+    vi.useFakeTimers();
+    const { w } = fakeWindow({ idleAble: true });
+    globalThis.window = w;
+    const removed = vi.fn();
+    const pending = vi.fn();
+    registerDeferredGate('removed', removed);
+    registerDeferredGate('pending', pending);
+    notifyLoadDone();
+    unregisterDeferredGate('removed');
+    await flush(1600);
+
+    expect(removed).not.toHaveBeenCalled();
+    expect(pending).toHaveBeenCalledOnce();
+    vi.useRealTimers();
+  });
+
+  it('falls back to registration order when the snapshot provider throws', async () => {
+    vi.useFakeTimers();
+    const { w } = fakeWindow({ idleAble: true });
+    globalThis.window = w;
+    setGateSnapshotProvider(() => {
+      throw new Error('host page snapshot failed');
+    });
+    const first = vi.fn();
+    const second = vi.fn();
+    registerDeferredGate('first', first);
+    registerDeferredGate('second', second);
+    notifyLoadDone();
+    await flush(1600);
+
+    expect(first).toHaveBeenCalledOnce();
+    expect(second).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+
+  it('does not arm registrations discarded by coordinator reset', async () => {
+    vi.useFakeTimers();
+    const { w } = fakeWindow({ idleAble: true });
+    globalThis.window = w;
+    const staleArm = vi.fn();
+    registerDeferredGate('stale', staleArm);
+    resetGateCoordinator();
+    notifyLoadDone();
+    await flush(1600);
+
+    expect(staleArm).not.toHaveBeenCalled();
     vi.useRealTimers();
   });
 
@@ -153,6 +230,40 @@ describe('gateIdleCoordinator', () => {
     fire('scroll');
     await flush(2000);
 
+    expect(arm).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+
+  it('cancels an idle callback when scrolling starts after its delay fires', async () => {
+    vi.useFakeTimers();
+    let queuedIdleCallback;
+    const cancelIdleCallback = vi.fn();
+    const listeners = new Map();
+    const w = {
+      addEventListener(type, fn) {
+        if (!listeners.has(type)) listeners.set(type, new Set());
+        listeners.get(type).add(fn);
+      },
+      removeEventListener(type, fn) {
+        listeners.get(type)?.delete(fn);
+      },
+      requestIdleCallback: (cb) => {
+        queuedIdleCallback = cb;
+        return 17;
+      },
+      cancelIdleCallback,
+    };
+    globalThis.window = w;
+
+    const arm = vi.fn();
+    registerDeferredGate('about', arm);
+    notifyLoadDone();
+
+    await flush(1500); // timeout expired; idle callback has not run yet
+    listeners.get('scroll')?.forEach((fn) => fn());
+    queuedIdleCallback({ timeRemaining: () => 50, didTimeout: false });
+
+    expect(cancelIdleCallback).toHaveBeenCalledWith(17);
     expect(arm).not.toHaveBeenCalled();
     vi.useRealTimers();
   });

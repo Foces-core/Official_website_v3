@@ -2,6 +2,7 @@ import { useRef, useLayoutEffect, useEffect } from 'react';
 import { cubeDragAngle, dragSnap } from '../utils/carouselGeometry.js';
 import { normalizeIndex, wrapTarget } from '../utils/carouselWrap.js';
 import { getAdapter } from '../utils/carouselAdapters.js';
+import { shouldUseVisibilityGatedAutoplay } from './carouselAutoplayPolicy.js';
 
 /**
  * Hand-rolled carousel engine — replaces Swiper for the two carousels on the
@@ -450,12 +451,16 @@ export default function useCarousel({
   // as the carousel enters/leaves the viewport. Only active when
   // autoplayDelay > 0. Replaces the external useAutoplayOnScreen hook.
   useEffect(() => {
-    if (!p().autoplayDelay) {
+    if (
+      !shouldUseVisibilityGatedAutoplay({
+        autoplayDelay: p().autoplayDelay,
+        canObserveVisibility: typeof IntersectionObserver !== 'undefined',
+      })
+    ) {
+      // Without visibility information, hidden responsive copies and offscreen
+      // carousels would also advance. Keep manual navigation available but do
+      // not run an unbounded background timer.
       handlersRef.current.stopAutoplay();
-      return;
-    }
-    if (typeof IntersectionObserver === 'undefined') {
-      handlersRef.current.startAutoplay();
       return;
     }
     const el = wrapperRef?.current;

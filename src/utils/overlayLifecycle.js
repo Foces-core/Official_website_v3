@@ -15,6 +15,7 @@ export function findFocusableElements(container) {
     if (typeof el.hasAttribute === 'function' && el.hasAttribute('disabled')) return false;
     if (typeof el.getAttribute === 'function' && el.getAttribute('aria-hidden') === 'true')
       return false;
+    if (typeof el.tabIndex === 'number' && el.tabIndex < 0) return false;
     return el.offsetParent !== null || (el.style && el.style.display !== 'none');
   });
 }
