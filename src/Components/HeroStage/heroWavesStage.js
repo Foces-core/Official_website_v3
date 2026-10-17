@@ -7,8 +7,6 @@ import { shouldInitHeroWaves, VANTA_WAVES_CONFIG } from './heroWavesPolicy.js';
  * viewport/low-power gating, and cleanup.
  */
 
-export { shouldInitHeroWaves, VANTA_WAVES_CONFIG } from './heroWavesPolicy.js';
-
 /**
  * Default dynamic loader for Three.js and Vanta Waves.
  */
