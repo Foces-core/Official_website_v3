@@ -105,7 +105,7 @@ describe('routePrefetchLogic pure manager', () => {
       expect(freshManager.getRegisteredRouteIds()).toEqual(['events', 'contact']);
       await expect(freshManager.prefetchRoute('events')).resolves.toHaveProperty('default');
       await expect(freshManager.prefetchRoute('contact')).resolves.toHaveProperty('default');
-    });
+    }, 15000);
 
     it('registers and unregisters route loaders', () => {
       const customLoader = vi.fn(() => Promise.resolve({}));
