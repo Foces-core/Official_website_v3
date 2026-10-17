@@ -90,7 +90,7 @@ function EventCard({ Events, priority = false, reverse = false }) {
         <GalleryTrigger
           onOpen={handleOpenGallery}
           hasPopup
-          label={`Open photo gallery for ${Events.name}`}
+          label={`${photos.length} Photos — 🔍 Click to View Gallery (${photos.length} Photos) for ${Events.name}`}
           className="relative w-full rounded-xl md:rounded-2xl overflow-hidden bg-[#0b0b0c] border border-white/10 shadow-md md:shadow-xl cursor-pointer group"
         >
           {primary && (

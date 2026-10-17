@@ -41,13 +41,16 @@ describe('EventCard component & GalleryTrigger wiring', () => {
     expect(container.textContent).toContain('Hackathon 2026');
     expect(container.textContent).toContain('March 15, 2026');
 
-    const primaryTrigger = container.querySelector(
-      '[aria-label="Open photo gallery for Hackathon 2026"]',
-    );
+    const primaryTrigger = container.querySelector('[role="button"][aria-haspopup="dialog"]');
     expect(primaryTrigger).not.toBeNull();
     expect(primaryTrigger.getAttribute('role')).toBe('button');
     expect(primaryTrigger.getAttribute('tabindex')).toBe('0');
     expect(primaryTrigger.getAttribute('aria-haspopup')).toBe('dialog');
+    expect(primaryTrigger.getAttribute('aria-label')).toMatch(/^2 Photos — /);
+    expect(primaryTrigger.getAttribute('aria-label')).toContain(
+      '🔍 Click to View Gallery (2 Photos)',
+    );
+    expect(primaryTrigger.getAttribute('aria-label')).toContain('2 Photos');
 
     const thumbTrigger = container.querySelector('[aria-label="View photo 2"]');
     expect(thumbTrigger).not.toBeNull();
@@ -62,9 +65,7 @@ describe('EventCard component & GalleryTrigger wiring', () => {
     const modal = container.querySelector('#mock-modal');
     expect(modal.getAttribute('data-open')).toBe('false');
 
-    const primaryTrigger = container.querySelector(
-      '[aria-label="Open photo gallery for Hackathon 2026"]',
-    );
+    const primaryTrigger = container.querySelector('[role="button"][aria-haspopup="dialog"]');
 
     act(() => {
       primaryTrigger.click();
@@ -89,9 +90,7 @@ describe('EventCard component & GalleryTrigger wiring', () => {
       harness.render(<EventCard Events={mockEvent} />);
     });
     const modal = container.querySelector('#mock-modal');
-    const primaryTrigger = container.querySelector(
-      '[aria-label="Open photo gallery for Hackathon 2026"]',
-    );
+    const primaryTrigger = container.querySelector('[role="button"][aria-haspopup="dialog"]');
     const thumbTrigger = container.querySelector('[aria-label="View photo 2"]');
 
     act(() => {
