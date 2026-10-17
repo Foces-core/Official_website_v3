@@ -13,6 +13,8 @@
 *.yaml  text eol=lf
 *.cjs   text eol=lf
 *.mjs   text eol=lf
+# Bash entrypoints must remain executable in Git Bash on Windows.
+*.sh    text eol=lf
 
 # Husky hook scripts must stay LF on every OS — CRLF breaks sh execution
 # (a trailing \r ends up inside the hook's command arguments).
