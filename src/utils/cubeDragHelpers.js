@@ -30,6 +30,29 @@ export function computeDragDelta(clientX, startX, sensitivity) {
 }
 
 /**
+ * Resolve the touch owned by an active drag. A populated changedTouches list
+ * is authoritative: if it contains only another finger, ignore that move
+ * instead of replaying the owner's stale coordinate from the full touch list.
+ * The full list is only a fallback for browsers that omit changedTouches.
+ *
+ * @param {ArrayLike<Touch> | null | undefined} changedTouches
+ * @param {ArrayLike<Touch> | null | undefined} touches
+ * @param {number | null} activeTouchId
+ * @returns {Touch | null}
+ */
+export function getActiveTouch(changedTouches, touches, activeTouchId) {
+  const findOwner = (list) =>
+    list == null
+      ? null
+      : (Array.from(list).find((touch) => touch.identifier === activeTouchId) ?? null);
+
+  const changedOwner = findOwner(changedTouches);
+  if (changedOwner) return changedOwner;
+  if (changedTouches?.length) return null;
+  return findOwner(touches);
+}
+
+/**
  * Is the cube idle and eligible for the slow auto-spin?
  * The hook's `animate` used to inline 4 conditions + a timing check; that
  * put CC at 5-6 and hid the policy. Centralising here drops the hook's

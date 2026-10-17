@@ -126,7 +126,9 @@ org/github-workflow.json` for workflows). `pnpm-workspace.yaml`
   testing over the same pure modules `check:specs` guards (`stryker.config.mjs`
   mirrors its globs). AGENTS.md requires ≥70% overall (≥80% for critical
   decision modules) when you touch those files — run it scoped for speed:
-  `pnpm exec stryker run --mutate src/utils/<module>.js`. Like the perf lab
+  `pnpm exec stryker run stryker.config.mjs --mutate src/utils/<module>.js`.
+  The package script passes `stryker.config.mjs` explicitly so the scoped
+  command uses the repo's mutation globs and thresholds. Like the perf lab
   probes it is deliberately **not** in CI (slow, noisy under contention).
 - The repo has puppeteer **probes** in `scripts/probes/` (`wcag-probe.mjs`,
   `mobile-probe.mjs`, `carousel-probe.mjs`, `img-probe.mjs`,

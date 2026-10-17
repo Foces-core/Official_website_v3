@@ -139,7 +139,7 @@ One line each — the full contract lives in `CONTRIBUTING.md`:
 - **Mutation testing.** IF the change touches pure decision modules
   (`src/utils`, `src/data`, `src/hooks`, `*.js` in `Components`/`Pages` —
   same globs as `stryker.config.mjs`) THEN run it scoped:
-  `pnpm exec stryker run --mutate <file>`. Bar: 70% break overall, 80% for
+  `pnpm exec stryker run stryker.config.mjs --mutate <file>`. Bar: 70% break overall, 80% for
   critical decision modules (review policy — see the config header; ~23%
   equivalent mutants expected). Deliberately not in CI (slow, noisy under
   contention — run on a quiet machine). Agents must not merge below bar;

@@ -70,7 +70,10 @@ export function scheduleErrorAutoReload({
     });
 
   const timer = setTimeout(() => {
-    safeSessionSet(AUTO_RELOAD_KEY, '1', storage);
+    // Do not reload unless the loop guard was persisted. If storage is blocked,
+    // a deterministic boot error would otherwise reload forever.
+    if (isOffline(win)) return;
+    if (!safeSessionSet(AUTO_RELOAD_KEY, '1', storage)) return;
     doReload();
   }, delayMs);
   return () => clearTimeout(timer);
@@ -109,7 +112,7 @@ export function shouldEscalateToCacheRecovery({ storage } = {}) {
  * @param {{ storage?: Storage | null }} [options]
  */
 export function markCacheRecoveryDone({ storage } = {}) {
-  safeSessionSet(CACHE_RECOVERY_KEY, '1', storage);
+  return safeSessionSet(CACHE_RECOVERY_KEY, '1', storage);
 }
 
 /**
@@ -137,7 +140,8 @@ export function recordLazyChunkReload({
   reloadFn,
 } = {}) {
   if (isOffline(win)) return;
-  safeSessionSet(CHUNK_RETRY_KEY, 'true', storage);
+  // A retry without a durable guard can repeat forever on a broken chunk.
+  if (!safeSessionSet(CHUNK_RETRY_KEY, 'true', storage)) return;
   const doReload =
     reloadFn ||
     (() => {

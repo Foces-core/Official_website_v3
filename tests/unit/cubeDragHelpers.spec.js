@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   shouldStartWindDown,
   computeDragDelta,
+  getActiveTouch,
   isIdleForAutoSpin,
 } from '../../src/utils/cubeDragHelpers.js';
 
@@ -17,6 +18,28 @@ describe('cubeDragHelpers', () => {
     it('positive', () => expect(computeDragDelta(200, 100, 0.6)).toBe(60));
     it('negative', () => expect(computeDragDelta(0, 100, 0.6)).toBe(-60));
     it('scales', () => expect(computeDragDelta(10, 0, 1)).toBe(10));
+  });
+
+  describe('getActiveTouch', () => {
+    const owner = { identifier: 1, clientX: 10 };
+    const other = { identifier: 2, clientX: 50 };
+
+    it('returns the active touch from changedTouches', () => {
+      expect(getActiveTouch([owner], [owner, other], 1)).toBe(owner);
+    });
+
+    it('ignores a non-owner finger that moved while the owner stayed still', () => {
+      expect(getActiveTouch([other], [owner, other], 1)).toBeNull();
+    });
+
+    it('falls back to touches only when changedTouches is absent or empty', () => {
+      expect(getActiveTouch(undefined, [owner, other], 1)).toBe(owner);
+      expect(getActiveTouch([], [owner, other], 1)).toBe(owner);
+    });
+
+    it('returns null when the active touch is no longer present', () => {
+      expect(getActiveTouch([other], [other], 1)).toBeNull();
+    });
   });
   describe('isIdleForAutoSpin', () => {
     const base = {

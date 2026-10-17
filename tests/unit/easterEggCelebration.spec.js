@@ -294,24 +294,39 @@ describe('fire — celebration trigger seam', () => {
       cleanup();
     });
 
-    it('animates live particles and stops scheduling frames once they expire', async () => {
+    it('animates live particles and stops scheduling frames once they expire', () => {
+      const frames = [];
+      const requestFrame = vi
+        .spyOn(window, 'requestAnimationFrame')
+        .mockImplementation((callback) => {
+          frames.push(callback);
+          return frames.length;
+        });
+      const cancelFrame = vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
       const { parent, particles, cleanup } = burstWith(4);
-      await new Promise((r) => requestAnimationFrame(() => r()));
-      await new Promise((r) => requestAnimationFrame(() => r()));
 
-      const alive = particles.filter((el) => el.style.opacity !== '0');
-      expect(alive.length).toBeGreaterThan(0);
-      for (const el of alive) {
-        expect(el.style.transform).toContain('translate(');
-        expect(el.style.transform).toContain('px');
-        expect(Number(el.style.opacity)).toBeGreaterThan(0);
+      try {
+        frames.shift()();
+        const alive = particles.filter((el) => el.style.opacity !== '0');
+        expect(alive.length).toBeGreaterThan(0);
+        for (const el of alive) {
+          expect(el.style.transform).toContain('translate(');
+          expect(el.style.transform).toContain('px');
+          expect(Number(el.style.opacity)).toBeGreaterThan(0);
+        }
+
+        // Particle life advances per frame; 100 frames exceed the slowest
+        // decay without depending on wall-clock scheduling in jsdom.
+        for (let frame = 0; frame < 100 && frames.length > 0; frame += 1) {
+          frames.shift()();
+        }
+        expect(parent.querySelector('.about-burst')).toBeNull();
+        expect(frames).toHaveLength(0);
+      } finally {
+        cleanup();
+        requestFrame.mockRestore();
+        cancelFrame.mockRestore();
       }
-
-      // Long enough for every particle's life to be spent: the loop removes the
-      // burst element and stops requesting frames.
-      await new Promise((r) => setTimeout(r, 2500));
-      expect(parent.querySelector('.about-burst')).toBeNull();
-      cleanup();
     });
   });
 });

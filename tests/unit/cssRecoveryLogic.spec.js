@@ -3,6 +3,7 @@ import {
   CSS_RELOAD_KEY,
   CSS_PROBE_FAILSAFE_MS,
   cssLooksApplied,
+  resolveCssProbeAction,
   hasCssReloaded,
   shouldReloadForMissingCss,
   recordCssReload,
@@ -51,6 +52,21 @@ describe('cssRecoveryLogic unstyled-boot recovery', () => {
       expect(cssLooksApplied(null)).toBe(false);
       expect(cssLooksApplied(undefined)).toBe(false);
       expect(cssLooksApplied(42)).toBe(false);
+    });
+  });
+
+  describe('resolveCssProbeAction', () => {
+    it('settles when the stylesheet is applied', () => {
+      expect(resolveCssProbeAction({ bodyBackground: 'rgb(16, 16, 17)', online: false })).toBe(
+        'done',
+      );
+    });
+
+    it('waits for connectivity before recovering missing CSS', () => {
+      expect(resolveCssProbeAction({ bodyBackground: 'transparent', online: false })).toBe(
+        'wait-online',
+      );
+      expect(resolveCssProbeAction({ bodyBackground: 'transparent', online: true })).toBe('reload');
     });
   });
 
@@ -108,6 +124,18 @@ describe('cssRecoveryLogic unstyled-boot recovery', () => {
       storage.setItem('foces:css-auto-reloaded', '1');
       const reloadFn = vi.fn();
       recordCssReload({ storage, win: onlineWin(), reloadFn });
+      expect(reloadFn).not.toHaveBeenCalled();
+    });
+
+    it('does not reload when its one-shot guard cannot be persisted', () => {
+      const blockedStorage = {
+        getItem: () => null,
+        setItem: () => {
+          throw new Error('storage blocked');
+        },
+      };
+      const reloadFn = vi.fn();
+      recordCssReload({ storage: blockedStorage, win: onlineWin(), reloadFn });
       expect(reloadFn).not.toHaveBeenCalled();
     });
   });

@@ -63,12 +63,78 @@ test.describe('Execom / Meet the team carousel', () => {
     await expect.poll(() => activeIndex(page), { timeout: 5000 }).not.toBe(before);
   });
 
+  test('keeps the selected member when switching between desktop and mobile layouts', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await gotoHome(page);
+    await page.locator('#execom').scrollIntoViewIfNeeded();
+    await page.locator('.execom-swiper[data-carousel-ready]').waitFor({ state: 'attached' });
+    await page.evaluate(() => {
+      document.querySelectorAll('.execom-swiper, .execom-cube-swiper').forEach((el) => {
+        el.__carouselEngine__?.stopAutoplay();
+      });
+    });
+
+    const dot = page.locator('.execom-swiper + div button[aria-label]').nth(3);
+    const expectedMember = await dot.getAttribute('aria-label');
+    await dot.click();
+    await expect(
+      page.locator('.execom-swiper [data-slide-active] img:not([aria-hidden="true"])'),
+    ).toHaveAttribute('alt', expectedMember.replace('Go to ', ''));
+
+    await page.setViewportSize({ width: 500, height: 850 });
+    await expect(
+      page.locator('.execom-cube-swiper [data-slide-active] img:not([aria-hidden="true"])'),
+    ).toHaveAttribute('alt', expectedMember.replace('Go to ', ''));
+
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await expect(
+      page.locator('.execom-swiper [data-slide-active] img:not([aria-hidden="true"])'),
+    ).toHaveAttribute('alt', expectedMember.replace('Go to ', ''));
+  });
+
   test('keyboard arrows navigate the team carousel', async ({ page }) => {
     await page.locator('.execom-swiper [data-slide-active]').click({ force: true });
     await page.waitForTimeout(300);
     const before = await activeIndex(page);
     await page.keyboard.press('ArrowRight');
     await expect.poll(() => activeIndex(page), { timeout: 5000 }).not.toBe(before);
+  });
+
+  test('keyboard slide changes clear image hover color until the pointer re-enters', async ({
+    page,
+  }) => {
+    const centerImage = () =>
+      page.locator('.execom-swiper [data-slide-center] img:not([aria-hidden="true"])');
+    await centerImage().click({ force: true });
+    await centerImage().hover();
+    await expect
+      .poll(() => centerImage().evaluate((img) => getComputedStyle(img).filter))
+      .toBe('none');
+
+    const before = await activeIndex(page);
+    await page.keyboard.press('ArrowRight');
+    await expect.poll(() => activeIndex(page), { timeout: 5000 }).not.toBe(before);
+    await expect
+      .poll(() => centerImage().evaluate((img) => getComputedStyle(img).filter))
+      .toContain('grayscale');
+
+    await page.mouse.move(5, 5);
+    await centerImage().hover();
+    await expect
+      .poll(() => centerImage().evaluate((img) => getComputedStyle(img).filter))
+      .toBe('none');
+  });
+
+  test('image keeps hover color while the pointer moves into its caption', async ({ page }) => {
+    const card = page.locator('.execom-swiper [data-slide-center] .container-execom');
+    const image = card.locator('img:not([aria-hidden="true"])');
+
+    await image.hover();
+    await expect(image).toHaveCSS('filter', 'none');
+    await card.locator(':scope > div.absolute').hover();
+    await expect(image).toHaveCSS('filter', 'none');
   });
 
   test('arrow keys still work after clicking a dot', async ({ page }) => {

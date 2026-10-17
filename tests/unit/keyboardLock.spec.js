@@ -98,6 +98,19 @@ describe('keyboardLock — focused-control rules', () => {
     reg('cube', onScreen, r);
     expect(getArrowOwner()).toBe('cube');
   });
+  it('focused widget wins arrow ownership over the widget used last', () => {
+    const root = document.createElement('div');
+    root.setAttribute('role', 'group');
+    root.tabIndex = 0;
+    document.body.appendChild(root);
+    reg('cube', onScreen, root);
+    reg('featuring', onScreen, null);
+    markInteracted('featuring');
+    root.focus();
+
+    expect(isControlFocused()).toBe(false);
+    expect(getArrowOwner()).toBe('cube');
+  });
   it('non-interactive focus target does not withhold', () => {
     const m = document.createElement('main');
     m.tabIndex = -1;

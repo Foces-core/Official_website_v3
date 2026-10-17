@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 import useCarousel from '../../hooks/useCarousel.js';
@@ -6,7 +6,7 @@ import { useViewportWidth } from '../../hooks/useViewportWidth.js';
 import useIdleReveal from '../../hooks/useIdleReveal.js';
 import BlurImage from '../BlurImage/BlurImage';
 import useCarouselKeyboard from '../../hooks/useCarouselKeyboard.js';
-import { copyFor, neighborIndices } from '../../utils/carouselWrap.js';
+import { copyFor, neighborIndices, shouldSyncCarouselIndex } from '../../utils/carouselWrap.js';
 import { getTeamLayout } from '../../utils/viewportPolicy.js';
 import { prioritizeAssetFetch } from '../../utils/priorityScheduler.js';
 
@@ -40,10 +40,19 @@ function TeamCarousel({
 }) {
   const elRef = useRef(null);
   const wrapRef = useRef(null);
+  const [hoveredSlideIndex, setHoveredSlideIndex] = useState(null);
   const width = useViewportWidth();
 
   const total = slidesData.length;
   const isDesktop = variant === 'desktop';
+
+  const handleActiveChange = useCallback(
+    (nextIndex) => {
+      setHoveredSlideIndex(null);
+      onActiveChange(nextIndex);
+    },
+    [onActiveChange],
+  );
 
   // Desktop flat mode is responsive (2/3/4 per view, like Swiper's
   // breakpoints); everything else is 1 per view. Re-computed reactively via
@@ -64,8 +73,29 @@ function TeamCarousel({
     autoplayDelay: disableAutoplay ? 0 : isDesktop ? 3500 : 2500,
     initialIndex: total,
     speed: flatCube ? 250 : 400,
-    onActiveChange,
+    onActiveChange: handleActiveChange,
   });
+
+  // The mobile and desktop carousels stay mounted together. When this copy
+  // becomes visible after a breakpoint change, align it to the index selected
+  // by the carousel that was previously visible.
+  useEffect(() => {
+    const carousel = instanceRef.current;
+    const visible = Boolean(
+      wrapRef.current && getComputedStyle(wrapRef.current).display !== 'none',
+    );
+    if (
+      carousel &&
+      shouldSyncCarouselIndex({
+        visible,
+        currentIndex: carousel.activeIndex,
+        activeIndex,
+        total,
+      })
+    ) {
+      carousel.slideTo(total + activeIndex, 0);
+    }
+  }, [activeIndex, instanceRef, total, width]);
 
   // Arrow-key arbitration: one deep module, one line (see hooks/useCarouselKeyboard.js).
   useCarouselKeyboard({ widgetId, instanceRef, wrapperRef: wrapRef });
@@ -120,9 +150,11 @@ function TeamCarousel({
                 className={`container-execom bg-[#161618] border-box relative rounded-3xl overflow-hidden ${
                   isDesktop ? 'group' : ''
                 }`}
+                onPointerMove={() => setHoveredSlideIndex(index)}
+                onPointerLeave={() => setHoveredSlideIndex(null)}
               >
                 <BlurImage
-                  className={`object-cover ${d.imgPosition ?? 'object-top'} w-full h-full ${isDesktop ? 'card-hover' : ''} grayscale ${isDesktop ? 'group-hover:filter-none' : ''} transition-all duration-400`}
+                  className={`object-cover ${d.imgPosition ?? 'object-top'} w-full h-full ${isDesktop ? 'card-hover' : ''} ${isDesktop && hoveredSlideIndex === index ? 'filter-none' : 'grayscale'} transition-all duration-400`}
                   src={d.img}
                   srcSet={d.srcset}
                   sizes={cardSizes}

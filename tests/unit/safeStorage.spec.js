@@ -52,6 +52,24 @@ describe('safeStorage pure helpers', () => {
     expect(safeSessionHas('k', null)).toBe(false);
   });
 
+  it('tolerates a sessionStorage getter that throws', () => {
+    const descriptor = Object.getOwnPropertyDescriptor(window, 'sessionStorage');
+    Object.defineProperty(window, 'sessionStorage', {
+      configurable: true,
+      get() {
+        throw new Error('SecurityError');
+      },
+    });
+    try {
+      expect(safeSessionGet('key', 'fallback')).toBe('fallback');
+      expect(safeSessionSet('key', 'value')).toBe(false);
+      expect(safeSessionRemove('key')).toBe(false);
+      expect(safeSessionHas('key')).toBe(false);
+    } finally {
+      Object.defineProperty(window, 'sessionStorage', descriptor);
+    }
+  });
+
   it('safeSessionSet coerces non-string values to strings', () => {
     const memory = new Map();
     const mockStorage = {

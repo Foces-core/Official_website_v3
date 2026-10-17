@@ -56,7 +56,11 @@ function getRouteLoader(routeId) {
 
 function safeInvokeLoader(loader) {
   if (typeof loader !== 'function') return null;
-  return loader().catch(() => {});
+  try {
+    return Promise.resolve(loader()).catch(() => {});
+  } catch {
+    return Promise.resolve();
+  }
 }
 
 /**
@@ -257,7 +261,8 @@ export function initForesightPrefetch({
   }
   const cancelledRef = { cancelled: false };
   const unregisters = [];
-  ForesightLoader()
+  Promise.resolve()
+    .then(() => ForesightLoader())
     .then(({ ForesightManager }) =>
       handleForesightReady(ForesightManager, doc, routeIds, onPrefetch, unregisters, cancelledRef),
     )

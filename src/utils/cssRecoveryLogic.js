@@ -27,6 +27,17 @@ export const CSS_PROBE_FAILSAFE_MS = 8000;
 const CSS_BODY_BACKGROUND = 'rgb(16,16,17)';
 
 /**
+ * Resolves the next CSS recovery action. Missing CSS is retried after the
+ * browser reconnects instead of permanently settling while offline.
+ * @param {{ bodyBackground: unknown, online: boolean }} state
+ * @returns {'done' | 'wait-online' | 'reload'}
+ */
+export function resolveCssProbeAction({ bodyBackground, online }) {
+  if (cssLooksApplied(bodyBackground)) return 'done';
+  return online ? 'reload' : 'wait-online';
+}
+
+/**
  * True when the entry stylesheet is applied, judged by the computed body
  * background it paints. Anything else — transparent (no stylesheet), a
  * foreign value, a non-string — means the boot is unstyled.
@@ -77,7 +88,9 @@ export function recordCssReload({
 } = {}) {
   if (isOffline(win)) return;
   if (hasCssReloaded({ storage })) return;
-  safeSessionSet(CSS_RELOAD_KEY, '1', storage);
+  // A reload without a durable one-shot guard can loop forever on a missing
+  // stylesheet when sessionStorage is unavailable.
+  if (!safeSessionSet(CSS_RELOAD_KEY, '1', storage)) return;
   const doReload =
     reloadFn ||
     (() => {

@@ -3,6 +3,7 @@ import {
   scheduleErrorAutoReload,
   shouldEscalateToCacheRecovery,
   markCacheRecoveryDone,
+  isOffline,
 } from '../utils/errorRecoveryLogic.js';
 import { purgeAppCaches, unregisterServiceWorkers } from '../utils/cacheRecovery.js';
 
@@ -20,22 +21,80 @@ import { purgeAppCaches, unregisterServiceWorkers } from '../utils/cacheRecovery
  */
 export default function usePersistentErrorRecovery({ delayMs = 1200 } = {}) {
   useEffect(() => {
-    if (shouldEscalateToCacheRecovery()) {
-      markCacheRecoveryDone();
-      let cancelled = false;
-      (async () => {
-        await purgeAppCaches();
+    let cancelled = false;
+    let cancelScheduledReload = () => {};
+    let reloadScheduled = false;
+    let escalationPending = false;
+    let escalationInFlight = false;
+    let escalationResumeRequested = false;
+    let cachePurgeComplete = false;
+
+    const cancelPendingReload = () => {
+      if (!reloadScheduled) return;
+      cancelScheduledReload();
+      cancelScheduledReload = () => {};
+      reloadScheduled = false;
+    };
+
+    const onOffline = () => cancelPendingReload();
+
+    const finishEscalation = async () => {
+      if (cancelled || isOffline() || !escalationPending) return;
+      if (escalationInFlight) {
+        escalationResumeRequested = true;
+        return;
+      }
+      escalationInFlight = true;
+      escalationResumeRequested = false;
+      try {
+        if (!cachePurgeComplete) {
+          await purgeAppCaches();
+          cachePurgeComplete = true;
+        }
+        if (isOffline()) return;
         await unregisterServiceWorkers();
-        if (!cancelled) window.location.reload();
-      })().catch(() => {
-        // Recovery is best-effort: a failed purge must not become an
-        // unhandled rejection. The stays-broken page is what the next
-        // successful recovery would have fixed anyway.
-      });
-      return () => {
-        cancelled = true;
-      };
-    }
-    return scheduleErrorAutoReload({ delayMs });
+        if (!cancelled && !isOffline()) {
+          escalationPending = false;
+          window.location.reload();
+        }
+      } catch {
+        // Recovery is best-effort; a later online event can retry unfinished work.
+      } finally {
+        escalationInFlight = false;
+        if (escalationResumeRequested && !cancelled && !isOffline()) {
+          escalationResumeRequested = false;
+          void finishEscalation();
+        }
+      }
+    };
+
+    const recover = () => {
+      if (cancelled || isOffline() || reloadScheduled) return;
+      if (escalationPending) {
+        void finishEscalation();
+        return;
+      }
+      if (shouldEscalateToCacheRecovery()) {
+        // Persist the one-shot guard before destructive cleanup. If storage is
+        // unavailable, leave the fallback in place rather than risk a loop.
+        if (!markCacheRecoveryDone()) return;
+        escalationPending = true;
+        void finishEscalation();
+        return;
+      }
+      reloadScheduled = true;
+      cancelScheduledReload = scheduleErrorAutoReload({ delayMs });
+    };
+
+    window.addEventListener('online', recover);
+    window.addEventListener('offline', onOffline);
+    recover();
+
+    return () => {
+      cancelled = true;
+      cancelPendingReload();
+      window.removeEventListener('online', recover);
+      window.removeEventListener('offline', onOffline);
+    };
   }, [delayMs]);
 }

@@ -204,13 +204,17 @@ test('custom fallback prop degrades the island instead of the full page', () => 
   h.unmount();
 });
 
-test('ChunkErrorFallback explains offline and offers no useless retry', () => {
+test('ChunkErrorFallback explains offline and offers retry after reconnecting', () => {
   Object.defineProperty(window.navigator, 'onLine', { value: false, configurable: true });
   try {
     const h = createHarness();
     h.render(<ChunkErrorFallback />);
     expect(h.container.textContent).toContain('You are offline');
     expect(h.container.querySelector('button')).toBeNull();
+    Object.defineProperty(window.navigator, 'onLine', { value: true, configurable: true });
+    act(() => window.dispatchEvent(new Event('online')));
+    expect(h.container.textContent).toContain('This section failed to load');
+    expect(h.container.querySelector('button')?.textContent).toContain('Retry');
     h.unmount();
   } finally {
     Object.defineProperty(window.navigator, 'onLine', { value: true, configurable: true });

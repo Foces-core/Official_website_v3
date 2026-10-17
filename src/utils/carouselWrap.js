@@ -24,6 +24,17 @@ export function copyFor(activeIndex, total) {
   return Math.floor(activeIndex / total);
 }
 
+/**
+ * Whether a visible carousel needs to catch up with the shared logical index.
+ * Hidden responsive twins intentionally keep their own position until shown.
+ * @param {{ visible: boolean, currentIndex: number, activeIndex: number, total: number }} args
+ * @returns {boolean}
+ */
+export function shouldSyncCarouselIndex({ visible, currentIndex, activeIndex, total }) {
+  if (!visible || total <= 0) return false;
+  return normalizeIndex(currentIndex, total) !== normalizeIndex(activeIndex, total);
+}
+
 // The logical neighbors of a slide index (wrap-aware, self excluded) — the
 // prefetch list for "the user is about to swipe/advance here". Pure and
 // total: unusable inputs yield []. Small lists dedupe (total 2: prev = next).
