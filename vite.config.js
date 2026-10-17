@@ -204,6 +204,7 @@ export default defineConfig(({ mode }) => {
           ],
         },
         workbox: {
+          importScripts: ['/remove-legacy-image-cache.js'],
           // App-shell only (AGENTS.md contract): the entry chunk, its vendor
           // runtime, shell CSS, latin fonts, and index.html. Lazy section/route
           // chunks (AboutUs/Events/Featuring/Execom/routes) are NOT precached —

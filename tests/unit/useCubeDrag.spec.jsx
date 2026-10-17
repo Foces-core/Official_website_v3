@@ -61,6 +61,23 @@ const touchEvent = (target, type, changedTouches = [], touches = []) => {
   target.dispatchEvent(event);
   return event;
 };
+const completeTouchDrag = (el, owner, distance) => {
+  touchEvent(el, 'touchstart', [owner], [owner]);
+  owner.clientX = distance;
+  touchEvent(el, 'touchmove', [owner], [owner]);
+  touchEvent(el, 'touchend', [owner], []);
+};
+const makeCubeVisible = (el) => {
+  el.getClientRects = () => [{}];
+  el.getBoundingClientRect = () => ({
+    width: 100,
+    height: 100,
+    top: 0,
+    left: 0,
+    right: 100,
+    bottom: 100,
+  });
+};
 
 // Fire `n` queued animation frames (the idle auto-spin and wind-down both
 // drive themselves through requestAnimationFrame).
@@ -219,6 +236,33 @@ describe('useCubeDrag', () => {
     expect(onEggFire).not.toHaveBeenCalled();
   });
 
+  it('resumes an interrupted wind-down after restoring the pre-touch angle', () => {
+    harness.render(<Probe idleSpin={false} />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+
+    act(() => {
+      mousedown(el, 0);
+      mousemove(1000);
+      mouseup();
+      fireFrames(1);
+    });
+    const beforeTouch = el.style.transform;
+    expect(rafCallbacks.size).toBe(1);
+
+    const owner = { identifier: 11, clientX: 0 };
+    act(() => {
+      touchEvent(el, 'touchstart', [owner], [owner]);
+      owner.clientX = 20;
+      touchEvent(el, 'touchmove', [owner], [owner]);
+      touchEvent(el, 'touchcancel', [owner], []);
+    });
+
+    expect(el.style.transform).toBe(beforeTouch);
+    expect(rafCallbacks.size).toBe(1);
+    fireFrames(1);
+    expect(el.style.transform).not.toBe(beforeTouch);
+  });
+
   it('does not count spin progress from a cancelled touch gesture', () => {
     const onEggFire = vi.fn();
     harness.render(<Probe onEggFire={onEggFire} spinConfig={SPIN_BARS.touch} idleSpin={false} />);
@@ -242,12 +286,7 @@ describe('useCubeDrag', () => {
     const el = harness.container.querySelector('[data-testid="cube"]');
     const owner = { identifier: 11, clientX: 0 };
 
-    act(() => {
-      touchEvent(el, 'touchstart', [owner], [owner]);
-      owner.clientX = 1200;
-      touchEvent(el, 'touchmove', [owner], [owner]);
-      touchEvent(el, 'touchend', [owner], []);
-    });
+    act(() => completeTouchDrag(el, owner, 1200));
 
     expect(onEggFire).toHaveBeenCalledTimes(1);
   });
@@ -261,13 +300,13 @@ describe('useCubeDrag', () => {
     const owner = { identifier: 11, clientX: 0 };
 
     act(() => {
-      touchEvent(el, 'touchstart', [owner], [owner]);
-      owner.clientX = 150;
-      touchEvent(el, 'touchmove', [owner], [owner]);
-      touchEvent(el, 'touchend', [owner], []);
+      completeTouchDrag(el, owner, 150);
+      expect(onEggFire).not.toHaveBeenCalled();
+      owner.clientX = 0;
+      completeTouchDrag(el, owner, 150);
     });
 
-    expect(onEggFire).not.toHaveBeenCalled();
+    expect(onEggFire).toHaveBeenCalledTimes(1);
   });
 
   it('uses the latest egg callback after the hook rerenders', () => {
@@ -413,15 +452,7 @@ describe('useCubeDrag', () => {
   it('pointer interaction gives the cube keyboard ownership over another widget', () => {
     harness.render(<Probe idleSpin={false} />);
     const el = harness.container.querySelector('[data-testid="cube"]');
-    el.getClientRects = () => [{}];
-    el.getBoundingClientRect = () => ({
-      width: 100,
-      height: 100,
-      top: 0,
-      left: 0,
-      right: 100,
-      bottom: 100,
-    });
+    makeCubeVisible(el);
     const unregisterRival = registerWidget('featuring', () => true, null);
     markInteracted('featuring');
 
@@ -436,15 +467,7 @@ describe('useCubeDrag', () => {
   it('focus interaction keeps cube keyboard ownership after focus leaves it', () => {
     harness.render(<Probe idleSpin={false} />);
     const el = harness.container.querySelector('[data-testid="cube"]');
-    el.getClientRects = () => [{}];
-    el.getBoundingClientRect = () => ({
-      width: 100,
-      height: 100,
-      top: 0,
-      left: 0,
-      right: 100,
-      bottom: 100,
-    });
+    makeCubeVisible(el);
     const unregisterRival = registerWidget('featuring', () => true, null);
     markInteracted('featuring');
 

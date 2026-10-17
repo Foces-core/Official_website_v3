@@ -70,6 +70,8 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
   // Wind-down / auto-rotation
   const windingRef = useRef(false);
   const windRaf = useRef(null);
+  const windFrictionRef = useRef(CUBE_PHYSICS.normalWindFriction);
+  const interruptedWindRef = useRef(null);
   const snapTimerRef = useRef(null);
   const manualUntilRef = useRef(0);
 
@@ -111,6 +113,7 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
   const startWindDown = useCallback(
     (friction = CUBE_PHYSICS.normalWindFriction) => {
       windingRef.current = true;
+      windFrictionRef.current = friction;
       manualUntilRef.current = Date.now() + WIND_DOWN_OVERRIDE_MS;
       if (windRaf.current != null) cancelAnimationFrame(windRaf.current);
       const step = () => {
@@ -204,6 +207,9 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
     if (isDraggingRef.current) return;
     const t = e.changedTouches?.[0] ?? e.touches?.[0];
     if (!t) return;
+    interruptedWindRef.current = windingRef.current
+      ? { velocity: velY.current, friction: windFrictionRef.current }
+      : null;
     activeTouchId.current = t.identifier;
     beginDrag(t.clientX);
     deferSpinRef.current = true;
@@ -225,6 +231,7 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
     if (deferSpinRef.current) accumulateAngle(pendingTouchAngle.current);
     pendingTouchAngle.current = 0;
     deferSpinRef.current = false;
+    interruptedWindRef.current = null;
     endDrag();
   };
   const handleTouchCancel = (e) => {
@@ -248,6 +255,12 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
     rotXRef.current = startRotX.current;
     rotYRef.current = startRotY.current;
     applyTransform();
+    const interruptedWind = interruptedWindRef.current;
+    interruptedWindRef.current = null;
+    if (interruptedWind) {
+      velY.current = interruptedWind.velocity;
+      startWindDown(interruptedWind.friction);
+    }
   };
 
   const mouseHandlersRef = useRef(null);

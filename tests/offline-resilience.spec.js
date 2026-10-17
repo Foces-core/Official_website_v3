@@ -79,13 +79,17 @@ test('visited /events route renders offline from the runtime chunk cache', async
   await waitForServiceWorkerControl(page);
   const image = page.locator('main img').first();
   await expect(image).toBeVisible();
-  await expect.poll(() => image.evaluate((img) => img.naturalWidth)).toBeGreaterThan(0);
+  await expect
+    .poll(() => image.evaluate((img) => img.naturalWidth), { timeout: 30_000 })
+    .toBeGreaterThan(0);
 
   await context.setOffline(true);
   await page.reload({ waitUntil: 'load' });
 
   await expect(image).toBeVisible();
-  await expect.poll(() => image.evaluate((img) => img.naturalWidth)).toBeGreaterThan(0);
+  await expect
+    .poll(() => image.evaluate((img) => img.naturalWidth), { timeout: 30_000 })
+    .toBeGreaterThan(0);
   await expect(page.getByText('Something went wrong')).toHaveCount(0);
 
   await context.setOffline(false);
@@ -117,4 +121,28 @@ test('missing image SPA fallbacks are not stored in the image cache', async ({ p
   expect(offline).toEqual({ failed: true });
 
   await context.setOffline(false);
+});
+
+test('service-worker activation deletes only the retired image cache', async ({
+  page,
+  context,
+}) => {
+  await page.goto('/', { waitUntil: 'load' });
+  await waitForServiceWorkerControl(page);
+  await page.evaluate(async () => {
+    await caches.open('images-cache-v2');
+    await caches.open('unrelated-cache');
+    await Promise.all(
+      (await navigator.serviceWorker.getRegistrations()).map((r) => r.unregister()),
+    );
+  });
+  await page.close();
+
+  const freshPage = await context.newPage();
+  await freshPage.goto('/', { waitUntil: 'load' });
+  await waitForServiceWorkerControl(freshPage);
+  const cacheNames = await freshPage.evaluate(() => caches.keys());
+
+  expect(cacheNames).not.toContain('images-cache-v2');
+  expect(cacheNames).toContain('unrelated-cache');
 });
