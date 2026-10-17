@@ -455,7 +455,10 @@ export default function useCarousel({
       return;
     }
     if (typeof IntersectionObserver === 'undefined') {
-      handlersRef.current.startAutoplay();
+      // Without visibility information, hidden responsive copies and offscreen
+      // carousels would also advance. Keep manual navigation available but do
+      // not run an unbounded background timer.
+      handlersRef.current.stopAutoplay();
       return;
     }
     const el = wrapperRef?.current;

@@ -90,9 +90,12 @@ if (import.meta.env.DEV) {
   }
 }
 
-const Eventpage = lazyWithRetry(() => import('./Pages/EventPage/Eventpage'));
-const ContactUs = lazyWithRetry(() => import('./Components/ContactUs/ContactUs.jsx'));
-const NotFoundLazy = lazyWithRetry(() => import('./Pages/NotFound/NotFound.jsx'));
+const Eventpage = lazyWithRetry(() => import('./Pages/EventPage/Eventpage'), 'events-route');
+const ContactUs = lazyWithRetry(
+  () => import('./Components/ContactUs/ContactUs.jsx'),
+  'contact-route',
+);
+const NotFoundLazy = lazyWithRetry(() => import('./Pages/NotFound/NotFound.jsx'), 'not-found');
 
 // Cross-route scroll restoration: every navigation lands at the top unless a
 // state.id anchor was passed (App.jsx handles scrolling to that section).

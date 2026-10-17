@@ -115,6 +115,23 @@ describe('lazyWithRetry — retry and reload recovery', () => {
     expect(reload).not.toHaveBeenCalled();
     expect(document.getElementById('boundary-error').textContent).toBe('still stale');
   });
+
+  it('does not let another lazy chunk success reset this chunk’s reload guard', async () => {
+    vi.stubGlobal('location', { reload });
+    window.sessionStorage.setItem('chunk-reload-retry:about', 'true');
+    const OtherChunk = lazyWithRetry(() => Promise.resolve({ default: Resolved }), 'featuring');
+    await renderAndSettle(OtherChunk);
+    expect(window.sessionStorage.getItem('chunk-reload-retry:about')).toBe('true');
+    expect(window.sessionStorage.getItem('chunk-reload-retry:featuring')).toBeNull();
+
+    harness.unmount();
+    harness = createHarness();
+    const FailedChunk = lazyWithRetry(() => Promise.reject(new Error('still stale')), 'about');
+    await renderAndSettle(FailedChunk);
+
+    expect(reload).not.toHaveBeenCalled();
+    expect(document.getElementById('boundary-error').textContent).toBe('still stale');
+  });
 });
 
 describe('lazyWithRetry — storage unavailable (Safari private mode etc.)', () => {

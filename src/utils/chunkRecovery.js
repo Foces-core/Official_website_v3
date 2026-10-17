@@ -32,19 +32,19 @@ export function createChunkRecovery({ storage, win } = {}) {
 }
 
 // Thin helper for lazyWithRetry to use — keeps CC low
-export async function tryImportWithRetry(importFn, hasReloaded) {
+export async function tryImportWithRetry(importFn, hasReloaded, retryKey) {
   try {
     const mod = await importFn();
-    clearLazyChunkRetry();
+    clearLazyChunkRetry({ key: retryKey });
     return mod;
   } catch {
     try {
       await new Promise((r) => setTimeout(r, 300));
       const mod = await importFn();
-      clearLazyChunkRetry();
+      clearLazyChunkRetry({ key: retryKey });
       return mod;
     } catch (retryError) {
-      if (!hasReloaded) recordLazyChunkReload();
+      if (!hasReloaded) recordLazyChunkReload({ key: retryKey });
       throw retryError;
     }
   }
