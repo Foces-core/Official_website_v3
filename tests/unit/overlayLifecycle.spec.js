@@ -118,11 +118,8 @@ describe('overlayLifecycle pure helpers', () => {
       expect(preventDefault).toHaveBeenCalledOnce();
       expect(document.activeElement).toBe(close);
 
-      Object.defineProperty(document, 'activeElement', {
-        value: originalActive,
-        configurable: true,
-      });
       container.remove();
+      originalActive?.focus();
     });
 
     it('wraps forward when focus outside container on Tab (not contained)', () => {

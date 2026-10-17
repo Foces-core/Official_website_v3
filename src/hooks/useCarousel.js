@@ -174,8 +174,16 @@ export default function useCarousel({
 
   function startAutoplay() {
     stopAutoplay();
-    if (!p().autoplayDelay) return;
-    s.autoplayTimer = setInterval(() => goTo(s.raw + 1, true), p().autoplayDelay);
+    const autoplayDelay = p().autoplayDelay;
+    if (
+      !shouldUseVisibilityGatedAutoplay({
+        autoplayDelay,
+        canObserveVisibility: typeof IntersectionObserver !== 'undefined',
+      })
+    ) {
+      return;
+    }
+    s.autoplayTimer = setInterval(() => goTo(s.raw + 1, true), autoplayDelay);
   }
 
   function stopAutoplay() {
