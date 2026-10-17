@@ -208,7 +208,10 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
   const handleTouchEnd = (e) => {
     // A non-owner finger lifting while ours is still down: keep dragging.
     const ownerEnded = getActiveTouch(e.changedTouches, null, activeTouchId.current);
-    if (e.touches?.length > 0 && !ownerEnded) return;
+    const ownerStillDown = Array.from(e.touches ?? []).some(
+      (touch) => touch.identifier === activeTouchId.current,
+    );
+    if (!ownerEnded && ownerStillDown) return;
     activeTouchId.current = null;
     endDrag();
   };

@@ -157,6 +157,21 @@ describe('useCubeDrag', () => {
     expect(el.style.transform).toContain('rotateY(0.6deg)');
   });
 
+  it('ends the drag when changedTouches is empty and the owner is no longer down', () => {
+    harness.render(<Probe />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    const owner = { identifier: 11, clientX: 0 };
+    const other = { identifier: 22, clientX: 500 };
+
+    act(() => {
+      touchEvent(el, 'touchstart', [owner], [owner]);
+      touchEvent(el, 'touchend', [], [other]);
+    });
+
+    const moveAfterOwnerLift = touchEvent(el, 'touchmove', [other], [other]);
+    expect(moveAfterOwnerLift.defaultPrevented).toBe(false);
+  });
+
   it('prevents touch scrolling only while the cube is being dragged', () => {
     harness.render(<Probe />);
     const el = harness.container.querySelector('[data-testid="cube"]');

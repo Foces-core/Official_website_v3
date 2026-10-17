@@ -93,6 +93,73 @@ describe('usePersistentErrorRecovery', () => {
     expect(markCacheRecoveryDone).toHaveBeenCalledTimes(1);
   });
 
+  it('resumes cache escalation when purge finishes offline and connection returns', async () => {
+    shouldEscalateToCacheRecovery.mockReturnValue(true);
+    markCacheRecoveryDone.mockReturnValue(true);
+    let resolvePurge;
+    purgeAppCaches.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolvePurge = resolve;
+      }),
+    );
+    const reload = vi.fn();
+    vi.stubGlobal('location', { reload });
+
+    act(() => harness.render(<Probe />));
+    expect(purgeAppCaches).toHaveBeenCalledTimes(1);
+
+    isOffline.mockReturnValue(true);
+    act(() => window.dispatchEvent(new Event('offline')));
+    await act(async () => {
+      resolvePurge(0);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(unregisterServiceWorkers).not.toHaveBeenCalled();
+
+    isOffline.mockReturnValue(false);
+    await act(async () => {
+      window.dispatchEvent(new Event('online'));
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(purgeAppCaches).toHaveBeenCalledTimes(1);
+    expect(unregisterServiceWorkers).toHaveBeenCalledTimes(1);
+    expect(reload).toHaveBeenCalledTimes(1);
+    vi.unstubAllGlobals();
+  });
+
+  it('does not repeat completed escalation when connection returns before purge settles', async () => {
+    shouldEscalateToCacheRecovery.mockReturnValue(true);
+    markCacheRecoveryDone.mockReturnValue(true);
+    let resolvePurge;
+    purgeAppCaches.mockReturnValueOnce(
+      new Promise((resolve) => {
+        resolvePurge = resolve;
+      }),
+    );
+    const reload = vi.fn();
+    vi.stubGlobal('location', { reload });
+
+    act(() => harness.render(<Probe />));
+    isOffline.mockReturnValue(true);
+    act(() => window.dispatchEvent(new Event('offline')));
+    isOffline.mockReturnValue(false);
+    act(() => window.dispatchEvent(new Event('online')));
+
+    await act(async () => {
+      resolvePurge(0);
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+
+    expect(purgeAppCaches).toHaveBeenCalledTimes(1);
+    expect(unregisterServiceWorkers).toHaveBeenCalledTimes(1);
+    expect(reload).toHaveBeenCalledTimes(1);
+    vi.unstubAllGlobals();
+  });
+
   it('cancels and reschedules the first-error reload across a connection flap', () => {
     const cancel = vi.fn();
     scheduleErrorAutoReload.mockReturnValue(cancel);

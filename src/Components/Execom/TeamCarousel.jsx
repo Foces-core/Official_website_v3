@@ -150,6 +150,8 @@ function TeamCarousel({
                 className={`container-execom bg-[#161618] border-box relative rounded-3xl overflow-hidden ${
                   isDesktop ? 'group' : ''
                 }`}
+                onPointerMove={() => setHoveredSlideIndex(index)}
+                onPointerLeave={() => setHoveredSlideIndex(null)}
               >
                 <BlurImage
                   className={`object-cover ${d.imgPosition ?? 'object-top'} w-full h-full ${isDesktop ? 'card-hover' : ''} ${isDesktop && hoveredSlideIndex === index ? 'filter-none' : 'grayscale'} transition-all duration-400`}
@@ -160,8 +162,6 @@ function TeamCarousel({
                   alt={d.name}
                   loading="lazy"
                   decoding="async"
-                  onPointerMove={() => setHoveredSlideIndex(index)}
-                  onPointerLeave={() => setHoveredSlideIndex(null)}
                 />
                 <div className="absolute rounded-b-3xl bottom-0 w-full bg-gradient-to-t from-black via-black/85 to-transparent p-4 text-left">
                   <div className="text-white text-base font-semibold italic">{d.name}</div>

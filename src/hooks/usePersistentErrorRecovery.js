@@ -24,6 +24,10 @@ export default function usePersistentErrorRecovery({ delayMs = 1200 } = {}) {
     let cancelled = false;
     let cancelScheduledReload = () => {};
     let reloadScheduled = false;
+    let escalationPending = false;
+    let escalationInFlight = false;
+    let escalationResumeRequested = false;
+    let cachePurgeComplete = false;
 
     const cancelPendingReload = () => {
       if (!reloadScheduled) return;
@@ -34,21 +38,48 @@ export default function usePersistentErrorRecovery({ delayMs = 1200 } = {}) {
 
     const onOffline = () => cancelPendingReload();
 
+    const finishEscalation = async () => {
+      if (cancelled || isOffline() || !escalationPending) return;
+      if (escalationInFlight) {
+        escalationResumeRequested = true;
+        return;
+      }
+      escalationInFlight = true;
+      escalationResumeRequested = false;
+      try {
+        if (!cachePurgeComplete) {
+          await purgeAppCaches();
+          cachePurgeComplete = true;
+        }
+        if (isOffline()) return;
+        await unregisterServiceWorkers();
+        if (!cancelled && !isOffline()) {
+          escalationPending = false;
+          window.location.reload();
+        }
+      } catch {
+        // Recovery is best-effort; a later online event can retry unfinished work.
+      } finally {
+        escalationInFlight = false;
+        if (escalationResumeRequested && !cancelled && !isOffline()) {
+          escalationResumeRequested = false;
+          void finishEscalation();
+        }
+      }
+    };
+
     const recover = () => {
       if (cancelled || isOffline() || reloadScheduled) return;
+      if (escalationPending) {
+        void finishEscalation();
+        return;
+      }
       if (shouldEscalateToCacheRecovery()) {
         // Persist the one-shot guard before destructive cleanup. If storage is
         // unavailable, leave the fallback in place rather than risk a loop.
         if (!markCacheRecoveryDone()) return;
-        (async () => {
-          await purgeAppCaches();
-          if (isOffline()) return;
-          await unregisterServiceWorkers();
-          if (!cancelled && !isOffline()) window.location.reload();
-        })().catch(() => {
-          // Recovery is best-effort: a failed purge must not become an
-          // unhandled rejection.
-        });
+        escalationPending = true;
+        void finishEscalation();
         return;
       }
       reloadScheduled = true;

@@ -2,9 +2,13 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import SectionSkeleton from '../SectionSkeleton/SectionSkeleton';
 import ErrorBoundary from '../ErrorBoundary/ErrorBoundary';
-import { isDesktopViewport } from '../../utils/breakpoints.js';
 import ChunkErrorFallback from '../ErrorFallback/ChunkErrorFallback';
-import { cacheMeasuredHeight, shouldMountAtBoot, shouldMountSection } from './scrollGateLogic.js';
+import {
+  cacheMeasuredHeight,
+  measuredHeightKey,
+  shouldMountAtBoot,
+  shouldMountSection,
+} from './scrollGateLogic.js';
 import { registerDeferredGate, unregisterDeferredGate } from './gateIdleCoordinator.js';
 
 // Real section heights, cached after first mount so the placeholder matches
@@ -12,12 +16,6 @@ import { registerDeferredGate, unregisterDeferredGate } from './gateIdleCoordina
 // `id + viewport bucket` because the carousels are responsive (slidesPerView
 // 1/2/3 by width) — a desktop-measured height reused on a phone would be wrong.
 const measuredHeights = new Map();
-
-// Coarse viewport bucket so desktop vs mobile heights never collide in the cache.
-function viewportBucket() {
-  if (typeof window === 'undefined') return 'unknown';
-  return isDesktopViewport(window.innerWidth) ? 'desktop' : 'mobile';
-}
 
 /**
  * ScrollGate — keep an expensive lazy section unmounted until it approaches
@@ -137,7 +135,9 @@ export default function ScrollGate({ id, placeholderHeight = '110vh', label, chi
     return () => ro.disconnect();
   }, [mounted, id]);
 
-  const cachedHeight = measuredHeights.get(`${id}:${viewportBucket()}`);
+  const cachedHeight = measuredHeights.get(
+    measuredHeightKey(id, typeof window === 'undefined' ? undefined : window.innerWidth),
+  );
   const skeletonHeight = cachedHeight ? `${Math.round(cachedHeight)}px` : placeholderHeight;
 
   return (

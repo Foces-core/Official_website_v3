@@ -38,11 +38,8 @@ function collectPageErrors(page) {
 async function expectSmokeTest(page) {
   await gotoHome(page);
   await expect(page.locator('.hero img').first()).toBeVisible();
-  // Navbar root is a fixed div (no <nav> element). It renders two FOCES
-  // logos (desktop + mobile variants, one always `hidden`) — grab the
-  // visible, clickable (cursor-pointer) one. The static hero LCP
-  // placeholder (#hero-lcp-static) also renders img[alt="FOCES"], so a bare
-  // `:visible` scope would still match it.
+  // The accessible name targets the visible home button across desktop and
+  // mobile navbar variants.
   await expect(page.getByRole('button', { name: 'FOCES home' })).toBeVisible();
   await page.locator('#about').scrollIntoViewIfNeeded();
   await expect(page.locator('#about').first()).toBeVisible();

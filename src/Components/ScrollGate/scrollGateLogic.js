@@ -73,8 +73,13 @@ export function nextGateToArmAtIdle({ ids, tops, viewportHeight, armedIds = [] }
 }
 import { isDesktopViewport } from '../../utils/breakpoints.js';
 
+export function measuredHeightKey(id, width) {
+  const bucket =
+    typeof width === 'number' ? (isDesktopViewport(width) ? 'desktop' : 'mobile') : 'unknown';
+  return `${id}:${bucket}`;
+}
+
 export function cacheMeasuredHeight(cache, { id, height, width }) {
-  if (height <= 0) return;
-  const bucket = isDesktopViewport(width) ? 'desktop' : 'mobile';
-  cache.set(`${id}:${bucket}`, height);
+  if (!(height > 0)) return;
+  cache.set(measuredHeightKey(id, width), height);
 }

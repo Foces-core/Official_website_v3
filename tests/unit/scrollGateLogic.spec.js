@@ -3,6 +3,7 @@ import {
   shouldMountSection,
   shouldMountAtBoot,
   cacheMeasuredHeight,
+  measuredHeightKey,
 } from '../../src/Components/ScrollGate/scrollGateLogic.js';
 
 describe('shouldMountSection', () => {
@@ -50,6 +51,31 @@ describe('cacheMeasuredHeight', () => {
 
     expect(cache.get('about:desktop')).toBe(700);
     expect(cache.get('about:mobile')).toBe(900);
+  });
+
+  it('uses the shared cache key at the mobile and desktop boundary', () => {
+    const cache = new Map();
+    cacheMeasuredHeight(cache, { id: 'about', height: 767, width: 767 });
+    cacheMeasuredHeight(cache, { id: 'about', height: 768, width: 768 });
+
+    expect(measuredHeightKey('about', 767)).toBe('about:mobile');
+    expect(measuredHeightKey('about', 768)).toBe('about:desktop');
+    expect(cache.get(measuredHeightKey('about', 767))).toBe(767);
+    expect(cache.get(measuredHeightKey('about', 768))).toBe(768);
+  });
+
+  it('keeps unknown viewport widths isolated from responsive measurements', () => {
+    const cache = new Map();
+    cacheMeasuredHeight(cache, { id: 'about', height: 600, width: undefined });
+
+    expect(measuredHeightKey('about', undefined)).toBe('about:unknown');
+    expect(cache.get('about:unknown')).toBe(600);
+  });
+
+  it.each([0, undefined])('ignores missing or non-positive heights: %s', (height) => {
+    const cache = new Map();
+    cacheMeasuredHeight(cache, { id: 'about', height, width: 1200 });
+    expect(cache.size).toBe(0);
   });
 });
 
