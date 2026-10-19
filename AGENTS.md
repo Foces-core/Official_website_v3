@@ -103,6 +103,8 @@ Merged branches are deleted in the same task that merges them — never accumula
 
 ## §2 Behaviour
 
+- **Semantic code navigation:** When Serena MCP is configured for this checkout, use it for symbol and reference lookup, cross-file analysis, and larger refactors. Use repository search and direct file inspection for small text, workflow, or documentation changes. If Serena is unavailable, continue with the tools already in use.
+
 ### §2.1a Known environment issue (Windows builds)
 
 - **`pnpm build` fails with `ERR_SWC_NATIVE_CACHE` / "DACL grants replacement rights"** on this machine:
