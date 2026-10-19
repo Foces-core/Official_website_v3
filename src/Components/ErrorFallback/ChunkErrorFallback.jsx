@@ -1,15 +1,24 @@
 import { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
+import usePersistentErrorRecovery from '../../hooks/usePersistentErrorRecovery.js';
+import { isChunkError } from '../../utils/chunkRecovery.js';
 
 /**
  * ChunkErrorFallback — compact fallback for a single lazy island (ScrollGate
  * section, footer) when its chunk fails to load.
  *
- * Unlike the full-page ErrorFallback it never auto-reloads: a failed chunk
- * offline would just replay the failure. Copy adapts to connectivity —
- * offline users are told to reconnect, online users get a retry button
- * (reload is safe then; Fix-1 gates only the *automatic* recoveries).
+ * Reuses the full-page fallback's bounded recovery: retry once, then purge
+ * poisoned app caches and unregister a stale service worker. Recovery is a
+ * no-op offline, where reloading would only replay the same chunk failure.
+ * The manual retry remains available when the browser is online.
  */
-export default function ChunkErrorFallback() {
+export default function ChunkErrorFallback({ error }) {
+  const recoverChunk = isChunkError(error);
+  usePersistentErrorRecovery({
+    enabled: recoverChunk,
+    forceCacheRecovery: recoverChunk,
+  });
+
   const [offline, setOffline] = useState(
     () => typeof navigator !== 'undefined' && navigator.onLine === false,
   );
@@ -50,3 +59,7 @@ export default function ChunkErrorFallback() {
     </div>
   );
 }
+
+ChunkErrorFallback.propTypes = {
+  error: PropTypes.any,
+};

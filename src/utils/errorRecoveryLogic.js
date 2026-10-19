@@ -107,6 +107,17 @@ export function shouldEscalateToCacheRecovery({ storage } = {}) {
 }
 
 /**
+ * True when a failed lazy chunk may spend the one-shot cache recovery even
+ * though its per-chunk reload guard is separate from the app-wide error flag.
+ *
+ * @param {{ storage?: Storage | null }} [options]
+ * @returns {boolean}
+ */
+export function shouldRecoverChunkCache({ storage } = {}) {
+  return safeSessionGet(CACHE_RECOVERY_KEY, null, storage) !== '1';
+}
+
+/**
  * Marks the cache-recovery escalation as spent for this session.
  *
  * @param {{ storage?: Storage | null }} [options]

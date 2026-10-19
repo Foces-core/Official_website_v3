@@ -33,6 +33,7 @@ class ErrorBoundary extends Component {
   render() {
     const { error } = this.state;
     if (error) {
+      if (typeof this.props.fallback === 'function') return this.props.fallback(error);
       if (this.props.fallback) return this.props.fallback;
       return <ErrorFallback error={error} resetError={() => this.setState({ error: null })} />;
     }
@@ -43,7 +44,7 @@ class ErrorBoundary extends Component {
 ErrorBoundary.propTypes = {
   children: PropTypes.node,
   onError: PropTypes.func,
-  fallback: PropTypes.node,
+  fallback: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
 };
 
 export default ErrorBoundary;
