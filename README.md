@@ -169,6 +169,8 @@ the URL from `PREVIEW_URL` (default `http://localhost:4173`) via the shared
 
 ## Contributing
 
+Read [AGENTS.md](AGENTS.md) for the repository map and verification rules. When Serena MCP is configured, use it for symbol/reference lookup, cross-file analysis, and larger refactors.
+
 See [CONTRIBUTING.md](CONTRIBUTING.md) — setup, branch naming, Conventional
 Commits, PR workflow, and the performance/a11y expectations every change must
 meet.

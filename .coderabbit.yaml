@@ -187,7 +187,6 @@ knowledge_base:
     enabled: true
     filePatterns:
       - "AGENTS.md"
-      - "CLAUDE.md"
       - "CONTRIBUTING.md"
       - "CONTEXT.md"
       - "docs/adr/*.md"
