@@ -1,19 +1,16 @@
 #!/usr/bin/env node
 /**
- * Prompt-parity guard (Wulfie Bain audit follow-up).
+ * Contributor-guidance consistency check (Wulfie Bain audit follow-up).
  *
- * The repo's agent-instruction layer (AGENTS.md, CLAUDE.md, .coderabbit.yaml,
- * …) is a prompt: it rots the same way product prompts do — accretion without
- * re-reads, implicit knowledge, and rules duplicated across conditional files
- * that nobody reviews as a whole. This check is the eval for that prompt. It
- * fails (exit 1) with named findings instead of an aggregate percentage, so
- * the PR that introduces the drift is the PR that fixes it.
+ * Repository guidance (AGENTS.md, .coderabbit.yaml, and tool configs) can drift
+ * through accretion, implicit knowledge, and duplicated rules. This check
+ * reports named findings so the change that introduces drift can fix it.
  *
  * What it asserts:
  *   1. Exactly one active CodeRabbit config (root .coderabbit.yaml). A legacy
  *      .github/coderabbit.yaml silently forks review strictness (it disagrees
  *      on early_access, path_filters, and pre_merge_checks).
- *   2. CLAUDE.md pins no stale ADR range ("through ADR-0010" while docs/adr/
+ *   2. AGENTS.md pins no stale ADR range ("through ADR-0010" while docs/adr/
  *      indexes ADR-0015 was a real accretion bug).
  *   3. Every tool config still encodes the foces-webv23 off-limits rule —
  *      the exclusion lives in ~7 files and one drift re-arms the studio.
@@ -21,10 +18,10 @@
  *      the Map section is the accretion hotspot and must not point at ghosts.
  *   5. CONTEXT.md is the single glossary — UBIQUITOUS_LANGUAGE.md was merged
  *      into it (aliases, relationships, dialogue, ambiguities) and must not
- *      come back, and CLAUDE.md must still point at CONTEXT.md.
+ *      come back, and AGENTS.md must still point at CONTEXT.md.
  *
- * Usage:  node scripts/maintenance/check-prompts.mjs
- *         pnpm check:prompts
+ * Usage:  node scripts/maintenance/check-guidance.mjs
+ *         pnpm check:guidance
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -60,7 +57,7 @@ export function checkSingleCoderabbitConfig(exists) {
   return findings;
 }
 
-// 2. No stale "through ADR-XXXX" range pin in CLAUDE.md.
+// 2. No stale "through ADR-XXXX" range pin in AGENTS.md.
 export function maxAdrNumber(adrFileNames) {
   let max = 0;
   for (const name of adrFileNames) {
@@ -70,11 +67,11 @@ export function maxAdrNumber(adrFileNames) {
   return max;
 }
 
-export function checkAdrPointerFresh(claudeText, maxAdr) {
-  const m = claudeText.match(/through\s+ADR-(\d+)/i);
+export function checkAdrPointerFresh(instructionsText, maxAdr) {
+  const m = instructionsText.match(/through\s+ADR-(\d+)/i);
   if (m && Number(m[1]) !== maxAdr) {
     return [
-      `CLAUDE.md pins the ADR range through ADR-${m[1]} but docs/adr/ indexes ` +
+      `AGENTS.md pins the ADR range through ADR-${m[1]} but docs/adr/ indexes ` +
         `through ADR-${String(maxAdr).padStart(4, '0')} — drop the number and ` +
         `point at the docs/adr/ index instead`,
     ];
@@ -137,7 +134,7 @@ export function checkDocPaths(markdown, exists, listDir) {
 
 // 5. One glossary: the UBIQUITOUS_LANGUAGE.md fork was merged into
 // CONTEXT.md and must not be reintroduced.
-export function checkGlossarySingular(exists, claudeText) {
+export function checkGlossarySingular(exists, instructionsText) {
   const findings = [];
   if (exists('UBIQUITOUS_LANGUAGE.md')) {
     findings.push(
@@ -145,21 +142,20 @@ export function checkGlossarySingular(exists, claudeText) {
         '(aliases, relationships, dialogue, ambiguities); delete it so terms cannot fork',
     );
   }
-  if (!claudeText.includes('CONTEXT.md')) {
-    findings.push('CLAUDE.md no longer points at CONTEXT.md as the single canonical glossary');
+  if (!instructionsText.includes('CONTEXT.md')) {
+    findings.push('AGENTS.md no longer points at CONTEXT.md as the single canonical glossary');
   }
   return findings;
 }
 
 export function runAllChecks({ exists, readFile, adrFileNames, listDir }) {
   const agentsMd = readFile('AGENTS.md') ?? '';
-  const claudeMd = readFile('CLAUDE.md') ?? '';
   return [
     ...checkSingleCoderabbitConfig(exists),
-    ...checkAdrPointerFresh(claudeMd, maxAdrNumber(adrFileNames)),
+    ...checkAdrPointerFresh(agentsMd, maxAdrNumber(adrFileNames)),
     ...checkStudioExclusions(readFile),
     ...checkDocPaths(agentsMd, exists, listDir),
-    ...checkGlossarySingular(exists, claudeMd),
+    ...checkGlossarySingular(exists, agentsMd),
   ];
 }
 
@@ -179,11 +175,11 @@ function main() {
   const findings = runAllChecks({ exists, readFile, adrFileNames, listDir });
   if (findings.length === 0) {
     console.log(
-      '✓ check-prompts: agent-instruction layer is consistent (configs, ADR pointer, exclusions, Map paths, glossary).',
+      '✓ check-guidance: repository guidance is consistent (configs, ADR pointer, exclusions, Map paths, glossary).',
     );
     return;
   }
-  console.error(`✗ Prompt-parity findings (${findings.length}):`);
+  console.error(`✗ Guidance findings (${findings.length}):`);
   for (const f of findings) console.error(`  - ${f}`);
   process.exit(1);
 }

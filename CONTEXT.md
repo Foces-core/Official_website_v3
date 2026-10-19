@@ -3,7 +3,7 @@
 Shared vocabulary for the FOCES site. Keep this current as new concepts are
 named; the /domain-modeling skill sharpens fuzzy terms here.
 
-> Single canonical glossary (per `CLAUDE.md`) — aliases, relationships, and
+> Single canonical glossary (per `AGENTS.md`) — aliases, relationships, and
 > flagged ambiguities live here too, so terms never fork across files.
 
 - **Event** — a past or upcoming fest event (Prompt Paradox, Coding Arena,

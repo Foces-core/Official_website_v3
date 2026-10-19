@@ -9,7 +9,7 @@ import {
   extractDocPaths,
   maxAdrNumber,
   runAllChecks,
-} from '../../scripts/maintenance/check-prompts.mjs';
+} from '../../scripts/maintenance/check-guidance.mjs';
 
 // 1. Exactly one active CodeRabbit config.
 describe('checkSingleCoderabbitConfig', () => {
@@ -127,10 +127,10 @@ describe('checkGlossarySingular', () => {
     expect(findings[0]).toContain('UBIQUITOUS_LANGUAGE.md');
   });
 
-  it('flags CLAUDE.md losing its CONTEXT.md pointer', () => {
+  it('flags AGENTS.md losing its CONTEXT.md pointer', () => {
     const findings = checkGlossarySingular(noFork, 'see the docs folder');
     expect(findings).toEqual([
-      'CLAUDE.md no longer points at CONTEXT.md as the single canonical glossary',
+      'AGENTS.md no longer points at CONTEXT.md as the single canonical glossary',
     ]);
   });
 });
@@ -140,7 +140,7 @@ describe('runAllChecks', () => {
   const healthyFs = {
     exists: (rel) => rel !== '.github/coderabbit.yaml' && rel !== 'UBIQUITOUS_LANGUAGE.md',
     readFile: (rel) => {
-      if (rel === 'CLAUDE.md') return 'canonical glossary: CONTEXT.md; see docs/adr/ index';
+      if (rel === 'AGENTS.md') return 'canonical glossary: CONTEXT.md; see docs/adr/ index';
       return '`src/data/team.js` and foces-webv23';
     },
     adrFileNames: ['0015-x.md'],

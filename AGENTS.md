@@ -1,6 +1,6 @@
-# 🤖 Agent Instructions — FOCES Official Website
+# Contributor Instructions — FOCES Official Website
 
-Behavioral rules for AI agents (and humans) working in this repository.
+Working rules for contributors working in this repository.
 Read this before touching anything.
 
 Three numbered sections with stable anchors — cite them in review
@@ -39,9 +39,9 @@ Merged branches are deleted in the same task that merges them — never accumula
 ## §1 Background
 
 - **Live Production URL:** [https://focess-five.vercel.app/](https://focess-five.vercel.app/) — deployed continuously from `main` via Vercel edge.
-- **Read first:** architecture/decisions live in `docs/adr/` and the
-  performance/a11y contract is in `CONTRIBUTING.md`. This file points at
-  those owners — it never duplicates them.
+- **Read first:** architecture/decisions live in `docs/adr/`, domain terms in
+  `CONTEXT.md`, and the performance/a11y contract in `CONTRIBUTING.md`. This
+  file points at those owners — it never duplicates them.
 - **Package managers:** root uses **pnpm** (`pnpm install`, `pnpm test`, ...).
   The studio uses **yarn** (inside `foces-webv23/` only). Do not mix.
 - **Networked commands:** IF the `sfw` wrapper exists on PATH, prefix
@@ -97,7 +97,7 @@ Merged branches are deleted in the same task that merges them — never accumula
 - Behavior lives in pure tested modules; components are wiring (ADR-0009) — new logic lands as a
   module with its spec in the same change, and JSX specs use `tests/unit/harness.jsx`.
 - `scripts/` — puppeteer probes + Lighthouse perf tests; `scripts/maintenance/` holds the
-  CI guards (`check-specs.mjs`, `check-orphan-assets.mjs`, `check-sw-precache.mjs`, `check-prompts.mjs`).
+  CI guards (`check-specs.mjs`, `check-orphan-assets.mjs`, `check-sw-precache.mjs`, `check-guidance.mjs`).
 - `tests/*.spec.js` — Playwright E2E suite (split by page/section).
 - `public/`, `src/assets/` — static + optimized images.
 
@@ -119,7 +119,7 @@ One line each — the full contract lives in `CONTRIBUTING.md`:
 
 - **`foces-webv23/` is OFF-LIMITS:** archived Sanity CMS studio, pinned to
   Sanity 3 / React 18 on purpose. Root tooling must never lint/build/format
-  it (every tool skips it — `pnpm check:prompts` verifies the exclusions
+  it (every tool skips it — `pnpm check:guidance` verifies the exclusions
   agree). Never "upgrade to match the root". See `foces-webv23/README.md`.
 - **Performance is a feature.** Never remove the `useDeviceProfile`
   (`slowNetwork`, `lowPower`) guards, and never let gated content disappear
@@ -154,7 +154,7 @@ One line each — the full contract lives in `CONTRIBUTING.md`:
 ### §2.2 Verify (run before you commit)
 
 `pnpm verify` runs the fast deterministic gate (lint + format check + unit
-tests + check:specs/check:assets/check:sw/check:prompts + build + `git diff --check`) in
+tests + check:specs/check:assets/check:sw/check:guidance + build + `git diff --check`) in
 one command. The individual steps, if you prefer:
 
 ```powershell
@@ -162,7 +162,7 @@ pnpm lint          # ESLint 10 flat config, no warnings expected
 pnpm format:check  # Prettier (writes with pnpm format if dirty)
 pnpm knip          # dead-code / unused-dependency guard (CI runs it too — see CONTRIBUTING)
 pnpm lint:workflows  # actionlint + shellcheck on .github/workflows/ — required after touching any workflow file
-pnpm check:prompts  # prompt-parity guard (configs, ADR pointer, studio exclusions, Map paths, glossary)
+pnpm check:guidance  # checks review config, ADR pointer, studio exclusions, Map paths, and glossary
 pnpm build         # production build must succeed
 pnpm test          # Playwright E2E (tests/*.spec.js) — see scoping rubric below
 git diff --check   # no whitespace errors

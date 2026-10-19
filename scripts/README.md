@@ -116,11 +116,11 @@ import { PREVIEW_URL, DEV_URL, resolveChrome } from './constants.mjs';
 
 One-off generators and asset preparation scripts. These are **not** part of the regular build pipeline — they're run manually when needed.
 
-| Script                    | Purpose                                                                                                                                          |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `check-orphan-assets.mjs` | Fail CI when a file in `src/assets/` is unreferenced                                                                                             |
-| `check-sw-precache.mjs`   | Fail CI when the built SW precaches forbidden chunks (three.js)                                                                                  |
-| `check-prompts.mjs`       | Fail CI when the agent-instruction layer drifts (dual CodeRabbit configs, stale ADR pin, lost studio exclusion, ghost Map path, forked glossary) |
+| Script                    | Purpose                                                                                                                               |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `check-orphan-assets.mjs` | Fail CI when a file in `src/assets/` is unreferenced                                                                                  |
+| `check-sw-precache.mjs`   | Fail CI when the built SW precaches forbidden chunks (three.js)                                                                       |
+| `check-guidance.mjs`      | Fail CI when contributor guidance drifts (dual review configs, stale ADR pin, lost studio exclusion, ghost Map path, forked glossary) |
 
 > **`check-orphan-assets.mjs`** is the repo's guard against dead assets
 > (knip only checks code, not `src/assets/`). Run it locally with
@@ -136,7 +136,7 @@ One-off generators and asset preparation scripts. These are **not** part of the 
 ```bash
 pnpm check:assets   # after touching src/assets/ or its references
 pnpm check:sw       # after a build, to verify the SW precache stayed app-shell only
-pnpm check:prompts  # after touching AGENTS.md, CLAUDE.md, or any tool config in its exclusion list
+pnpm check:guidance  # after touching AGENTS.md or any tool config in its exclusion list
 ```
 
 The probes resolve their browser via `CHROME_PATH` / `FIREFOX_PATH` env vars
