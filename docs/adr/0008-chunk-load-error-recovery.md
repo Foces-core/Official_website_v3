@@ -1,4 +1,4 @@
-# 0008 — Lazy Chunks Recover Automatically, Never Surface the Error Screen
+# 0008 — Lazy Chunk Errors Recover Before Surfacing the Error Screen
 
 Status: Accepted
 Date: 2026-08-14
@@ -18,9 +18,13 @@ sections in `App.jsx` — loads through `lazyWithRetry`
 (`src/utils/lazyWithRetry.js`): on a chunk-load failure it retries once
 after 300ms, then performs a single clean page reload guarded by a
 `chunk-reload-retry:<chunk-id>` session flag (no reload loops per lazy chunk),
-and never crashes when `sessionStorage` itself is unavailable. A successful
-import clears only that chunk's retry flag. The ErrorBoundary remains as the
-final safety net for genuine render errors, not for recoverable chunk failures.
+and never crashes when `sessionStorage` itself is unavailable. If that reload
+repeats a recognized chunk-load error, the section fallback performs one
+bounded cache recovery: purge this origin's caches, unregister its service
+workers, then reload. The recovery is skipped offline and will not repeat after
+its session guard is spent. A successful import clears only that chunk's retry
+flag. Non-chunk render errors continue to surface without clearing browser
+state.
 
 ## Consequences
 
@@ -29,7 +33,8 @@ final safety net for genuine render errors, not for recoverable chunk failures.
   error fallback.
 - Positive: one recovery policy for every chunk — no route is more fragile
   than another.
-- Negative: a second failed load after the reload still surfaces the
-  fallback (the flag is one-shot by design); genuinely broken code should
-  surface.
+- Positive: a stale app-shell or service-worker cache gets one clean recovery
+  before a chunk error is shown.
+- Negative: if the chunk still fails after cache recovery, the fallback remains
+  so the user can retry; genuinely broken render code still surfaces.
 - Follow-up: new lazy sections must use `lazyWithRetry`, not bare `lazy()`.

@@ -2,13 +2,14 @@ import { useEffect } from 'react';
 import {
   scheduleErrorAutoReload,
   shouldEscalateToCacheRecovery,
+  shouldRecoverChunkCache,
   markCacheRecoveryDone,
   isOffline,
 } from '../utils/errorRecoveryLogic.js';
 import { purgeAppCaches, unregisterServiceWorkers } from '../utils/cacheRecovery.js';
 
 /**
- * usePersistentErrorRecovery — the full-page fallback's recovery policy.
+ * usePersistentErrorRecovery — the app's persistent-error recovery policy.
  *
  * First error in a session: one free auto-reload (errorRecoveryLogic's
  * session-flag guard prevents loops). Second error means the reload replayed
@@ -17,10 +18,16 @@ import { purgeAppCaches, unregisterServiceWorkers } from '../utils/cacheRecovery
  * Bounded by the escalation flag: at most one free reload + one recovery
  * reload per session, then the screen stays put for the user to act on.
  *
- * @param {{ delayMs?: number }} [options]
+ * @param {{ delayMs?: number, enabled?: boolean, forceCacheRecovery?: boolean }} [options]
  */
-export default function usePersistentErrorRecovery({ delayMs = 1200 } = {}) {
+export default function usePersistentErrorRecovery({
+  delayMs = 1200,
+  enabled = true,
+  forceCacheRecovery = false,
+} = {}) {
   useEffect(() => {
+    if (!enabled) return undefined;
+
     let cancelled = false;
     let cancelScheduledReload = () => {};
     let reloadScheduled = false;
@@ -74,6 +81,15 @@ export default function usePersistentErrorRecovery({ delayMs = 1200 } = {}) {
         void finishEscalation();
         return;
       }
+      if (forceCacheRecovery) {
+        if (!shouldRecoverChunkCache()) return;
+        // A lazy chunk has already used its per-section reload guard. Recover
+        // the browser cache directly instead of spending a redundant reload.
+        if (!markCacheRecoveryDone()) return;
+        escalationPending = true;
+        void finishEscalation();
+        return;
+      }
       if (shouldEscalateToCacheRecovery()) {
         // Persist the one-shot guard before destructive cleanup. If storage is
         // unavailable, leave the fallback in place rather than risk a loop.
@@ -96,5 +112,5 @@ export default function usePersistentErrorRecovery({ delayMs = 1200 } = {}) {
       window.removeEventListener('online', recover);
       window.removeEventListener('offline', onOffline);
     };
-  }, [delayMs]);
+  }, [delayMs, enabled, forceCacheRecovery]);
 }

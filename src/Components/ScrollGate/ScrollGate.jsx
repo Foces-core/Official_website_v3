@@ -147,7 +147,7 @@ export default function ScrollGate({ id, placeholderHeight = '110vh', label, chi
         // the Suspense subtree, so without this a single section failure
         // (e.g. offline) climbs to the root boundary and blanks the page.
         // The island degrades to a compact retry fallback instead.
-        <ErrorBoundary fallback={<ChunkErrorFallback />}>
+        <ErrorBoundary fallback={(error) => <ChunkErrorFallback error={error} />}>
           {/* The lazy section resolves its own Suspense fallback while the chunk
             downloads — but by then we're ~1 viewport away, so the skeleton is
             barely seen and the download overlaps the scroll. */}

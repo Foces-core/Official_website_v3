@@ -128,7 +128,7 @@ function App() {
       {/* The footer chunk is lazy too: a failure (e.g. offline) degrades to
           the compact island fallback instead of climbing to the root
           boundary and blanking the mounted page. */}
-      <ErrorBoundary fallback={<ChunkErrorFallback />}>
+      <ErrorBoundary fallback={(error) => <ChunkErrorFallback error={error} />}>
         <Suspense fallback={<SectionSkeleton height="30vh" label="Loading footer" />}>
           <Footer />
         </Suspense>

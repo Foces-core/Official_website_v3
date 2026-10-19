@@ -8,6 +8,7 @@ import {
   scheduleErrorAutoReload,
   resetErrorAutoReload,
   shouldEscalateToCacheRecovery,
+  shouldRecoverChunkCache,
   markCacheRecoveryDone,
   hasLazyChunkReloaded,
   recordLazyChunkReload,
@@ -157,6 +158,12 @@ describe('errorRecoveryLogic auto-reload policies', () => {
         },
       };
       expect(markCacheRecoveryDone({ storage: blockedStorage })).toBe(false);
+    });
+
+    it('allows chunk recovery once even when the app-wide reload guard is separate', () => {
+      expect(shouldRecoverChunkCache({ storage: mockStorage })).toBe(true);
+      markCacheRecoveryDone({ storage: mockStorage });
+      expect(shouldRecoverChunkCache({ storage: mockStorage })).toBe(false);
     });
   });
 
