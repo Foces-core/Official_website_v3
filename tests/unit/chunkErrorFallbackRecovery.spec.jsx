@@ -57,7 +57,7 @@ test('persistent section chunk failure clears stale caches and service worker', 
   expect(reload).toHaveBeenCalledTimes(1);
 });
 
-test('ordinary section render errors do not purge the browser cache', async () => {
+test('ordinary section render errors get one reload without purging the browser cache', async () => {
   function BrokenSection() {
     throw new Error('section render broke');
   }
@@ -69,10 +69,11 @@ test('ordinary section render errors do not purge the browser cache', async () =
   );
 
   await act(async () => {
-    await Promise.resolve();
+    await new Promise((resolve) => setTimeout(resolve, 1250));
   });
 
   expect(harness.container.textContent).toContain('This section failed to load');
   expect(purgeAppCaches).not.toHaveBeenCalled();
   expect(unregisterServiceWorkers).not.toHaveBeenCalled();
+  expect(reload).toHaveBeenCalledTimes(1);
 });

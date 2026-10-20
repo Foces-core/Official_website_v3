@@ -7,15 +7,16 @@ import { isChunkError } from '../../utils/chunkRecovery.js';
  * ChunkErrorFallback — compact fallback for a single lazy island (ScrollGate
  * section, footer) when its chunk fails to load.
  *
- * Reuses the full-page fallback's bounded recovery: retry once, then purge
- * poisoned app caches and unregister a stale service worker. Recovery is a
- * no-op offline, where reloading would only replay the same chunk failure.
- * The manual retry remains available when the browser is online.
+ * Reuses the full-page fallback's bounded recovery for every island error:
+ * transient failures get one reload, and a repeated failure gets one cache
+ * and service-worker recovery. Chunk errors go straight to cache recovery
+ * because their lazy-import retry has already run. Recovery is a no-op
+ * offline, where reloading would only replay the same failure.
  */
 export default function ChunkErrorFallback({ error }) {
   const recoverChunk = isChunkError(error);
   usePersistentErrorRecovery({
-    enabled: recoverChunk,
+    enabled: true,
     forceCacheRecovery: recoverChunk,
   });
 
