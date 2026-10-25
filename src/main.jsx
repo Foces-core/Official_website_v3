@@ -2,22 +2,11 @@
 import React, { Suspense, useEffect, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router';
-import DeferredAnalytics from './utils/DeferredAnalytics.jsx';
 import App from './App.jsx';
 import Loader from './Components/Loader/Loader.jsx';
-import Grain from './Components/Grain/Grain.jsx';
-import InstallPrompt from './Components/InstallPrompt/InstallPrompt.jsx';
-import OfflineToast from './Components/OfflineToast/OfflineToast.jsx';
 import ErrorBoundary from './Components/ErrorBoundary/ErrorBoundary.jsx';
 import { lazyWithRetry } from './utils/lazyWithRetry.js';
 import { SPLASH_FAILSAFE_MS, skipSplash, paintReady } from './utils/bootSplashLogic.js';
-import {
-  CSS_PROBE_FAILSAFE_MS,
-  resolveCssProbeAction,
-  recordCssReload,
-} from './utils/cssRecoveryLogic.js';
-import { shouldReloadOnResume } from './utils/resumeReload.js';
-import useExperienceCapabilities from './hooks/useExperienceCapabilities.js';
 import './assets/fonts-latin.css';
 import './index.css';
 
@@ -97,8 +86,6 @@ const ContactUs = lazyWithRetry(
 );
 const NotFoundLazy = lazyWithRetry(() => import('./Pages/NotFound/NotFound.jsx'), 'not-found');
 
-// Cross-route scroll restoration: every navigation lands at the top unless a
-// state.id anchor was passed (App.jsx handles scrolling to that section).
 function ScrollToTop() {
   const { pathname, state, hash } = useLocation();
   useEffect(() => {
@@ -108,81 +95,7 @@ function ScrollToTop() {
   return null;
 }
 
-// iOS suspends backgrounded tabs (timers freeze, WebGL contexts are
-// reclaimed); returning to one can surface a crashed page that never
-// refreshes itself. Reload when a tab comes back after being hidden past
-// PAGE_RESUME_RELOAD_MS — decision in src/utils/resumeReload.js, wiring here.
-function ResumeReloadGuard() {
-  useEffect(() => {
-    let hiddenAt = null;
-    const onVisibilityChange = () => {
-      if (document.hidden) {
-        hiddenAt = Date.now();
-      } else if (hiddenAt !== null && shouldReloadOnResume({ hiddenAt, visibleAt: Date.now() })) {
-        window.location.reload();
-      }
-    };
-    document.addEventListener('visibilitychange', onVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', onVisibilityChange);
-  }, []);
-  return null;
-}
-
-/**
- * First-load boot splash: a static, inline splash in index.html covers first
- * paint from the HTML document (so FCP does not wait on the JS bundle). React
- * only drives its dismissal — once the boot is genuinely ready, or a failsafe
- * elapses, it fades out and removes the element. It only runs once per full
- * page load — never on client-side navigation.
- *
- * Slow/low-end devices (ADR-0001) skip the splash: it is removed immediately,
- * not painted.
- */
-// The entry stylesheet (assets/index-*.css) has no JS import to reject on
-// failure — when its <link> 404s (stale deploy hash, a proxy hiccup) React
-// still mounts and the page renders fully unstyled (giant hero images, jammed
-// navbar, serif fallback). Probe the index.css body background once the page
-// settles and recover with the same one-shot reload policy as lazy chunks —
-// decision in src/utils/cssRecoveryLogic.js, wiring here.
-function CssRecoveryGuard() {
-  useEffect(() => {
-    let settled = false;
-    const probe = () => {
-      if (settled) return;
-      let background = '';
-      try {
-        background = getComputedStyle(document.body).backgroundColor;
-      } catch {
-        // Keep the '' default — an unreadable body counts as missing CSS.
-      }
-      const action = resolveCssProbeAction({
-        bodyBackground: background,
-        online: navigator.onLine !== false,
-      });
-      if (action === 'done') {
-        settled = true;
-      } else if (action === 'reload') {
-        settled = true;
-        recordCssReload();
-      }
-    };
-    const failsafe = setTimeout(probe, CSS_PROBE_FAILSAFE_MS);
-    window.addEventListener('online', probe);
-    if (document.readyState === 'complete') probe();
-    else window.addEventListener('load', probe, { once: true });
-    return () => {
-      clearTimeout(failsafe);
-      window.removeEventListener('online', probe);
-      window.removeEventListener('load', probe);
-    };
-  }, []);
-  return null;
-}
-
 function Root() {
-  // The slowNetwork splash gate lives in the experience-tier matrix — splash
-  // is the capability.
-  const { splash } = useExperienceCapabilities();
   const hiddenRef = useRef(false);
 
   useEffect(() => {
@@ -190,7 +103,6 @@ function Root() {
     if (!splash) return;
 
     if (skipSplash(!splash)) {
-      // ADR-0001: slow/low-end devices get no splash — drop it immediately.
       splash.remove();
       return;
     }
@@ -198,27 +110,11 @@ function Root() {
     let disposed = false;
     const hide = () => {
       if (disposed || hiddenRef.current) return;
-      hiddenRef.current = true; // idempotent — many triggers, one fade-out
-      // Remove IMMEDIATELY (not via a 700ms timer): the CSS transition on
-      // .is-fading animates the fade-out, and a delayed remove() keeps the
-      // element in the DOM — which occludes the hero and blocks its LCP
-      // entry. Under CPU throttle that setTimeout stretches (measured: ~9s
-      // at 4x), exactly the failure the 1.5s failsafe was meant to fix.
+      hiddenRef.current = true;
       splash.classList.add('is-fading');
       splash.remove();
     };
 
-    // The splash lasts only as long as the boot genuinely needs:
-    //  1. first paint landed (double rAF — fires right after the first frame
-    //     paints, which is what the hero content is waiting on), or
-    //  2. the whole page finished loading (window 'load'), or
-    //  3. a hard failsafe at 1.5s so a stalled resource can never occlude the
-    //     page. The old path waited on document.fonts.ready too — but a
-    //     stalled font fetch keeps that promise pending, and the old 5s
-    //     failsafe stretched further under CPU throttle. The preloaded hero
-    //     PNG + @fontsource woff2s start at parse time, so painting the page
-    //     early costs nothing; keeping an opaque splash over them is what
-    //     inflated LCP (measured 9s of occlusion at 4x throttle).
     paintReady()
       .then(hide)
       .catch(() => hide());
@@ -232,13 +128,10 @@ function Root() {
       clearTimeout(failsafe);
       window.removeEventListener('load', onLoad);
     };
-  }, [splash]);
+  }, []);
 
   return (
     <>
-      {/* onError must dereference reportError at call time (wrapper closure),
-          not snapshot it at render time — otherwise the no-op assigned before
-          the async Sentry import resolves would be captured permanently. */}
       <ErrorBoundary onError={(error) => reportError(error)}>
         <Suspense fallback={<Loader />}>
           <Routes>
@@ -249,21 +142,12 @@ function Root() {
           </Routes>
         </Suspense>
       </ErrorBoundary>
-      <Grain />
     </>
   );
 }
 
 const container = document.getElementById('root');
 
-// The build injects a static hero <img> into index.html for the home LCP
-// (vite.config.js); home's HeroSection removes it on mount. A direct load of
-// any other route (/contact, /events) never mounts HeroSection, so the
-// static copy would linger as a giant floating FOCES logo. Remove it here —
-// synchronously before first render, gated on the route so home keeps its
-// LCP element until HeroSection takes over. Module scripts are deferred, so
-// the static hero has already painted (and counted for LCP) by the time this
-// runs; an effect would be a frame too late and flash on direct loads.
 if (window.location.pathname !== '/') {
   document.getElementById('hero-lcp-static')?.remove();
 }
@@ -274,12 +158,7 @@ root.render(
   <React.StrictMode>
     <Router>
       <ScrollToTop />
-      <ResumeReloadGuard />
-      <CssRecoveryGuard />
       <Root />
-      <DeferredAnalytics />
-      <InstallPrompt />
-      <OfflineToast />
     </Router>
   </React.StrictMode>,
 );
