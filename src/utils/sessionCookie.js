@@ -1,7 +1,6 @@
-// Session-cookie helpers for the InstallPrompt toast (and anything else that
-// needs a "once per browser session" flag). A session cookie has no
-// Max-Age/Expires — the browser clears it when the session ends, so a
-// genuinely new visit gets the prompt again.
+// Session-cookie helpers for UI that needs a "once per browser session" flag.
+// A session cookie omits Max-Age/Expires, so the browser clears it when the
+// session ends and the next browser session starts clean.
 
 export function readSessionFlag(name) {
   if (typeof document === 'undefined') return false;

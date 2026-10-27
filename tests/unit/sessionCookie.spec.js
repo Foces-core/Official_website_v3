@@ -1,9 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { readSessionFlag, writeSessionFlag } from '../../src/utils/sessionCookie.js';
 
-// The seam is the two tiny cookie helpers InstallPrompt uses to show its
-// install toast at most once per browser session: readSessionFlag must only
-// match the exact `name=1` pair (a startsWith would also match
+// The helpers must match the exact `name=1` pair (a startsWith would also match
 // foces-install-seen=10), and writeSessionFlag must set a session cookie
 // (no Max-Age/Expires) that survives StrictMode's double-invoke.
 
