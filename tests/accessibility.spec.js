@@ -47,6 +47,7 @@ test.describe('Reduced motion', () => {
   test('content stays visible with prefers-reduced-motion', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await gotoHome(page);
+    await expect(page.locator('.site-page-enter')).toHaveCount(0);
     await page.locator('#about').scrollIntoViewIfNeeded();
     await page.waitForTimeout(800);
     const visible = await page.evaluate(() => {
@@ -54,6 +55,27 @@ test.describe('Reduced motion', () => {
       return el ? getComputedStyle(el).opacity === '1' : true;
     });
     expect(visible).toBe(true);
+  });
+
+  test('page entry fades in when full motion is allowed', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto('/?perf=high', { waitUntil: 'domcontentloaded' });
+    await waitForLoaderGone(page);
+
+    const animation = await page.locator('.site-page-enter').evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        name: style.animationName,
+        duration: style.animationDuration,
+        delay: style.animationDelay,
+      };
+    });
+
+    expect(animation).toEqual({
+      name: 'site-page-fade-in',
+      duration: '0.72s',
+      delay: '0.12s',
+    });
   });
 });
 
@@ -105,18 +127,18 @@ test.describe('Overlays & install', () => {
     await expect(page.getByLabel('Install FOCES app')).toHaveCount(0);
   });
 
-  test('install toast shows at most once per session', async ({ page }) => {
+  test('install prompt stays absent after beforeinstallprompt', async ({ page }) => {
     await gotoHome(page);
     const firePrompt = () =>
       page.evaluate(() =>
         window.dispatchEvent(new Event('beforeinstallprompt', { cancelable: true })),
       );
 
-    // First visit: the toast appears.
+    // Install prompts are not mounted by the current app shell.
     await firePrompt();
-    await expect(page.getByLabel('Install FOCES app')).toBeVisible();
+    await expect(page.getByLabel('Install FOCES app')).toHaveCount(0);
 
-    // Same browser session, new page load: the session cookie silences it.
+    // A reload does not enable the removed prompt either.
     await page.reload({ waitUntil: 'networkidle' });
     await waitForLoaderGone(page);
     await firePrompt();

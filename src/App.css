@@ -24,7 +24,25 @@ body.aos-disabled [data-aos] {
     transition: none !important;
 }
 
+@keyframes site-page-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.site-page-enter {
+    animation: site-page-fade-in 720ms cubic-bezier(0.65, 0, 0.35, 1) 120ms both;
+}
+
 @media (prefers-reduced-motion: reduce) {
+    .site-page-enter {
+        animation: none !important;
+    }
+
     [data-aos] {
         opacity: 1 !important;
         transform: none !important;

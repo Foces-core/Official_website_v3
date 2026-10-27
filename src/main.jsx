@@ -7,6 +7,7 @@ import Loader from './Components/Loader/Loader.jsx';
 import ErrorBoundary from './Components/ErrorBoundary/ErrorBoundary.jsx';
 import { lazyWithRetry } from './utils/lazyWithRetry.js';
 import { SPLASH_FAILSAFE_MS, skipSplash, paintReady } from './utils/bootSplashLogic.js';
+import useExperienceCapabilities from './hooks/useExperienceCapabilities.js';
 import './assets/fonts-latin.css';
 import './index.css';
 
@@ -96,6 +97,7 @@ function ScrollToTop() {
 }
 
 function Root() {
+  const { aosReveals } = useExperienceCapabilities();
   const hiddenRef = useRef(false);
 
   useEffect(() => {
@@ -134,12 +136,14 @@ function Root() {
     <>
       <ErrorBoundary onError={(error) => reportError(error)}>
         <Suspense fallback={<Loader />}>
-          <Routes>
-            <Route path="/" element={<App />} />
-            <Route path="/events" element={<Eventpage />} />
-            <Route path="/contact" element={<ContactUs />} />
-            <Route path="*" element={<NotFoundLazy />} />
-          </Routes>
+          <div className={aosReveals ? 'site-page-enter' : undefined}>
+            <Routes>
+              <Route path="/" element={<App />} />
+              <Route path="/events" element={<Eventpage />} />
+              <Route path="/contact" element={<ContactUs />} />
+              <Route path="*" element={<NotFoundLazy />} />
+            </Routes>
+          </div>
         </Suspense>
       </ErrorBoundary>
     </>
