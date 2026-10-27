@@ -76,6 +76,64 @@ test.describe('Reduced motion', () => {
       duration: '0.72s',
       delay: '0.12s',
     });
+
+    const childEventPreservedEntry = await page.locator('.site-page-enter').evaluate((element) => {
+      const child = document.createElement('span');
+      element.append(child);
+      child.dispatchEvent(
+        new AnimationEvent('animationend', { bubbles: true, animationName: 'site-page-fade-in' }),
+      );
+      const preserved = element.classList.contains('site-page-enter');
+      child.remove();
+      element.dispatchEvent(
+        new AnimationEvent('animationcancel', {
+          bubbles: true,
+          animationName: 'site-page-fade-in',
+        }),
+      );
+      return preserved;
+    });
+    expect(childEventPreservedEntry).toBe(true);
+    await expect(page.locator('.site-page-enter')).toHaveCount(0);
+  });
+
+  test('does not start the page entry fade when motion capability enables later', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.addInitScript(() => {
+      const listeners = new Set();
+      const connection = {
+        effectiveType: '2g',
+        saveData: true,
+        downlink: 0.3,
+        addEventListener(type, listener) {
+          if (type === 'change') listeners.add(listener);
+        },
+        removeEventListener(type, listener) {
+          if (type === 'change') listeners.delete(listener);
+        },
+      };
+
+      Object.defineProperty(navigator, 'connection', {
+        configurable: true,
+        value: connection,
+      });
+      window.enableFullMotionProfile = () => {
+        history.replaceState(null, '', '/?perf=high');
+        for (const listener of listeners) listener();
+        return listeners.size;
+      };
+    });
+
+    await page.goto('/?perf=slow', { waitUntil: 'domcontentloaded' });
+    await waitForLoaderGone(page);
+    await expect(page.locator('.site-page-enter')).toHaveCount(0);
+
+    const profileListeners = await page.evaluate(() => window.enableFullMotionProfile());
+    expect(profileListeners).toBeGreaterThan(0);
+    await page.waitForTimeout(100);
+    await expect(page.locator('.site-page-enter')).toHaveCount(0);
   });
 });
 

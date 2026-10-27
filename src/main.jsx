@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components -- entry file: no exports, fast-refresh irrelevant */
-import React, { Suspense, useEffect, useRef } from 'react';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router';
 import App from './App.jsx';
@@ -98,7 +98,28 @@ function ScrollToTop() {
 
 function Root() {
   const { aosReveals } = useExperienceCapabilities();
+  const [entryPending, setEntryPending] = useState(() => aosReveals);
+  const entryRef = useRef(null);
   const hiddenRef = useRef(false);
+
+  useEffect(() => {
+    if (!entryPending) return;
+
+    const entry = entryRef.current;
+    if (!entry) return;
+
+    const finishEntryAnimation = (event) => {
+      if (event.target !== entry || event.animationName !== 'site-page-fade-in') return;
+      setEntryPending(false);
+    };
+
+    entry.addEventListener('animationend', finishEntryAnimation);
+    entry.addEventListener('animationcancel', finishEntryAnimation);
+    return () => {
+      entry.removeEventListener('animationend', finishEntryAnimation);
+      entry.removeEventListener('animationcancel', finishEntryAnimation);
+    };
+  }, [entryPending]);
 
   useEffect(() => {
     const splash = document.getElementById('boot-splash');
@@ -136,7 +157,7 @@ function Root() {
     <>
       <ErrorBoundary onError={(error) => reportError(error)}>
         <Suspense fallback={<Loader />}>
-          <div className={aosReveals ? 'site-page-enter' : undefined}>
+          <div ref={entryRef} className={entryPending ? 'site-page-enter' : undefined}>
             <Routes>
               <Route path="/" element={<App />} />
               <Route path="/events" element={<Eventpage />} />
