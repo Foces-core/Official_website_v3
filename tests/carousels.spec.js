@@ -66,11 +66,14 @@ test.describe('Execom / Meet the team carousel', () => {
     expect(visibleCards).toBeGreaterThan(1);
   });
 
-  test('desktop stays a carousel with reduced-motion and low-power overrides', async ({ page }) => {
+  test('desktop stays a carousel with motion and low-power overrides', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
 
-    for (const override of ['?motion=off', '?perf=slow']) {
+    for (const override of ['?motion=on', '?motion=off', '?perf=slow']) {
       await page.goto(`/${override}`, { waitUntil: 'domcontentloaded' });
+      if (override === '?motion=on') {
+        await expect(page.locator('html')).toHaveAttribute('data-motion-reduced', 'false');
+      }
       await page.locator('#execom').scrollIntoViewIfNeeded();
 
       const carousel = page.locator('.execom-swiper[data-carousel-ready]');
@@ -87,6 +90,19 @@ test.describe('Execom / Meet the team carousel', () => {
 
     await expect(desktopPortrait).toHaveAttribute('src', /lisha-2026-[^/]+\.webp$/);
     await expect(mobilePortrait).toHaveAttribute('src', /lisha1-[^/]+\.webp$/);
+
+    for (const name of [
+      'Anna Rachel Mathew',
+      'Abhirami P',
+      'Anjitha Aravind',
+      'Lisha Jins',
+      'Sebin Mathew',
+      'Devadarsana R',
+    ]) {
+      const portrait = page.locator(`.execom-swiper img[alt="${name}"]`).first();
+      await expect(portrait).toHaveCSS('object-position', '50% 50%');
+      await expect(portrait).toHaveCSS('filter', /brightness\(0\.92\)/);
+    }
   });
 
   const activeIndex = (page) =>
@@ -150,7 +166,7 @@ test.describe('Execom / Meet the team carousel', () => {
     await centerImage().hover();
     await expect
       .poll(() => centerImage().evaluate((img) => getComputedStyle(img).filter))
-      .toBe('none');
+      .not.toContain('grayscale(1)');
 
     const before = await activeIndex(page);
     await page.keyboard.press('ArrowRight');
@@ -163,7 +179,7 @@ test.describe('Execom / Meet the team carousel', () => {
     await centerImage().hover();
     await expect
       .poll(() => centerImage().evaluate((img) => getComputedStyle(img).filter))
-      .toBe('none');
+      .not.toContain('grayscale(1)');
   });
 
   test('image keeps hover color while the pointer moves into its caption', async ({ page }) => {
@@ -171,9 +187,13 @@ test.describe('Execom / Meet the team carousel', () => {
     const image = card.locator('img:not([aria-hidden="true"])');
 
     await image.hover();
-    await expect(image).toHaveCSS('filter', 'none');
+    await expect
+      .poll(() => image.evaluate((img) => getComputedStyle(img).filter))
+      .not.toContain('grayscale(1)');
     await card.locator(':scope > div.absolute').hover();
-    await expect(image).toHaveCSS('filter', 'none');
+    await expect
+      .poll(() => image.evaluate((img) => getComputedStyle(img).filter))
+      .not.toContain('grayscale(1)');
   });
 
   test('arrow keys still work after clicking a dot', async ({ page }) => {

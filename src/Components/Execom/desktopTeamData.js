@@ -26,6 +26,8 @@ const updatedPortrait = (full, small, blur) => ({
     [small, 400],
   ]),
   blur,
+  imgPosition: 'object-center',
+  imageTone: 'brightness-[0.92] contrast-[0.97] saturate-[0.92]',
 });
 
 const desktopPortraits = new Map([
