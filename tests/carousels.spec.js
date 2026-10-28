@@ -82,6 +82,27 @@ test.describe('Execom / Meet the team carousel', () => {
     }
   });
 
+  test('desktop carousel keeps wrapping and loading after rapid advances', async ({ page }) => {
+    const carousel = page.locator('.execom-swiper[data-carousel-ready]');
+    await page.evaluate(() => {
+      const root = document.querySelector('.execom-swiper');
+      root.__carouselEngine__.stopAutoplay();
+      const next = document.querySelector('button[aria-label="Next team member"]');
+      for (let i = 0; i < 80; i += 1) next.click();
+    });
+
+    await expect
+      .poll(() => carousel.evaluate((root) => root.__carouselEngine__.activeIndex % 11))
+      .toBe(3);
+    await expect
+      .poll(() =>
+        carousel
+          .locator('[data-slide-active] img')
+          .evaluate((image) => image.complete && image.naturalWidth > 0),
+      )
+      .toBe(true);
+  });
+
   test('uses refreshed portraits on desktop while mobile keeps the existing portrait', async ({
     page,
   }) => {
@@ -219,6 +240,19 @@ test.describe('Execom / Meet the team carousel', () => {
 
 test.describe('Execom mobile cube drag', () => {
   test.skip(({ isMobile }) => !isMobile, 'cube drag is a touchscreen interaction');
+
+  test('reduced motion keeps the team cube available for manual rotation', async ({ page }) => {
+    await page.goto('/?motion=off', { waitUntil: 'domcontentloaded' });
+    await page.locator('#execom').scrollIntoViewIfNeeded();
+    const cube = page.locator('.execom-cube-swiper[data-carousel-ready]');
+    await expect(cube).toHaveAttribute('data-carousel-mode', 'cube');
+
+    const before = await cube.evaluate((root) => root.__carouselEngine__.activeIndex);
+    await cube.evaluate((root) => root.__carouselEngine__.slideNext());
+    await expect
+      .poll(() => cube.evaluate((root) => root.__carouselEngine__.activeIndex))
+      .toBe(before + 1);
+  });
 
   test('dragging the cube advances to the next member', async ({ page }) => {
     await gotoHome(page);

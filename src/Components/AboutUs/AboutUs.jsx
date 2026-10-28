@@ -102,7 +102,7 @@ function AboutUs() {
       celebrationCleanupRef.current = fire({
         cx,
         cy,
-        count: confetti ? (celebrationMotion ? 30 : 0) : 10,
+        count: celebrationMotion ? (confetti ? 30 : 10) : 0,
         colors: PARTICLE_COLORS,
         emojis: PARTICLE_EMOJIS,
         messages: EASTER_MESSAGES,
