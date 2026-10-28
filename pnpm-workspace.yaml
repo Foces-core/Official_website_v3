@@ -26,3 +26,9 @@ overrides:
   'brace-expansion@>=1.0.0 <1.1.21': 5.0.12
   'brace-expansion@>=2.0.0 <2.1.7': 5.0.12
   'brace-expansion@>=4.0.0 <5.0.12': 5.0.12
+
+# No fix is published for this low-severity advisory. deepmerge is only pulled
+# into the build toolchain by workbox-build; remove this exception when fixed.
+audit:
+  ignore:
+    - GHSA-gcqx-w48m-w2h4

@@ -2,6 +2,16 @@ import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { gotoHome, waitForLoaderGone } from './helpers';
 
+async function pausePageEntryAnimation(page) {
+  await page.addInitScript(() => {
+    const style = document.createElement('style');
+    style.textContent =
+      'html[data-pause-page-entry] .site-page-enter { animation-play-state: paused !important; }';
+    document.documentElement.dataset.pausePageEntry = 'true';
+    (document.head ?? document.documentElement).append(style);
+  });
+}
+
 test.describe('WCAG scan (axe-core)', () => {
   // The repo's a11y contract is WCAG 2.1/2.2 AA (CONTRIBUTING.md); scan those
   // tags on every route. Serious/critical failures block the PR; moderate
@@ -59,8 +69,9 @@ test.describe('Reduced motion', () => {
 
   test('page entry fades in when full motion is allowed', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await pausePageEntryAnimation(page);
     await page.goto('/?perf=high', { waitUntil: 'domcontentloaded' });
-    await waitForLoaderGone(page);
+    await expect(page.locator('.site-page-enter')).toHaveCount(1);
 
     const animation = await page.locator('.site-page-enter').evaluate((element) => {
       const style = getComputedStyle(element);
@@ -100,8 +111,9 @@ test.describe('Reduced motion', () => {
   for (const route of ['/events', '/contact', '/unknown-route']) {
     test(`page entry fade works on ${route}`, async ({ page }) => {
       await page.emulateMedia({ reducedMotion: 'no-preference' });
+      await pausePageEntryAnimation(page);
       await page.goto(`${route}?perf=high`, { waitUntil: 'domcontentloaded' });
-      await waitForLoaderGone(page);
+      await expect(page.locator('.site-page-enter')).toHaveCount(1);
 
       const animation = await page.locator('.site-page-enter').evaluate((element) => {
         const style = getComputedStyle(element);
