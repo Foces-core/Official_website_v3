@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components -- entry file: no exports, fast-refresh irrelevant */
-import React, { Suspense, useEffect, useRef } from 'react';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router';
 import App from './App.jsx';
@@ -7,6 +8,7 @@ import Loader from './Components/Loader/Loader.jsx';
 import ErrorBoundary from './Components/ErrorBoundary/ErrorBoundary.jsx';
 import { lazyWithRetry } from './utils/lazyWithRetry.js';
 import { SPLASH_FAILSAFE_MS, skipSplash, paintReady } from './utils/bootSplashLogic.js';
+import useExperienceCapabilities from './hooks/useExperienceCapabilities.js';
 import './assets/fonts-latin.css';
 import './index.css';
 
@@ -95,7 +97,44 @@ function ScrollToTop() {
   return null;
 }
 
+function PageEntryTransition({ animate, children }) {
+  const [entryPending, setEntryPending] = useState(() => animate);
+  const entryRef = useRef(null);
+
+  useEffect(() => {
+    if (!entryPending) return;
+
+    const entry = entryRef.current;
+    if (!entry) return;
+
+    const finishEntryAnimation = (event) => {
+      if (event.target !== entry || event.animationName !== 'site-page-fade-in') return;
+      setEntryPending(false);
+    };
+
+    entry.addEventListener('animationend', finishEntryAnimation);
+    entry.addEventListener('animationcancel', finishEntryAnimation);
+    return () => {
+      entry.removeEventListener('animationend', finishEntryAnimation);
+      entry.removeEventListener('animationcancel', finishEntryAnimation);
+    };
+  }, [entryPending]);
+
+  return (
+    <div ref={entryRef} className={entryPending ? 'site-page-enter' : undefined}>
+      {children}
+    </div>
+  );
+}
+
+PageEntryTransition.propTypes = {
+  animate: PropTypes.bool.isRequired,
+  children: PropTypes.node.isRequired,
+};
+
 function Root() {
+  const { aosReveals } = useExperienceCapabilities();
+  const location = useLocation();
   const hiddenRef = useRef(false);
 
   useEffect(() => {
@@ -134,12 +173,14 @@ function Root() {
     <>
       <ErrorBoundary onError={(error) => reportError(error)}>
         <Suspense fallback={<Loader />}>
-          <Routes>
-            <Route path="/" element={<App />} />
-            <Route path="/events" element={<Eventpage />} />
-            <Route path="/contact" element={<ContactUs />} />
-            <Route path="*" element={<NotFoundLazy />} />
-          </Routes>
+          <PageEntryTransition key={location.pathname} animate={aosReveals}>
+            <Routes>
+              <Route path="/" element={<App />} />
+              <Route path="/events" element={<Eventpage />} />
+              <Route path="/contact" element={<ContactUs />} />
+              <Route path="*" element={<NotFoundLazy />} />
+            </Routes>
+          </PageEntryTransition>
         </Suspense>
       </ErrorBoundary>
     </>

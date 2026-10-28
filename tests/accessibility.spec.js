@@ -2,6 +2,16 @@ import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { gotoHome, waitForLoaderGone } from './helpers';
 
+async function pausePageEntryAnimation(page) {
+  await page.addInitScript(() => {
+    const style = document.createElement('style');
+    style.textContent =
+      'html[data-pause-page-entry] .site-page-enter { animation-play-state: paused !important; }';
+    document.documentElement.dataset.pausePageEntry = 'true';
+    (document.head ?? document.documentElement).append(style);
+  });
+}
+
 test.describe('WCAG scan (axe-core)', () => {
   // The repo's a11y contract is WCAG 2.1/2.2 AA (CONTRIBUTING.md); scan those
   // tags on every route. Serious/critical failures block the PR; moderate
@@ -47,6 +57,7 @@ test.describe('Reduced motion', () => {
   test('content stays visible with prefers-reduced-motion', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await gotoHome(page);
+    await expect(page.locator('.site-page-enter')).toHaveCount(0);
     await page.locator('#about').scrollIntoViewIfNeeded();
     await page.waitForTimeout(800);
     const visible = await page.evaluate(() => {
@@ -54,6 +65,130 @@ test.describe('Reduced motion', () => {
       return el ? getComputedStyle(el).opacity === '1' : true;
     });
     expect(visible).toBe(true);
+  });
+
+  test('page entry fades in when full motion is allowed', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await pausePageEntryAnimation(page);
+    await page.goto('/?perf=high', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.site-page-enter')).toHaveCount(1);
+
+    const animation = await page.locator('.site-page-enter').evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        name: style.animationName,
+        duration: style.animationDuration,
+        delay: style.animationDelay,
+      };
+    });
+
+    expect(animation).toEqual({
+      name: 'site-page-fade-in',
+      duration: '0.72s',
+      delay: '0.12s',
+    });
+
+    const childEventPreservedEntry = await page.locator('.site-page-enter').evaluate((element) => {
+      const child = document.createElement('span');
+      element.append(child);
+      child.dispatchEvent(
+        new AnimationEvent('animationend', { bubbles: true, animationName: 'site-page-fade-in' }),
+      );
+      const preserved = element.classList.contains('site-page-enter');
+      child.remove();
+      element.dispatchEvent(
+        new AnimationEvent('animationcancel', {
+          bubbles: true,
+          animationName: 'site-page-fade-in',
+        }),
+      );
+      return preserved;
+    });
+    expect(childEventPreservedEntry).toBe(true);
+    await expect(page.locator('.site-page-enter')).toHaveCount(0);
+  });
+
+  for (const route of ['/events', '/contact', '/unknown-route']) {
+    test(`page entry fade works on ${route}`, async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
+      await pausePageEntryAnimation(page);
+      await page.goto(`${route}?perf=high`, { waitUntil: 'domcontentloaded' });
+      await expect(page.locator('.site-page-enter')).toHaveCount(1);
+
+      const animation = await page.locator('.site-page-enter').evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+          name: style.animationName,
+          duration: style.animationDuration,
+          delay: style.animationDelay,
+        };
+      });
+
+      expect(animation).toEqual({
+        name: 'site-page-fade-in',
+        duration: '0.72s',
+        delay: '0.12s',
+      });
+    });
+  }
+
+  test('page entry fade runs on in-app route changes', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto('/?perf=high', { waitUntil: 'domcontentloaded' });
+    await waitForLoaderGone(page);
+    await expect(page.locator('.site-page-enter')).toHaveCount(0);
+
+    await page.evaluate(() => {
+      window.history.pushState(null, '', '/events?perf=high');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+
+    await expect(page).toHaveURL(/\/events\?perf=high$/);
+    await expect(page.locator('.site-page-enter')).toHaveCount(1);
+
+    const animationName = await page
+      .locator('.site-page-enter')
+      .evaluate((element) => getComputedStyle(element).animationName);
+    expect(animationName).toBe('site-page-fade-in');
+  });
+
+  test('does not start the page entry fade when motion capability enables later', async ({
+    page,
+  }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.addInitScript(() => {
+      const listeners = new Set();
+      const connection = {
+        effectiveType: '2g',
+        saveData: true,
+        downlink: 0.3,
+        addEventListener(type, listener) {
+          if (type === 'change') listeners.add(listener);
+        },
+        removeEventListener(type, listener) {
+          if (type === 'change') listeners.delete(listener);
+        },
+      };
+
+      Object.defineProperty(navigator, 'connection', {
+        configurable: true,
+        value: connection,
+      });
+      window.enableFullMotionProfile = () => {
+        history.replaceState(null, '', '/?perf=high');
+        for (const listener of listeners) listener();
+        return listeners.size;
+      };
+    });
+
+    await page.goto('/?perf=slow', { waitUntil: 'domcontentloaded' });
+    await waitForLoaderGone(page);
+    await expect(page.locator('.site-page-enter')).toHaveCount(0);
+
+    const profileListeners = await page.evaluate(() => window.enableFullMotionProfile());
+    expect(profileListeners).toBeGreaterThan(0);
+    await page.waitForTimeout(100);
+    await expect(page.locator('.site-page-enter')).toHaveCount(0);
   });
 });
 
@@ -105,18 +240,18 @@ test.describe('Overlays & install', () => {
     await expect(page.getByLabel('Install FOCES app')).toHaveCount(0);
   });
 
-  test('install toast shows at most once per session', async ({ page }) => {
+  test('install prompt stays absent after beforeinstallprompt', async ({ page }) => {
     await gotoHome(page);
     const firePrompt = () =>
       page.evaluate(() =>
         window.dispatchEvent(new Event('beforeinstallprompt', { cancelable: true })),
       );
 
-    // First visit: the toast appears.
+    // Install prompts are not mounted by the current app shell.
     await firePrompt();
-    await expect(page.getByLabel('Install FOCES app')).toBeVisible();
+    await expect(page.getByLabel('Install FOCES app')).toHaveCount(0);
 
-    // Same browser session, new page load: the session cookie silences it.
+    // A reload does not enable the removed prompt either.
     await page.reload({ waitUntil: 'networkidle' });
     await waitForLoaderGone(page);
     await firePrompt();

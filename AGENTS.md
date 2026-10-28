@@ -57,8 +57,8 @@ Merged branches are deleted in the same task that merges them — never accumula
 - `src/main.jsx` — router (`/`, `/events`, `/contact`), lazy routes, boot splash (decisions in
   `bootSplashLogic`), StrictMode.
 - `src/Pages/` — route-level pages (`LandingPages/`, `EventPage/`).
-- `src/Components/` — shared UI (AboutUs, BlurImage, ContactUs, Execom, Grain, InstallPrompt,
-  Loader, ScrollGate, SectionSkeleton).
+- `src/Components/` — shared UI (AboutUs, BlurImage, ContactUs, Execom, Loader,
+  ScrollGate, SectionSkeleton).
 - `src/Components/AboutUs/` — the cube: `easterEggLogic.js` (spin tracker + `SPIN_BARS`),
   `confettiSim.js` (particles), `easterEggCelebration.js`
   (toast/message/EMA policies) — pure modules, the JSX is wiring. Wind-down

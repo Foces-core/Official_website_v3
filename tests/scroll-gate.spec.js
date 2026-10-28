@@ -57,8 +57,8 @@ test('scroll-gate defers section chunks', async ({ page }) => {
   expect(hasChunk(await loaded(), 'aboutus'), 'AboutUs chunk never loaded on scroll').toBeTruthy();
 });
 
-// Toast behavior with a real beforeinstallprompt dispatch.
-test('install toast shows once per session', async ({ page }) => {
+// The app shell no longer mounts install prompts.
+test('install prompt stays absent after beforeinstallprompt', async ({ page }) => {
   await page.addInitScript(() => {
     window.__fireBip = () =>
       window.dispatchEvent(
@@ -70,15 +70,9 @@ test('install toast shows once per session', async ({ page }) => {
   });
   await page.goto('/');
   await page.evaluate(() => window.__fireBip());
-  await expect(page.getByRole('region', { name: 'Install FOCES app' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Install FOCES app' })).toHaveCount(0);
 
-  // Session cookie written on show
-  const cookie = await page.evaluate(() => document.cookie);
-  expect(cookie).toContain('foces-install-seen=1');
-
-  // Reload → beforeinstallprompt fires again but toast must NOT nag
   await page.reload();
   await page.evaluate(() => window.__fireBip());
-  await page.waitForTimeout(500);
   await expect(page.getByRole('region', { name: 'Install FOCES app' })).toHaveCount(0);
 });

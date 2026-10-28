@@ -79,6 +79,9 @@ pnpm build      # production build (image optimizer + PWA precache)
   networks and low-end devices via `useDeviceProfile` (`slowNetwork`,
   `lowPower`, `lowCPU`). Never remove those guards, and test that gated
   content still appears (it must — see the AOS safety net in `App.css`).
+- **Page-entry motion**: `PageEntryTransition` fades each pathname once when
+  `aosReveals` allows motion. Keep the reduced-motion override, and do not
+  restart an entry fade just because the device profile changes.
 - **Accessibility (WCAG 2.1/2.2)**: interactive elements must be
   keyboard-accessible with visible focus styling. When only one widget may
   respond to arrow keys, coordinate via the shared keyboard lock

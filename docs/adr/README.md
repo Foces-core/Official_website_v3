@@ -30,6 +30,7 @@ Status conventions: **Accepted** (settled), **Proposed** (under review),
 | [0021](0021-renovate-platform-automerge.md)                         | Renovate platform auto-merge, gated on CI                                        | Accepted |
 | [0022](0022-required-checks-and-scoped-commits.md)                  | Required checks: promote commit-message validation, require scoped commits       | Accepted |
 | [0023](0023-carousel-autoplay-requires-visibility.md)               | Carousel autoplay requires visibility observation                                | Accepted |
+| [0024](0024-route-entry-transitions.md)                             | Capability-gated route entry transitions                                         | Accepted |
 
 ## Adding a new ADR
 
