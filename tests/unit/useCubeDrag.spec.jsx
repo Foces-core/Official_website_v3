@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { useCubeDrag } from '../../src/hooks/useCubeDrag.js';
 import { registerWidget, markInteracted, getArrowOwner } from '../../src/utils/keyboardLock.js';
 import { SPIN_BARS } from '../../src/Components/AboutUs/easterEggLogic.js';
+import { CUBE_PHYSICS } from '../../src/utils/cubePhysics.js';
 import { createHarness } from './harness.jsx';
 
 // The cube's motion orchestration (drag, wind-down, spin tracking, idle
@@ -431,7 +432,11 @@ describe('useCubeDrag', () => {
 
     act(() => vi.advanceTimersByTime(3001));
     fireFrames(1);
-    expect(el.style.transform).toContain('rotateY(269.5deg)');
+    expect(el.style.transform).toContain('rotateY(-90deg)');
+
+    act(() => vi.advanceTimersByTime(CUBE_PHYSICS.idlePauseMs - 3001));
+    fireFrames(1);
+    expect(el.style.transform).toContain('rotateY(-180deg)');
   });
 
   it('moves left by one face and ignores non-arrow keys', () => {
@@ -482,25 +487,37 @@ describe('useCubeDrag', () => {
     unregisterRival();
   });
 
-  it('idle auto-spin rotates the cube on its own while nothing owns it', () => {
+  it('holds each face before the next idle turn', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
     harness.render(<Probe />);
     const el = harness.container.querySelector('[data-testid="cube"]');
     expect(rafCallbacks.size).toBeGreaterThan(0); // idle spin scheduled
 
     fireFrames(1);
-    // 0 - 0.5 degrees, wrapped into [0, 360)
-    expect(el.style.transform).toContain('rotateY(359.5deg)');
+    expect(el.style.transform).toBe('');
+    act(() => vi.advanceTimersByTime(CUBE_PHYSICS.idlePauseMs));
+    fireFrames(1);
+    expect(el.style.transform).toContain('rotateY(-90deg)');
+    expect(el.style.transition).toBe(`transform ${CUBE_PHYSICS.snapMs}ms ease-in-out`);
+    fireFrames(1);
+    expect(el.style.transform).toContain('rotateY(-90deg)');
+    act(() => vi.advanceTimersByTime(CUBE_PHYSICS.idlePauseMs));
+    fireFrames(1);
+    expect(el.style.transform).toContain('rotateY(-180deg)');
   });
 
   it('pauses idle rotation while the cube is outside the observer margin and resumes on re-entry', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
     let onIntersect;
+    let observerOptions;
     const observe = vi.fn();
     const disconnect = vi.fn();
     vi.stubGlobal(
       'IntersectionObserver',
       class IntersectionObserverMock {
-        constructor(callback) {
+        constructor(callback, options) {
           onIntersect = callback;
+          observerOptions = options;
         }
         observe = observe;
         disconnect = disconnect;
@@ -509,17 +526,23 @@ describe('useCubeDrag', () => {
     harness.render(<Probe />);
     const el = harness.container.querySelector('[data-testid="cube"]');
     expect(observe).toHaveBeenCalledWith(el);
+    expect(observerOptions).toEqual({ rootMargin: '100px' });
 
     act(() => onIntersect([{ isIntersecting: false }]));
     fireFrames(1);
     expect(el.style.transform).toBe('');
     expect(rafCallbacks.size).toBe(0);
 
+    act(() => vi.advanceTimersByTime(CUBE_PHYSICS.idlePauseMs));
     act(() => onIntersect([{ isIntersecting: true }]));
+    expect(rafCallbacks.size).toBe(1);
+    act(() => onIntersect([{ isIntersecting: true }]));
+    expect(rafCallbacks.size).toBe(1);
     fireFrames(1);
-    expect(el.style.transform).toContain('rotateY(359.5deg)');
+    expect(el.style.transform).toContain('rotateY(-90deg)');
 
     harness.unmount();
+    expect(rafCallbacks.size).toBe(0);
     expect(disconnect).toHaveBeenCalledOnce();
   });
 
@@ -535,7 +558,8 @@ describe('useCubeDrag', () => {
     expect(rafCallbacks.size).toBe(1);
     fireFrames(240);
     expect(el.style.transition).toContain('400ms');
-    expect(el.style.transform).toMatch(/rotateY\(-?\d+deg\)/);
+    const settledAngle = Number(el.style.transform.match(/rotateY\((-?\d+)deg\)/)?.[1]);
+    expect(settledAngle % 90).toBe(0);
     expect(rafCallbacks.size).toBe(0);
   });
 
@@ -579,6 +603,12 @@ describe('useCubeDrag', () => {
   });
 
   it('skips the idle auto-spin when the idleSpin capability is off', () => {
+    harness.render(<Probe idleSpin={false} />);
+    expect(rafCallbacks.size).toBe(0);
+
+    harness.render(<Probe idleSpin />);
+    expect(rafCallbacks.size).toBe(1);
+
     harness.render(<Probe idleSpin={false} />);
     expect(rafCallbacks.size).toBe(0);
   });

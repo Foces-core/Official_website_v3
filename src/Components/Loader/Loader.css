@@ -96,7 +96,7 @@
    bars stay static (no animation) — the mug is a loading indicator, not
    decorative motion. */
 @media (prefers-reduced-motion: reduce) {
-    .coffee div {
+    :root:not([data-motion-reduced='false']) .coffee div {
         animation: none !important;
         opacity: 0.6;
     }

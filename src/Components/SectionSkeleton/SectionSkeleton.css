@@ -43,7 +43,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .skeleton-bar {
+    :root:not([data-motion-reduced='false']) .skeleton-bar {
         animation: none;
         background: #141416;
     }

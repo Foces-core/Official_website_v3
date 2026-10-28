@@ -50,6 +50,45 @@ test.describe('Execom / Meet the team carousel', () => {
     await page.waitForTimeout(1000);
   });
 
+  test('desktop shows a flat multi-card carousel with navigation arrows', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const carousel = page.locator('.execom-swiper[data-carousel-ready]');
+    await expect(carousel).toHaveAttribute('data-carousel-mode', 'flat');
+    await expect(page.getByRole('button', { name: 'Next team member' })).toBeVisible();
+    const visibleCards = await carousel.locator('.swiper-slide').evaluateAll(
+      (slides) =>
+        slides.filter((slide) => {
+          const rect = slide.getBoundingClientRect();
+          const viewport = slide.closest('.execom-swiper').getBoundingClientRect();
+          return rect.width > 0 && rect.left >= viewport.left && rect.right <= viewport.right;
+        }).length,
+    );
+    expect(visibleCards).toBeGreaterThan(1);
+  });
+
+  test('desktop stays a carousel with reduced-motion and low-power overrides', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+
+    for (const override of ['?motion=off', '?perf=slow']) {
+      await page.goto(`/${override}`, { waitUntil: 'domcontentloaded' });
+      await page.locator('#execom').scrollIntoViewIfNeeded();
+
+      const carousel = page.locator('.execom-swiper[data-carousel-ready]');
+      await expect(carousel).toHaveAttribute('data-carousel-mode', 'flat');
+      await expect(page.locator('.execom-cube-swiper')).toBeHidden();
+    }
+  });
+
+  test('uses refreshed portraits on desktop while mobile keeps the existing portrait', async ({
+    page,
+  }) => {
+    const desktopPortrait = page.locator('.execom-swiper img[alt="Lisha Jins"]').first();
+    const mobilePortrait = page.locator('.execom-cube-swiper img[alt="Lisha Jins"]').first();
+
+    await expect(desktopPortrait).toHaveAttribute('src', /lisha-2026-[^/]+\.webp$/);
+    await expect(mobilePortrait).toHaveAttribute('src', /lisha1-[^/]+\.webp$/);
+  });
+
   const activeIndex = (page) =>
     page.evaluate(() =>
       [...document.querySelectorAll('.execom-swiper .swiper-slide')].findIndex((s) =>

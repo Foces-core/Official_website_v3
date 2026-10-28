@@ -175,28 +175,34 @@
 }
 
 .about-wobble {
-    animation: about-wobble 0.9s ease;
+    animation: about-wobble 0.68s cubic-bezier(0.2, 0.8, 0.25, 1);
 }
 
 @keyframes about-wobble {
     0%,
     100% {
-        transform: scale(1) rotate(0deg);
+        transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
     }
-    15% {
-        transform: scale(1.12) rotate(-6deg);
+    16% {
+        transform: translate3d(-3px, -1px, 0) rotate(-1.2deg) scale(1.01);
     }
-    35% {
-        transform: scale(0.94) rotate(5deg);
+    32% {
+        transform: translate3d(3px, 0, 0) rotate(1deg) scale(0.995);
     }
-    55% {
-        transform: scale(1.08) rotate(-4deg);
+    48% {
+        transform: translate3d(-2px, 0, 0) rotate(-0.65deg) scale(1.005);
     }
-    75% {
-        transform: scale(0.98) rotate(3deg);
+    64% {
+        transform: translate3d(1px, 0, 0) rotate(0.3deg) scale(1);
     }
-    90% {
-        transform: scale(1.04) rotate(-1deg);
+    80% {
+        transform: translate3d(-0.5px, 0, 0) rotate(-0.15deg) scale(1);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :root:not([data-motion-reduced='false']) .about-wobble {
+        animation: none;
     }
 }
 

@@ -280,13 +280,14 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
     window.addEventListener('mouseup', up);
   };
 
-  // Idle auto-spin: rotates slowly on its own while visible and idle — unless
+  // Idle auto-spin: steps one face at a time while visible and idle — unless
   // the experience tier strips it (idleSpin capability), or a manual action
   // owns the cube. Delegates the idle check to `isIdleForAutoSpin`.
   useEffect(() => {
     if (!idleSpin) return;
 
     let animFrame = null;
+    let nextTurnAt = Date.now() + CUBE_PHYSICS.idlePauseMs;
     let visible = true;
     let observer = null;
 
@@ -299,12 +300,13 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
       });
 
     const tick = () => {
-      if (canSpin()) {
+      if (canSpin() && Date.now() >= nextTurnAt) {
         const el = boxRef.current;
         if (el) {
-          rotYRef.current = (rotYRef.current - 0.5 + 360) % 360;
-          el.style.transition = 'none';
-          el.style.transform = `rotateX(0deg) rotateY(${rotYRef.current}deg)`;
+          rotYRef.current = snapAngle(rotYRef.current) - 90;
+          el.style.transition = `transform ${CUBE_PHYSICS.snapMs}ms ease-in-out`;
+          applyTransform();
+          nextTurnAt = Date.now() + CUBE_PHYSICS.idlePauseMs;
         }
       }
       if (visible) {
@@ -334,7 +336,7 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
       if (observer) observer.disconnect();
       stopWindDown();
     };
-  }, [idleSpin, stopWindDown]);
+  }, [applyTransform, idleSpin, stopWindDown]);
 
   // Keyboard: left/right arrows only. Early returns collapsed to CC 4.
   useEffect(() => {

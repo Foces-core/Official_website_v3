@@ -31,6 +31,7 @@ Status conventions: **Accepted** (settled), **Proposed** (under review),
 | [0022](0022-required-checks-and-scoped-commits.md)                  | Required checks: promote commit-message validation, require scoped commits       | Accepted |
 | [0023](0023-carousel-autoplay-requires-visibility.md)               | Carousel autoplay requires visibility observation                                | Accepted |
 | [0024](0024-route-entry-transitions.md)                             | Capability-gated route entry transitions                                         | Accepted |
+| [0025](0025-contextual-nav-and-team-motion.md)                      | Contextual navigation and face-aligned team motion                               | Accepted |
 
 ## Adding a new ADR
 

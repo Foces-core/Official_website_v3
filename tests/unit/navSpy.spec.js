@@ -5,7 +5,55 @@ import {
   resolveNavAction,
   resolveLogoAction,
   shouldHideNavbar,
+  navItemsForPath,
+  rovingNavId,
+  navItemHref,
 } from '../../src/Pages/LandingPage/Navbar/navSpy.js';
+
+describe('route navigation options', () => {
+  const home = [
+    { id: 'home', name: 'HOME' },
+    { id: 'about', name: 'WHY FOCES?' },
+    { id: 'featuring', name: 'FEATURING' },
+    { id: 'events', name: 'EVENTS' },
+    { id: 'execom', name: 'MEET THE TEAM' },
+    { id: 'contact', name: 'CONTACT' },
+  ];
+
+  it('keeps all landing-page options', () => {
+    expect(navItemsForPath('/', home)).toEqual(home);
+  });
+
+  it('highlights about on the events page and team on contact', () => {
+    expect(navItemsForPath('/events', home).map(({ id }) => id)).toEqual([
+      'home',
+      'about',
+      'events',
+      'contact',
+    ]);
+    expect(navItemsForPath('/contact', home).map(({ id }) => id)).toEqual([
+      'home',
+      'events',
+      'execom',
+      'contact',
+    ]);
+  });
+
+  it('moves the keyboard tab stop to a valid item when the route changes', () => {
+    const events = navItemsForPath('/events', home);
+    expect(rovingNavId(events, 'execom', 'events')).toBe('home');
+    expect(rovingNavId(events, 'about', 'events')).toBe('about');
+    expect(rovingNavId(events, null, 'events')).toBe('events');
+  });
+
+  it('links to the events page from subpages, but the home section from home', () => {
+    expect(navItemHref('events', '/contact')).toBe('/events');
+    expect(navItemHref('events', '/events')).toBe('/events');
+    expect(navItemHref('events', '/')).toBe('/#events');
+    expect(navItemHref('contact', '/events')).toBe('/contact');
+    expect(navItemHref('about', '/events')).toBe('/#about');
+  });
+});
 
 describe('pickActiveSection — the navbar scrollspy decision', () => {
   // Worked example: 5 sections (home, about, featuring, events, execom) with
@@ -158,14 +206,14 @@ describe('pickOnViewport — the DOM-reading wrapper', () => {
     expect(getElementById).not.toHaveBeenCalled();
   });
 
-  it('returns null on other non-home routes (no home section is current)', () => {
+  it('highlights events on its own route without reading the home DOM', () => {
     const result = pickOnViewport({
       sectionIds: SECTION_IDS,
       pathname: '/events',
       win: { scrollY: 0, innerHeight: 800 },
       doc: makeDoc({}),
     });
-    expect(result).toBeNull();
+    expect(result).toBe('events');
   });
 
   it('picks the section under the 35% reference line from live geometry', () => {
@@ -255,12 +303,12 @@ describe('pickOnViewport - route awareness edges', () => {
     ).toBe('contact');
   });
 
-  it('returns null on unknown routes (e.g. /events)', () => {
+  it('returns null on unknown routes', () => {
     const doc = { getElementById: vi.fn(), documentElement: {} };
     expect(
       pickOnViewport({
         sectionIds: ['home'],
-        pathname: '/events',
+        pathname: '/unknown-route',
         win: { scrollY: 0, innerHeight: 800 },
         doc,
       }),

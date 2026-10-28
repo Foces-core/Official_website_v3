@@ -23,8 +23,8 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const ASSETS = join(ROOT, 'src', 'assets');
 const TARGET_WIDTH = 400;
 
-// The member photos in src/data/team.js, plus the advisor banner (gopakumar
-// renders at <=208px, so it right-sizes the same way).
+// The member photos in src/data/team.js, refreshed desktop carousel portraits,
+// and the advisor banner (gopakumar renders at <=208px).
 const MEMBER_FILES = [
   'aleeta',
   'lisha1',
@@ -38,6 +38,12 @@ const MEMBER_FILES = [
   'abhirami_p',
   'devadarsana',
   'gopakumar',
+  'anna-rachel-2026',
+  'abhirami-2026',
+  'anjitha-2026',
+  'lisha-2026',
+  'sebin-2026',
+  'devadarsana-2026',
 ];
 
 async function generateVariants() {

@@ -10,6 +10,28 @@
  *  - coalesceToFrame    — coalesce scroll/resize-driven work to one rAF
  */
 
+// Subpages show only relevant destinations; keep the home-page order and labels.
+export function navItemsForPath(pathname, homeItems) {
+  if (pathname === '/events') {
+    return homeItems.filter(({ id }) => ['home', 'about', 'events', 'contact'].includes(id));
+  }
+  if (pathname === '/contact') {
+    return homeItems.filter(({ id }) => ['home', 'events', 'execom', 'contact'].includes(id));
+  }
+  return homeItems;
+}
+
+export function rovingNavId(navItems, rovingId, currentItem) {
+  const candidate = rovingId ?? currentItem;
+  return navItems.some(({ id }) => id === candidate) ? candidate : navItems[0].id;
+}
+
+export function navItemHref(id, pathname) {
+  if (id === 'contact') return '/contact';
+  if (id === 'events' && pathname !== '/') return '/events';
+  return `/#${id}`;
+}
+
 // The scrollspy reference line sits at 35% down the viewport; the page counts
 // as "at the bottom" within 50px of its end. These policies live here, not in
 // the component. They are deliberately NOT exported: knip would flag dead
@@ -99,9 +121,8 @@ export function pickActiveSection({ sectionIds, scrollY, viewportH, docHeight, g
 /**
  * Thin DOM wrapper over pickActiveSection: reads the live scroll/viewport
  * geometry and each section's getBoundingClientRect().top, and returns the
- * nav item that should be current — null on non-home routes, where no home
- * section is "current" (the navbar falls back to the dark theme), and
- * 'contact' on the contact route.
+ * nav item that should be current — the route on /events or /contact,
+ * null on other non-home routes, and the visible section on home.
  *
  * Route awareness lives here so the whole "which nav item is current"
  * decision is unit-tested; the component only wires the result into state.
@@ -120,6 +141,7 @@ export function pickActiveSection({ sectionIds, scrollY, viewportH, docHeight, g
  */
 export function pickOnViewport({ sectionIds, pathname, win = window, doc = document }) {
   if (pathname === '/contact') return 'contact';
+  if (pathname === '/events') return 'events';
   if (pathname !== '/') return null;
   return pickActiveSection({
     sectionIds,
@@ -146,6 +168,7 @@ export function pickOnViewport({ sectionIds, pathname, win = window, doc = docum
 export function resolveNavAction(id, pathname) {
   // Contact is a real route, not a same-page anchor.
   if (id === 'contact') return { type: 'route', to: '/contact' };
+  if (id === 'events' && pathname !== '/') return { type: 'route', to: '/events' };
   // Any other item from a non-home route: go home, then scroll to the section.
   if (pathname !== '/') return { type: 'navigate', to: '/', state: { id } };
   // Already home: scroll to the section.
