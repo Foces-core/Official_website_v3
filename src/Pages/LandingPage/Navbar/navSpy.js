@@ -13,10 +13,10 @@
 // Subpages show only relevant destinations; keep the home-page order and labels.
 export function navItemsForPath(pathname, homeItems) {
   if (pathname === '/events') {
-    return homeItems.filter(({ id }) => ['home', 'about', 'events', 'contact'].includes(id));
+    return homeItems.filter(({ id }) => ['home', 'events', 'contact'].includes(id));
   }
   if (pathname === '/contact') {
-    return homeItems.filter(({ id }) => ['home', 'events', 'execom', 'contact'].includes(id));
+    return homeItems.filter(({ id }) => ['home', 'contact'].includes(id));
   }
   return homeItems;
 }

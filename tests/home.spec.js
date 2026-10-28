@@ -17,8 +17,12 @@ test.describe('Home page structure', () => {
 });
 
 test.describe('Cube easter egg', () => {
-  async function scrollToCube(page) {
-    await gotoHome(page);
+  async function scrollToCube(page, route = '/') {
+    if (route === '/') {
+      await gotoHome(page);
+    } else {
+      await page.goto(route, { waitUntil: 'domcontentloaded' });
+    }
     await page.evaluate(() =>
       document.getElementById('about')?.scrollIntoView({ block: 'center' }),
     );
@@ -42,8 +46,20 @@ test.describe('Cube easter egg', () => {
       const angle = /rotateY\(([-\d.]+)deg\)/.exec(cube.style.transform)?.[1];
       return angle === undefined ? 0 : Number(angle);
     });
+
     expect(Number.isFinite(rotation)).toBe(true);
     expect(Math.abs(rotation / 90 - Math.round(rotation / 90))).toBeLessThan(0.001);
+  });
+
+  test('reduced motion allows manual cube rotation without particle effects', async ({ page }) => {
+    await scrollToCube(page, '/?motion=off');
+    const cube = page.locator('#boxDiv-about');
+    const before = await cube.getAttribute('style');
+    await pressArrowRapidly(page, 'ArrowRight', 20);
+
+    await expect(page.locator('.about-toast').first()).toBeVisible({ timeout: 15000 });
+    await expect.poll(() => cube.getAttribute('style')).not.toBe(before);
+    await expect(page.locator('.about-particle')).toHaveCount(0);
   });
 
   // All presses dispatched SYNCHRONOUSLY inside the single evaluate — same

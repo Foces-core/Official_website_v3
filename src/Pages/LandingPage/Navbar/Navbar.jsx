@@ -38,8 +38,6 @@ const homeNavItems = [
   { id: 'execom', name: 'MEET THE TEAM' },
   { id: 'contact', name: 'CONTACT' },
 ];
-const routeLabels = { '/events': 'Events', '/contact': 'Contact' };
-
 export default function Navbar() {
   // The slowNetwork/reducedMotion dialects live in the experience-tier
   // matrix — prefetch gates route-chunk prefetching, smoothScroll the
@@ -84,7 +82,6 @@ export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const navItems = navItemsForPath(location.pathname, homeNavItems);
-  const routeLabel = routeLabels[location.pathname];
 
   useEffect(() => () => clearTimeout(joinTimer.current), []);
 
@@ -419,11 +416,6 @@ export default function Navbar() {
               className="h-auto w-[clamp(56px,19vw,84px)]"
             />
           </button>
-          {routeLabel && (
-            <span className="hidden min-[1024px]:inline-flex items-center rounded-full border border-cyan-400/35 bg-cyan-400/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-cyan-200">
-              {routeLabel}
-            </span>
-          )}
         </div>
 
         {/* Center: nav links (desktop only — mobile renders as a full-screen overlay) */}

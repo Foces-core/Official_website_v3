@@ -12,7 +12,9 @@ import MeetTheTeam from '../../assets/MeetTheTeam.svg';
 function Execom() {
   const { lowPower, reducedMotion } = useDeviceProfile();
   const disableAutoplay = reducedMotion;
-  const flatCube = lowPower || reducedMotion;
+  // Keep user-driven 3D rotation available when reduced motion is requested;
+  // autoplay remains disabled, while performance-only profiles stay flat.
+  const flatCube = lowPower && !reducedMotion;
   const [activeCube, setActiveCube] = React.useState(0);
   // Each TeamCarousel marks itself interacted on pointer use via useCarouselKeyboard.
 

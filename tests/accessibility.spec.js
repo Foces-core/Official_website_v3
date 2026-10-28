@@ -53,6 +53,17 @@ test.describe('WCAG scan (axe-core)', () => {
   }
 });
 
+test('subpage navbar omits the blue route label beside the FOCES logo', async ({
+  page,
+  isMobile,
+}) => {
+  test.skip(isMobile, 'Route labels are desktop-only');
+  for (const route of ['/events', '/contact']) {
+    await page.goto(route, { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.fixed [class*="border-cyan-400/35"]')).toHaveCount(0);
+  }
+});
+
 test.describe('Reduced motion', () => {
   test('content stays visible with prefers-reduced-motion', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });

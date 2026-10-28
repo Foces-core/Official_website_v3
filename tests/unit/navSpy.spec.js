@@ -24,25 +24,19 @@ describe('route navigation options', () => {
     expect(navItemsForPath('/', home)).toEqual(home);
   });
 
-  it('highlights about on the events page and team on contact', () => {
+  it('keeps only route-relevant links on subpages', () => {
     expect(navItemsForPath('/events', home).map(({ id }) => id)).toEqual([
       'home',
-      'about',
       'events',
       'contact',
     ]);
-    expect(navItemsForPath('/contact', home).map(({ id }) => id)).toEqual([
-      'home',
-      'events',
-      'execom',
-      'contact',
-    ]);
+    expect(navItemsForPath('/contact', home).map(({ id }) => id)).toEqual(['home', 'contact']);
   });
 
   it('moves the keyboard tab stop to a valid item when the route changes', () => {
     const events = navItemsForPath('/events', home);
     expect(rovingNavId(events, 'execom', 'events')).toBe('home');
-    expect(rovingNavId(events, 'about', 'events')).toBe('about');
+    expect(rovingNavId(events, 'about', 'events')).toBe('home');
     expect(rovingNavId(events, null, 'events')).toBe('events');
   });
 

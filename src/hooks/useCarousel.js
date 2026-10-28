@@ -162,11 +162,22 @@ export default function useCarousel({
     goTo(rawIndex, true, msSpeed);
   }
 
+  function rebaseToMiddleCopy() {
+    const n = p().total;
+    if (s.raw < n) {
+      goTo(s.raw + n, false);
+    } else if (s.raw >= n * 2) {
+      goTo(s.raw - n, false);
+    }
+  }
+
   function slidePrev() {
+    rebaseToMiddleCopy();
     goTo(s.raw - 1, true);
   }
 
   function slideNext() {
+    rebaseToMiddleCopy();
     goTo(s.raw + 1, true);
   }
 

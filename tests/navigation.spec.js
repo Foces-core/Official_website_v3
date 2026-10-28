@@ -6,50 +6,12 @@ test.describe('Cross-route navigation', () => {
   // on mobile, so cross-route navigation via the navbar is desktop-only.
   test.skip(({ isMobile }) => isMobile, 'desktop navbar is replaced by the mobile menu');
 
-  test('clicking Execom from /contact navigates home and scrolls to execom section', async ({
-    page,
-  }) => {
+  test('clicking Home from /contact navigates home', async ({ page }) => {
     await page.goto('/contact', { waitUntil: 'networkidle' });
     await waitForLoaderGone(page);
-    // Verify the link exists and what href it has
-    const link = page.locator('a[href="/#execom"]');
+    const link = page.locator('#nav-items a[href="/#home"]');
     await expect(link).toBeVisible();
-    // Click and wait for navigation
     await Promise.all([page.waitForURL('**/', { timeout: 10000 }), link.click()]);
-    // Poll instead of sleeping: the lazy Execom section mounts asynchronously
-    // and the smooth scroll lands after that.
-    await expect
-      .poll(() => page.evaluate(() => window.scrollY), { timeout: 15000 })
-      .toBeGreaterThan(0);
-    await expect
-      .poll(
-        () =>
-          page.evaluate(() => {
-            const el = document.getElementById('execom');
-            return el ? el.getBoundingClientRect().top : Infinity;
-          }),
-        { timeout: 15000 },
-      )
-      .toBeLessThan(1000);
-  });
-
-  test('clicking About from /events navigates home and scrolls to about section', async ({
-    page,
-  }) => {
-    await page.goto('/events', { waitUntil: 'networkidle' });
-    await waitForLoaderGone(page);
-    await page.locator('a[href="/#about"]').click();
-    await page.waitForURL('**/');
-    await expect
-      .poll(
-        () =>
-          page.evaluate(() => {
-            const el = document.getElementById('about');
-            return el ? el.getBoundingClientRect().top : Infinity;
-          }),
-        { timeout: 15000 },
-      )
-      .toBeLessThan(800);
   });
 
   test('clicking Contact from /events navigates to /contact', async ({ page }) => {
@@ -58,14 +20,6 @@ test.describe('Cross-route navigation', () => {
     await page.locator('a[href="/contact"]').first().click();
     await page.waitForURL('**/contact');
     await expect(page.locator('form')).toBeVisible();
-  });
-
-  test('clicking Events from /contact opens the events page', async ({ page }) => {
-    await page.goto('/contact', { waitUntil: 'networkidle' });
-    const link = page.locator('#nav-items a[href="/events"]');
-    await expect(link).toBeVisible();
-    await link.click();
-    await page.waitForURL('**/events');
   });
 
   test('logo click from /contact returns to home', async ({ page }) => {

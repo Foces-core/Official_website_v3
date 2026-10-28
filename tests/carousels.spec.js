@@ -66,17 +66,41 @@ test.describe('Execom / Meet the team carousel', () => {
     expect(visibleCards).toBeGreaterThan(1);
   });
 
-  test('desktop stays a carousel with reduced-motion and low-power overrides', async ({ page }) => {
+  test('desktop stays a carousel with motion and low-power overrides', async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
 
-    for (const override of ['?motion=off', '?perf=slow']) {
+    for (const override of ['?motion=on', '?motion=off', '?perf=slow']) {
       await page.goto(`/${override}`, { waitUntil: 'domcontentloaded' });
+      if (override === '?motion=on') {
+        await expect(page.locator('html')).toHaveAttribute('data-motion-reduced', 'false');
+      }
       await page.locator('#execom').scrollIntoViewIfNeeded();
 
       const carousel = page.locator('.execom-swiper[data-carousel-ready]');
       await expect(carousel).toHaveAttribute('data-carousel-mode', 'flat');
       await expect(page.locator('.execom-cube-swiper')).toBeHidden();
     }
+  });
+
+  test('desktop carousel keeps wrapping and loading after rapid advances', async ({ page }) => {
+    const carousel = page.locator('.execom-swiper[data-carousel-ready]');
+    await page.evaluate(() => {
+      const root = document.querySelector('.execom-swiper');
+      root.__carouselEngine__.stopAutoplay();
+      const next = document.querySelector('button[aria-label="Next team member"]');
+      for (let i = 0; i < 80; i += 1) next.click();
+    });
+
+    await expect
+      .poll(() => carousel.evaluate((root) => root.__carouselEngine__.activeIndex % 11))
+      .toBe(3);
+    await expect
+      .poll(() =>
+        carousel
+          .locator('[data-slide-active] img')
+          .evaluate((image) => image.complete && image.naturalWidth > 0),
+      )
+      .toBe(true);
   });
 
   test('uses refreshed portraits on desktop while mobile keeps the existing portrait', async ({
@@ -87,6 +111,19 @@ test.describe('Execom / Meet the team carousel', () => {
 
     await expect(desktopPortrait).toHaveAttribute('src', /lisha-2026-[^/]+\.webp$/);
     await expect(mobilePortrait).toHaveAttribute('src', /lisha1-[^/]+\.webp$/);
+
+    for (const name of [
+      'Anna Rachel Mathew',
+      'Abhirami P',
+      'Anjitha Aravind',
+      'Lisha Jins',
+      'Sebin Mathew',
+      'Devadarsana R',
+    ]) {
+      const portrait = page.locator(`.execom-swiper img[alt="${name}"]`).first();
+      await expect(portrait).toHaveCSS('object-position', '50% 50%');
+      await expect(portrait).toHaveCSS('filter', /brightness\(0\.92\)/);
+    }
   });
 
   const activeIndex = (page) =>
@@ -150,7 +187,7 @@ test.describe('Execom / Meet the team carousel', () => {
     await centerImage().hover();
     await expect
       .poll(() => centerImage().evaluate((img) => getComputedStyle(img).filter))
-      .toBe('none');
+      .not.toContain('grayscale(1)');
 
     const before = await activeIndex(page);
     await page.keyboard.press('ArrowRight');
@@ -163,7 +200,7 @@ test.describe('Execom / Meet the team carousel', () => {
     await centerImage().hover();
     await expect
       .poll(() => centerImage().evaluate((img) => getComputedStyle(img).filter))
-      .toBe('none');
+      .not.toContain('grayscale(1)');
   });
 
   test('image keeps hover color while the pointer moves into its caption', async ({ page }) => {
@@ -171,9 +208,13 @@ test.describe('Execom / Meet the team carousel', () => {
     const image = card.locator('img:not([aria-hidden="true"])');
 
     await image.hover();
-    await expect(image).toHaveCSS('filter', 'none');
+    await expect
+      .poll(() => image.evaluate((img) => getComputedStyle(img).filter))
+      .not.toContain('grayscale(1)');
     await card.locator(':scope > div.absolute').hover();
-    await expect(image).toHaveCSS('filter', 'none');
+    await expect
+      .poll(() => image.evaluate((img) => getComputedStyle(img).filter))
+      .not.toContain('grayscale(1)');
   });
 
   test('arrow keys still work after clicking a dot', async ({ page }) => {
@@ -199,6 +240,19 @@ test.describe('Execom / Meet the team carousel', () => {
 
 test.describe('Execom mobile cube drag', () => {
   test.skip(({ isMobile }) => !isMobile, 'cube drag is a touchscreen interaction');
+
+  test('reduced motion keeps the team cube available for manual rotation', async ({ page }) => {
+    await page.goto('/?motion=off', { waitUntil: 'domcontentloaded' });
+    await page.locator('#execom').scrollIntoViewIfNeeded();
+    const cube = page.locator('.execom-cube-swiper[data-carousel-ready]');
+    await expect(cube).toHaveAttribute('data-carousel-mode', 'cube');
+
+    const before = await cube.evaluate((root) => root.__carouselEngine__.activeIndex);
+    await cube.evaluate((root) => root.__carouselEngine__.slideNext());
+    await expect
+      .poll(() => cube.evaluate((root) => root.__carouselEngine__.activeIndex))
+      .toBe(before + 1);
+  });
 
   test('dragging the cube advances to the next member', async ({ page }) => {
     await gotoHome(page);
