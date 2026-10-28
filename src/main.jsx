@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components -- entry file: no exports, fast-refresh irrelevant */
 import React, { Suspense, useEffect, useRef, useState } from 'react';
+import PropTypes from 'prop-types';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router';
 import App from './App.jsx';
@@ -96,11 +97,9 @@ function ScrollToTop() {
   return null;
 }
 
-function Root() {
-  const { aosReveals } = useExperienceCapabilities();
-  const [entryPending, setEntryPending] = useState(() => aosReveals);
+function PageEntryTransition({ animate, children }) {
+  const [entryPending, setEntryPending] = useState(() => animate);
   const entryRef = useRef(null);
-  const hiddenRef = useRef(false);
 
   useEffect(() => {
     if (!entryPending) return;
@@ -120,6 +119,23 @@ function Root() {
       entry.removeEventListener('animationcancel', finishEntryAnimation);
     };
   }, [entryPending]);
+
+  return (
+    <div ref={entryRef} className={entryPending ? 'site-page-enter' : undefined}>
+      {children}
+    </div>
+  );
+}
+
+PageEntryTransition.propTypes = {
+  animate: PropTypes.bool.isRequired,
+  children: PropTypes.node.isRequired,
+};
+
+function Root() {
+  const { aosReveals } = useExperienceCapabilities();
+  const location = useLocation();
+  const hiddenRef = useRef(false);
 
   useEffect(() => {
     const splash = document.getElementById('boot-splash');
@@ -157,14 +173,14 @@ function Root() {
     <>
       <ErrorBoundary onError={(error) => reportError(error)}>
         <Suspense fallback={<Loader />}>
-          <div ref={entryRef} className={entryPending ? 'site-page-enter' : undefined}>
+          <PageEntryTransition key={location.pathname} animate={aosReveals}>
             <Routes>
               <Route path="/" element={<App />} />
               <Route path="/events" element={<Eventpage />} />
               <Route path="/contact" element={<ContactUs />} />
               <Route path="*" element={<NotFoundLazy />} />
             </Routes>
-          </div>
+          </PageEntryTransition>
         </Suspense>
       </ErrorBoundary>
     </>

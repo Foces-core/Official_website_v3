@@ -97,6 +97,49 @@ test.describe('Reduced motion', () => {
     await expect(page.locator('.site-page-enter')).toHaveCount(0);
   });
 
+  for (const route of ['/events', '/contact', '/unknown-route']) {
+    test(`page entry fade works on ${route}`, async ({ page }) => {
+      await page.emulateMedia({ reducedMotion: 'no-preference' });
+      await page.goto(`${route}?perf=high`, { waitUntil: 'domcontentloaded' });
+      await waitForLoaderGone(page);
+
+      const animation = await page.locator('.site-page-enter').evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+          name: style.animationName,
+          duration: style.animationDuration,
+          delay: style.animationDelay,
+        };
+      });
+
+      expect(animation).toEqual({
+        name: 'site-page-fade-in',
+        duration: '0.72s',
+        delay: '0.12s',
+      });
+    });
+  }
+
+  test('page entry fade runs on in-app route changes', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await page.goto('/?perf=high', { waitUntil: 'domcontentloaded' });
+    await waitForLoaderGone(page);
+    await expect(page.locator('.site-page-enter')).toHaveCount(0);
+
+    await page.evaluate(() => {
+      window.history.pushState(null, '', '/events?perf=high');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+
+    await expect(page).toHaveURL(/\/events\?perf=high$/);
+    await expect(page.locator('.site-page-enter')).toHaveCount(1);
+
+    const animationName = await page
+      .locator('.site-page-enter')
+      .evaluate((element) => getComputedStyle(element).animationName);
+    expect(animationName).toBe('site-page-fade-in');
+  });
+
   test('does not start the page entry fade when motion capability enables later', async ({
     page,
   }) => {
