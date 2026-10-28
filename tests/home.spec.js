@@ -35,6 +35,17 @@ test.describe('Cube easter egg', () => {
     await page.waitForTimeout(100);
   }
 
+  test('idle cube rests on a face between turns', async ({ page }) => {
+    await scrollToCube(page);
+    await page.waitForTimeout(1100);
+    const rotation = await page.locator('#boxDiv-about').evaluate((cube) => {
+      const angle = /rotateY\(([-\d.]+)deg\)/.exec(cube.style.transform)?.[1];
+      return angle === undefined ? 0 : Number(angle);
+    });
+    expect(Number.isFinite(rotation)).toBe(true);
+    expect(Math.abs(rotation / 90 - Math.round(rotation / 90))).toBeLessThan(0.001);
+  });
+
   // All presses dispatched SYNCHRONOUSLY inside the single evaluate — same
   // reasoning as dragCube below: each page.keyboard.press round-trip costs
   // ~tens of ms (more under full-suite CPU load), and the easter-egg tracker

@@ -20,6 +20,9 @@ import {
   resolveLogoAction,
   shouldHideNavbar,
   SCROLLED_THRESHOLD_PX,
+  navItemsForPath,
+  rovingNavId,
+  navItemHref,
 } from './navSpy.js';
 import {
   coordinateSectionNavigation,
@@ -27,7 +30,7 @@ import {
 } from '../../../utils/navigationCoordinator.js';
 import './Navbar.css';
 
-const navItems = [
+const homeNavItems = [
   { id: 'home', name: 'HOME' },
   { id: 'about', name: 'WHY FOCES?' },
   { id: 'featuring', name: 'FEATURING' },
@@ -35,6 +38,7 @@ const navItems = [
   { id: 'execom', name: 'MEET THE TEAM' },
   { id: 'contact', name: 'CONTACT' },
 ];
+const routeLabels = { '/events': 'Events', '/contact': 'Contact' };
 
 export default function Navbar() {
   // The slowNetwork/reducedMotion dialects live in the experience-tier
@@ -72,13 +76,15 @@ export default function Navbar() {
   // page mid-scroll); the effect re-stamps it before listening.
   const lastYRef = useRef(0);
   const drawerOpenRef = useRef(false);
-  const [currentItem, setCurrentItem] = useState(navItems[0].id);
+  const [currentItem, setCurrentItem] = useState(homeNavItems[0].id);
   // Roving tabindex (ARIA APG): exactly one link owns tabindex=0. When the
   // user arrow-keys through the links, the tabstop follows the focused link.
   // null = fall back to the scrollspy-current item (or the first link).
   const [rovingId, setRovingId] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
+  const navItems = navItemsForPath(location.pathname, homeNavItems);
+  const routeLabel = routeLabels[location.pathname];
 
   useEffect(() => () => clearTimeout(joinTimer.current), []);
 
@@ -89,7 +95,7 @@ export default function Navbar() {
   // animation frame so low-end devices don't pay layout-thrash per scroll
   // tick (INP guard, ADR-0001).
   useEffect(() => {
-    const sectionIds = navItems.map((item) => item.id).filter((id) => id !== 'contact');
+    const sectionIds = homeNavItems.map((item) => item.id).filter((id) => id !== 'contact');
     const routeAwarePick = () => {
       const next = pickOnViewport({ sectionIds, pathname: location.pathname });
       // Bail out unless the active item actually changed — avoids re-rendering
@@ -288,13 +294,12 @@ export default function Navbar() {
   // and /contact — the real route chunks are already prefetched by js.foresight
   // + the onMouseEnter/onTouchStart imports above, so it was redundant work.)
 
-  // On non-home routes (e.g. /events, /contact) no section ever becomes
-  // "current", so currentItem stays null. Treat null as dark-theme: the
-  // navbar sits on the dark #0b0b0c page background and needs white styling.
+  // Unknown non-home routes have no current section. Treat null as dark-theme:
+  // the navbar sits on the dark #0b0b0c page background and needs white styling.
   const isDark =
     currentItem === null ||
     ['home', 'featuring', 'events', 'contact', 'execom', 'about'].includes(currentItem);
-  const rovingIndex = rovingId ?? currentItem ?? navItems[0].id;
+  const rovingIndex = rovingNavId(navItems, rovingId, currentItem);
 
   // One shared links list: inline in the navbar on desktop, full-screen
   // overlay (portal to <body>) on mobile. The overlay owns the close (X)
@@ -343,7 +348,7 @@ export default function Navbar() {
       )}
       {navItems.map((item) => (
         <Link
-          to={item.id !== 'contact' ? `/#${item.id}` : '/contact'}
+          to={navItemHref(item.id, location.pathname)}
           key={item.id}
           data-foresight={item.id}
           aria-current={currentItem === item.id ? 'true' : undefined}
@@ -384,8 +389,8 @@ export default function Navbar() {
             : 'bg-transparent'
         }`}
       >
-        {/* Left: FOCES logo */}
-        <div className="min-[768px]:justify-self-start flex items-center">
+        {/* Left: FOCES logo and the current subpage */}
+        <div className="min-[768px]:justify-self-start flex items-center gap-3">
           <button
             type="button"
             aria-label="FOCES home"
@@ -414,6 +419,11 @@ export default function Navbar() {
               className="h-auto w-[clamp(56px,19vw,84px)]"
             />
           </button>
+          {routeLabel && (
+            <span className="hidden min-[1024px]:inline-flex items-center rounded-full border border-cyan-400/35 bg-cyan-400/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.18em] text-cyan-200">
+              {routeLabel}
+            </span>
+          )}
         </div>
 
         {/* Center: nav links (desktop only — mobile renders as a full-screen overlay) */}

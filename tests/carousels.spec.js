@@ -50,6 +50,22 @@ test.describe('Execom / Meet the team carousel', () => {
     await page.waitForTimeout(1000);
   });
 
+  test('desktop shows a flat multi-card carousel with navigation arrows', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    const carousel = page.locator('.execom-swiper[data-carousel-ready]');
+    await expect(carousel).toHaveAttribute('data-carousel-mode', 'flat');
+    await expect(page.getByRole('button', { name: 'Next team member' })).toBeVisible();
+    const visibleCards = await carousel.locator('.swiper-slide').evaluateAll(
+      (slides) =>
+        slides.filter((slide) => {
+          const rect = slide.getBoundingClientRect();
+          const viewport = slide.closest('.execom-swiper').getBoundingClientRect();
+          return rect.width > 0 && rect.left >= viewport.left && rect.right <= viewport.right;
+        }).length,
+    );
+    expect(visibleCards).toBeGreaterThan(1);
+  });
+
   const activeIndex = (page) =>
     page.evaluate(() =>
       [...document.querySelectorAll('.execom-swiper .swiper-slide')].findIndex((s) =>

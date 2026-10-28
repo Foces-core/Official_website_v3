@@ -17,8 +17,8 @@ import '../Execom/custom.css';
  *
  * Previously this was two near-duplicate Swiper blocks (desktop cube/slider +
  * mobile cube) — now both render through the shared useCarousel seam, which
- * owns the 3D cube (rotateY 90° per face, no shadows — they smear on the dark
- * bg), the flat fallback (low-power/reduced-motion), swipe/touch drag with
+ * owns the mobile 3D cube (rotateY 90° per face, no shadows — they smear on the dark
+ * bg), the flat desktop carousel and low-power fallback, swipe/touch drag with
  * horizontal-only gesture ownership (touch-action: pan-y + x-axis lock, so
  * vertical swipes scroll the page), the arrow-key
  * arbitration registration, and the on-screen autoplay gate.
@@ -45,6 +45,7 @@ function TeamCarousel({
 
   const total = slidesData.length;
   const isDesktop = variant === 'desktop';
+  const useFlat = isDesktop || flatCube;
 
   const handleActiveChange = useCallback(
     (nextIndex) => {
@@ -54,25 +55,26 @@ function TeamCarousel({
     [onActiveChange],
   );
 
-  // Desktop flat mode is responsive (2/3/4 per view, like Swiper's
-  // breakpoints); everything else is 1 per view. Re-computed reactively via
+  // Desktop is always a flat multi-card carousel (2/3/4 per view);
+  // mobile keeps the cube unless a low-power profile needs the flat fallback.
+  // Re-computed reactively via
   // useViewportWidth, then fed to the hook (its re-style effect re-applies).
   const {
     slidesPerView: perView,
     spaceBetween: gap,
     sizes: cardSizes,
-  } = getTeamLayout(width, flatCube, isDesktop);
+  } = getTeamLayout(width, useFlat, isDesktop);
 
   const { instanceRef, trackRef } = useCarousel({
     elRef,
     wrapperRef: wrapRef,
     total,
-    mode: flatCube ? 'flat' : 'cube',
+    mode: useFlat ? 'flat' : 'cube',
     slidesPerView: perView,
     spaceBetween: gap,
     autoplayDelay: disableAutoplay ? 0 : isDesktop ? 3500 : 2500,
     initialIndex: total,
-    speed: flatCube ? 250 : 400,
+    speed: useFlat && !isDesktop ? 250 : 400,
     onActiveChange: handleActiveChange,
   });
 
@@ -111,10 +113,10 @@ function TeamCarousel({
   }, [activeIndex, total, slidesData]);
 
   const containerClass = isDesktop
-    ? `hidden sm:block ${flatCube ? 'px-12' : 'max-w-[360px] mx-auto py-4'}`
+    ? 'hidden sm:block px-12'
     : 'block sm:hidden max-w-[320px] mx-auto py-4';
 
-  const showNavArrows = isDesktop && flatCube;
+  const showNavArrows = isDesktop;
 
   // Declutter: the flat-mode arrows hide after 2.5s of inactivity over the
   // carousel area and re-reveal on hover/pointer/key activity (useIdleReveal;
@@ -140,7 +142,7 @@ function TeamCarousel({
       <div
         ref={elRef}
         className={`${isDesktop ? 'execom-swiper pb-12' : 'execom-cube-swiper'} relative w-full ${
-          flatCube ? '' : 'cursor-grab active:cursor-grabbing'
+          useFlat ? '' : 'cursor-grab active:cursor-grabbing'
         }`}
       >
         <div ref={trackRef} className="swiper-wrapper">

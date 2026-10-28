@@ -60,6 +60,14 @@ test.describe('Cross-route navigation', () => {
     await expect(page.locator('form')).toBeVisible();
   });
 
+  test('clicking Events from /contact opens the events page', async ({ page }) => {
+    await page.goto('/contact', { waitUntil: 'networkidle' });
+    const link = page.locator('#nav-items a[href="/events"]');
+    await expect(link).toBeVisible();
+    await link.click();
+    await page.waitForURL('**/events');
+  });
+
   test('logo click from /contact returns to home', async ({ page }) => {
     await page.goto('/contact', { waitUntil: 'networkidle' });
     await waitForLoaderGone(page);
