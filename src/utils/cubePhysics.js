@@ -11,6 +11,7 @@ export const CUBE_PHYSICS = {
   rapidMaxWindSpeed: 9, // deg/frame cap for rapid spins
   minWindSpeed: 0.05, // deg/frame — below this the cube snaps to a face
   snapMs: 400, // how long the settle-to-face animation takes
+  idlePauseMs: 4500, // hold a face before turning to the next one
 };
 
 export const DEG_PER_FRAME = 1000 / 60; // deg/ms -> deg/frame at 60fps

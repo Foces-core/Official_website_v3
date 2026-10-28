@@ -4,6 +4,7 @@ import useDeviceProfile from '../../hooks/useLowPower.js';
 import useInViewOnce from '../../hooks/useInViewOnce.js';
 import TeamCarousel from './TeamCarousel';
 import { cardData, cubeSlides, advisor } from '../../data/team.js';
+import { desktopCardData, desktopCubeSlides } from './desktopTeamData.js';
 import { isTouchPrimary } from '../../utils/viewportPolicy.js';
 
 import MeetTheTeam from '../../assets/MeetTheTeam.svg';
@@ -117,8 +118,8 @@ function Execom() {
         <TeamCarousel
           widgetId="execom-desk"
           variant="desktop"
-          slides={cubeSlides}
-          slidesData={cardData}
+          slides={desktopCubeSlides}
+          slidesData={desktopCardData}
           flatCube={flatCube}
           disableAutoplay={disableAutoplay}
           activeIndex={activeCube}

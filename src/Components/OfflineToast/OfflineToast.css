@@ -17,7 +17,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    .offline-toast {
+    :root:not([data-motion-reduced='false']) .offline-toast {
         animation: none;
     }
     /* The amber dot uses Tailwind's animate-ping; reduced-motion users get a

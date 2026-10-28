@@ -1,6 +1,10 @@
 dist
 node_modules
 test-results
+playwright-report
+.stryker-tmp
+reports
+.serena
 foces-webv23
 pnpm-lock.yaml
 yarn.lock

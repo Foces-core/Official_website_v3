@@ -108,6 +108,46 @@ test.describe('Reduced motion', () => {
     await expect(page.locator('.site-page-enter')).toHaveCount(0);
   });
 
+  test('?motion=on restores CSS animations when the OS prefers reduced motion', async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== 'chromium', 'Page entry animation is gated on mobile.');
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await pausePageEntryAnimation(page);
+    await page.goto('/?motion=on', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('body')).not.toHaveClass(/aos-disabled/);
+    const animationName = await page.evaluate(() => {
+      const element = document.createElement('div');
+      element.className = 'site-page-enter';
+      document.body.append(element);
+      const name = getComputedStyle(element).animationName;
+      element.remove();
+      return name;
+    });
+
+    expect(animationName).toBe('site-page-fade-in');
+  });
+
+  test('?motion=off disables CSS animations without an OS preference', async ({
+    page,
+  }, testInfo) => {
+    test.skip(testInfo.project.name !== 'chromium', 'Page entry animation is gated on mobile.');
+    await page.emulateMedia({ reducedMotion: 'no-preference' });
+    await pausePageEntryAnimation(page);
+    await page.goto('/?motion=off', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('body')).toHaveClass(/aos-disabled/);
+    const animationName = await page.evaluate(() => {
+      const element = document.createElement('div');
+      element.className = 'site-page-enter';
+      document.body.append(element);
+      const name = getComputedStyle(element).animationName;
+      element.remove();
+      return name;
+    });
+
+    expect(animationName).toBe('none');
+  });
+
   for (const route of ['/events', '/contact', '/unknown-route']) {
     test(`page entry fade works on ${route}`, async ({ page }) => {
       await page.emulateMedia({ reducedMotion: 'no-preference' });

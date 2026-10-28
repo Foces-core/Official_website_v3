@@ -42,7 +42,11 @@ export function aosDisabled() {
 // viewport failsafe (useAosFailsafe) force-shows anything in view that AOS
 // hasn't revealed yet, so the async init can never leave content hidden.
 export function initAOS({ loadAos = () => import('aos') } = {}) {
-  const gated = aosDisabled();
+  const profile = detectProfile();
+  const gated = !resolveExperienceCapabilities(profile).aosReveals;
+  if (typeof document !== 'undefined' && document.documentElement) {
+    document.documentElement.dataset.motionReduced = String(profile.reducedMotion);
+  }
   if (typeof document !== 'undefined' && document.body) {
     document.body.classList.toggle('aos-disabled', gated);
   }
