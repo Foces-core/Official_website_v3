@@ -12,8 +12,8 @@ test.describe('Navbar', () => {
   test('events and contact show distinct route-specific links', async ({ page, isMobile }) => {
     test.skip(isMobile, 'desktop navbar only');
     await page.goto('/events', { waitUntil: 'networkidle' });
-    await expect(page.locator('#nav-items a')).toHaveCount(4);
-    await expect(page.locator('#nav-items a[href="/#about"]')).toBeVisible();
+    await expect(page.locator('#nav-items a')).toHaveCount(3);
+    await expect(page.locator('#nav-items a[href="/#about"]')).toHaveCount(0);
     await expect(page.locator('#nav-items a[href="/#execom"]')).toHaveCount(0);
     await expect(page.locator('#nav-items a[href="/events"]')).toHaveAttribute(
       'aria-current',
@@ -22,8 +22,9 @@ test.describe('Navbar', () => {
     await expect(page.getByText('EVENTS', { exact: true }).first()).toBeVisible();
 
     await page.goto('/contact', { waitUntil: 'networkidle' });
-    await expect(page.locator('#nav-items a')).toHaveCount(4);
-    await expect(page.locator('#nav-items a[href="/#execom"]')).toBeVisible();
+    await expect(page.locator('#nav-items a')).toHaveCount(2);
+    await expect(page.locator('#nav-items a[href="/#execom"]')).toHaveCount(0);
+    await expect(page.locator('#nav-items a[href="/events"]')).toHaveCount(0);
     await expect(page.locator('#nav-items a[href="/#about"]')).toHaveCount(0);
   });
 
@@ -31,7 +32,7 @@ test.describe('Navbar', () => {
     test.skip(!isMobile, 'mobile navbar only');
     await page.goto('/contact', { waitUntil: 'domcontentloaded' });
     await page.locator('#nav-toggle').click();
-    await expect(page.locator('#nav-items-mobile a')).toHaveCount(4);
+    await expect(page.locator('#nav-items-mobile a')).toHaveCount(2);
     await expect(page.locator('#nav-items-mobile a[tabindex="0"]')).toHaveCount(1);
   });
 
