@@ -185,6 +185,19 @@ describe('useCarousel — instance contract', () => {
     expect(track.style.transition).toBe('transform 420ms cubic-bezier(0.25, 1, 0.5, 1)');
   });
 
+  it('rebases as a fresh eased move on a press that lands after the transition ends', () => {
+    vi.spyOn(performance, 'now').mockReturnValue(100);
+    harness.render(<TrackProbe total={4} mode="cube" faceWidth={300} />);
+    const track = harness.container.querySelector('.swiper-wrapper');
+    inst(harness).slideTo(8);
+    vi.spyOn(performance, 'now').mockReturnValue(520);
+
+    inst(harness).slideNext();
+
+    expect(inst(harness).activeIndex).toBe(5);
+    expect(track.style.transition).toBe('transform 420ms cubic-bezier(0.25, 1, 0.5, 1)');
+  });
+
   it('keeps autoplay moves out of the manual-motion opt-in', () => {
     vi.useFakeTimers();
     enableVisibilityObservation();

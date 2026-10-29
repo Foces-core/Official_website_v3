@@ -231,7 +231,7 @@ export default function useCarousel({
     settleMotion(t);
     applyTransforms(from);
     void t.offsetWidth;
-    goTo(s.raw + delta, true, { manual: true, from, retarget: true });
+    goTo(s.raw + delta, true, { manual: true, from, retarget: continuing });
   }
 
   function slidePrev() {
