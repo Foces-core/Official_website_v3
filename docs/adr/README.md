@@ -34,6 +34,7 @@ Status conventions: **Accepted** (settled), **Proposed** (under review),
 | [0025](0025-contextual-nav-and-team-motion.md)                      | Contextual navigation and face-aligned team motion                               | Accepted |
 | [0026](0026-manual-motion-under-reduced-motion.md)                  | Manual carousel motion under reduced motion                                      | Accepted |
 | [0027](0027-measured-portrait-framing.md)                           | Measured per-photo portrait framing                                              | Accepted |
+| [0028](0028-cinematic-entry-curtain.md)                             | Cinematic entry curtain opened by first interaction                              | Accepted |
 
 ## Adding a new ADR
 
