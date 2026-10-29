@@ -27,6 +27,7 @@ import {
   getActiveTouch,
   isIdleForAutoSpin,
 } from '../utils/cubeDragHelpers.js';
+import { clearManualMotion, setManualMotion } from '../utils/manualMotion.js';
 
 /**
  * useCubeDrag — the About cube's motion orchestration: drag (touch + mouse),
@@ -75,6 +76,17 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
   const snapTimerRef = useRef(null);
   const manualUntilRef = useRef(0);
 
+  const startManualTransition = useCallback((el, duration, easing) => {
+    if (snapTimerRef.current != null) clearTimeout(snapTimerRef.current);
+    setManualMotion(el, duration, easing);
+    snapTimerRef.current = setTimeout(() => {
+      if (!boxRef.current) return;
+      boxRef.current.style.transition = 'none';
+      clearManualMotion(boxRef.current);
+      snapTimerRef.current = null;
+    }, duration);
+  }, []);
+
   // Easter-egg tracking
   const spinTrackerRef = useRef(createSpinTracker(spinConfig));
   const accumAngleRef = useRef(0);
@@ -99,16 +111,12 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
     if (!el) return;
     const tx = snapAngle(rotXRef.current);
     const ty = snapAngle(rotYRef.current);
-    el.style.transition = `transform ${CUBE_PHYSICS.snapMs}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+    startManualTransition(el, CUBE_PHYSICS.snapMs, 'cubic-bezier(0.22, 1, 0.36, 1)');
     rotXRef.current = tx;
     rotYRef.current = ty;
     applyTransform();
-    if (snapTimerRef.current != null) clearTimeout(snapTimerRef.current);
-    snapTimerRef.current = setTimeout(() => {
-      if (boxRef.current) boxRef.current.style.transition = 'none';
-    }, CUBE_PHYSICS.snapMs);
     manualUntilRef.current = Date.now() + SNAP_GRACE_MS;
-  }, [applyTransform]);
+  }, [applyTransform, startManualTransition]);
 
   const startWindDown = useCallback(
     (friction = CUBE_PHYSICS.normalWindFriction) => {
@@ -168,7 +176,14 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
     lastMove.current = { t: Date.now(), y: rotYRef.current };
     velY.current = 0;
     manualUntilRef.current = Date.now() + DRAG_OVERRIDE_MS;
-    if (boxRef.current) boxRef.current.style.transition = 'none';
+    if (snapTimerRef.current != null) {
+      clearTimeout(snapTimerRef.current);
+      snapTimerRef.current = null;
+    }
+    if (boxRef.current) {
+      boxRef.current.style.transition = 'none';
+      clearManualMotion(boxRef.current);
+    }
   }, []);
 
   const moveDrag = useCallback(
@@ -350,7 +365,7 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
 
       e.preventDefault();
       stopWindDown();
-      el.style.transition = 'transform 0.4s ease-out';
+      startManualTransition(el, 400, 'ease-out');
       rotYRef.current += e.key === 'ArrowRight' ? -90 : 90;
       applyTransform();
       manualUntilRef.current = Date.now() + ARROW_SPIN_GRACE_MS;
@@ -360,7 +375,7 @@ export function useCubeDrag({ idleSpin, spinConfig, onEggFire, wrapRef }) {
 
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [applyTransform, registerSpin, stopWindDown]);
+  }, [applyTransform, registerSpin, startManualTransition, stopWindDown]);
 
   useEffect(() => {
     const unregister = registerWidget(

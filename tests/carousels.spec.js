@@ -21,6 +21,28 @@ test.describe('Featuring carousel', () => {
     await expect.poll(() => activeIndex(page), { timeout: 5000 }).not.toBe(before);
   });
 
+  test('rapid next clicks stay smooth instead of restarting the transition', async ({ page }) => {
+    const carousel = page.locator('.feat-swiper');
+    await carousel.evaluate((root) => {
+      root.__carouselEngine__.stopAutoplay();
+      root.__carouselEngine__.slideTo(7, 420);
+      const track = root.querySelector('.swiper-wrapper');
+      const step = track.children[1].offsetLeft - track.children[0].offsetLeft;
+      track.style.transition = 'none';
+      track.style.transform = `translate3d(${-7.5 * step}px, 0, 0)`;
+      const button = document.querySelector('button[aria-label="Next ECHO photos"]');
+      button.click();
+      button.click();
+    });
+
+    await expect
+      .poll(() => carousel.evaluate((root) => root.__carouselEngine__.activeIndex % 4))
+      .toBe(1);
+    await expect
+      .poll(() => carousel.locator('.swiper-wrapper').evaluate((track) => track.style.transition))
+      .toContain('linear');
+  });
+
   test('keyboard arrows navigate when carousel owns focus', async ({ page }) => {
     await page.locator('.feat-swiper [data-slide-active]').click({ force: true });
     await page.waitForTimeout(300);
@@ -112,18 +134,51 @@ test.describe('Execom / Meet the team carousel', () => {
     await expect(desktopPortrait).toHaveAttribute('src', /lisha-2026-[^/]+\.webp$/);
     await expect(mobilePortrait).toHaveAttribute('src', /lisha1-[^/]+\.webp$/);
 
-    for (const name of [
-      'Anna Rachel Mathew',
-      'Abhirami P',
-      'Anjitha Aravind',
-      'Lisha Jins',
-      'Sebin Mathew',
-      'Devadarsana R',
-    ]) {
+    const expectedPositions = new Map([
+      ['Anna Rachel Mathew', '50% calc(50% - 8px)'],
+      ['Abhirami P', '50% calc(50% - 15px)'],
+      ['Anjitha Aravind', '50% calc(50% - 18px)'],
+      ['Lisha Jins', '50% calc(50% - 13px)'],
+      ['Sebin Mathew', '50% calc(50% - 10px)'],
+      ['Devadarsana R', '50% calc(50% - 12px)'],
+    ]);
+    for (const [name, position] of expectedPositions) {
       const portrait = page.locator(`.execom-swiper img[alt="${name}"]`).first();
-      await expect(portrait).toHaveCSS('object-position', '50% 50%');
-      await expect(portrait).toHaveCSS('filter', /brightness\(0\.92\)/);
+      await expect(portrait).toHaveCSS('object-position', position);
+      await expect(portrait).toHaveCSS('filter', /grayscale\(1\)/);
     }
+  });
+
+  test('applies per-photo downward offsets to the roster portraits', async ({ page }) => {
+    const portraits = new Map([
+      ['Aleetta Mariya Sebastian', 30],
+      ['Steve Jose', 35],
+      ['Amanul Farhan K S', 31],
+      ['Abel S Mathew', 29],
+      ['Saniya K Shibu', 25],
+    ]);
+
+    for (const [name, offset] of portraits) {
+      const portrait = page.locator(`.execom-swiper img[alt="${name}"]`).first();
+      await expect(portrait).toHaveCSS('object-position', `50% calc(50% + ${offset}px)`);
+      // The downward shift opens a strip above the photo; the card backdrop
+      // must continue the studio gray instead of the default dark card fill.
+      const card = portrait.locator('..').locator('..');
+      await expect(card).toHaveCSS('background-color', 'rgb(196, 196, 196)');
+    }
+  });
+
+  test('team portraits remain grayscale on touch devices', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/?motion=off', { waitUntil: 'domcontentloaded' });
+    await page.evaluate(() =>
+      document.getElementById('execom')?.scrollIntoView({ block: 'center' }),
+    );
+    const carousel = page.locator('.execom-cube-swiper[data-carousel-ready]');
+    const portrait = carousel.locator('[data-slide-active] img:not([aria-hidden="true"])');
+
+    await expect(portrait).toHaveCSS('filter', 'grayscale(1)');
+    await expect(portrait).toHaveJSProperty('complete', true);
   });
 
   const activeIndex = (page) =>
@@ -240,6 +295,32 @@ test.describe('Execom / Meet the team carousel', () => {
 
 test.describe('Execom mobile cube drag', () => {
   test.skip(({ isMobile }) => !isMobile, 'cube drag is a touchscreen interaction');
+
+  test('rapid next arrows keep the mobile cube moving smoothly through the loop', async ({
+    page,
+  }) => {
+    await page.goto('/?motion=off', { waitUntil: 'domcontentloaded' });
+    await page.locator('#execom').scrollIntoViewIfNeeded();
+    const cube = page.locator('.execom-cube-swiper[data-carousel-ready]');
+    await expect(cube).toHaveAttribute('data-carousel-mode', 'cube');
+    const result = await cube.evaluate((root) => {
+      const engine = root.__carouselEngine__;
+      engine.stopAutoplay();
+      engine.slideTo(32, 400);
+      const track = root.querySelector('.swiper-wrapper');
+      track.style.transform = 'rotateY(-2862deg)';
+      const transitions = [];
+      for (let i = 0; i < 3; i += 1) {
+        engine.slideNext();
+        transitions.push(track.style.transition);
+      }
+      return { index: engine.activeIndex % 11, transitions };
+    });
+
+    expect(result.index).toBe(2);
+    expect(result.transitions.some((transition) => transition.includes('linear'))).toBe(true);
+    await expect(cube).toHaveAttribute('data-carousel-mode', 'cube');
+  });
 
   test('reduced motion keeps the team cube available for manual rotation', async ({ page }) => {
     await page.goto('/?motion=off', { waitUntil: 'domcontentloaded' });

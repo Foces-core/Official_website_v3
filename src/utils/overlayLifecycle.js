@@ -36,21 +36,24 @@ export function trapTabFocus(event, container) {
   const first = focusables[0];
   const last = focusables[focusables.length - 1];
   const active = typeof document !== 'undefined' ? document.activeElement : null;
+  const [edge, target, direction] = event.shiftKey
+    ? [first, last, Node.DOCUMENT_POSITION_PRECEDING]
+    : [last, first, Node.DOCUMENT_POSITION_FOLLOWING];
 
-  if (event.shiftKey) {
-    if (active === first || !container.contains(active)) {
-      event.preventDefault();
-      last.focus();
-      return true;
-    }
-  } else {
-    if (active === last || !container.contains(active)) {
-      event.preventDefault();
-      first.focus();
-      return true;
-    }
+  if (container.contains(active) && !isCycleEdge(active, focusables, edge, direction)) {
+    return false;
   }
-  return false;
+  event.preventDefault();
+  target.focus();
+  return true;
+}
+
+// A focused element outside the Tab order (e.g. a dialog controller with
+// tabIndex -1) is at the edge when no tabbable element lies beyond it.
+function isCycleEdge(active, focusables, edge, direction) {
+  if (active === edge) return true;
+  if (focusables.includes(active)) return false;
+  return !focusables.some((el) => active.compareDocumentPosition(el) & direction);
 }
 
 /**

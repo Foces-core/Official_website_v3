@@ -19,24 +19,30 @@ import Devadarsana400 from '../../assets/devadarsana-2026-400.webp';
 import DevadarsanaBlur from '../../assets/devadarsana-2026.webp?blur&w=20';
 import { srcset } from '../../utils/srcset.js';
 
-const updatedPortrait = (full, small, blur) => ({
+const updatedPortrait = (full, small, blur, shiftPx) => ({
   img: full,
   srcset: srcset([
     [full, 1200],
     [small, 400],
   ]),
   blur,
-  imgPosition: 'object-center',
-  imageTone: 'brightness-[0.92] contrast-[0.97] saturate-[0.92]',
+  // Per-photo vertical crop in pixels (not percent): each source has a
+  // different amount of headroom above the face, and percentage crops only
+  // act when the box has spare vertical room — which wide cards don't. The
+  // measured offsets align every face to the same framing as the reference
+  // portrait (backdrop strip, face, a little body) without touching the card
+  // size or cover behavior. Negative values raise the photo; the caption
+  // gradient covers the sliver that opens at the card's bottom.
+  objectPosition: `center calc(50% ${shiftPx < 0 ? '-' : '+'} ${Math.abs(shiftPx)}px)`,
 });
 
 const desktopPortraits = new Map([
-  ['Anna Rachel Mathew', updatedPortrait(Anna, Anna400, AnnaBlur)],
-  ['Abhirami P', updatedPortrait(Abhirami, Abhirami400, AbhiramiBlur)],
-  ['Anjitha Aravind', updatedPortrait(Anjitha, Anjitha400, AnjithaBlur)],
-  ['Lisha Jins', updatedPortrait(Lisha, Lisha400, LishaBlur)],
-  ['Sebin Mathew', updatedPortrait(Sebin, Sebin400, SebinBlur)],
-  ['Devadarsana R', updatedPortrait(Devadarsana, Devadarsana400, DevadarsanaBlur)],
+  ['Anna Rachel Mathew', updatedPortrait(Anna, Anna400, AnnaBlur, -8)],
+  ['Abhirami P', updatedPortrait(Abhirami, Abhirami400, AbhiramiBlur, -15)],
+  ['Anjitha Aravind', updatedPortrait(Anjitha, Anjitha400, AnjithaBlur, -18)],
+  ['Lisha Jins', updatedPortrait(Lisha, Lisha400, LishaBlur, -13)],
+  ['Sebin Mathew', updatedPortrait(Sebin, Sebin400, SebinBlur, -10)],
+  ['Devadarsana R', updatedPortrait(Devadarsana, Devadarsana400, DevadarsanaBlur, -12)],
 ]);
 
 export const desktopCardData = cardData.map((member) => ({

@@ -122,6 +122,42 @@ describe('overlayLifecycle pure helpers', () => {
       originalActive?.focus();
     });
 
+    it('traps Shift+Tab from a focused non-tabbable controller wrapping the controls', () => {
+      const container = document.createElement('div');
+      const controller = document.createElement('div');
+      const zoom = document.createElement('button');
+      const close = document.createElement('button');
+      const tail = document.createElement('div');
+      controller.tabIndex = -1;
+      tail.tabIndex = -1;
+      controller.append(zoom, close);
+      container.append(controller, tail);
+      document.body.append(container);
+      const originalActive = document.activeElement;
+
+      controller.focus();
+      const back = { key: 'Tab', shiftKey: true, preventDefault: vi.fn() };
+      expect(trapTabFocus(back, container)).toBe(true);
+      expect(back.preventDefault).toHaveBeenCalledOnce();
+      expect(document.activeElement).toBe(close);
+
+      controller.focus();
+      const forward = { key: 'Tab', shiftKey: false, preventDefault: vi.fn() };
+      expect(trapTabFocus(forward, container)).toBe(false);
+      expect(forward.preventDefault).not.toHaveBeenCalled();
+
+      tail.focus();
+      expect(trapTabFocus(forward, container)).toBe(true);
+      expect(document.activeElement).toBe(zoom);
+
+      tail.focus();
+      const backFromTail = { key: 'Tab', shiftKey: true, preventDefault: vi.fn() };
+      expect(trapTabFocus(backFromTail, container)).toBe(false);
+
+      container.remove();
+      originalActive?.focus();
+    });
+
     it('wraps forward when focus outside container on Tab (not contained)', () => {
       const first = {
         focus: vi.fn(),

@@ -46,6 +46,13 @@ body.aos-disabled [data-aos] {
     transition: none !important;
 }
 
+/* Reduced motion stops automatic and ambient effects, not the direct result of
+   an explicit carousel action. The hook applies this opt-in attribute only
+   during a user-triggered transform transition, and clears it on settle. */
+:root[data-motion-reduced='true'] [data-manual-motion='true'] {
+    transition: transform var(--manual-motion-duration) var(--manual-motion-timing) !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
     :root:not([data-motion-reduced='false']) .site-page-enter {
         animation: none !important;

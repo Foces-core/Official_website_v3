@@ -128,6 +128,52 @@ describe('teamData integrity (src/data/team.js)', () => {
     expect(desktopCardData.map(({ name }) => name)).toEqual(cardData.map(({ name }) => name));
   });
 
+  it('uses backgrounds matching the original portraits for the refreshed portrait sources and variants', async () => {
+    const refreshed = desktopCardData.filter((member, index) => member.img !== cardData[index].img);
+    for (const member of refreshed) {
+      const file = member.img.split('/').pop();
+      const stem = file.replace(/\.webp$/, '');
+      for (const name of [file, `${stem}-400.webp`]) {
+        const pixel = await sharp(join(process.cwd(), 'src', 'assets', name))
+          .flatten({ background: '#fdfdf9' })
+          .extract({ left: 0, top: 0, width: 1, height: 1 })
+          .removeAlpha()
+          .raw()
+          .toBuffer();
+        const channels = [...pixel];
+        expect(Math.min(...channels), `${member.name}: ${name} background`).toBeGreaterThan(180);
+        expect(Math.max(...channels) - Math.min(...channels)).toBeLessThanOrEqual(25);
+      }
+    }
+  });
+
+  it('shifted roster portraits expose an edge matching their portraitBg', async () => {
+    const shifted = cardData.filter((member) => member.portraitBg);
+    expect(shifted.length).toBeGreaterThan(0);
+    for (const member of shifted) {
+      const bg = [...member.portraitBg.matchAll(/[0-9a-f]{2}/g)].map((m) =>
+        Number.parseInt(m[0], 16),
+      );
+      expect(bg, `${member.name}: portraitBg is a hex colour`).toHaveLength(3);
+      const file = member.img.split('?')[0].split('/').pop();
+      const stem = file.replace(/\.webp$/, '');
+      for (const name of [file, `${stem}-400.webp`]) {
+        const pixel = await sharp(join(process.cwd(), 'src', 'assets', name))
+          .flatten({ background: '#fdfdf9' })
+          .extract({ left: 0, top: 0, width: 1, height: 1 })
+          .removeAlpha()
+          .raw()
+          .toBuffer();
+        for (const [i, channel] of [...pixel].entries()) {
+          expect(
+            Math.abs(channel - bg[i]),
+            `${member.name}: ${name} edge near ${member.portraitBg}`,
+          ).toBeLessThanOrEqual(30);
+        }
+      }
+    }
+  });
+
   it('declares accurate srcset widths and ships right-sized -400 variants', async () => {
     // The whole point of the team payload work: each card must offer the
     // right-sized 400w candidate (so 1x phones/desktops don't download the

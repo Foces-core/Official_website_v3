@@ -70,3 +70,51 @@ export function dragSnap(deltaX, step, velocity, thresholdRatio = 1 / 3) {
   if (deltaX > threshold) return -1;
   return 0;
 }
+
+const EASED_MOTION = 'cubic-bezier(0.25, 1, 0.5, 1)';
+
+function matrixValues(transform) {
+  const match = transform.match(/^matrix(?:3d)?\((.*)\)$/);
+  return match ? match[1].split(',').map(Number) : null;
+}
+
+function flatOffset(transform) {
+  const values = matrixValues(transform);
+  if (values) return values.length === 16 ? values[12] : values[4];
+  const translate = transform.match(/translate(?:3d|X)\(\s*(-?[\d.]+)px/);
+  return translate ? Number(translate[1]) : NaN;
+}
+
+function cubeAngle(transform) {
+  const rotate = transform.match(/rotateY\(\s*(-?[\d.]+)deg\)/);
+  if (rotate) return Number(rotate[1]);
+  const values = matrixValues(transform);
+  return values?.length === 16 ? (Math.atan2(values[8], values[0]) * 180) / Math.PI : NaN;
+}
+
+function nearestCopy(position, raw, period) {
+  return position + period * Math.round((raw - position) / period);
+}
+
+// Read the in-flight position so rapid navigation can retarget from where
+// the track is actually rendered, rather than restarting every move from
+// the previous slide. Computed transforms are matrices in browsers, while
+// jsdom may return the original translate3d/rotateY string.
+export function trackPosition(transform, { mode, step, total, raw }) {
+  if (!transform || transform === 'none') return raw;
+  if (mode === 'flat') {
+    const x = flatOffset(transform);
+    return Number.isFinite(x) && step > 0 ? nearestCopy(-x / step, raw, total) : raw;
+  }
+  const angle = cubeAngle(transform);
+  return Number.isFinite(angle) ? nearestCopy(-angle / CUBE_ANGLE, raw, 360 / CUBE_ANGLE) : raw;
+}
+
+const MAX_RETARGET_STEPS = 2;
+
+export function transitionPlan({ continuing, from, to, speed }) {
+  const distance = Math.abs(to - from);
+  if (!continuing || distance > MAX_RETARGET_STEPS)
+    return { duration: speed, timing: EASED_MOTION };
+  return { duration: Math.round(speed * distance), timing: 'linear' };
+}

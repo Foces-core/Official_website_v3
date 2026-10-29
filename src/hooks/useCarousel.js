@@ -1,7 +1,13 @@
 import { useRef, useLayoutEffect, useEffect } from 'react';
-import { cubeDragAngle, dragSnap } from '../utils/carouselGeometry.js';
+import {
+  cubeDragAngle,
+  dragSnap,
+  trackPosition,
+  transitionPlan,
+} from '../utils/carouselGeometry.js';
 import { normalizeIndex, wrapTarget } from '../utils/carouselWrap.js';
 import { getAdapter } from '../utils/carouselAdapters.js';
+import { clearManualMotion, setManualMotion } from '../utils/manualMotion.js';
 import { shouldUseVisibilityGatedAutoplay } from './carouselAutoplayPolicy.js';
 
 /**
@@ -70,6 +76,8 @@ export default function useCarousel({
     autoplayTimer: null,
     dragAutoplayWasOn: false,
     keyboardOn: false,
+    transitioning: false,
+    transitionEndsAt: 0,
     faceWidth: 0,
     slideWidth: 0,
     step: 0,
@@ -128,57 +136,110 @@ export default function useCarousel({
     });
   }
 
-  function applyTransforms() {
+  function applyTransforms(position = s.raw) {
     const t = track();
     if (!t) return;
     const { mode: m } = p();
     const adapter = getAdapter(m);
     if (m === 'cube') {
       const dragAngle = s.dragging ? cubeDragAngle(s.dragOffset, s.faceWidth) : 0;
-      t.style.transform = adapter.getTransform(s.raw, s.faceWidth, dragAngle);
+      t.style.transform = adapter.getTransform(position, s.faceWidth, dragAngle);
     } else {
-      t.style.transform = adapter.getTransform(s.raw, s.step, s.dragging ? s.dragOffset : 0);
+      t.style.transform = adapter.getTransform(position, s.step, s.dragging ? s.dragOffset : 0);
     }
     syncActiveClasses();
     root()?.setAttribute('data-carousel-ready', '');
   }
 
+  function readTrackPosition(t) {
+    const { mode: m, total: n } = p();
+    return trackPosition(getComputedStyle(t).transform, {
+      mode: m,
+      step: s.step,
+      total: n,
+      raw: s.raw,
+    });
+  }
+
+  function isTransitioning(now = performance.now()) {
+    return s.transitioning && now < s.transitionEndsAt;
+  }
+
+  function settleMotion(t) {
+    s.transitioning = false;
+    s.transitionEndsAt = 0;
+    clearManualMotion(t);
+  }
+
   // --- navigation ----------------------------------------------------------
 
-  function goTo(rawIndex, animate = true, msSpeed) {
+  function animateTrack(t, to, { msSpeed, manual, from, retarget }) {
+    const now = performance.now();
+    const continuing = retarget || isTransitioning(now);
+    const start = from ?? (continuing ? readTrackPosition(t) : s.raw);
+    const { duration, timing } = transitionPlan({
+      continuing,
+      from: start,
+      to,
+      speed: msSpeed ?? p().speed,
+    });
+    setManualMotion(t, duration, timing, manual);
+    s.transitioning = duration > 0;
+    s.transitionEndsAt = now + duration;
+  }
+
+  function goTo(
+    rawIndex,
+    animate = true,
+    { msSpeed, manual = false, from, retarget = false } = {},
+  ) {
     const t = track();
     if (!t) return;
-    const { total: n, speed: defaultSpeed } = p();
+    const n = p().total;
     const clamped = Math.max(0, Math.min(rawIndex, n * 3 - 1));
+    if (animate) {
+      animateTrack(t, clamped, { msSpeed, manual, from, retarget });
+    } else {
+      t.style.transition = 'none';
+      settleMotion(t);
+    }
     s.raw = clamped;
-    t.style.transition = animate
-      ? `transform ${msSpeed ?? defaultSpeed}ms cubic-bezier(0.25, 1, 0.5, 1)`
-      : 'none';
     applyTransforms();
     onActiveChangeRef.current?.(normalizeIndex(clamped, n));
   }
 
   function slideTo(rawIndex, msSpeed) {
-    goTo(rawIndex, true, msSpeed);
+    goTo(rawIndex, true, { msSpeed, manual: true });
   }
 
-  function rebaseToMiddleCopy() {
-    const n = p().total;
-    if (s.raw < n) {
-      goTo(s.raw + n, false);
-    } else if (s.raw >= n * 2) {
-      goTo(s.raw - n, false);
+  function slideBy(delta) {
+    const t = track();
+    if (!t) return;
+    const continuing = isTransitioning();
+    const wrapped = wrapTarget(s.raw, p().total);
+    if (wrapped == null) {
+      goTo(s.raw + delta, true, { manual: true, retarget: continuing });
+      return;
     }
+    // Rebase only after the previous move has crossed out of the middle
+    // copy. A transition from its first/last slide into a neighboring copy
+    // is valid and must stay animated; jumping early makes rapid reversals
+    // feel like a jerk.
+    const from = (continuing ? readTrackPosition(t) : s.raw) + wrapped - s.raw;
+    s.raw = wrapped;
+    t.style.transition = 'none';
+    settleMotion(t);
+    applyTransforms(from);
+    void t.offsetWidth;
+    goTo(s.raw + delta, true, { manual: true, from, retarget: continuing });
   }
 
   function slidePrev() {
-    rebaseToMiddleCopy();
-    goTo(s.raw - 1, true);
+    slideBy(-1);
   }
 
   function slideNext() {
-    rebaseToMiddleCopy();
-    goTo(s.raw + 1, true);
+    slideBy(1);
   }
 
   // --- autoplay ------------------------------------------------------------
@@ -240,6 +301,7 @@ export default function useCarousel({
     if (s.dragging) return;
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     s.dragging = true;
+    settleMotion(track());
     s.dragAutoplayWasOn = !!s.autoplayTimer;
     if (s.autoplayTimer) stopAutoplay();
     s.pointerId = e.pointerId;
@@ -311,7 +373,7 @@ export default function useCarousel({
     const snap = dragSnap(s.dragOffset, step, s.velocity);
     s.dragOffset = 0;
     s.velocity = 0;
-    goTo(s.raw + snap, true);
+    goTo(s.raw + snap, true, { manual: true });
     if (s.dragAutoplayWasOn) {
       s.dragAutoplayWasOn = false;
       startAutoplay();
@@ -331,7 +393,7 @@ export default function useCarousel({
     s.pointerId = null;
     s.dragOffset = 0;
     s.velocity = 0;
-    goTo(s.raw, true);
+    goTo(s.raw, true, { manual: true });
     if (s.dragAutoplayWasOn) {
       s.dragAutoplayWasOn = false;
       startAutoplay();
@@ -339,17 +401,14 @@ export default function useCarousel({
   }
 
   function onTransitionEnd(e) {
-    if (e.target !== track()) return;
-    const { total: n } = p();
-    const target = wrapTarget(s.raw, n);
-    if (target != null) {
-      s.raw = target;
-      const t = track();
-      if (t) {
-        t.style.transition = 'none';
-        applyTransforms();
-      }
-    }
+    const t = track();
+    if (e.target !== t || (e.propertyName && e.propertyName !== 'transform')) return;
+    settleMotion(t);
+    const target = wrapTarget(s.raw, p().total);
+    if (target == null) return;
+    s.raw = target;
+    t.style.transition = 'none';
+    applyTransforms();
   }
 
   // Handlers live in a ref so both the once-mounted listeners and the stable
