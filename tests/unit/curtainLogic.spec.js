@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CURTAIN_SETTLE_MS, isRevealKey } from '../../src/utils/curtainLogic.js';
+import { CURTAIN_POP_COUNT, CURTAIN_SETTLE_MS, isRevealKey } from '../../src/utils/curtainLogic.js';
 
 describe('isRevealKey', () => {
   it('reveals on Enter and Escape only', () => {
@@ -12,9 +12,14 @@ describe('isRevealKey', () => {
   });
 });
 
-describe('CURTAIN_SETTLE_MS', () => {
-  it('is a positive settle window matching the panel transition', () => {
-    expect(CURTAIN_SETTLE_MS).toBeGreaterThan(0);
-    expect(CURTAIN_SETTLE_MS).toBeLessThanOrEqual(1500);
+describe('curtain constants', () => {
+  it('keeps the settle window long enough for panels and confetti', () => {
+    expect(CURTAIN_SETTLE_MS).toBeGreaterThanOrEqual(1300);
+    expect(CURTAIN_SETTLE_MS).toBeLessThanOrEqual(2500);
+  });
+
+  it('fires a modest confetti burst', () => {
+    expect(CURTAIN_POP_COUNT).toBeGreaterThan(0);
+    expect(CURTAIN_POP_COUNT).toBeLessThanOrEqual(80);
   });
 });

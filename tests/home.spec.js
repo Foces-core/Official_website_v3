@@ -26,6 +26,7 @@ test.describe('Entry curtain', () => {
     await page.keyboard.press('Enter');
 
     await expect(curtain).toHaveClass(/site-curtain-open/);
+    await expect(curtain.locator('.site-curtain-pop')).toHaveCount(36);
     await expect(curtain).toHaveCount(0, { timeout: 5000 });
     await expect(page.locator('#main-content')).toBeVisible();
   });

@@ -10,6 +10,9 @@ export function isRevealKey(key) {
   return key === 'Enter' || key === 'Escape';
 }
 
-// How long the parting panels take to leave the screen before the curtain
-// unmounts. Matches the CSS transition duration in Curtain.css.
-export const CURTAIN_SETTLE_MS = 900;
+// How long the parting panels plus confetti take to leave the screen before
+// the curtain unmounts. Covers the 850ms panel transition and the 1.3s pop.
+export const CURTAIN_SETTLE_MS = 1600;
+
+// Confetti pieces fired from the seam's top when the curtain opens.
+export const CURTAIN_POP_COUNT = 36;
