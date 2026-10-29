@@ -1,4 +1,10 @@
-import { isChunkError } from './chunkRecovery.js';
+// Chunk-load failure signature: a stale deploy serves the SPA index.html
+// for a missing hashed chunk, so the loader throws a SyntaxError/MIME
+// error rather than a classic chunk message.
+const isChunkError = (error) =>
+  /Loading chunk|Loading CSS chunk|ChunkLoadError|Failed to fetch dynamically imported module|Importing a module script failed|Failed to load module script|Expected a JavaScript|MIME type|text\/html|Unexpected token ['"]?</.test(
+    error?.message || (typeof error === 'string' ? error : ''),
+  );
 
 // Recovery helpers for the full-page error fallback (ErrorFallback.jsx).
 // When a missing hashed chunk is served the SPA index.html fallback as

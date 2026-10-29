@@ -1,0 +1,207 @@
+/* global process */
+import { describe, it, expect } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import sharp from 'sharp';
+import { cardData, cubeSlides } from '../../src/data/team.js';
+import { desktopCardData, desktopCubeSlides } from '../../src/Components/Execom/desktopTeamData.js';
+import { validateTeam } from '../../src/utils/validateTeam.js';
+
+// Guard for the live team roster (src/data/team.js). Runs in CI via
+// `pnpm test:unit`, so a malformed entry — duplicate name, missing role, or
+// a missing img — fails the build. Mirrors eventsData.spec.js.
+
+describe('validateTeam — shape rules', () => {
+  it('accepts a well-formed member', () => {
+    const member = { name: 'A Member', img: '/a.webp', role: 'Lead' };
+    expect(validateTeam([member])).toEqual([]);
+  });
+
+  it('flags a missing role', () => {
+    const member = { name: 'A Member', img: '/a.webp' };
+    expect(validateTeam([member]).join('\n')).toContain('missing role');
+  });
+
+  it('flags a missing name', () => {
+    const member = { img: '/a.webp', role: 'Lead' };
+    expect(validateTeam([member]).join('\n')).toContain('missing name');
+  });
+
+  it('flags a missing img', () => {
+    const member = { name: 'A Member', role: 'Lead' };
+    expect(validateTeam([member]).join('\n')).toContain('missing img');
+  });
+
+  it('flags duplicate names', () => {
+    const member = { name: 'A Member', img: '/a.webp', role: 'Lead' };
+    const problems = validateTeam([member, { ...member, role: 'Other' }]);
+    expect(problems.join('\n')).toContain('duplicate name');
+  });
+
+  it('accepts an optional blur LQIP on lead images', () => {
+    const member = { name: 'A Member', img: '/a.webp', blur: '/a-blur.webp', role: 'Lead' };
+    expect(validateTeam([member])).toEqual([]);
+  });
+
+  it('flags a blur that is present but empty', () => {
+    const member = { name: 'A Member', img: '/a.webp', blur: '', role: 'Lead' };
+    expect(validateTeam([member]).join('\n')).toContain('blur must be a non-empty string');
+  });
+
+  it('rejects an explicit blur: null (supplied but invalid)', () => {
+    const member = { name: 'A Member', img: '/a.webp', blur: null, role: 'Lead' };
+    expect(validateTeam([member]).join('\n')).toContain('blur must be a non-empty string');
+  });
+
+  it('ignores a blur inherited through the prototype (not an own property)', () => {
+    // Regression: `'blur' in member` would validate an inherited blur and
+    // reject an invalid one that the member never supplied. Only own
+    // properties count.
+    const member = Object.create({ blur: '' });
+    member.name = 'A Member';
+    member.img = '/a.webp';
+    member.role = 'Lead';
+    expect(validateTeam([member])).toEqual([]);
+  });
+
+  it('accepts an optional srcset alongside blur', () => {
+    const member = {
+      name: 'A Member',
+      img: '/a.webp',
+      srcset: '/a.webp 800w, /a-400.webp 400w',
+      blur: '/a-blur.webp',
+      role: 'Lead',
+    };
+    expect(validateTeam([member])).toEqual([]);
+  });
+
+  it('flags a srcset that is present but empty', () => {
+    const member = { name: 'A Member', img: '/a.webp', srcset: '', role: 'Lead' };
+    expect(validateTeam([member]).join('\n')).toContain('srcset must be a non-empty string');
+  });
+
+  it('rejects an explicit srcset: null (supplied but invalid)', () => {
+    const member = { name: 'A Member', img: '/a.webp', srcset: null, role: 'Lead' };
+    expect(validateTeam([member]).join('\n')).toContain('srcset must be a non-empty string');
+  });
+
+  it('accepts an optional per-photo imgPosition crop', () => {
+    const member = { name: 'A Member', img: '/a.webp', role: 'Lead', imgPosition: 'object-center' };
+    expect(validateTeam([member])).toEqual([]);
+  });
+
+  it('flags an imgPosition that is present but empty', () => {
+    const member = { name: 'A Member', img: '/a.webp', role: 'Lead', imgPosition: '' };
+    expect(validateTeam([member]).join('\n')).toContain('imgPosition must be a non-empty string');
+  });
+
+  it('rejects an explicit imgPosition: null (supplied but invalid)', () => {
+    const member = { name: 'A Member', img: '/a.webp', role: 'Lead', imgPosition: null };
+    expect(validateTeam([member]).join('\n')).toContain('imgPosition must be a non-empty string');
+  });
+});
+
+describe('teamData integrity (src/data/team.js)', () => {
+  it('is valid per validateTeam rules', () => {
+    const problems = validateTeam(cardData);
+    expect(problems, problems.join('\n')).toEqual([]);
+  });
+
+  it('uses the refreshed portraits only in the desktop carousel', () => {
+    const refreshedNames = [
+      'Anna Rachel Mathew',
+      'Abhirami P',
+      'Anjitha Aravind',
+      'Lisha Jins',
+      'Sebin Mathew',
+      'Devadarsana R',
+    ];
+    const changedMembers = desktopCardData.filter(
+      (member, index) => member.img !== cardData[index].img,
+    );
+    const problems = validateTeam(desktopCardData);
+
+    expect(changedMembers.map((member) => member.name).sort()).toEqual(refreshedNames.sort());
+    expect(problems, problems.join('\n')).toEqual([]);
+    expect(desktopCubeSlides).toHaveLength(desktopCardData.length * 3);
+    expect(cubeSlides).toHaveLength(cardData.length * 3);
+    expect(desktopCardData.map(({ name }) => name)).toEqual(cardData.map(({ name }) => name));
+  });
+
+  it('uses white backgrounds for the refreshed portrait sources and variants', async () => {
+    const refreshed = desktopCardData.filter((member, index) => member.img !== cardData[index].img);
+    for (const member of refreshed) {
+      const file = member.img.split('/').pop();
+      const stem = file.replace(/\.webp$/, '');
+      for (const name of [file, `${stem}-400.webp`]) {
+        const pixel = await sharp(join(process.cwd(), 'src', 'assets', name))
+          .flatten({ background: '#fff' })
+          .extract({ left: 0, top: 0, width: 1, height: 1 })
+          .removeAlpha()
+          .raw()
+          .toBuffer();
+        const channels = [...pixel];
+        expect(Math.min(...channels), `${member.name}: ${name} background`).toBeGreaterThan(248);
+        expect(Math.max(...channels) - Math.min(...channels)).toBeLessThanOrEqual(4);
+      }
+    }
+  });
+
+  it('declares accurate srcset widths and ships right-sized -400 variants', async () => {
+    // The whole point of the team payload work: each card must offer the
+    // right-sized 400w candidate (so 1x phones/desktops don't download the
+    // full-size file) and a blur placeholder for the blur-up treatment.
+    for (const member of [...cardData, ...desktopCardData]) {
+      const imgName = member.img.split('?')[0].split('/').pop();
+      const stem = imgName.replace(/\.webp$/, '');
+      const srcPath = join(process.cwd(), 'src', 'assets', imgName);
+      const srcWidth = (await sharp(srcPath).metadata()).width;
+      expect(srcWidth, `${member.name}: source wider than 400px`).toBeGreaterThan(400);
+
+      // srcset must be exactly {full <intrinsic width>, -400 400w} — no
+      // unrelated candidates, no width declared wider than the file is.
+      const candidates = member.srcset
+        .split(',')
+        .map((pair) => pair.trim().split(/\s+/))
+        .map(([url, w]) => [url.split('?')[0].split('/').pop(), Number.parseInt(w, 10)]);
+      expect(candidates, `${member.name}: srcset shape`).toHaveLength(2);
+      expect(candidates).toContainEqual([imgName, srcWidth]);
+      expect(candidates).toContainEqual([`${stem}-400.webp`, 400]);
+
+      // The generated variant itself must actually be ≤400px wide.
+      const variantPath = join(process.cwd(), 'src', 'assets', `${stem}-400.webp`);
+      const variantWidth = (await sharp(variantPath).metadata()).width;
+      expect(variantWidth, `${member.name}: -400 variant ≤ 400w`).toBeLessThanOrEqual(400);
+    }
+    // The ?blur&w=20 query is consumed by the imagetools plugin at build
+    // time, so the runtime blur value can't assert the width — scan the
+    // source instead (same pattern as the AOS/font-subset guards). Exactly
+    // one w=20 blur import per card; the advisor keeps w=128.
+    const teamSource = readFileSync(join(process.cwd(), 'src', 'data', 'team.js'), 'utf8');
+    const w20Blurs = teamSource.match(/\?blur&w=20/g) ?? [];
+    expect(w20Blurs).toHaveLength(cardData.length);
+  });
+
+  it('has at least one member', () => {
+    expect(cardData.length).toBeGreaterThan(0);
+  });
+
+  it('builds cubeSlides as exactly three copies for the seamless wrap', () => {
+    expect(cubeSlides).toHaveLength(cardData.length * 3);
+    expect(cubeSlides[0]).toBe(cardData[0]);
+    expect(cubeSlides[cardData.length]).toBe(cardData[0]);
+    expect(cubeSlides[cardData.length * 2]).toBe(cardData[0]);
+  });
+
+  it('never special-cases a member by name in the shared carousel', () => {
+    // Regression: a per-photo crop used to live as `d.name === '…'` in
+    // TeamCarousel.jsx. Crops belong to data (imgPosition, guarded above);
+    // a name comparison in shared UI fails this spec. Attribute reads such
+    // as alt={d.name} are fine — only comparisons are banned.
+    const carouselSource = readFileSync(
+      join(process.cwd(), 'src', 'Components', 'Execom', 'TeamCarousel.jsx'),
+      'utf8',
+    );
+    expect(carouselSource).not.toMatch(/d\.name\s*[!=]==/);
+  });
+});
