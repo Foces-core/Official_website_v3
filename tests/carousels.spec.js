@@ -27,7 +27,9 @@ test.describe('Featuring carousel', () => {
       root.__carouselEngine__.stopAutoplay();
       root.__carouselEngine__.slideTo(7, 420);
       const track = root.querySelector('.swiper-wrapper');
-      track.style.transform = 'translate3d(-770px, 0, 0)';
+      const step = track.children[1].offsetLeft - track.children[0].offsetLeft;
+      track.style.transition = 'none';
+      track.style.transform = `translate3d(${-7.5 * step}px, 0, 0)`;
       const button = document.querySelector('button[aria-label="Next ECHO photos"]');
       button.click();
       button.click();
