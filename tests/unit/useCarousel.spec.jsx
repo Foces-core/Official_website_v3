@@ -119,6 +119,37 @@ describe('useCarousel — instance contract', () => {
     expect(inst(harness).activeIndex).toBe(4);
   });
 
+  it('retargets rapid arrows from the in-flight position without restarting motion', () => {
+    vi.spyOn(performance, 'now').mockReturnValue(100);
+    harness.render(<TrackProbe total={4} mode="cube" faceWidth={300} />);
+    const track = harness.container.querySelector('.swiper-wrapper');
+    inst(harness).slideNext();
+    track.style.transform = 'rotateY(-405deg)';
+    vi.spyOn(performance, 'now').mockReturnValue(150);
+
+    inst(harness).slideNext();
+
+    expect(inst(harness).activeIndex).toBe(6);
+    expect(track.style.transition).toContain('transform 630ms linear');
+    expect(track.style.getPropertyValue('--manual-motion-duration')).toBe('630ms');
+    expect(track.getAttribute('data-manual-motion')).toBe('true');
+  });
+
+  it('keeps rapid arrow transitions moving forward across the seamless wrap', () => {
+    vi.spyOn(performance, 'now').mockReturnValue(100);
+    harness.render(<TrackProbe total={4} mode="cube" faceWidth={300} />);
+    const track = harness.container.querySelector('.swiper-wrapper');
+    inst(harness).slideTo(8);
+    track.style.transform = 'rotateY(-783deg)';
+    vi.spyOn(performance, 'now').mockReturnValue(150);
+
+    inst(harness).slideNext();
+
+    expect(inst(harness).activeIndex).toBe(5);
+    expect(track.style.transform).toBe('rotateY(-450deg)');
+    expect(track.style.transition).toContain('transform 126ms linear');
+  });
+
   it('slideTo jumps to an explicit raw index', () => {
     harness.render(<TrackProbe total={4} />);
     inst(harness).slideTo(7, 0);

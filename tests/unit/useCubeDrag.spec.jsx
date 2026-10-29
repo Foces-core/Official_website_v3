@@ -409,6 +409,9 @@ describe('useCubeDrag', () => {
     act(() => arrowKey('ArrowRight'));
 
     expect(el.style.transform).toContain('rotateY(-90deg)');
+    expect(el.getAttribute('data-manual-motion')).toBe('true');
+    expect(el.style.getPropertyValue('--manual-motion-duration')).toBe('400ms');
+    expect(el.style.transition).toContain('400ms');
   });
 
   it('pauses idle auto-spin during the manual arrow grace period and resumes later', () => {

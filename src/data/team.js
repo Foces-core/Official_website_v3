@@ -62,6 +62,14 @@ export const cardData = [
       [Aleetta400, 400],
     ]),
     blur: AleettaBlur,
+    // The five roster portraits are shifted vertically by per-photo pixel
+    // offsets (measured against the shared framing target: backdrop strip,
+    // face, a little body) instead of a shared percentage — each source has
+    // different headroom, so percentages land differently per photo. The
+    // shift leaves a strip above the photo, so portraitBg continues the
+    // studio backdrop (sampled from the photos' own top band) there.
+    objectPosition: 'center calc(50% + 30px)',
+    portraitBg: '#c4c4c4',
     role: 'Chairperson',
   },
   {
@@ -82,6 +90,8 @@ export const cardData = [
       [Steve400, 400],
     ]),
     blur: SteveBlur,
+    objectPosition: 'center calc(50% + 35px)',
+    portraitBg: '#c4c4c4',
     role: 'Secretary',
   },
   {
@@ -102,6 +112,8 @@ export const cardData = [
       [Amanul400, 400],
     ]),
     blur: AmanulBlur,
+    objectPosition: 'center calc(50% + 31px)',
+    portraitBg: '#c4c4c4',
     role: 'Treasurer',
   },
   {
@@ -112,6 +124,8 @@ export const cardData = [
       [Abel400, 400],
     ]),
     blur: AbelBlur,
+    objectPosition: 'center calc(50% + 29px)',
+    portraitBg: '#c4c4c4',
     role: 'Research & Development Lead',
   },
   {
@@ -122,6 +136,8 @@ export const cardData = [
       [Saniya400, 400],
     ]),
     blur: SaniyaBlur,
+    objectPosition: 'center calc(50% + 25px)',
+    portraitBg: '#c4c4c4',
     role: 'Program Outreach Coordinator',
   },
   {

@@ -51,14 +51,27 @@ test.describe('Cube easter egg', () => {
     expect(Math.abs(rotation / 90 - Math.round(rotation / 90))).toBeLessThan(0.001);
   });
 
-  test('reduced motion allows manual cube rotation without particle effects', async ({ page }) => {
+  test('reduced motion keeps manual cube rotation animated and face-aligned', async ({ page }) => {
     await scrollToCube(page, '/?motion=off');
     const cube = page.locator('#boxDiv-about');
-    const before = await cube.getAttribute('style');
-    await pressArrowRapidly(page, 'ArrowRight', 20);
 
+    await cube.evaluate((el) => {
+      el.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+    });
+    await expect
+      .poll(() => cube.evaluate((el) => getComputedStyle(el).transitionDuration))
+      .toBe('0.4s');
+    await expect
+      .poll(() =>
+        cube.evaluate((el) => {
+          const angle = Number(el.style.transform.match(/rotateY\((-?[\d.]+)deg\)/)?.[1] ?? 0);
+          return angle % 90 === 0;
+        }),
+      )
+      .toBe(true);
+
+    await pressArrowRapidly(page, 'ArrowRight', 20);
     await expect(page.locator('.about-toast').first()).toBeVisible({ timeout: 15000 });
-    await expect.poll(() => cube.getAttribute('style')).not.toBe(before);
     await expect(page.locator('.about-particle')).toHaveCount(0);
   });
 

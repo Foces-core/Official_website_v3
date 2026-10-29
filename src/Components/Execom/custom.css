@@ -35,20 +35,17 @@
     pointer-events: auto;
 }
 
-/* Position-owned color: on touch devices (where hover never fires), the
-   centered/active card stays in color. Desktop uses pointer-enter state on
-   the image; on desktop (hover: hover), cards stay
-   grayscale until hovered so no image is automatically colored without hover.
-   Unlayered CSS beats Tailwind's layered `grayscale` utility, so no !important
-   is needed. Both img and wrapper div are cleared: BlurImage keeps filter
-   classes off the wrapper, but the div selector guards against any future
-   leak — a grayscale parent would keep the whole card gray even with img
-   cleared. */
+/* Keep every team portrait grayscale on touch devices, where hover never
+   fires. Scope the rule to the real portrait image, not its blurred LQIP. */
 @media (hover: none) {
-    .execom-swiper [data-slide-center] img,
-    .execom-swiper [data-slide-center] div,
-    .execom-cube-swiper [data-slide-center] img,
-    .execom-cube-swiper [data-slide-center] div {
+    .execom-swiper img:not([aria-hidden='true']),
+    .execom-cube-swiper img:not([aria-hidden='true']) {
+        filter: grayscale(1);
+    }
+}
+
+@media (hover: hover) {
+    .execom-swiper img:not([aria-hidden='true']).filter-none {
         filter: none;
     }
 }

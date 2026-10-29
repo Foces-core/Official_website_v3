@@ -152,11 +152,13 @@ function TeamCarousel({
                 className={`container-execom bg-[#161618] border-box relative rounded-3xl overflow-hidden ${
                   isDesktop ? 'group' : ''
                 }`}
+                style={d.portraitBg ? { backgroundColor: d.portraitBg } : undefined}
                 onPointerMove={() => setHoveredSlideIndex(index)}
                 onPointerLeave={() => setHoveredSlideIndex(null)}
               >
                 <BlurImage
-                  className={`object-cover ${d.imgPosition ?? 'object-top'} w-full h-full ${isDesktop ? 'card-hover' : ''} ${d.imageTone ?? ''} ${isDesktop && hoveredSlideIndex === index ? (d.imageTone ? 'grayscale-0' : 'filter-none') : 'grayscale'} transition-all duration-400`}
+                  className={`object-cover ${d.imgPosition ?? 'object-top'} w-full h-full ${isDesktop ? 'card-hover' : ''} ${isDesktop && hoveredSlideIndex === index ? 'filter-none' : 'grayscale'} transition-all duration-400`}
+                  style={d.objectPosition ? { objectPosition: d.objectPosition } : undefined}
                   src={d.img}
                   srcSet={d.srcset}
                   sizes={cardSizes}
