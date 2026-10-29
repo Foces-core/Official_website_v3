@@ -9,17 +9,19 @@ test.describe('Execom archive (/teams)', () => {
 
     await page.getByRole('link', { name: 'Execom Archive' }).click();
     await expect(page).toHaveURL(/\/teams$/);
-    await expect(page.locator('.teams-title')).toHaveText('Execom 2024–2025');
-    await expect(page.locator('.teams-group-placeholder')).toBeVisible();
+    await expect(page.locator('.teams-title')).toHaveText('Execom 2025–2026');
+    await expect(page.locator('.teams-group-img')).toBeVisible();
   });
 
-  test('year strip switches the batch title', async ({ page }) => {
+  test('year strip switches batches and placeholders show for missing photos', async ({ page }) => {
     await page.goto('/teams', { waitUntil: 'domcontentloaded' });
 
     await page.getByRole('button', { name: '2017-18' }).click();
     await expect(page.locator('.teams-title')).toHaveText('Execom 2017–2018');
+    await expect(page.locator('.teams-group-placeholder')).toBeVisible();
 
-    await page.getByRole('button', { name: '2024-25' }).click();
-    await expect(page.locator('.teams-title')).toHaveText('Execom 2024–2025');
+    await page.getByRole('button', { name: '2025-26' }).click();
+    await expect(page.locator('.teams-title')).toHaveText('Execom 2025–2026');
+    await expect(page.locator('.teams-group-img')).toBeVisible();
   });
 });

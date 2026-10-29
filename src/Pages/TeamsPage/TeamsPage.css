@@ -109,6 +109,12 @@
     background: #151518;
 }
 
+.teams-group-img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
 .teams-group-placeholder {
     height: 18rem;
     display: grid;

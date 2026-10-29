@@ -46,9 +46,20 @@ export default function TeamsPage() {
           <h1 className="teams-title">{batch.title}</h1>
         </div>
         <div className="teams-group-card">
-          <div className="teams-group-placeholder" aria-hidden="true">
-            Group photo
-          </div>
+          {batch.photo ? (
+            <img
+              className="teams-group-img"
+              src={batch.photo}
+              srcSet={`${batch.photoSmall} 1200w, ${batch.photo} ${batch.photoWidth || 4032}w`}
+              alt={`${batch.title} group photo`}
+              decoding="async"
+              loading="lazy"
+            />
+          ) : (
+            <div className="teams-group-placeholder" aria-hidden="true">
+              Group photo
+            </div>
+          )}
           <div className="teams-group-meta">
             <span className="teams-meta-label">GROUP PHOTO</span>
             <span className="teams-meta-sub">{batch.groupSub || '—'}</span>
