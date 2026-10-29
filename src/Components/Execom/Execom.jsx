@@ -144,7 +144,7 @@ function Execom() {
           to="/teams"
           className="inline-flex items-center space-x-3 bg-white text-black font-bold text-base px-8 py-3.5 rounded-xl shadow-lg hover:bg-cyan-400 hover:text-black transition-all duration-400 transform hover:scale-105"
         >
-          <span>Meet All Execom Members</span>
+          <span>Execom Archive</span>
         </Link>
       </div>
     </section>
