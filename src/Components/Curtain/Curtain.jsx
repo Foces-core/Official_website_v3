@@ -1,17 +1,33 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import './Curtain.css';
-import { CURTAIN_SETTLE_MS, isRevealKey } from '../../utils/curtainLogic.js';
+import { CURTAIN_POP_COUNT, CURTAIN_SETTLE_MS, isRevealKey } from '../../utils/curtainLogic.js';
+
+const POP_COLORS = ['#fbbf24', '#67e8f9', '#f8fafc', '#fb7185', '#a78bfa'];
 
 /**
- * Cinematic entry curtain: a full-screen pair of panels shown on every load,
+ * Cinematic entry curtain: a velvet pair of panels shown on every load,
  * regardless of device tier. Any first deliberate interaction — pointer,
- * wheel, touch move, or Enter — parts the panels and reveals the site. The
- * overlay never swallows the triggering event (pointer-events: none), so the
- * first click or scroll also reaches the page beneath.
+ * wheel, touch move, or Enter — parts the panels and fires a confetti burst
+ * from the seam's top. The overlay never swallows the triggering event
+ * (pointer-events: none), so the first click or scroll also reaches the
+ * page beneath.
  */
 export default function Curtain() {
   const [open, setOpen] = useState(false);
   const [gone, setGone] = useState(false);
+
+  const pops = useMemo(
+    () =>
+      Array.from({ length: CURTAIN_POP_COUNT }, (_, i) => ({
+        id: i,
+        x: Math.round(Math.sin(i * 2.17) * 90),
+        drift: Math.round(Math.sin(i * 1.37) * 140),
+        drop: 60 + ((i * 53) % 120),
+        delay: Math.round(((i * 29) % 220) / 100) / 10,
+        color: POP_COLORS[i % POP_COLORS.length],
+      })),
+    [],
+  );
 
   useEffect(() => {
     if (open || gone) return undefined;
@@ -45,6 +61,23 @@ export default function Curtain() {
       <div className="site-curtain-panel site-curtain-left" />
       <div className="site-curtain-panel site-curtain-right" />
       {!open && <div className="site-curtain-hint">Scroll or press Enter</div>}
+      {open && (
+        <div className="site-curtain-popper">
+          {pops.map((pop) => (
+            <i
+              key={pop.id}
+              className="site-curtain-pop"
+              style={{
+                '--pop-x': `${pop.x}px`,
+                '--pop-drift': `${pop.drift}px`,
+                '--pop-drop': `${pop.drop}px`,
+                '--pop-delay': `${pop.delay}s`,
+                backgroundColor: pop.color,
+              }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
