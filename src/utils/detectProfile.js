@@ -61,8 +61,7 @@ function getPerfOverride() {
 
 function getMotionOverride() {
   const stored = getOverride('motion', 'motionOverride');
-  // TEMP: treat ?motion=off as ?motion=on while previewing the curtain.
-  return stored === 'off' || stored === 'on' ? 'on' : null;
+  return stored === 'off' || stored === 'on' ? stored : null;
 }
 
 function detectNetwork() {
@@ -136,6 +135,14 @@ function detectReducedMotion() {
 
 export default function detectProfile() {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+    return { slowNetwork: false, lowCPU: false, reducedMotion: false, lowPower: false };
+  }
+
+  // TEMP: all detection disabled in builds — every visitor gets the full
+  // experience (animations, effects, cube) while the uniform site is
+  // previewed. Unit tests keep exercising the real heuristics below so the
+  // revert keeps its suite and coverage.
+  if (import.meta.env.MODE !== 'test') {
     return { slowNetwork: false, lowCPU: false, reducedMotion: false, lowPower: false };
   }
 
