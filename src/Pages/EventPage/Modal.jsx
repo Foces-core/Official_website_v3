@@ -1,10 +1,12 @@
 import { useRef } from 'react';
 import Lightbox from 'yet-another-react-lightbox';
 import Counter from 'yet-another-react-lightbox/plugins/counter';
+import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import 'yet-another-react-lightbox/styles.css';
 import 'yet-another-react-lightbox/plugins/counter.css';
 import PropTypes from 'prop-types';
 import useScrollLock from '../../hooks/useScrollLock.js';
+import useFocusTrap from '../../hooks/useFocusTrap.js';
 import useFocusRestore from '../../hooks/useFocusRestore.js';
 
 function Modal({ images, open, onClose, startIndex = 0 }) {
@@ -12,10 +14,10 @@ function Modal({ images, open, onClose, startIndex = 0 }) {
   const imagesAvailable = Boolean(images && images.length > 0);
   const isOverlayActive = open && imagesAvailable;
 
-  // The lightbox vendor (yet-another-react-lightbox) handles Escape keydown and
-  // internal focus trapping. We supply the missing pieces: ref-counted body
-  // scroll locking and WCAG 2.4.3 focus restoration back to the trigger button on close.
+  // The lightbox handles Escape; this modal supplies a portal focus trap,
+  // ref-counted body scroll locking, and focus restoration on close.
   useScrollLock(isOverlayActive);
+  useFocusTrap({ isActive: isOverlayActive, containerId: 'event-lightbox' });
   useFocusRestore({ isOpen: isOverlayActive });
 
   if (!isOverlayActive) return null;
@@ -36,7 +38,9 @@ function Modal({ images, open, onClose, startIndex = 0 }) {
       close={onClose}
       slides={slides}
       index={startIndex}
-      plugins={[Counter]}
+      plugins={[Counter, Zoom]}
+      zoom={{ maxZoomPixelRatio: 3, scrollToZoom: true }}
+      portal={{ container: { id: 'event-lightbox' } }}
       controller={{ closeOnBackdropClick: true }}
       carousel={{ finite: slides.length <= 1, preload: 1, swipe: true }}
       animation={{ swipe: 250, fade: 200 }}

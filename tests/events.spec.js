@@ -38,6 +38,18 @@ test.describe('Events', () => {
     expect(fits).toBe(true);
   });
 
+  test('lightbox zoom button enlarges the fullscreen image', async ({ page }) => {
+    await page.goto('/events', { waitUntil: 'networkidle' });
+    await page.locator('[aria-haspopup="dialog"]').first().click();
+    const dialog = page.locator('[role="dialog"]');
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator('img').first()).toBeVisible();
+    const zoomButton = dialog.getByRole('button', { name: 'Zoom in' });
+    await expect(zoomButton).toBeVisible();
+    await zoomButton.click();
+    await expect(dialog.getByRole('button', { name: 'Zoom out' })).toBeVisible();
+  });
+
   test('lightbox closes on Escape', async ({ page }) => {
     await page.goto('/events', { waitUntil: 'networkidle' });
     await page.locator('[aria-haspopup="dialog"]').first().click();
