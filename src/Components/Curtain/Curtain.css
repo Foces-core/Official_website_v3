@@ -118,24 +118,8 @@
 .site-curtain-pop {
     position: absolute;
     top: 0;
-    width: var(--pop-size);
-    height: var(--pop-size);
-    border-radius: var(--pop-round, 1px);
     box-shadow: 0 0 6px 1px rgb(255 255 255 / 25%);
-    animation: site-curtain-pop-fly 1.8s cubic-bezier(0.16, 0.6, 0.45, 1) var(--pop-delay) forwards;
-}
-
-@keyframes site-curtain-pop-fly {
-    0% {
-        transform: translate(0, 0) rotate(0deg) scale(1);
-        opacity: 1;
-    }
-
-    100% {
-        transform: translate(calc(var(--pop-x) + var(--pop-drift)), var(--pop-drop)) rotate(540deg)
-            scale(0.9);
-        opacity: 0;
-    }
+    /* transform + opacity are driven per-frame by the confetti sim */
 }
 
 /* Reduced motion keeps the curtain itself (it is content) but opens it
