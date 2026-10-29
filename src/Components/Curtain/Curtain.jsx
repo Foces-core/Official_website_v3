@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import './Curtain.css';
-import { CURTAIN_POP_COUNT, CURTAIN_SETTLE_MS, isRevealKey } from '../../utils/curtainLogic.js';
+import {
+  CURTAIN_EMITTERS,
+  CURTAIN_POP_COUNT,
+  CURTAIN_SETTLE_MS,
+  isRevealKey,
+} from '../../utils/curtainLogic.js';
 
 const POP_COLORS = ['#fbbf24', '#67e8f9', '#f8fafc', '#fb7185', '#a78bfa'];
 
@@ -16,18 +21,23 @@ export default function Curtain() {
   const [open, setOpen] = useState(false);
   const [gone, setGone] = useState(false);
 
-  const pops = useMemo(
-    () =>
-      Array.from({ length: CURTAIN_POP_COUNT }, (_, i) => ({
-        id: i,
-        x: Math.round(Math.sin(i * 2.17) * 90),
-        drift: Math.round(Math.sin(i * 1.37) * 140),
-        drop: 60 + ((i * 53) % 120),
-        delay: Math.round(((i * 29) % 220) / 100) / 10,
-        color: POP_COLORS[i % POP_COLORS.length],
+  const pops = useMemo(() => {
+    const perEmitter = Math.floor(CURTAIN_POP_COUNT / CURTAIN_EMITTERS.length);
+    return CURTAIN_EMITTERS.flatMap((emitter, e) =>
+      Array.from({ length: perEmitter }, (_, i) => ({
+        id: `${e}-${i}`,
+        left: emitter.left,
+        x: Math.round(Math.sin(i * 2.17 + e) * 40),
+        drift:
+          emitter.dir === 0
+            ? Math.round(Math.sin(i * 1.37) * 160)
+            : emitter.dir * (60 + ((i * 37) % 120)),
+        drop: 80 + ((i * 47 + e * 31) % 150),
+        delay: Math.round(((i * 29 + e * 11) % 240) / 100) / 10,
+        color: POP_COLORS[(i + e) % POP_COLORS.length],
       })),
-    [],
-  );
+    );
+  }, []);
 
   useEffect(() => {
     if (open || gone) return undefined;
@@ -68,6 +78,7 @@ export default function Curtain() {
               key={pop.id}
               className="site-curtain-pop"
               style={{
+                left: pop.left,
                 '--pop-x': `${pop.x}px`,
                 '--pop-drift': `${pop.drift}px`,
                 '--pop-drop': `${pop.drop}px`,

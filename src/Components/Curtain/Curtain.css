@@ -93,16 +93,16 @@
     }
 }
 
-/* Party-popper burst from the seam's top when the panels part. */
+/* Party-popper bursts from the top edge when the panels part. */
 .site-curtain-popper {
     position: absolute;
-    top: 0;
-    left: 50%;
+    inset: 0;
     z-index: 4;
 }
 
 .site-curtain-pop {
     position: absolute;
+    top: 0;
     width: 7px;
     height: 7px;
     border-radius: 1px;

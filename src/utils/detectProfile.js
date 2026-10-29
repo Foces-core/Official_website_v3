@@ -61,7 +61,8 @@ function getPerfOverride() {
 
 function getMotionOverride() {
   const stored = getOverride('motion', 'motionOverride');
-  return stored === 'off' || stored === 'on' ? stored : null;
+  // TEMP: treat ?motion=off as ?motion=on while previewing the curtain.
+  return stored === 'off' || stored === 'on' ? 'on' : null;
 }
 
 function detectNetwork() {

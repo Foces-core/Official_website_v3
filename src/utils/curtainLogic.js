@@ -14,5 +14,14 @@ export function isRevealKey(key) {
 // the curtain unmounts. Covers the 850ms panel transition and the 1.3s pop.
 export const CURTAIN_SETTLE_MS = 1600;
 
-// Confetti pieces fired from the seam's top when the curtain opens.
-export const CURTAIN_POP_COUNT = 36;
+// Confetti pieces fired when the curtain opens, shared between three
+// emitters at the top edge (left, centre seam, right).
+export const CURTAIN_POP_COUNT = 60;
+
+// Fractional positions along the top edge and the direction each burst
+// drifts: the side emitters throw inward, the centre throws both ways.
+export const CURTAIN_EMITTERS = [
+  { left: '8%', dir: 1 },
+  { left: '50%', dir: 0 },
+  { left: '92%', dir: -1 },
+];
