@@ -1,0 +1,70 @@
+/* Cinematic entry curtain. Static content on every device tier; only the
+   opening motion is gated by the reduced-motion attribute (ADR-0028).
+   pointer-events: none throughout — the interaction that opens the curtain
+   also reaches the page underneath. */
+.site-curtain {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.site-curtain-panel {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50.5%;
+    background: linear-gradient(180deg, #0b0b0d 0%, #161618 60%, #0b0b0d 100%);
+    box-shadow: 0 0 60px rgb(0 0 0 / 60%);
+    transition: transform 850ms cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.site-curtain-left {
+    left: 0;
+    border-right: 1px solid rgb(103 232 249 / 25%);
+}
+
+.site-curtain-right {
+    right: 0;
+    border-left: 1px solid rgb(103 232 249 / 25%);
+}
+
+.site-curtain-open .site-curtain-left {
+    transform: translateX(-101%);
+}
+
+.site-curtain-open .site-curtain-right {
+    transform: translateX(101%);
+}
+
+.site-curtain-hint {
+    position: absolute;
+    left: 50%;
+    bottom: 8vh;
+    transform: translateX(-50%);
+    color: rgb(103 232 249 / 70%);
+    font-size: 0.8rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    animation: site-curtain-hint-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes site-curtain-hint-pulse {
+    0%,
+    100% {
+        opacity: 0.35;
+    }
+
+    50% {
+        opacity: 0.9;
+    }
+}
+
+/* Reduced motion keeps the curtain itself (it is content) but opens it
+   without the cinematic part or the hint pulse. */
+:root[data-motion-reduced='true'] .site-curtain-panel,
+:root[data-motion-reduced='true'] .site-curtain-hint {
+    transition: none;
+    animation: none;
+}

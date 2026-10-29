@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router';
 import App from './App.jsx';
 import Loader from './Components/Loader/Loader.jsx';
+import Curtain from './Components/Curtain/Curtain.jsx';
 import ErrorBoundary from './Components/ErrorBoundary/ErrorBoundary.jsx';
 import { lazyWithRetry } from './utils/lazyWithRetry.js';
 import { SPLASH_FAILSAFE_MS, skipSplash, paintReady } from './utils/bootSplashLogic.js';
@@ -172,6 +173,7 @@ function Root() {
   return (
     <>
       <ErrorBoundary onError={(error) => reportError(error)}>
+        <Curtain />
         <Suspense fallback={<Loader />}>
           <PageEntryTransition key={location.pathname} animate={aosReveals}>
             <Routes>

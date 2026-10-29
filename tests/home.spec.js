@@ -16,6 +16,45 @@ test.describe('Home page structure', () => {
   });
 });
 
+test.describe('Entry curtain', () => {
+  test('shows on load and parts on Enter', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    const curtain = page.locator('.site-curtain');
+    await expect(curtain).toBeVisible();
+    await expect(curtain.locator('.site-curtain-hint')).toBeVisible();
+
+    await page.keyboard.press('Enter');
+
+    await expect(curtain).toHaveClass(/site-curtain-open/);
+    await expect(curtain).toHaveCount(0, { timeout: 5000 });
+    await expect(page.locator('#main-content')).toBeVisible();
+  });
+
+  test('opens on a pointer click without swallowing it', async ({ page }) => {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.site-curtain')).toBeVisible();
+
+    await page.mouse.click(640, 360);
+
+    await expect(page.locator('.site-curtain')).toHaveCount(0, { timeout: 5000 });
+  });
+
+  test('still opens instantly under reduced motion', async ({ page }) => {
+    await page.goto('/?motion=off', { waitUntil: 'domcontentloaded' });
+    const curtain = page.locator('.site-curtain');
+    await expect(curtain).toBeVisible();
+
+    await page.keyboard.press('Enter');
+
+    const duration = await page
+      .locator('.site-curtain-panel')
+      .first()
+      .evaluate((el) => getComputedStyle(el).transitionDuration);
+    expect(duration).toBe('0s');
+    await expect(curtain).toHaveCount(0, { timeout: 5000 });
+  });
+});
+
 test.describe('Cube easter egg', () => {
   async function scrollToCube(page, route = '/') {
     if (route === '/') {
