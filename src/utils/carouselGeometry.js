@@ -110,7 +110,11 @@ export function trackPosition(transform, { mode, step, total, raw }) {
   return Number.isFinite(angle) ? nearestCopy(-angle / CUBE_ANGLE, raw, 360 / CUBE_ANGLE) : raw;
 }
 
+const MAX_RETARGET_STEPS = 2;
+
 export function transitionPlan({ continuing, from, to, speed }) {
-  if (!continuing) return { duration: speed, timing: EASED_MOTION };
-  return { duration: Math.round(speed * Math.abs(to - from)), timing: 'linear' };
+  const distance = Math.abs(to - from);
+  if (!continuing || distance > MAX_RETARGET_STEPS)
+    return { duration: speed, timing: EASED_MOTION };
+  return { duration: Math.round(speed * distance), timing: 'linear' };
 }

@@ -44,10 +44,22 @@ test.describe('Events', () => {
     const dialog = page.locator('[role="dialog"]');
     await expect(dialog).toBeVisible();
     await expect(dialog.locator('img').first()).toBeVisible();
+    const centerImageWidth = () =>
+      dialog.evaluate((root) => {
+        const cx = window.innerWidth / 2;
+        const widths = [...root.querySelectorAll('img')]
+          .map((img) => img.getBoundingClientRect())
+          .filter((rect) => rect.left <= cx && rect.right >= cx)
+          .map((rect) => rect.width);
+        return Math.max(0, ...widths);
+      });
+    await expect.poll(centerImageWidth).toBeGreaterThan(0);
+    const before = await centerImageWidth();
     const zoomButton = dialog.getByRole('button', { name: 'Zoom in' });
     await expect(zoomButton).toBeVisible();
     await zoomButton.click();
-    await expect(dialog.getByRole('button', { name: 'Zoom out' })).toBeVisible();
+    await expect.poll(centerImageWidth).toBeGreaterThan(before);
+    await expect(dialog.getByRole('button', { name: 'Zoom out' })).toBeEnabled();
   });
 
   test('lightbox closes on Escape', async ({ page }) => {

@@ -158,5 +158,16 @@ describe('transitionPlan', () => {
     });
     expect(transitionPlan({ continuing: true, from: 6.5, to: 6, speed: 420 }).duration).toBe(210);
     expect(transitionPlan({ continuing: true, from: 4.7, to: 5, speed: 420 }).duration).toBe(126);
+    expect(transitionPlan({ continuing: true, from: 4, to: 6, speed: 420 }).timing).toBe('linear');
+  });
+
+  it('falls back to the fixed eased move for a far jump during an in-flight move', () => {
+    expect(transitionPlan({ continuing: true, from: 3, to: 12, speed: 420 })).toEqual({
+      duration: 420,
+      timing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+    });
+    expect(transitionPlan({ continuing: true, from: 3.9, to: 6, speed: 420 }).timing).toBe(
+      'cubic-bezier(0.25, 1, 0.5, 1)',
+    );
   });
 });

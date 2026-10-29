@@ -55,12 +55,11 @@ test.describe('Cube easter egg', () => {
     await scrollToCube(page, '/?motion=off');
     const cube = page.locator('#boxDiv-about');
 
-    await cube.evaluate((el) => {
+    const transitionDuration = await cube.evaluate((el) => {
       el.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
+      return getComputedStyle(el).transitionDuration;
     });
-    await expect
-      .poll(() => cube.evaluate((el) => getComputedStyle(el).transitionDuration))
-      .toBe('0.4s');
+    expect(transitionDuration).toBe('0.4s');
     await expect
       .poll(() =>
         cube.evaluate((el) => {

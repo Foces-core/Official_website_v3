@@ -9,10 +9,10 @@ Date: 2026-10-29
 
 ## Decision
 
-Reduced motion still stops autoplay, idle spin, page-entry fades, and ambient effects. A transform transition that the user starts directly (arrows, drag release, cube keys) sets `data-manual-motion='true'` through `src/utils/manualMotion.js`. `src/App.css` keeps only that transform transition, and the hooks remove the attribute when the move settles. While a move is still running, the next press continues linearly from the rendered position (`trackPosition` and `transitionPlan` in `src/utils/carouselGeometry.js`) instead of starting again.
+Reduced motion still stops autoplay, idle spin, page-entry fades, and ambient effects. A transform transition that the user starts directly (arrows, drag release, cube keys) sets `data-manual-motion='true'` through `src/utils/manualMotion.js`. `src/App.css` keeps only that transform transition, and the hooks remove the attribute when the move settles. While a move is still running, a press within two slides of the rendered position continues linearly from it (`trackPosition` and `transitionPlan` in `src/utils/carouselGeometry.js`) instead of starting again. A farther jump, such as a dot click, uses the standard 420 ms eased move.
 
 ## Consequences
 
 - Positive: explicit navigation keeps its spatial cue, and rapid presses stay smooth across the seamless wrap.
-- Negative / trade-offs: users who prefer reduced motion still see short transform transitions (≤420 ms per step) when they act directly. Automatic motion stays off.
+- Negative / trade-offs: users who prefer reduced motion still see short transform transitions when they act directly: 420 ms for a fresh or far move, and up to 840 ms for a two-slide retarget. Automatic motion stays off.
 - Follow-ups: Playwright covers the cube's 0.4 s manual transition under `?motion=off`, and unit specs cover in-flight retargeting.
