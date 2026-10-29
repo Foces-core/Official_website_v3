@@ -7,7 +7,7 @@ import {
   isRevealKey,
 } from '../../utils/curtainLogic.js';
 
-const POP_COLORS = ['#fbbf24', '#67e8f9', '#f8fafc', '#fb7185', '#a78bfa'];
+const POP_COLORS = ['#fbbf24', '#f97316', '#67e8f9', '#f8fafc', '#fb7185', '#a78bfa', '#4ade80'];
 
 /**
  * Cinematic entry curtain: a velvet pair of panels shown on every load,
@@ -27,13 +27,15 @@ export default function Curtain() {
       Array.from({ length: perEmitter }, (_, i) => ({
         id: `${e}-${i}`,
         left: emitter.left,
-        x: Math.round(Math.sin(i * 2.17 + e) * 40),
+        x: Math.round(Math.sin(i * 2.17 + e) * 50),
         drift:
           emitter.dir === 0
-            ? Math.round(Math.sin(i * 1.37) * 160)
-            : emitter.dir * (60 + ((i * 37) % 120)),
-        drop: 80 + ((i * 47 + e * 31) % 150),
-        delay: Math.round(((i * 29 + e * 11) % 240) / 100) / 10,
+            ? Math.round(Math.sin(i * 1.37) * 220)
+            : emitter.dir * (80 + ((i * 37) % 160)),
+        drop: 110 + ((i * 47 + e * 31) % 220),
+        delay: Math.round(((i * 29 + e * 11) % 320) / 100) / 10,
+        size: 5 + ((i * 13 + e) % 7),
+        round: i % 3 === 0 ? '50%' : '1px',
         color: POP_COLORS[(i + e) % POP_COLORS.length],
       })),
     );
@@ -83,6 +85,8 @@ export default function Curtain() {
                 '--pop-drift': `${pop.drift}px`,
                 '--pop-drop': `${pop.drop}px`,
                 '--pop-delay': `${pop.delay}s`,
+                '--pop-size': `${pop.size}px`,
+                '--pop-round': pop.round,
                 backgroundColor: pop.color,
               }}
             />
