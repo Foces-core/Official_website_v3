@@ -414,6 +414,56 @@ describe('useCubeDrag', () => {
     expect(el.style.transition).toContain('400ms');
   });
 
+  it('keeps the manual-motion opt-in through a rapid repeat and clears it once settled', () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    harness.render(<Probe />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    el.getBoundingClientRect = () => ({
+      width: 100,
+      height: 100,
+      top: 0,
+      left: 0,
+      right: 100,
+      bottom: 100,
+    });
+    el.getClientRects = () => [el.getBoundingClientRect()];
+    el.focus();
+
+    act(() => arrowKey('ArrowRight'));
+    act(() => vi.advanceTimersByTime(300));
+    act(() => arrowKey('ArrowRight'));
+    act(() => vi.advanceTimersByTime(200));
+    expect(el.getAttribute('data-manual-motion')).toBe('true');
+
+    act(() => vi.advanceTimersByTime(200));
+    expect(el.hasAttribute('data-manual-motion')).toBe(false);
+    expect(el.style.getPropertyValue('--manual-motion-duration')).toBe('');
+    expect(el.style.transition).toBe('none');
+  });
+
+  it('a drag drops a pending arrow-turn opt-in immediately', () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    harness.render(<Probe />);
+    const el = harness.container.querySelector('[data-testid="cube"]');
+    el.getBoundingClientRect = () => ({
+      width: 100,
+      height: 100,
+      top: 0,
+      left: 0,
+      right: 100,
+      bottom: 100,
+    });
+    el.getClientRects = () => [el.getBoundingClientRect()];
+    el.focus();
+
+    act(() => arrowKey('ArrowRight'));
+    act(() => mousedown(el, 0));
+
+    expect(el.hasAttribute('data-manual-motion')).toBe(false);
+    expect(el.style.getPropertyValue('--manual-motion-timing')).toBe('');
+    expect(el.style.transition).toBe('none');
+  });
+
   it('pauses idle auto-spin during the manual arrow grace period and resumes later', () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     harness.render(<Probe />);

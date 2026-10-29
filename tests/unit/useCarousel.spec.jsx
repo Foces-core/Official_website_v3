@@ -148,6 +148,54 @@ describe('useCarousel — instance contract', () => {
     expect(inst(harness).activeIndex).toBe(5);
     expect(track.style.transform).toBe('rotateY(-450deg)');
     expect(track.style.transition).toContain('transform 126ms linear');
+    expect(track.getAttribute('data-manual-motion')).toBe('true');
+  });
+
+  it('starts a fresh eased move once the previous transition has finished', () => {
+    vi.spyOn(performance, 'now').mockReturnValue(100);
+    harness.render(<TrackProbe total={4} mode="cube" faceWidth={300} />);
+    const track = harness.container.querySelector('.swiper-wrapper');
+    expect(track.style.transition).toBe('none');
+    inst(harness).slideNext();
+    track.style.transform = 'rotateY(-405deg)';
+    vi.spyOn(performance, 'now').mockReturnValue(520);
+
+    inst(harness).slideNext();
+
+    expect(track.style.transition).toBe('transform 420ms cubic-bezier(0.25, 1, 0.5, 1)');
+  });
+
+  it('clears the manual-motion opt-in when the transform transition settles', () => {
+    vi.spyOn(performance, 'now').mockReturnValue(100);
+    harness.render(<TrackProbe total={4} mode="cube" faceWidth={300} />);
+    const track = harness.container.querySelector('.swiper-wrapper');
+    inst(harness).slideTo(6);
+    expect(track.getAttribute('data-manual-motion')).toBe('true');
+
+    const opacityEnd = new Event('transitionend', { bubbles: true });
+    Object.defineProperty(opacityEnd, 'propertyName', { value: 'opacity' });
+    track.dispatchEvent(opacityEnd);
+    expect(track.getAttribute('data-manual-motion')).toBe('true');
+
+    track.dispatchEvent(new Event('transitionend', { bubbles: true }));
+    expect(track.hasAttribute('data-manual-motion')).toBe(false);
+    expect(track.style.getPropertyValue('--manual-motion-duration')).toBe('');
+
+    inst(harness).slideNext();
+    expect(track.style.transition).toBe('transform 420ms cubic-bezier(0.25, 1, 0.5, 1)');
+  });
+
+  it('keeps autoplay moves out of the manual-motion opt-in', () => {
+    vi.useFakeTimers();
+    enableVisibilityObservation();
+    harness.render(<TrackProbe total={4} autoplayDelay={100} />);
+    const track = harness.container.querySelector('.swiper-wrapper');
+    inst(harness).startAutoplay();
+
+    vi.advanceTimersByTime(100);
+
+    expect(inst(harness).activeIndex).toBe(5);
+    expect(track.hasAttribute('data-manual-motion')).toBe(false);
   });
 
   it('slideTo jumps to an explicit raw index', () => {
@@ -331,6 +379,20 @@ describe('useCarousel — pointer drag', () => {
     expect(move.defaultPrevented).toBe(true);
     finish();
     expect(inst(harness).activeIndex).toBe(5);
+    expect(track.getAttribute('data-manual-motion')).toBe('true');
+  });
+
+  it('a new drag drops the in-flight manual-motion opt-in', () => {
+    harness.render(<TrackProbe total={4} mode="flat" />);
+    const root = harness.container.querySelector('.probe-root');
+    const track = root.querySelector('.swiper-wrapper');
+    inst(harness).slideNext();
+    expect(track.getAttribute('data-manual-motion')).toBe('true');
+
+    dragStart(root, 400, 320);
+
+    expect(track.hasAttribute('data-manual-motion')).toBe(false);
+    expect(track.style.getPropertyValue('--manual-motion-timing')).toBe('');
   });
 
   it('cube: drag previews toward NEXT face and settles there', () => {
@@ -352,6 +414,7 @@ describe('useCarousel — pointer drag', () => {
 
     expect(inst(harness).activeIndex).toBe(4);
     expect(track.style.transform).toContain('translate3d(0px, 0, 0)');
+    expect(track.getAttribute('data-manual-motion')).toBe('true');
   });
 
   it('pointer cancellation resumes autoplay without advancing the slide', () => {
