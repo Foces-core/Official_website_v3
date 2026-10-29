@@ -83,6 +83,7 @@ if (import.meta.env.DEV) {
 }
 
 const Eventpage = lazyWithRetry(() => import('./Pages/EventPage/Eventpage'), 'events-route');
+const TeamsPage = lazyWithRetry(() => import('./Pages/TeamsPage/TeamsPage.jsx'), 'teams-route');
 const ContactUs = lazyWithRetry(
   () => import('./Components/ContactUs/ContactUs.jsx'),
   'contact-route',
@@ -179,6 +180,7 @@ function Root() {
             <Routes>
               <Route path="/" element={<App />} />
               <Route path="/events" element={<Eventpage />} />
+              <Route path="/teams" element={<TeamsPage />} />
               <Route path="/contact" element={<ContactUs />} />
               <Route path="*" element={<NotFoundLazy />} />
             </Routes>

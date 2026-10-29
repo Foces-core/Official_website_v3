@@ -11,12 +11,12 @@ export function isRevealKey(key) {
 }
 
 // How long the parting panels plus confetti take to leave the screen before
-// the curtain unmounts. Covers the 600ms panel transition and the 1.3s pop.
-export const CURTAIN_SETTLE_MS = 1400;
+// the curtain unmounts. Covers the 1.1s panel transition and the 1.8s pop.
+export const CURTAIN_SETTLE_MS = 2400;
 
 // Confetti pieces fired when the curtain opens, shared between three
 // emitters at the top edge (left, centre seam, right).
-export const CURTAIN_POP_COUNT = 60;
+export const CURTAIN_POP_COUNT = 90;
 
 // Fractional positions along the top edge and the direction each burst
 // drifts: the side emitters throw inward, the centre throws both ways.

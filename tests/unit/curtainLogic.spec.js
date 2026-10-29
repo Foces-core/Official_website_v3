@@ -20,6 +20,6 @@ describe('curtain constants', () => {
 
   it('fires a modest confetti burst', () => {
     expect(CURTAIN_POP_COUNT).toBeGreaterThan(0);
-    expect(CURTAIN_POP_COUNT).toBeLessThanOrEqual(80);
+    expect(CURTAIN_POP_COUNT).toBeLessThanOrEqual(120);
   });
 });

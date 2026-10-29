@@ -77,6 +77,8 @@ Merged branches are deleted in the same task that merges them — never accumula
   `advisor`).
 - `src/data/echoSlides.js` — **single source of truth** for the Featuring slides
   (`echoSlides` + 3× `carouselSlides`), shape-guarded by `validateEchoSlides`.
+- `src/data/execomArchive.js` — **single source of truth** for past Execom batches on `/teams`
+  (`Pages/TeamsPage/`); filter/search decisions in `src/utils/execomArchiveLogic.js`.
 - `src/Components/HeroStage/` — 3D WebGL stage adapter: `heroWavesStage.js` (dynamic Three.js/Vanta loader, WebGL context loss recovery, lowPower gating).
 - `src/utils/` — helpers: `frameScheduler.js` (coalesceToFrame & deferToNextPaint), `contactSubmitLogic.js` (pure submit outcome resolver),
   `safeStorage.js` (fault-tolerant storage primitives), `errorRecoveryLogic.js` (pure auto-reload & chunk recovery policies),
