@@ -414,19 +414,17 @@ describe('useCubeDrag', () => {
     expect(el.style.transition).toContain('400ms');
   });
 
+  const attachRect = (el) => {
+    const rect = { width: 100, height: 100, top: 0, left: 0, right: 100, bottom: 100 };
+    el.getBoundingClientRect = () => rect;
+    el.getClientRects = () => [rect];
+  };
+
   it('keeps the manual-motion opt-in through a rapid repeat and clears it once settled', () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     harness.render(<Probe />);
     const el = harness.container.querySelector('[data-testid="cube"]');
-    el.getBoundingClientRect = () => ({
-      width: 100,
-      height: 100,
-      top: 0,
-      left: 0,
-      right: 100,
-      bottom: 100,
-    });
-    el.getClientRects = () => [el.getBoundingClientRect()];
+    attachRect(el);
     el.focus();
 
     act(() => arrowKey('ArrowRight'));
@@ -445,15 +443,7 @@ describe('useCubeDrag', () => {
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     harness.render(<Probe />);
     const el = harness.container.querySelector('[data-testid="cube"]');
-    el.getBoundingClientRect = () => ({
-      width: 100,
-      height: 100,
-      top: 0,
-      left: 0,
-      right: 100,
-      bottom: 100,
-    });
-    el.getClientRects = () => [el.getBoundingClientRect()];
+    attachRect(el);
     el.focus();
 
     act(() => arrowKey('ArrowRight'));
