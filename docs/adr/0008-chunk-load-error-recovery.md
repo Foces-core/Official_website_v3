@@ -1,6 +1,6 @@
 # 0008 — Lazy Chunk Errors Recover Before Surfacing the Error Screen
 
-Status: Accepted
+Status: Deprecated (auto-recovery removed; manual Retry is the escape hatch)
 Date: 2026-08-14
 
 ## Context

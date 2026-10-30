@@ -5,36 +5,37 @@ Status conventions: **Accepted** (settled), **Proposed** (under review),
 
 ## Index
 
-| #                                                                   | Title                                                                            | Status   |
-| ------------------------------------------------------------------- | -------------------------------------------------------------------------------- | -------- |
-| [0001](0001-perf-is-a-feature.md)                                   | Performance is a feature: device-profile degradation                             | Accepted |
-| [0002](0002-pwa-shell-only-precache.md)                             | PWA precache is app-shell only                                                   | Accepted |
-| [0003](0003-static-events-data.md)                                  | Events come from static data, not the Sanity CMS                                 | Accepted |
-| [0004](0004-foces-webv23-studio.md)                                 | Keep the foces-webv23 Sanity studio in-repo, untooled                            | Accepted |
-| [0005](0005-inline-boot-splash.md)                                  | Static inline boot splash for near-instant first paint                           | Accepted |
-| [0006](0006-knip-dead-code-guard.md)                                | Knip guards against dead code and unused dependencies                            | Accepted |
-| [0007](0007-touch-gesture-ownership.md)                             | Interactive widgets own their touch gesture                                      | Accepted |
-| [0008](0008-chunk-load-error-recovery.md)                           | Lazy chunks recover automatically, never the error screen                        | Accepted |
-| [0009](0009-pure-logic-test-seams.md)                               | Behavior lives in pure tested modules; components are wiring                     | Accepted |
-| [0010](0010-hooks-orchestration-spec-guard.md)                      | Orchestration lives in hooks; pure decisions stay in modules, spec-guarded in CI | Accepted |
-| [0011](0011-contact-form-honeypot-spam-defense.md)                  | Contact form honeypot spam defense                                               | Accepted |
-| [0012](0012-contact-draft-persistence-and-precompression.md)        | Contact draft persistence, pre-compression, and staging no-index                 | Accepted |
-| [0013](0013-navigation-coordinator-and-hero-stage-adapter.md)       | Viewport navigation coordinator and hero waves stage adapter                     | Accepted |
-| [0014](0014-section-scroll-overlay-lifecycle-and-route-prefetch.md) | Section scroll deepening, overlay lifecycle, and route prefetch                  | Accepted |
-| [0015](0015-cache-poison-recovery.md)                               | Cache-poison recovery: SPA fallback, SW MIME guard, error codes                  | Accepted |
-| [0016](0016-execom-carousel-scroll-release.md)                      | Execom carousels release vertical swipes to page scroll                          | Accepted |
-| [0017](0017-public-indexing.md)                                     | Public indexing: lift the staging no-index                                       | Accepted |
-| [0018](0018-idle-reveal-and-hide-on-scroll.md)                      | Idle-reveal controls and hide-on-scroll navbar                                   | Accepted |
-| [0019](0019-prerender-and-seo-head-tags.md)                         | Prerendered route snapshots, per-route head tags, and event structured data      | Accepted |
-| [0020](0020-ai-crawlability.md)                                     | AI crawlability: llms.txt, explicit AI-bot access, site identity data            | Accepted |
-| [0021](0021-renovate-platform-automerge.md)                         | Renovate platform auto-merge, gated on CI                                        | Accepted |
-| [0022](0022-required-checks-and-scoped-commits.md)                  | Required checks: promote commit-message validation, require scoped commits       | Accepted |
-| [0023](0023-carousel-autoplay-requires-visibility.md)               | Carousel autoplay requires visibility observation                                | Accepted |
-| [0024](0024-route-entry-transitions.md)                             | Capability-gated route entry transitions                                         | Accepted |
-| [0025](0025-contextual-nav-and-team-motion.md)                      | Contextual navigation and face-aligned team motion                               | Accepted |
-| [0026](0026-manual-motion-under-reduced-motion.md)                  | Manual carousel motion under reduced motion                                      | Accepted |
-| [0027](0027-measured-portrait-framing.md)                           | Measured per-photo portrait framing                                              | Accepted |
-| [0028](0028-cinematic-entry-curtain.md)                             | Cinematic entry curtain opened by first interaction                              | Accepted |
+| #                                                                   | Title                                                                            | Status     |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------------- | ---------- |
+| [0001](0001-perf-is-a-feature.md)                                   | Performance is a feature: device-profile degradation                             | Accepted   |
+| [0002](0002-pwa-shell-only-precache.md)                             | PWA precache is app-shell only                                                   | Deprecated |
+| [0003](0003-static-events-data.md)                                  | Events come from static data, not the Sanity CMS                                 | Accepted   |
+| [0004](0004-foces-webv23-studio.md)                                 | Keep the foces-webv23 Sanity studio in-repo, untooled                            | Accepted   |
+| [0005](0005-inline-boot-splash.md)                                  | Static inline boot splash for near-instant first paint                           | Accepted   |
+| [0006](0006-knip-dead-code-guard.md)                                | Knip guards against dead code and unused dependencies                            | Accepted   |
+| [0007](0007-touch-gesture-ownership.md)                             | Interactive widgets own their touch gesture                                      | Accepted   |
+| [0008](0008-chunk-load-error-recovery.md)                           | Lazy chunks recover automatically, never the error screen                        | Deprecated |
+| [0009](0009-pure-logic-test-seams.md)                               | Behavior lives in pure tested modules; components are wiring                     | Accepted   |
+| [0010](0010-hooks-orchestration-spec-guard.md)                      | Orchestration lives in hooks; pure decisions stay in modules, spec-guarded in CI | Accepted   |
+| [0011](0011-contact-form-honeypot-spam-defense.md)                  | Contact form honeypot spam defense                                               | Accepted   |
+| [0012](0012-contact-draft-persistence-and-precompression.md)        | Contact draft persistence, pre-compression, and staging no-index                 | Accepted   |
+| [0013](0013-navigation-coordinator-and-hero-stage-adapter.md)       | Viewport navigation coordinator and hero waves stage adapter                     | Accepted   |
+| [0014](0014-section-scroll-overlay-lifecycle-and-route-prefetch.md) | Section scroll deepening, overlay lifecycle, and route prefetch                  | Accepted   |
+| [0015](0015-cache-poison-recovery.md)                               | Cache-poison recovery: SPA fallback, SW MIME guard, error codes                  | Accepted   |
+| [0016](0016-execom-carousel-scroll-release.md)                      | Execom carousels release vertical swipes to page scroll                          | Accepted   |
+| [0017](0017-public-indexing.md)                                     | Public indexing: lift the staging no-index                                       | Accepted   |
+| [0018](0018-idle-reveal-and-hide-on-scroll.md)                      | Idle-reveal controls and hide-on-scroll navbar                                   | Accepted   |
+| [0019](0019-prerender-and-seo-head-tags.md)                         | Prerendered route snapshots, per-route head tags, and event structured data      | Accepted   |
+| [0020](0020-ai-crawlability.md)                                     | AI crawlability: llms.txt, explicit AI-bot access, site identity data            | Accepted   |
+| [0021](0021-renovate-platform-automerge.md)                         | Renovate platform auto-merge, gated on CI                                        | Accepted   |
+| [0022](0022-required-checks-and-scoped-commits.md)                  | Required checks: promote commit-message validation, require scoped commits       | Accepted   |
+| [0023](0023-carousel-autoplay-requires-visibility.md)               | Carousel autoplay requires visibility observation                                | Accepted   |
+| [0024](0024-route-entry-transitions.md)                             | Capability-gated route entry transitions                                         | Accepted   |
+| [0025](0025-contextual-nav-and-team-motion.md)                      | Contextual navigation and face-aligned team motion                               | Accepted   |
+| [0026](0026-manual-motion-under-reduced-motion.md)                  | Manual carousel motion under reduced motion                                      | Accepted   |
+| [0027](0027-measured-portrait-framing.md)                           | Measured per-photo portrait framing                                              | Accepted   |
+| [0028](0028-cinematic-entry-curtain.md)                             | Cinematic entry curtain opened by first interaction                              | Accepted   |
+| [0029](0029-remove-pwa-service-worker.md)                           | Remove the PWA service worker                                                    | Accepted   |
 
 ## Adding a new ADR
 

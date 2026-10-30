@@ -101,7 +101,7 @@ Merged branches are deleted in the same task that merges them — never accumula
 - Behavior lives in pure tested modules; components are wiring (ADR-0009) — new logic lands as a
   module with its spec in the same change, and JSX specs use `tests/unit/harness.jsx`.
 - `scripts/` — puppeteer probes + Lighthouse perf tests; `scripts/maintenance/` holds the
-  CI guards (`check-specs.mjs`, `check-orphan-assets.mjs`, `check-sw-precache.mjs`, `check-guidance.mjs`).
+  CI guards (`check-specs.mjs`, `check-orphan-assets.mjs`, `check-guidance.mjs`).
 - `tests/*.spec.js` — Playwright E2E suite (split by page/section).
 - `public/`, `src/assets/` — static + optimized images.
 
@@ -128,8 +128,9 @@ One line each — the full contract lives in `CONTRIBUTING.md`:
 - **Performance is a feature.** Never remove the `useDeviceProfile`
   (`slowNetwork`, `lowPower`) guards, and never let gated content disappear
   entirely (AOS safety net in `src/App.css`).
-- **PWA precache is app-shell only.** Photos ship via the immutable HTTP
-  cache, not the service worker (`vite.config.js`).
+- **No service worker.** The PWA layer was removed (ADR-0029) — `public/sw.js`
+  is a self-destructing stub that unregisters legacy workers; do not
+  reintroduce precaching or runtime caching.
 - **Images:** responsive `srcset` + `decoding="async"`; lazy-load below the fold.
 - **A11y (WCAG 2.1/2.2):** keyboard-accessible with visible focus. Only one
   widget may own arrow keys at a time — coordinate via `src/utils/keyboardLock.js`.

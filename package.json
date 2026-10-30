@@ -12,7 +12,7 @@
     "dev": "vite",
     "dev:network": "vite --host",
     "check": "pnpm lint && pnpm format:check && pnpm test:unit",
-    "verify": "pnpm check && pnpm check:specs && pnpm check:assets && pnpm check:guidance && pnpm build && pnpm check:sw && git diff --check",
+    "verify": "pnpm check && pnpm check:specs && pnpm check:assets && pnpm check:guidance && pnpm build && git diff --check",
     "build": "vite build && node scripts/prerender.mjs",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives",
     "lint:watch": "eslint . --ext js,jsx --watch",
@@ -32,7 +32,6 @@
     "knip": "knip",
     "lint:workflows": "node scripts/maintenance/actionlint-check.mjs",
     "check:assets": "node scripts/maintenance/check-orphan-assets.mjs",
-    "check:sw": "node scripts/maintenance/check-sw-precache.mjs",
     "check:guidance": "node scripts/maintenance/check-guidance.mjs",
     "check:specs": "node scripts/maintenance/check-specs.mjs",
     "probe:carousel": "node scripts/probes/carousel-probe.mjs",
@@ -105,7 +104,6 @@
     "vite": "^8.3.1",
     "vite-imagetools": "^12.0.1",
     "vite-plugin-image-optimizer": "^2.0.3",
-    "vite-plugin-pwa": "^2.0.0",
     "vitest": "^4.1.10"
   }
 }

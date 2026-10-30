@@ -120,7 +120,7 @@
            only preconnect what actually loads above the fold.
          - (Sanity was removed; its old preconnect hints were dead weight.) -->
     <!-- Fonts are self-hosted via @fontsource (no render-blocking Google
-         Fonts request; woff2 gets precached by the service worker). -->
+         Fonts request; woff2 ships via the immutable HTTP cache). -->
     <!-- Critical first-paint CSS: inline so the browser paints the boot splash
          from the raw HTML document on parse — no waiting on the JS bundle or
          the 77KB Tailwind stylesheet. This is what makes FCP near-instant. -->
