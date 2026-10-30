@@ -20,31 +20,6 @@ export const execomArchive = [
     photo: Group202425,
     photoSmall: Group202425Sm,
     title: 'Execom 2024–2025',
-    groupSub: 'College Courtyard Handover & Valedictory',
-  },
-  {
-    year: '2023-24',
-    title: 'Execom 2023–2024',
-    groupSub: 'Seminar Hall Inauguration',
-  },
-  {
-    year: '2022-23',
-    title: 'Execom 2022–2023',
-    groupSub: 'Web Team Flag-off',
-  },
-  {
-    year: '2021-22',
-    title: 'Execom 2021–2022',
-    groupSub: 'Virtual Chapter Leadership',
-  },
-  {
-    year: '2017-18',
-    title: 'Execom 2017–2018',
-    groupSub: '',
-  },
-  {
-    year: '2012',
-    title: 'Execom 2012 Archive',
-    groupSub: 'CCF Lab 3 Launch Ceremony',
+    groupSub: 'AGM 2025 Group Photo',
   },
 ];
