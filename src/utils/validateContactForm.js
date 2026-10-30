@@ -1,6 +1,14 @@
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
+ * Per-field character ceilings — enforced here in JS (never rely on the
+ * maxLength attribute alone) and mirrored onto the inputs in ContactUs.jsx.
+ * 254 is the RFC 5321 email ceiling; the rest are generous product limits
+ * that keep oversized payloads away from the EmailJS integration.
+ */
+export const FIELD_LIMITS = { name: 100, email: 254, subject: 150, message: 2000 };
+
+/**
  * Pure contact-form validation. Returns the first error message string, or
  * null when the form is valid. The message literals are the UI contract —
  * tests/contact.spec.js asserts them end-to-end, so change them in both
@@ -21,6 +29,12 @@ export function validateContactForm(form) {
   );
   if (!nameT || !emailT || !subjectT || !messageT) {
     return 'Please fill in all fields.';
+  }
+  const trimmed = { name: nameT, email: emailT, subject: subjectT, message: messageT };
+  for (const [field, limit] of Object.entries(FIELD_LIMITS)) {
+    if (trimmed[field].length > limit) {
+      return `Please keep the ${field} field under ${limit} characters.`;
+    }
   }
   if (!EMAIL_RE.test(emailT)) {
     return 'Please enter a valid email address.';

@@ -9,6 +9,7 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import '../ContactUs/notification.css';
 import useContactForm, { CONTACT_EMAIL } from '../../hooks/useContactForm.js';
+import { FIELD_LIMITS } from '../../utils/validateContactForm.js';
 import Seo from '../Seo/Seo';
 
 function ContactUs() {
@@ -168,6 +169,7 @@ function ContactUs() {
                       type="text"
                       name="name"
                       id="name"
+                      maxLength={FIELD_LIMITS.name}
                       value={values.name}
                       onChange={setField}
                       className="w-full rounded-lg px-4 py-2 mt-2 bg-white text-black"
@@ -183,6 +185,7 @@ function ContactUs() {
                       type="email"
                       name="email"
                       id="email"
+                      maxLength={FIELD_LIMITS.email}
                       value={values.email}
                       onChange={setField}
                       className="w-full rounded-lg px-4 py-2 mt-2 bg-white text-black"
@@ -198,6 +201,7 @@ function ContactUs() {
                       type="text"
                       name="subject"
                       id="subject"
+                      maxLength={FIELD_LIMITS.subject}
                       value={values.subject}
                       onChange={setField}
                       className="w-full rounded-lg px-4 py-2 mt-2 bg-white text-black"
@@ -212,6 +216,7 @@ function ContactUs() {
                     <textarea
                       name="message"
                       id="message"
+                      maxLength={FIELD_LIMITS.message}
                       placeholder=""
                       value={values.message}
                       onChange={setField}

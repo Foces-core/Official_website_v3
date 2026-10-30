@@ -1,7 +1,7 @@
 /**
  * Per-route SEO metadata + structured-data builders — pure, no DOM.
  *
- * Everything a head tag needs for `/`, `/events`, `/contact` is decided here;
+ * Everything a head tag needs for `/`, `/events`, `/contact`, `/teams` is decided here;
  * Seo.jsx only applies it. The prerender snapshotter reuses the same
  * functions so a route's static HTML can never drift from its runtime head.
  *
@@ -41,6 +41,13 @@ export function seoRoutes() {
       description:
         'Reach FOCES (Forum of Computer Engineering Students), College of ' +
         'Engineering Chengannur — contact form, email, socials, and location.',
+    },
+    {
+      path: '/teams',
+      title: 'Execom Archive | FOCES - Forum of Computer Engineering Students',
+      description:
+        'Past FOCES executive committees at College of Engineering ' +
+        'Chengannur — one group photo per committee year in the Execom archive.',
     },
   ];
 }

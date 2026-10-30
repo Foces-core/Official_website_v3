@@ -50,7 +50,7 @@ export default function TeamsPage() {
             <img
               className="teams-group-img"
               src={batch.photo}
-              srcSet={`${batch.photoSmall} 1200w, ${batch.photo} ${batch.photoWidth || 4032}w`}
+              srcSet={`${batch.photoSmall} ${batch.photoSmallWidth}w, ${batch.photo} ${batch.photoWidth}w`}
               alt={`${batch.title} group photo`}
               decoding="async"
               loading="lazy"

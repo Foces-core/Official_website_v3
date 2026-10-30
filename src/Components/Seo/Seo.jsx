@@ -16,7 +16,7 @@ import { seoRoutes, headTagsForRoute, eventJsonLd, siteJsonLd } from '../../util
  * static HTML; this component keeps runtime client-side navigations in sync
  * after that.
  *
- * @param {string} path - route path: '/' | '/events' | '/contact'
+ * @param {string} path - route path: '/' | '/events' | '/contact' | '/teams'
  * @param {Array<object>} [events] - featuredEvents; emits the JSON-LD script
  *   when provided (events page).
  */

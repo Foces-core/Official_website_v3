@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { validateContactForm, isSpamSubmission } from '../../src/utils/validateContactForm.js';
+import {
+  validateContactForm,
+  isSpamSubmission,
+  FIELD_LIMITS,
+} from '../../src/utils/validateContactForm.js';
 
 describe('validateContactForm', () => {
   const valid = {
@@ -40,6 +44,23 @@ describe('validateContactForm', () => {
     expect(validateContactForm({ ...valid, name: '', email: 'not-an-email' })).toBe(
       'Please fill in all fields.',
     );
+  });
+
+  it('rejects fields that exceed their character limit', () => {
+    for (const field of ['name', 'email', 'subject', 'message']) {
+      const tooLong = 'a'.repeat(FIELD_LIMITS[field] + 1);
+      expect(validateContactForm({ ...valid, [field]: tooLong })).toBe(
+        `Please keep the ${field} field under ${FIELD_LIMITS[field]} characters.`,
+      );
+    }
+  });
+
+  it('accepts fields exactly at their character limit', () => {
+    const atLimit = Object.fromEntries(
+      Object.entries(FIELD_LIMITS).map(([field, limit]) => [field, 'a'.repeat(limit)]),
+    );
+    atLimit.email = `${'a'.repeat(FIELD_LIMITS.email - 12)}@example.com`;
+    expect(validateContactForm(atLimit)).toBeNull();
   });
 });
 
