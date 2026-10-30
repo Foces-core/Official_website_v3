@@ -19,7 +19,7 @@ allowBuilds:
 # plain `pnpm dedupe` does not upgrade, and `pnpm update --depth` rewrites the
 # direct dependency ranges too.
 overrides:
-  fast-uri: 3.1.9
+  fast-uri: 4.2.3
   nanoid: ^6.0.0
   qs: 6.17.1
   serialize-javascript: 7.1.4
