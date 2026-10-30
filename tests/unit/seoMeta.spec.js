@@ -13,8 +13,8 @@ import {
 
 describe('seoMeta', () => {
   describe('seoRoutes', () => {
-    it('covers exactly the three real routes', () => {
-      expect(seoRoutes().map((r) => r.path)).toEqual(['/', '/events', '/contact']);
+    it('covers exactly the four real routes', () => {
+      expect(seoRoutes().map((r) => r.path)).toEqual(['/', '/events', '/contact', '/teams']);
     });
 
     it('gives every route a unique, non-empty title and description', () => {

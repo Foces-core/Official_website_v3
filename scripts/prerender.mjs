@@ -34,7 +34,7 @@ const root = path.resolve(__dirname, '..');
 const dist = path.join(root, 'dist');
 const PORT = 4179; // fixed port for the ephemeral serving window
 
-const ROUTES = ['/', '/events', '/contact'];
+const ROUTES = ['/', '/events', '/contact', '/teams'];
 
 // Per-route, content that must appear in the snapshot (case-insensitive
 // substring). Chosen from the static data files so a regression (bad lazy
@@ -43,6 +43,7 @@ const EXPECTED_CONTENT = {
   '/': ['Forum of Computer Engineering Students', 'Events', 'Execom'],
   '/events': ['FOCES Events', 'The Prompt Paradox 2.0', 'Agentic Coding Workshop'],
   '/contact': ['Contact FOCES', 'College of Engineering Chengannur'],
+  '/teams': ['EXECOM ARCHIVE', 'GROUP PHOTO'],
 };
 
 // Route → head assertions derived from the same pure module Seo.jsx uses.
