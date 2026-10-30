@@ -2,17 +2,10 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import {
   getErrorCode,
+  isChunkError,
   purgeAppCaches,
   unregisterServiceWorkers,
 } from '../../utils/cacheRecovery.js';
-
-// Chunk-load failure signature: a stale deploy serves HTML for a missing
-// hashed chunk, so the loader throws a SyntaxError/MIME error rather than
-// a classic chunk message.
-const isChunkError = (error) =>
-  /Loading chunk|ChunkLoadError|Failed to fetch dynamically imported module|Importing a module script failed|Failed to load module script|Expected a JavaScript|MIME type|text\/html|Unexpected token ['"]?</.test(
-    error?.message || '',
-  );
 
 function ErrorFallback({ error, resetError }) {
   const [clearing, setClearing] = useState(false);
