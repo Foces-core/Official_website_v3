@@ -367,10 +367,24 @@ test.describe('Execom mobile cube drag', () => {
         ?.scrollIntoView({ block: 'center' }),
     );
     const box = await slide.boundingBox();
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(box.x + box.width / 2 - 160, box.y + box.height / 2, { steps: 10 });
-    await page.mouse.up();
+    // Real touch dispatch — page.mouse under touch emulation gets a
+    // pointercancel from the browser's gesture classifier (the drag never
+    // reaches the hook), and autoplay used to mask that. CDP touch events
+    // exercise the actual drag → snap path.
+    const cx = box.x + box.width / 2;
+    const cy = box.y + box.height / 2;
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Input.dispatchTouchEvent', {
+      type: 'touchStart',
+      touchPoints: [{ x: cx, y: cy, id: 1 }],
+    });
+    for (let i = 1; i <= 10; i++) {
+      await cdp.send('Input.dispatchTouchEvent', {
+        type: 'touchMove',
+        touchPoints: [{ x: cx - i * 16, y: cy, id: 1 }],
+      });
+    }
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
 
     await expect.poll(activeIndex, { timeout: 5000 }).not.toBe(before);
   });
