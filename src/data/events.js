@@ -43,6 +43,14 @@ import promptParadoxLeaderboard800 from '../assets/events/prompt_paradox_leaderb
 import javaLecture from '../assets/events/java_algorithm_lecture.webp';
 import javaLecture400 from '../assets/events/java_algorithm_lecture-400.webp';
 
+import offscript1 from '../assets/events/offscript_1.webp';
+import offscript1_800 from '../assets/events/offscript_1-800.webp';
+import offscript1_400 from '../assets/events/offscript_1-400.webp';
+
+import offscript2 from '../assets/events/offscript_2.webp';
+import offscript2_800 from '../assets/events/offscript_2-800.webp';
+import offscript2_400 from '../assets/events/offscript_2-400.webp';
+
 import { srcset } from '../utils/srcset.js';
 import { photoTriplet } from '../utils/eventPhotos.js';
 
@@ -108,5 +116,18 @@ export const featuredEvents = [
       photoTriplet(codingArenaPhoto, codingArenaPhoto800, codingArenaPhoto400),
     ],
     desc: 'The ultimate competitive programming and rapid prototyping battlefield at MCA Lab.',
+  },
+  {
+    id: 4,
+    name: 'Offscript',
+    tag: 'Community Event',
+    date: '30th October 2026',
+    startDate: '2026-10-30',
+    photos: [
+      photoTriplet(offscript1, offscript1_800, offscript1_400),
+      photoTriplet(offscript2, offscript2_800, offscript2_400),
+    ],
+    desc: 'Offscript — FOCES going off-script. Follow the event hub for sessions, recaps, and community drops.',
+    websiteUrl: 'https://offscipt.vercel.app/',
   },
 ];
