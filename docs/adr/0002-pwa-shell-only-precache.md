@@ -1,6 +1,6 @@
 # 0002 — PWA Precache Is App-Shell Only
 
-Status: Accepted
+Status: Deprecated (superseded by 0029)
 Date: 2026-08-07
 
 ## Context

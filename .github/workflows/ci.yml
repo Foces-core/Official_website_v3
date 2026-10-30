@@ -123,9 +123,6 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Service-worker precache check
-        run: pnpm check:sw
-
       - name: Upload build output (optional artifact)
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:

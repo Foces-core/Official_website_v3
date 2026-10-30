@@ -78,7 +78,6 @@ open/review/merge PRs too. The checks you'll see: `Lint & Build`, `E2E
   replaced Swiper to drop the ~104 KB vendor chunk
 - **[Three.js](https://threejs.org/) / [Vanta](https://www.vantajs.com/)** hero background
 - **[react-router](https://reactrouter.com/)** for `/events` and `/contact` routes
-- **PWA** ([`vite-plugin-pwa`](https://vite-pwa-org.netlify.app/)) with service-worker precaching
 - **Perf**: `js.foresight` (intent-based route chunk prefetch), manual chunk
   splitting, responsive `srcset` images, and build-time image optimization
 - **[Sentry](https://sentry.io/)** (optional) — error tracking via `@sentry/react` + `@sentry/vite-plugin`;
@@ -105,7 +104,7 @@ See `.env.example` for the full list of available variables and their expected v
 | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `pnpm dev`            | Local dev server (HMR, auto-opens the browser)                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | `pnpm dev:network`    | Dev server exposed on the LAN (test from your phone)                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
-| `pnpm build`          | Production build to `dist/` (image optimizer + PWA precache)                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| `pnpm build`          | Production build to `dist/` (image optimizer)                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | `pnpm preview`        | Serve `dist/` locally                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `pnpm lint`           | [ESLint](https://eslint.org/) over all `js`/`jsx` files                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 | `pnpm format`         | [Prettier](https://prettier.io/) format the whole repo (single quotes, 100-col, 4-space CSS)                                                                                                                                                                                                                                                                                                                                                                                                                               |
@@ -136,8 +135,8 @@ The site deliberately degrades on slow networks and low-end hardware (see
   boot splash is bypassed, and below-fold routes/images load lazily
 - **lowPower / reducedMotion** → heavy animations (idle cube spin, AOS reveals)
   are disabled; content always stays visible
-- **PWA precache is app-shell only** — photos come from the immutable HTTP
-  cache, so first visits don't download the whole site
+- **No service worker** — all assets come from the immutable HTTP cache;
+  a self-destructing `sw.js` retires legacy workers (ADR-0029)
 
 ## Accessibility (WCAG 2.1/2.2 + ARIA APG)
 
@@ -205,5 +204,5 @@ Hosted on **Vercel** ([https://focess-five.vercel.app/](https://focess-five.verc
   CodeRabbit review run alongside them. Vercel additionally waits for the
   `Vercel - focces: lint` status (posted by CI's notify job) so deployments never go
   live against a red build.
-- **Edge Performance:** All static assets are served from the Vercel edge CDN same-origin with 1-year immutable caching (`/assets/(.*)`) and service worker precaching.
+- **Edge Performance:** All static assets are served from the Vercel edge CDN same-origin with 1-year immutable caching (`/assets/(.*)`).
 - **Security & SPA Routing:** Global security headers and clean SPA client-side routing are defined in [`vercel.json`](vercel.json).

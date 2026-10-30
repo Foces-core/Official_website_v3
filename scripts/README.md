@@ -119,17 +119,11 @@ One-off generators and asset preparation scripts. These are **not** part of the 
 | Script                    | Purpose                                                                                                                               |
 | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | `check-orphan-assets.mjs` | Fail CI when a file in `src/assets/` is unreferenced                                                                                  |
-| `check-sw-precache.mjs`   | Fail CI when the built SW precaches forbidden chunks (three.js)                                                                       |
 | `check-guidance.mjs`      | Fail CI when contributor guidance drifts (dual review configs, stale ADR pin, lost studio exclusion, ghost Map path, forked glossary) |
 
 > **`check-orphan-assets.mjs`** is the repo's guard against dead assets
 > (knip only checks code, not `src/assets/`). Run it locally with
 > `pnpm check:assets`; CI runs it in the lint-and-build job.
->
-> **`check-sw-precache.mjs`** guards the app-shell precache (run with
-> `pnpm check:sw` after a build; CI runs it too). It fails if the built
-> `dist/sw.js` precaches the lazy three.js hero chunk — `globIgnores` in
-> `vite.config.js` excludes it, and this verifies the exclusion held.
 
 ### Running Maintenance Scripts
 
