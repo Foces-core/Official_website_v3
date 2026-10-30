@@ -46,11 +46,11 @@ import javaLecture400 from '../assets/events/java_algorithm_lecture-400.webp';
 import offscript1 from '../assets/events/offscript_1.webp';
 import offscript1_800 from '../assets/events/offscript_1-800.webp';
 import offscript1_400 from '../assets/events/offscript_1-400.webp';
-import offscript1Blur from '../assets/events/offscript_1.webp?blur&w=128';
 
 import offscript2 from '../assets/events/offscript_2.webp';
 import offscript2_800 from '../assets/events/offscript_2-800.webp';
 import offscript2_400 from '../assets/events/offscript_2-400.webp';
+import offscript2Blur from '../assets/events/offscript_2.webp?blur&w=128';
 
 import { srcset } from '../utils/srcset.js';
 import { photoTriplet } from '../utils/eventPhotos.js';
@@ -60,11 +60,13 @@ export const featuredEvents = [
     id: 4,
     name: 'Offscript',
     tag: 'Community Event',
-    date: '30th October 2026',
+    date: '30th Oct - 1st Nov 2026',
     startDate: '2026-10-30',
+    endDate: '2026-11-01',
+    current: true,
     photos: [
-      photoTriplet(offscript1, offscript1_800, offscript1_400, offscript1Blur),
-      photoTriplet(offscript2, offscript2_800, offscript2_400),
+      photoTriplet(offscript2, offscript2_800, offscript2_400, offscript2Blur),
+      photoTriplet(offscript1, offscript1_800, offscript1_400),
     ],
     desc: 'Offscript — FOCES going off-script. Follow the event hub for sessions, recaps, and community drops.',
     websiteUrl: 'https://offscipt.vercel.app/',

@@ -91,7 +91,9 @@ function Events() {
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 text-xs font-semibold text-cyan-400 hover:text-cyan-300 underline decoration-cyan-400/50 underline-offset-4 transition-colors"
                     >
-                      <span>Visit Past Event Site 🌐</span>
+                      <span>
+                        {evt.current ? 'Visit Present Event Site 🌐' : 'Visit Past Event Site 🌐'}
+                      </span>
                     </a>
                   )}
                 </div>
