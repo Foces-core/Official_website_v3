@@ -90,8 +90,7 @@ Merged branches are deleted in the same task that merges them — never accumula
   `analyticsProbe.js` (pure Vercel-script gate behind DeferredAnalytics),
   `DeferredAnalytics.jsx`, `lazyWithRetry.js`, `sessionCookie.js`, `scrollToSectionLogic.js`, `bootSplashLogic.js`,
   `lazyWithRetry.js` (one delayed retry, no auto-reload — islands never reload the page),
-  `manualMotion.js` (reduced-motion opt-in for user-started transforms, ADR-0026),
-  `curtainLogic.js` (entry-curtain reveal keys + settle timing, ADR-0028).
+  `manualMotion.js` (reduced-motion opt-in for user-started transforms, ADR-0026)
 - `src/hooks/` — `useLowPower.js` (`useDeviceProfile` driving all perf degradation),
   `useViewportWidth.js` (reactive width over `breakpoints.js`),
   `useCarousel.js` (hand-rolled carousel engine with internal autoplay visibility gating), `useCubeDrag.js` (cube orchestration),

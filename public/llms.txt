@@ -16,6 +16,7 @@
 - [The Prompt Paradox 2.0](https://foces.ceconline.edu/events): AI and prompt engineering contest, 21 June 2026. Test prompt engineering mastery, solve AI puzzles. Companion site: https://foces-core.github.io/prompt-paradox-2/
 - [Agentic Coding Workshop](https://foces.ceconline.edu/events): Hands-on workshop, 9 July 2026. Build autonomous AI agents using LLMs and agent frameworks.
 - [Coding Arena 4.0](https://foces.ceconline.edu/events): Competitive programming and rapid prototyping bootcamp at MCA Lab, 27 July to 5 Aug 2026.
+- [Offscript](https://foces.ceconline.edu/events): Community event, 30 October 2026. Off-script sessions and community drops. Hub: https://offscipt.vercel.app/
 
 ## About
 

@@ -1,6 +1,6 @@
 # 0028 — Cinematic Entry Curtain
 
-Status: Accepted
+Status: Deprecated (curtain removed)
 Date: 2026-10-29
 
 ## Context
