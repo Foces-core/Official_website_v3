@@ -8,6 +8,7 @@ import {
 import { normalizeIndex, wrapTarget } from '../utils/carouselWrap.js';
 import { getAdapter } from '../utils/carouselAdapters.js';
 import { clearManualMotion, setManualMotion } from '../utils/manualMotion.js';
+import { AUTOPLAY_RESUME_MS } from '../utils/carouselTiming.js';
 import { shouldUseVisibilityGatedAutoplay } from './carouselAutoplayPolicy.js';
 
 /**
@@ -20,7 +21,8 @@ import { shouldUseVisibilityGatedAutoplay } from './carouselAutoplayPolicy.js';
  * carries `__carouselEngine__`.
  *
  * Autoplay owns its own visibility gating (IntersectionObserver on wrapperRef),
- * drag-pause/resume is internal, and the seamless 3-copy wrap (carouselWrap).
+ * parks for AUTOPLAY_RESUME_MS after every user-driven move (carouselTiming),
+ * and the seamless 3-copy wrap is shared (carouselWrap).
  *
  * Geometry (pure math in carouselGeometry.js):
  *   flat — track translate3d(-activeIndex * step); slides flex-sized
@@ -74,7 +76,8 @@ export default function useCarousel({
     lastMoveT: 0,
     velocity: 0,
     autoplayTimer: null,
-    dragAutoplayWasOn: false,
+    autoplayResumeTimer: null,
+    autoplayWanted: false,
     keyboardOn: false,
     transitioning: false,
     transitionEndsAt: 0,
@@ -206,6 +209,7 @@ export default function useCarousel({
   ) {
     const t = track();
     if (!t) return;
+    if (manual) pauseAutoplayForInteraction();
     const n = p().total;
     const clamped = Math.max(0, Math.min(rawIndex, n * 3 - 1));
     if (animate) {
@@ -255,8 +259,23 @@ export default function useCarousel({
 
   // --- autoplay ------------------------------------------------------------
 
+  function suspendAutoplay() {
+    if (s.autoplayTimer) {
+      clearInterval(s.autoplayTimer);
+      s.autoplayTimer = null;
+    }
+  }
+
+  function cancelAutoplayResume() {
+    if (s.autoplayResumeTimer) {
+      clearTimeout(s.autoplayResumeTimer);
+      s.autoplayResumeTimer = null;
+    }
+  }
+
   function startAutoplay() {
-    stopAutoplay();
+    suspendAutoplay();
+    cancelAutoplayResume();
     const autoplayDelay = p().autoplayDelay;
     if (
       !shouldUseVisibilityGatedAutoplay({
@@ -264,16 +283,35 @@ export default function useCarousel({
         canObserveVisibility: typeof IntersectionObserver !== 'undefined',
       })
     ) {
+      s.autoplayWanted = false;
       return;
     }
+    s.autoplayWanted = true;
     s.autoplayTimer = setInterval(() => goTo(s.raw + 1, true), autoplayDelay);
   }
 
   function stopAutoplay() {
-    if (s.autoplayTimer) {
-      clearInterval(s.autoplayTimer);
-      s.autoplayTimer = null;
-    }
+    s.autoplayWanted = false;
+    suspendAutoplay();
+    cancelAutoplayResume();
+  }
+
+  // Quiet window: a user-driven move (button, keyboard, drag release) parks
+  // autoplay for AUTOPLAY_RESUME_MS; each new interaction re-extends the
+  // window. autoplayWanted survives the suspension — only visibility
+  // gating or an explicit stop clears it.
+  function scheduleAutoplayResume() {
+    cancelAutoplayResume();
+    s.autoplayResumeTimer = setTimeout(() => {
+      s.autoplayResumeTimer = null;
+      if (s.autoplayWanted) startAutoplay();
+    }, AUTOPLAY_RESUME_MS);
+  }
+
+  function pauseAutoplayForInteraction() {
+    if (!s.autoplayWanted) return;
+    suspendAutoplay();
+    scheduleAutoplayResume();
   }
 
   // --- keyboard ------------------------------------------------------------
@@ -313,8 +351,8 @@ export default function useCarousel({
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     s.dragging = true;
     settleMotion(track());
-    s.dragAutoplayWasOn = !!s.autoplayTimer;
-    if (s.autoplayTimer) stopAutoplay();
+    suspendAutoplay();
+    cancelAutoplayResume();
     s.pointerId = e.pointerId;
     s.dragStartX = e.clientX;
     s.dragStartY = e.clientY ?? 0;
@@ -349,10 +387,7 @@ export default function useCarousel({
         }
         s.pointerId = null;
         s.dragOffset = 0;
-        if (s.dragAutoplayWasOn) {
-          s.dragAutoplayWasOn = false;
-          startAutoplay();
-        }
+        pauseAutoplayForInteraction();
         return;
       }
       s.dragAxis = 'x';
@@ -385,10 +420,6 @@ export default function useCarousel({
     s.dragOffset = 0;
     s.velocity = 0;
     goTo(s.raw + snap, true, { manual: true });
-    if (s.dragAutoplayWasOn) {
-      s.dragAutoplayWasOn = false;
-      startAutoplay();
-    }
   }
 
   function onPointerCancel(e) {
@@ -405,10 +436,6 @@ export default function useCarousel({
     s.dragOffset = 0;
     s.velocity = 0;
     goTo(s.raw, true, { manual: true });
-    if (s.dragAutoplayWasOn) {
-      s.dragAutoplayWasOn = false;
-      startAutoplay();
-    }
   }
 
   function onTransitionEnd(e) {

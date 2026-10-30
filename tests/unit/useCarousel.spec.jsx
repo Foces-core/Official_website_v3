@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { useRef } from 'react';
 import PropTypes from 'prop-types';
 import useCarousel from '../../src/hooks/useCarousel.js';
+import { AUTOPLAY_RESUME_MS } from '../../src/utils/carouselTiming.js';
 import { createHarness } from './harness.jsx';
 
 const PointerEventCtor =
@@ -299,7 +300,10 @@ describe('useCarousel — instance contract', () => {
     track.dispatchEvent(pointer('pointermove', 350));
     track.dispatchEvent(pointer('pointerup', 350));
     expect(inst(harness).activeIndex).toBe(5);
-    vi.advanceTimersByTime(100);
+    // Quiet window: the release parks autoplay for AUTOPLAY_RESUME_MS.
+    vi.advanceTimersByTime(AUTOPLAY_RESUME_MS - 50);
+    expect(inst(harness).activeIndex).toBe(5);
+    vi.advanceTimersByTime(150);
     expect(inst(harness).activeIndex).toBe(6);
   });
 });
@@ -440,7 +444,10 @@ describe('useCarousel — pointer drag', () => {
 
     cancel();
     expect(inst(harness).activeIndex).toBe(4);
+    // Parked in the quiet window — no tick inside it, resumes after.
     vi.advanceTimersByTime(100);
+    expect(inst(harness).activeIndex).toBe(4);
+    vi.advanceTimersByTime(AUTOPLAY_RESUME_MS);
     expect(inst(harness).activeIndex).toBe(5);
   });
 
