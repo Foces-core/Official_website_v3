@@ -44,11 +44,13 @@
 }
 
 .teams-logo {
-    font-weight: 800;
-    font-size: 1.15rem;
-    color: #f8fafc;
     text-decoration: none;
-    letter-spacing: 0.08em;
+}
+
+.teams-logo img {
+    display: block;
+    height: auto;
+    width: clamp(88px, 8vw, 140px);
 }
 
 .teams-sep {
