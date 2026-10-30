@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
+import LogoWhite from '../../assets/FOCES-White.svg';
 import './TeamsPage.css';
 import { execomArchive } from '../../data/execomArchive.js';
 import Seo from '../../Components/Seo/Seo.jsx';
@@ -20,8 +21,8 @@ export default function TeamsPage() {
 
       <nav className="teams-nav">
         <div className="teams-nav-left">
-          <Link to="/" className="teams-logo">
-            FOCES
+          <Link to="/" className="teams-logo" aria-label="FOCES home">
+            <img src={LogoWhite} alt="" loading="eager" decoding="async" />
           </Link>
           <span className="teams-sep">/</span>
           <span className="teams-tag">EXECOM ARCHIVE</span>
