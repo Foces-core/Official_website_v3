@@ -170,7 +170,9 @@ function EventCard({ Events, priority = false, reverse = false }) {
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 rounded-xl text-sm font-semibold transition-all duration-300"
               >
-                <span>🌐 Visit Past Event Site</span>
+                <span>
+                  {Events.current ? '🌐 Visit Present Event Site' : '🌐 Visit Past Event Site'}
+                </span>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
@@ -193,6 +195,7 @@ EventCard.propTypes = {
     name: PropTypes.string,
     date: PropTypes.string,
     websiteUrl: PropTypes.string,
+    current: PropTypes.bool,
     photos: PropTypes.arrayOf(
       PropTypes.shape({
         url: PropTypes.string,
