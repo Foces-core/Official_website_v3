@@ -1,5 +1,4 @@
 import React, { useMemo, useRef } from 'react';
-import { Link } from 'react-router';
 import BlurImage from '../BlurImage/BlurImage';
 import useDeviceProfile from '../../hooks/useLowPower.js';
 import useInViewOnce from '../../hooks/useInViewOnce.js';
@@ -138,14 +137,6 @@ function Execom() {
           activeIndex={activeCube}
           onActiveChange={setActiveCube}
         />
-      </div>
-      <div className="flex justify-center mt-8">
-        <Link
-          to="/teams"
-          className="inline-flex items-center space-x-3 bg-white text-black font-bold text-base px-8 py-3.5 rounded-xl shadow-lg hover:bg-cyan-400 hover:text-black transition-all duration-400 transform hover:scale-105"
-        >
-          <span>Execom Archive</span>
-        </Link>
       </div>
     </section>
   );
