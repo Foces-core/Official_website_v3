@@ -75,11 +75,10 @@ describe('lazyWithRetry — happy path', () => {
     expect(document.getElementById('fallback')).toBeFalsy();
   });
 
-  it('clears any stale retry flag on success (a later deployment may reload again)', async () => {
-    window.sessionStorage.setItem('chunk-reload-retry', 'true');
+  it('never touches sessionStorage — no reload flags exist in the new contract', async () => {
     const Lazy = lazyWithRetry(() => Promise.resolve({ default: Resolved }));
     await renderAndSettle(Lazy);
-    expect(window.sessionStorage.getItem('chunk-reload-retry')).toBeNull();
+    expect(window.sessionStorage.length).toBe(0);
   });
 });
 
@@ -98,39 +97,20 @@ describe('lazyWithRetry — retry and reload recovery', () => {
     expect(reload).not.toHaveBeenCalled();
   });
 
-  it('performs a one-time clean reload after the retry also fails, setting the retry flag', async () => {
+  it('rethrows after the retry also fails — no reload, no storage flag', async () => {
     vi.stubGlobal('location', { reload });
     const Lazy = lazyWithRetry(() => Promise.reject(new Error('stale asset hash')));
     await renderAndSettle(Lazy);
-    expect(reload).toHaveBeenCalledTimes(1);
-    expect(window.sessionStorage.getItem('chunk-reload-retry')).toBe('true');
+    expect(reload).not.toHaveBeenCalled();
+    expect(window.sessionStorage.length).toBe(0);
     expect(document.getElementById('boundary-error').textContent).toBe('stale asset hash');
   });
 
-  it('does NOT reload again when the retry flag survives from a previous reload (no reload loop)', async () => {
-    vi.stubGlobal('location', { reload });
-    window.sessionStorage.setItem('chunk-reload-retry', 'true');
-    const Lazy = lazyWithRetry(() => Promise.reject(new Error('still stale')));
+  it('tolerates the legacy chunkId argument without using it', async () => {
+    const Lazy = lazyWithRetry(() => Promise.resolve({ default: Resolved }), 'featuring');
     await renderAndSettle(Lazy);
-    expect(reload).not.toHaveBeenCalled();
-    expect(document.getElementById('boundary-error').textContent).toBe('still stale');
-  });
-
-  it('does not let another lazy chunk success reset this chunk’s reload guard', async () => {
-    vi.stubGlobal('location', { reload });
-    window.sessionStorage.setItem('chunk-reload-retry:about', 'true');
-    const OtherChunk = lazyWithRetry(() => Promise.resolve({ default: Resolved }), 'featuring');
-    await renderAndSettle(OtherChunk);
-    expect(window.sessionStorage.getItem('chunk-reload-retry:about')).toBe('true');
-    expect(window.sessionStorage.getItem('chunk-reload-retry:featuring')).toBeNull();
-
-    harness.unmount();
-    harness = createHarness();
-    const FailedChunk = lazyWithRetry(() => Promise.reject(new Error('still stale')), 'about');
-    await renderAndSettle(FailedChunk);
-
-    expect(reload).not.toHaveBeenCalled();
-    expect(document.getElementById('boundary-error').textContent).toBe('still stale');
+    expect(document.getElementById('resolved')).toBeTruthy();
+    expect(window.sessionStorage.length).toBe(0);
   });
 });
 

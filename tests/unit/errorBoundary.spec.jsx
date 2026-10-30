@@ -154,15 +154,16 @@ test('fallback handlers still navigate when resetError is not provided (standalo
   h.unmount();
 });
 
-test('fallback auto-reloads once after a short delay', () => {
+test('fallback never auto-reloads — recovery is manual only', () => {
   vi.useFakeTimers();
   const h = createHarness();
   h.render(<ErrorFallback error={new Error('x')} />);
-  // Session guard armed + timer running; the page should reload on its own.
+  // No auto-reload timer exists anymore: the fallback shows a manual Retry.
   act(() => {
-    vi.advanceTimersByTime(1201);
+    vi.advanceTimersByTime(5000);
   });
-  expect(reload).toHaveBeenCalledTimes(1);
+  expect(reload).not.toHaveBeenCalled();
+  expect(h.container.textContent).toContain('Something went wrong');
   h.unmount();
 });
 

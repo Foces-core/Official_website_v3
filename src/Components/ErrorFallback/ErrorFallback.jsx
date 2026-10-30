@@ -1,18 +1,14 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import usePersistentErrorRecovery from '../../hooks/usePersistentErrorRecovery.js';
-import { isChunkError } from '../../utils/chunkRecovery.js';
 import {
   getErrorCode,
+  isChunkError,
   purgeAppCaches,
   unregisterServiceWorkers,
 } from '../../utils/cacheRecovery.js';
 
 function ErrorFallback({ error, resetError }) {
   const [clearing, setClearing] = useState(false);
-  // Recovery policy (auto-reload → escalate to cache purge) lives in the
-  // hook; this component only renders the fallback and the manual escapes.
-  usePersistentErrorRecovery({ delayMs: 1200 });
 
   const handleReload = () => {
     if (resetError) resetError();

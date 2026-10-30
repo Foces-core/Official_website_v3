@@ -81,7 +81,7 @@ Merged branches are deleted in the same task that merges them — never accumula
   (`Pages/TeamsPage/`).
 - `src/Components/HeroStage/` — 3D WebGL stage adapter: `heroWavesStage.js` (dynamic Three.js/Vanta loader, WebGL context loss recovery, lowPower gating).
 - `src/utils/` — helpers: `frameScheduler.js` (coalesceToFrame & deferToNextPaint), `contactSubmitLogic.js` (pure submit outcome resolver),
-  `safeStorage.js` (fault-tolerant storage primitives), `errorRecoveryLogic.js` (pure auto-reload & chunk recovery policies),
+  `safeStorage.js` (fault-tolerant storage primitives), `cacheRecovery.js` (error-code + cache/SW purge for the manual fallback escape hatch),
   `validationRules.js` (shared schema validation primitives), `srcset.js`, `eventPhotos.js`, `validateContactForm.js`,
   `contactDraft.js`, `validateEvents.js`, `validateTeam.js`, `validateEchoSlides.js`, `keyboardLock.js`,
   `ariaActivation.js`, `aosGating.js` (gate + `initAOS`), `breakpoints.js` (viewports 500/767/768/1024),
@@ -89,7 +89,7 @@ Merged branches are deleted in the same task that merges them — never accumula
   `overlayLifecycle.js` (pure focus/trap/escape helpers), `routePrefetchLogic.js` (pure route loaders),
   `analyticsProbe.js` (pure Vercel-script gate behind DeferredAnalytics),
   `DeferredAnalytics.jsx`, `lazyWithRetry.js`, `sessionCookie.js`, `scrollToSectionLogic.js`, `bootSplashLogic.js`,
-  `cssRecoveryLogic.js` (unstyled-boot probe + one-shot reload),
+  `lazyWithRetry.js` (one delayed retry, no auto-reload — islands never reload the page),
   `manualMotion.js` (reduced-motion opt-in for user-started transforms, ADR-0026),
   `curtainLogic.js` (entry-curtain reveal keys + settle timing, ADR-0028).
 - `src/hooks/` — `useLowPower.js` (`useDeviceProfile` driving all perf degradation),
