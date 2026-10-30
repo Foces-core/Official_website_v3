@@ -1,8 +1,9 @@
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
- * Per-field character ceilings — enforced here in JS (never rely on the
- * maxLength attribute alone) and mirrored onto the inputs in ContactUs.jsx.
+ * Per-field character ceilings — enforced here in JS, deliberately not as
+ * input maxLength attributes: an attribute silently truncates pasted text,
+ * whereas a validator error tells the user and preserves their input.
  * 254 is the RFC 5321 email ceiling; the rest are generous product limits
  * that keep oversized payloads away from the EmailJS integration.
  */
