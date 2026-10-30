@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import { purgeAppCaches, unregisterServiceWorkers } from '../../utils/cacheRecovery.js';
 
 /**
  * ChunkErrorFallback — compact fallback for a single lazy island (ScrollGate
@@ -12,6 +13,25 @@ export default function ChunkErrorFallback() {
   const [offline, setOffline] = useState(
     () => typeof navigator !== 'undefined' && navigator.onLine === false,
   );
+  const [retrying, setRetrying] = useState(false);
+
+  // A plain reload replays the same failure when a service worker or the
+  // HTTP cache serves the stale app — the deploy that broke the chunks also
+  // replaced index.html, and the stale controller keeps serving the OLD
+  // index.html. Purge every poisoned copy first, then reload clean.
+  const handleRetry = async () => {
+    if (retrying) return;
+    setRetrying(true);
+    await purgeAppCaches();
+    await unregisterServiceWorkers();
+    try {
+      window.sessionStorage?.clear();
+      window.localStorage?.clear();
+    } catch {
+      /* storage blocked — the purge above is the important part */
+    }
+    window.location.reload();
+  };
 
   useEffect(() => {
     const update = () => setOffline(navigator.onLine === false);
@@ -40,10 +60,11 @@ export default function ChunkErrorFallback() {
       {!offline && (
         <button
           type="button"
-          onClick={() => window.location.reload()}
-          className="px-5 py-2 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs rounded-xl border border-white/20 transition-colors"
+          onClick={handleRetry}
+          disabled={retrying}
+          className="px-5 py-2 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs rounded-xl border border-white/20 transition-colors disabled:opacity-60"
         >
-          Retry
+          {retrying ? 'Retrying…' : 'Retry'}
         </button>
       )}
     </div>

@@ -222,12 +222,16 @@ test('ChunkErrorFallback explains offline and offers retry after reconnecting', 
   }
 });
 
-test('ChunkErrorFallback offers retry online, wired to reload', () => {
+test('ChunkErrorFallback retry purges caches + storage, then reloads', async () => {
   const h = createHarness();
   h.render(<ChunkErrorFallback />);
   const retry = h.container.querySelector('button');
   expect(retry.textContent).toContain('Retry');
-  act(() => retry.click());
+  await act(async () => {
+    retry.click();
+    // Flush the async purge (caches + SW unregister) that precedes reload.
+    await Promise.resolve();
+  });
   expect(reload).toHaveBeenCalledTimes(1);
   h.unmount();
 });
