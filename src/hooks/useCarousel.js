@@ -78,6 +78,7 @@ export default function useCarousel({
     keyboardOn: false,
     transitioning: false,
     transitionEndsAt: 0,
+    animFrom: null,
     faceWidth: 0,
     slideWidth: 0,
     step: 0,
@@ -119,11 +120,19 @@ export default function useCarousel({
     const { mode: m, slidesPerView: spv } = p();
     const center =
       m === 'cube' ? raw : Math.min(raw + Math.floor((spv - 1) / 2), children.length - 1);
+    // Painted span for the cube: while a transition is in flight, every face
+    // the rotation actually sweeps through must stay painted, not just the
+    // target ±1. Rapid chained moves otherwise hide faces still on screen —
+    // the visible mid-rotation pop. Marked with data-slide-live so only the
+    // real neighbors stay interactive.
+    const spanLo = m === 'cube' && s.animFrom != null ? Math.min(s.animFrom, raw) - 1 : raw;
+    const spanHi = m === 'cube' && s.animFrom != null ? Math.max(s.animFrom, raw) + 1 : raw;
     children.forEach((slide, i) => {
       slide.toggleAttribute('data-slide-active', i === raw);
       slide.toggleAttribute('data-slide-next', i === raw + 1);
       slide.toggleAttribute('data-slide-prev', i === raw - 1);
       slide.toggleAttribute('data-slide-center', i === center);
+      slide.toggleAttribute('data-slide-live', i >= spanLo && i <= spanHi);
     });
   }
 
@@ -168,6 +177,7 @@ export default function useCarousel({
   function settleMotion(t) {
     s.transitioning = false;
     s.transitionEndsAt = 0;
+    s.animFrom = null;
     clearManualMotion(t);
   }
 
@@ -186,6 +196,7 @@ export default function useCarousel({
     setManualMotion(t, duration, timing, manual);
     s.transitioning = duration > 0;
     s.transitionEndsAt = now + duration;
+    s.animFrom = duration > 0 ? start : null;
   }
 
   function goTo(

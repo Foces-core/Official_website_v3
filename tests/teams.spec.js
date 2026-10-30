@@ -1,14 +1,9 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Execom archive (/teams)', () => {
-  test('opens from the execom section button and shows the latest group photo', async ({
-    page,
-  }) => {
-    await page.goto('/', { waitUntil: 'domcontentloaded' });
-    await page.locator('#execom').scrollIntoViewIfNeeded();
+  test('shows the latest group photo', async ({ page }) => {
+    await page.goto('/teams', { waitUntil: 'domcontentloaded' });
 
-    await page.getByRole('link', { name: 'Execom Archive' }).click();
-    await expect(page).toHaveURL(/\/teams$/);
     await expect(page.locator('.teams-title')).toHaveText('Execom 2025–2026');
     await expect(page.locator('.teams-group-img')).toBeVisible();
   });

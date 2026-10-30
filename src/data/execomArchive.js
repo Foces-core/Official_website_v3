@@ -4,6 +4,8 @@
 
 import Group202526 from '../assets/execom/group-2025-26.webp';
 import Group202526Sm from '../assets/execom/group-2025-26-1200.webp';
+import Group202425 from '../assets/execom/group-2024-25.webp';
+import Group202425Sm from '../assets/execom/group-2024-25-1200.webp';
 
 export const execomArchive = [
   {
@@ -15,6 +17,8 @@ export const execomArchive = [
   },
   {
     year: '2024-25',
+    photo: Group202425,
+    photoSmall: Group202425Sm,
     title: 'Execom 2024–2025',
     groupSub: 'College Courtyard Handover & Valedictory',
   },

@@ -30,8 +30,16 @@
 
 [data-carousel-mode='cube'][data-carousel-ready] [data-slide-active],
 [data-carousel-mode='cube'][data-carousel-ready] [data-slide-next],
-[data-carousel-mode='cube'][data-carousel-ready] [data-slide-prev] {
+[data-carousel-mode='cube'][data-carousel-ready] [data-slide-prev],
+[data-carousel-mode='cube'][data-carousel-ready] [data-slide-live] {
     visibility: visible;
+}
+
+/* Pointer events stay on the true neighbors only — data-slide-live faces are
+   painted but not interactive (the cube is mid-rotation past them). */
+[data-carousel-mode='cube'][data-carousel-ready] [data-slide-active],
+[data-carousel-mode='cube'][data-carousel-ready] [data-slide-next],
+[data-carousel-mode='cube'][data-carousel-ready] [data-slide-prev] {
     pointer-events: auto;
 }
 
