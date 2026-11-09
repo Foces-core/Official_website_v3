@@ -102,6 +102,41 @@ export function headTagsForRoute(route) {
  * @returns {string} the JSON document (callers assign it to a script's
  *   textContent — never an HTML string, so no tag-stripping regex is needed)
  */
+// [name, jobTitle, sameAs[]] — titles mirror src/data/team.js.
+const EXECOM_MEMBERS = [
+  [
+    'Aleetta Mariya Sebastian',
+    'Chairperson',
+    ['https://www.linkedin.com/in/aleetta-mariya-sebastian-029114294'],
+  ],
+  ['Lisha Jins', 'Vice Chairperson', ['https://www.linkedin.com/in/lisha-jins']],
+  ['Steve Jose', 'Secretary', ['https://www.linkedin.com/in/stevejose087']],
+  ['Anna Rachel Mathew', 'Joint Secretary', ['https://www.linkedin.com/in/annarachelmathew']],
+  ['Amanul Farhan K S', 'Treasurer', ['https://www.linkedin.com/in/amanulfarhan']],
+  [
+    'Abel S Mathew',
+    'Research & Development Lead',
+    ['https://www.linkedin.com/in/abel-s-mathew-7b3035202'],
+  ],
+  [
+    'Saniya K Shibu',
+    'Program Outreach Coordinator',
+    ['https://www.linkedin.com/in/saniya-k-shibu-1286b230a'],
+  ],
+  [
+    'Sebin Mathew',
+    'Project Coordinator',
+    [
+      'https://sebin-gg.vercel.app',
+      'https://github.com/sebin-gg',
+      'https://www.linkedin.com/in/sebin-gg',
+    ],
+  ],
+  ['Anjitha Aravind', 'Operations Lead', ['https://www.linkedin.com/in/anjitha-aravind-0048bb32a']],
+  ['Abhirami P', 'Design Lead', ['https://www.linkedin.com/in/abhirami-p-4b3786335']],
+  ['Devadarsana R', 'Public Relations Lead', ['https://www.linkedin.com/in/devadarsana-r-creates']],
+];
+
 export function siteJsonLd(origin = SITE_ORIGIN) {
   return JSON.stringify({
     '@context': 'https://schema.org',
@@ -131,78 +166,12 @@ export function siteJsonLd(origin = SITE_ORIGIN) {
         // search engines and AI crawlers resolve each name on the team page
         // to that person's public profile. sameAs only carries profiles that
         // are publicly verifiable (self-declared LinkedIn/GitHub/portfolio).
-        member: [
-          {
-            '@type': 'Person',
-            name: 'Aleetta Mariya Sebastian',
-            jobTitle: 'Chairperson',
-            sameAs: ['https://www.linkedin.com/in/aleetta-mariya-sebastian-029114294'],
-          },
-          {
-            '@type': 'Person',
-            name: 'Lisha Jins',
-            jobTitle: 'Vice Chairperson',
-            sameAs: ['https://www.linkedin.com/in/lisha-jins'],
-          },
-          {
-            '@type': 'Person',
-            name: 'Steve Jose',
-            jobTitle: 'Secretary',
-            sameAs: ['https://www.linkedin.com/in/stevejose087'],
-          },
-          {
-            '@type': 'Person',
-            name: 'Anna Rachel Mathew',
-            jobTitle: 'Joint Secretary',
-            sameAs: ['https://www.linkedin.com/in/annarachelmathew'],
-          },
-          {
-            '@type': 'Person',
-            name: 'Amanul Farhan K S',
-            jobTitle: 'Treasurer',
-            sameAs: ['https://www.linkedin.com/in/amanulfarhan'],
-          },
-          {
-            '@type': 'Person',
-            name: 'Abel S Mathew',
-            jobTitle: 'Research & Development Lead',
-            sameAs: ['https://www.linkedin.com/in/abel-s-mathew-7b3035202'],
-          },
-          {
-            '@type': 'Person',
-            name: 'Saniya K Shibu',
-            jobTitle: 'Program Outreach Coordinator',
-            sameAs: ['https://www.linkedin.com/in/saniya-k-shibu-1286b230a'],
-          },
-          {
-            '@type': 'Person',
-            name: 'Sebin Mathew',
-            jobTitle: 'Project Coordinator',
-            sameAs: [
-              'https://sebin-gg.vercel.app',
-              'https://github.com/sebin-gg',
-              'https://www.linkedin.com/in/sebin-gg',
-            ],
-          },
-          {
-            '@type': 'Person',
-            name: 'Anjitha Aravind',
-            jobTitle: 'Operations Lead',
-            sameAs: ['https://www.linkedin.com/in/anjitha-aravind-0048bb32a'],
-          },
-          {
-            '@type': 'Person',
-            name: 'Abhirami P',
-            jobTitle: 'Design Lead',
-            sameAs: ['https://www.linkedin.com/in/abhirami-p-4b3786335'],
-          },
-          {
-            '@type': 'Person',
-            name: 'Devadarsana R',
-            jobTitle: 'Public Relations Lead',
-            sameAs: ['https://www.linkedin.com/in/devadarsana-r-creates'],
-          },
-        ],
+        member: EXECOM_MEMBERS.map(([name, jobTitle, sameAs]) => ({
+          '@type': 'Person',
+          name,
+          jobTitle,
+          sameAs,
+        })),
       },
       {
         '@type': 'WebSite',
