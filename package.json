@@ -62,7 +62,7 @@
     "react-icons": "^5.7.0",
     "react-router": "8.5.1",
     "react-toastify": "^11.1.0",
-    "three": "^0.186.1",
+    "three": "^0.187.0",
     "vanta": "^0.5.24",
     "yet-another-react-lightbox": "^3.32.2"
   },
@@ -82,7 +82,7 @@
     "@vitest/coverage-v8": "^4.1.10",
     "@vitest/ui": "^4.1.10",
     "chrome-launcher": "^1.2.1",
-    "eslint": "^10.11.0",
+    "eslint": "^10.14.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import-x": "^4.17.1",
     "eslint-plugin-react": "^7.37.5",
@@ -100,8 +100,8 @@
     "sharp": "^0.35.4",
     "subset-font": "^2.9.0",
     "svgo": "^4.1.0",
-    "tailwindcss": "^4.3.3",
-    "vite": "^8.3.1",
+    "tailwindcss": "^4.3.4",
+    "vite": "^8.3.6",
     "vite-imagetools": "^12.0.1",
     "vite-plugin-image-optimizer": "^2.0.3",
     "vitest": "^4.1.10"
