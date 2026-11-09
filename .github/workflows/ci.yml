@@ -152,6 +152,7 @@ jobs:
           # when the ARM64 toolcache misses; the github.com release URL
           # redirects there. nodejs.org stays as its documented fallback.
           allowed-endpoints: >
+            api.github.com:443 github.com:443
             registry.npmjs.org:443
             registry.npmjs.org.:443
             nodejs.org:443
