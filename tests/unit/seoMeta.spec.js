@@ -57,6 +57,9 @@ describe('seoMeta', () => {
         'meta[property="twitter:url"]',
       ]);
 
+      const titleTag = head.metaTags.find((m) => m.selector === 'meta[name="title"]');
+      expect(titleTag.tag).toBe(`<meta name="title" content="${escapeHtml(route.title)}" />`);
+
       const all = head.metaTags.map((m) => m.tag).join('\n');
       expect(all).toContain('name="description"');
       expect(all).toContain('og:title');
