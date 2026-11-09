@@ -26,9 +26,18 @@ overrides:
   'brace-expansion@>=1.0.0 <1.1.21': 5.0.12
   'brace-expansion@>=2.0.0 <2.1.7': 5.0.12
   'brace-expansion@>=4.0.0 <5.0.12': 5.0.12
+  # GHSA-3g3m-2fjr-6pw4 (glob AbortSignal bypass, <14.0.2 via @sentry/bundler-plugins
+  # and lighthouse) fails `pnpm audit` in CI. The pin pulls the patched release; a
+  # plain dedupe cannot upgrade this transitive resolution.
+  'glob@>=9.0.0 <=14.0.1': 14.0.2
 
 # No fix is published for this low-severity advisory. deepmerge is only pulled
 # into the build toolchain by workbox-build; remove this exception when fixed.
 audit:
   ignore:
     - GHSA-gcqx-w48m-w2h4
+    # minimatch globparts DoS (>=7 <11.0.1) is dev-toolchain only (eslint, stryker,
+    # glob) and cannot be patched: eslint-plugin-import-x imports makeRe, which
+    # minimatch 11 removed, so a global override breaks the lint config. Remove
+    # this exception once eslint-plugin-import-x supports minimatch 11.
+    - GHSA-g3hv-75wg-m249

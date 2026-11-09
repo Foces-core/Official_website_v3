@@ -1,9 +1,22 @@
+import { Link, useLocation } from 'react-router';
 import { FaSquareFacebook, FaInstagram, FaXTwitter, FaLinkedin, FaHeart } from 'react-icons/fa6';
 import FocesLogo from '../../../assets/FOCES-White.svg';
 
+const FOOTER_LINKS = [
+  { to: '/events', label: 'Events' },
+  { to: '/teams', label: 'Execom Archive' },
+  { to: '/contact', label: 'Contact' },
+];
+
 function Footer() {
+  const { pathname } = useLocation();
+  const backToTop = (to) => (event) => {
+    if (pathname !== to || event.ctrlKey || event.metaKey || event.shiftKey) return;
+    window.scrollTo(0, 0);
+  };
+
   return (
-    <footer className="h-auto md:h-[12vh] bg-[#101011] relative z-0 flex flex-col md:flex-row w-full items-center justify-between gap-6 p-6 mt-12 border-t border-white/10">
+    <footer className="h-auto md:min-h-[12vh] bg-[#101011] relative z-0 flex flex-col md:flex-row w-full items-center justify-between gap-6 p-6 mt-12 border-t border-white/10">
       <div className="w-full md:w-[20%] flex justify-center md:justify-start items-center">
         <img
           src={FocesLogo}
@@ -61,6 +74,18 @@ function Footer() {
             />
           </a>
         </div>
+        <nav aria-label="Footer" className="flex gap-6 justify-center items-center">
+          {FOOTER_LINKS.map(({ to, label }) => (
+            <Link
+              key={to}
+              to={to}
+              onClick={backToTop(to)}
+              className="text-xs md:text-sm text-[#D9D9D9] hover:text-white transition-colors"
+            >
+              {label}
+            </Link>
+          ))}
+        </nav>
         <p className="text-center text-[#D9D9D9] text-xs md:text-sm">
           Copyright ©{new Date().getFullYear()} All rights reserved | Made with{' '}
           <FaHeart className="inline-block text-[#080AA4] h-3.5 w-3.5 mx-0.5" /> by FOCES

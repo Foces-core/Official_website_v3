@@ -48,6 +48,7 @@ describe('seoMeta', () => {
       const selectors = head.metaTags.map((m) => m.selector);
       expect(selectors).toEqual([
         'meta[name="description"]',
+        'meta[name="title"]',
         'meta[property="og:title"]',
         'meta[property="og:description"]',
         'meta[property="og:url"]',
@@ -55,6 +56,9 @@ describe('seoMeta', () => {
         'meta[property="twitter:description"]',
         'meta[property="twitter:url"]',
       ]);
+
+      const titleTag = head.metaTags.find((m) => m.selector === 'meta[name="title"]');
+      expect(titleTag.tag).toBe(`<meta name="title" content="${escapeHtml(route.title)}" />`);
 
       const all = head.metaTags.map((m) => m.tag).join('\n');
       expect(all).toContain('name="description"');

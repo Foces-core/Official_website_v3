@@ -4,6 +4,7 @@ import LogoWhite from '../../assets/FOCES-White.svg';
 import './TeamsPage.css';
 import { execomArchive } from '../../data/execomArchive.js';
 import Seo from '../../Components/Seo/Seo.jsx';
+import Footer from '../LandingPage/Footer/Footer.jsx';
 
 /**
  * Execom archive (/teams): one group photo per past committee year.
@@ -67,6 +68,7 @@ export default function TeamsPage() {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }
