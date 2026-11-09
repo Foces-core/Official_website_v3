@@ -1,4 +1,4 @@
-npx prettier --check .
+pnpm exec prettier --check .
 git diff --check
 node scripts/maintenance/actionlint-check.mjs
 pnpm run ci:fast
