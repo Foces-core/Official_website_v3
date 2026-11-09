@@ -10,6 +10,7 @@ import {
   eventJsonLd,
   siteJsonLd,
 } from '../../src/utils/seoMeta.js';
+import { cardData } from '../../src/data/team.js';
 
 describe('seoMeta', () => {
   describe('seoRoutes', () => {
@@ -179,6 +180,18 @@ describe('seoMeta', () => {
       );
       expect(match).not.toBeNull();
       expect(JSON.parse(match[1])).toEqual(strip(siteJsonLd()));
+    });
+
+    it('mirrors the visible team roster — every member name and role matches cardData', () => {
+      const org = strip(siteJsonLd())['@graph'].find((n) => n['@type'] === 'Organization');
+      const visible = cardData.map((m) => [m.name, m.role]);
+      const members = org.member ?? [];
+      expect(members.map((m) => [m.name, m.jobTitle])).toEqual(visible);
+      for (const m of members) {
+        expect(m['@type']).toBe('Person');
+        expect(m.sameAs.length).toBeGreaterThan(0);
+        for (const url of m.sameAs) expect(url).toMatch(/^https:\/\//);
+      }
     });
   });
 });
