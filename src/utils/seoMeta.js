@@ -127,6 +127,82 @@ export function siteJsonLd(origin = SITE_ORIGIN) {
           'https://x.com/foces_cec',
           'https://www.linkedin.com/in/foces-cec-423176229/',
         ],
+        // Execom roster as schema.org members — the entity link that lets
+        // search engines and AI crawlers resolve each name on the team page
+        // to that person's public profile. sameAs only carries profiles that
+        // are publicly verifiable (self-declared LinkedIn/GitHub/portfolio).
+        member: [
+          {
+            '@type': 'Person',
+            name: 'Aleetta Mariya Sebastian',
+            jobTitle: 'Chairperson',
+            sameAs: ['https://www.linkedin.com/in/aleetta-mariya-sebastian-029114294'],
+          },
+          {
+            '@type': 'Person',
+            name: 'Lisha Jins',
+            jobTitle: 'Vice Chairperson',
+            sameAs: ['https://www.linkedin.com/in/lisha-jins'],
+          },
+          {
+            '@type': 'Person',
+            name: 'Steve Jose',
+            jobTitle: 'Secretary',
+            sameAs: ['https://www.linkedin.com/in/stevejose087'],
+          },
+          {
+            '@type': 'Person',
+            name: 'Anna Rachel Mathew',
+            jobTitle: 'Joint Secretary',
+            sameAs: ['https://www.linkedin.com/in/annarachelmathew'],
+          },
+          {
+            '@type': 'Person',
+            name: 'Amanul Farhan K S',
+            jobTitle: 'Treasurer',
+            sameAs: ['https://www.linkedin.com/in/amanulfarhan'],
+          },
+          {
+            '@type': 'Person',
+            name: 'Abel S Mathew',
+            jobTitle: 'Research & Development Lead',
+            sameAs: ['https://www.linkedin.com/in/abel-s-mathew-7b3035202'],
+          },
+          {
+            '@type': 'Person',
+            name: 'Saniya K Shibu',
+            jobTitle: 'Program Outreach Coordinator',
+            sameAs: ['https://www.linkedin.com/in/saniya-k-shibu-1286b230a'],
+          },
+          {
+            '@type': 'Person',
+            name: 'Sebin Mathew',
+            jobTitle: 'Project Coordinator',
+            sameAs: [
+              'https://sebin-gg.vercel.app',
+              'https://github.com/sebin-gg',
+              'https://www.linkedin.com/in/sebin-gg',
+            ],
+          },
+          {
+            '@type': 'Person',
+            name: 'Anjitha Aravind',
+            jobTitle: 'Operations Lead',
+            sameAs: ['https://www.linkedin.com/in/anjitha-aravind-0048bb32a'],
+          },
+          {
+            '@type': 'Person',
+            name: 'Abhirami P',
+            jobTitle: 'Design Lead',
+            sameAs: ['https://www.linkedin.com/in/abhirami-p-4b3786335'],
+          },
+          {
+            '@type': 'Person',
+            name: 'Devadarsana R',
+            jobTitle: 'Public Relations Lead',
+            sameAs: ['https://www.linkedin.com/in/devadarsana-r-creates'],
+          },
+        ],
       },
       {
         '@type': 'WebSite',
