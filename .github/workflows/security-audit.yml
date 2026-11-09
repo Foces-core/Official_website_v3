@@ -38,9 +38,13 @@ jobs:
         uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2
         with:
           egress-policy: block
+          # release-assets hosts the node-versions tarball setup-node fetches
+          # on a toolcache miss; the github.com release URL redirects there.
           allowed-endpoints: >
             api.github.com:443 github.com:443 objects.githubusercontent.com:443
             registry.npmjs.org:443
+            nodejs.org:443
+            release-assets.githubusercontent.com:443
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
