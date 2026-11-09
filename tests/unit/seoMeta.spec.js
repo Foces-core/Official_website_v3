@@ -48,6 +48,7 @@ describe('seoMeta', () => {
       const selectors = head.metaTags.map((m) => m.selector);
       expect(selectors).toEqual([
         'meta[name="description"]',
+        'meta[name="title"]',
         'meta[property="og:title"]',
         'meta[property="og:description"]',
         'meta[property="og:url"]',

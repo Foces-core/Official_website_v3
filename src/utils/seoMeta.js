@@ -11,8 +11,7 @@ export const SITE_ORIGIN = 'https://foces.ceconline.edu';
 
 const BASE_DESCRIPTION =
   'Official website of FOCES (Forum of Computer Engineering Students) at ' +
-  'College of Engineering Chengannur. Discover upcoming events, workshops, ' +
-  'technical initiatives, and meet our team.';
+  'College of Engineering Chengannur — events, workshops, and our team.';
 
 /**
  * Per-route metadata. `title` is the full document title; `description` is
@@ -24,7 +23,7 @@ export function seoRoutes() {
   return [
     {
       path: '/',
-      title: 'FOCES - Forum of Computer Engineering Students | College of Engineering Chengannur',
+      title: 'FOCES - Forum of Computer Engineering Students | CEC',
       description: BASE_DESCRIPTION,
     },
     {
@@ -32,8 +31,8 @@ export function seoRoutes() {
       title: 'Events | FOCES - Forum of Computer Engineering Students',
       description:
         'Workshops, bootcamps, and competitions run by FOCES at College of ' +
-        'Engineering Chengannur — from prompt-engineering contests to agentic ' +
-        'coding workshops and the Coding Arena bootcamp.',
+        'Engineering Chengannur — from prompt-engineering contests to the ' +
+        'Coding Arena bootcamp.',
     },
     {
       path: '/contact',
@@ -44,7 +43,7 @@ export function seoRoutes() {
     },
     {
       path: '/teams',
-      title: 'Execom Archive | FOCES - Forum of Computer Engineering Students',
+      title: 'Execom Archive | FOCES',
       description:
         'Past FOCES executive committees at College of Engineering ' +
         'Chengannur — one group photo per committee year in the Execom archive.',
@@ -78,6 +77,7 @@ export function headTagsForRoute(route) {
     title: route.title,
     metaTags: [
       meta('name', 'description', route.description),
+      meta('name', 'title', route.title),
       meta('property', 'og:title', route.title),
       meta('property', 'og:description', route.description),
       meta('property', 'og:url', url),

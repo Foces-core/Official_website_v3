@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import { FaSquareFacebook, FaInstagram, FaXTwitter, FaLinkedin, FaHeart } from 'react-icons/fa6';
 import FocesLogo from '../../../assets/FOCES-White.svg';
 
@@ -61,6 +62,26 @@ function Footer() {
             />
           </a>
         </div>
+        <nav aria-label="Footer" className="flex gap-6 justify-center items-center">
+          <Link
+            to="/events"
+            className="text-xs md:text-sm text-[#D9D9D9] hover:text-white transition-colors"
+          >
+            Events
+          </Link>
+          <Link
+            to="/teams"
+            className="text-xs md:text-sm text-[#D9D9D9] hover:text-white transition-colors"
+          >
+            Execom Archive
+          </Link>
+          <Link
+            to="/contact"
+            className="text-xs md:text-sm text-[#D9D9D9] hover:text-white transition-colors"
+          >
+            Contact
+          </Link>
+        </nav>
         <p className="text-center text-[#D9D9D9] text-xs md:text-sm">
           Copyright ©{new Date().getFullYear()} All rights reserved | Made with{' '}
           <FaHeart className="inline-block text-[#080AA4] h-3.5 w-3.5 mx-0.5" /> by FOCES
