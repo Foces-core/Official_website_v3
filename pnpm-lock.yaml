@@ -169,7 +169,7 @@ overrides:
   serialize-javascript: 7.1.4
   brace-expansion@>=1.0.0 <1.1.21: 5.0.12
   brace-expansion@>=2.0.0 <2.1.7: 5.0.13
-  brace-expansion@>=4.0.0 <5.0.12: 5.0.12
+  brace-expansion@>=4.0.0 <5.0.12: 5.0.13
   glob@>=9.0.0 <=14.0.1: 14.0.4
 
 importers:
@@ -2542,6 +2542,10 @@ packages:
 
   brace-expansion@5.0.12:
     resolution: {integrity: sha512-YovQ3rzhaLMIrDjNDMkNS01tea93qhEhG5xy8f6+R0l+dw3Ki+5sCoIoI942iuLZTHWogWktgwVDhU09iNEimQ==}
+    engines: {node: 20 || >=22}
+
+  brace-expansion@5.0.13:
+    resolution: {integrity: sha512-Vh3dmFbc4wZeox7M9I/0L9GfFd83Su4+yCck/OF9Gi/P/dAHn0RT7X4K9R7gMNMhDck3DvhR6QXsnQdjjgwNvQ==}
     engines: {node: 20 || >=22}
 
   browserslist@4.29.5:
@@ -6457,6 +6461,10 @@ snapshots:
     dependencies:
       balanced-match: 4.0.4
 
+  brace-expansion@5.0.13:
+    dependencies:
+      balanced-match: 4.0.4
+
   browserslist@4.29.5:
     dependencies:
       baseline-browser-mapping: 2.11.34
@@ -7660,7 +7668,7 @@ snapshots:
 
   minimatch@10.2.6:
     dependencies:
-      brace-expansion: 5.0.12
+      brace-expansion: 5.0.13
 
   minimatch@11.0.5:
     dependencies:
