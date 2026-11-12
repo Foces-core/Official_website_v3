@@ -29,7 +29,7 @@ overrides:
   # GHSA-3g3m-2fjr-6pw4 (glob AbortSignal bypass, <14.0.2 via @sentry/bundler-plugins
   # and lighthouse) fails `pnpm audit` in CI. The pin pulls the patched release; a
   # plain dedupe cannot upgrade this transitive resolution.
-  'glob@>=9.0.0 <=14.0.1': 14.0.4
+  'glob@>=9.0.0 <=14.0.1': 14.0.5
 
 # No fix is published for this low-severity advisory. deepmerge is only pulled
 # into the build toolchain by workbox-build; remove this exception when fixed.
