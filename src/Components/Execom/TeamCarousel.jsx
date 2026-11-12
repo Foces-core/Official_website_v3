@@ -1,4 +1,4 @@
-import { useRef, useCallback, useEffect, useState } from 'react';
+import { useRef, useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { FaChevronLeft, FaChevronRight } from 'react-icons/fa6';
 import useCarousel from '../../hooks/useCarousel.js';
@@ -40,7 +40,6 @@ function TeamCarousel({
 }) {
   const elRef = useRef(null);
   const wrapRef = useRef(null);
-  const [hoveredSlideIndex, setHoveredSlideIndex] = useState(null);
   const width = useViewportWidth();
 
   const total = slidesData.length;
@@ -48,10 +47,7 @@ function TeamCarousel({
   const useFlat = isDesktop || flatCube;
 
   const handleActiveChange = useCallback(
-    (nextIndex) => {
-      setHoveredSlideIndex(null);
-      onActiveChange(nextIndex);
-    },
+    (nextIndex) => onActiveChange(nextIndex),
     [onActiveChange],
   );
 
@@ -153,11 +149,9 @@ function TeamCarousel({
                   isDesktop ? 'group' : ''
                 }`}
                 style={d.portraitBg ? { backgroundColor: d.portraitBg } : undefined}
-                onPointerMove={() => setHoveredSlideIndex(index)}
-                onPointerLeave={() => setHoveredSlideIndex(null)}
               >
                 <BlurImage
-                  className={`object-cover ${d.imgPosition ?? 'object-top'} w-full h-full ${isDesktop ? 'card-hover' : ''} ${isDesktop && hoveredSlideIndex === index ? 'filter-none' : 'grayscale'} transition-all duration-400`}
+                  className={`object-cover object-top w-full h-full grayscale ${isDesktop ? 'card-hover group-hover:grayscale-0' : ''} transition-all duration-400`}
                   style={d.objectPosition ? { objectPosition: d.objectPosition } : undefined}
                   src={d.img}
                   srcSet={d.srcset}
