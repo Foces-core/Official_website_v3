@@ -151,7 +151,7 @@ export const cardData = [
     // Per-photo crop: this portrait needs centering while the roster default
     // is object-top. Lives in data (not a name check in the component) so no
     // member is ever special-cased by name in shared UI.
-    imgPosition: 'object-center',
+    objectPosition: 'center',
     role: 'Project Coordinator',
   },
   {

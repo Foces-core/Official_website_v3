@@ -85,19 +85,23 @@ describe('validateTeam — shape rules', () => {
     expect(validateTeam([member]).join('\n')).toContain('srcset must be a non-empty string');
   });
 
-  it('accepts an optional per-photo imgPosition crop', () => {
-    const member = { name: 'A Member', img: '/a.webp', role: 'Lead', imgPosition: 'object-center' };
+  it('accepts an optional per-photo objectPosition crop', () => {
+    const member = { name: 'A Member', img: '/a.webp', role: 'Lead', objectPosition: 'center' };
     expect(validateTeam([member])).toEqual([]);
   });
 
-  it('flags an imgPosition that is present but empty', () => {
-    const member = { name: 'A Member', img: '/a.webp', role: 'Lead', imgPosition: '' };
-    expect(validateTeam([member]).join('\n')).toContain('imgPosition must be a non-empty string');
+  it('flags an objectPosition that is present but empty', () => {
+    const member = { name: 'A Member', img: '/a.webp', role: 'Lead', objectPosition: '' };
+    expect(validateTeam([member]).join('\n')).toContain(
+      'objectPosition must be a non-empty string',
+    );
   });
 
-  it('rejects an explicit imgPosition: null (supplied but invalid)', () => {
-    const member = { name: 'A Member', img: '/a.webp', role: 'Lead', imgPosition: null };
-    expect(validateTeam([member]).join('\n')).toContain('imgPosition must be a non-empty string');
+  it('rejects an explicit objectPosition: null (supplied but invalid)', () => {
+    const member = { name: 'A Member', img: '/a.webp', role: 'Lead', objectPosition: null };
+    expect(validateTeam([member]).join('\n')).toContain(
+      'objectPosition must be a non-empty string',
+    );
   });
 });
 
@@ -222,7 +226,7 @@ describe('teamData integrity (src/data/team.js)', () => {
 
   it('never special-cases a member by name in the shared carousel', () => {
     // Regression: a per-photo crop used to live as `d.name === '…'` in
-    // TeamCarousel.jsx. Crops belong to data (imgPosition, guarded above);
+    // TeamCarousel.jsx. Crops belong to data (objectPosition, guarded above);
     // a name comparison in shared UI fails this spec. Attribute reads such
     // as alt={d.name} are fine — only comparisons are banned.
     const carouselSource = readFileSync(
