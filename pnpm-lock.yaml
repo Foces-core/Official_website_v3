@@ -168,7 +168,7 @@ overrides:
   qs: 6.17.1
   serialize-javascript: 7.1.4
   brace-expansion@>=1.0.0 <1.1.21: 5.0.12
-  brace-expansion@>=2.0.0 <2.1.7: 5.0.12
+  brace-expansion@>=2.0.0 <2.1.7: 5.0.13
   brace-expansion@>=4.0.0 <5.0.12: 5.0.12
   glob@>=9.0.0 <=14.0.1: 14.0.4
 
@@ -4216,6 +4216,7 @@ packages:
 
   tldts-core@7.4.20:
     resolution: {integrity: sha512-C630TWXZCZmLq0F2bW4QqwnaaxCQ/svpAqvJwnC4JvgEM5ohhBnGsEzTLSOXcN+xjz+kEaHS5uoWIw2klnqd0A==}
+    deprecated: Partial release, see https://github.com/remusao/tldts/issues/2735. Use >=7.4.22.
 
   tldts-icann@7.4.19:
     resolution: {integrity: sha512-lnGUR5BZm5UpNDYMBFGAr9pxS2RTUr/euXuJ9o1irR+zKhsBAFUn7quHoZt8UP/eIwykp4ye5f56bCjMBytbTg==}
